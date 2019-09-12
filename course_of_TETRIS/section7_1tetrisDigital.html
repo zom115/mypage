@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>section7_1tetrisDigital</title>
+    <link rel="stylesheet" href="../style.css">
+  </head>
+<body>
+  <header><a href="../../index.html">あいうえおチャンネル</a></header>
+  <main>
+    <a href="../mypage.html">マイページ</a>
+     > <a href="section_index.html">JSのあしあと</a><br>
+    <a href="section6_3slide.html">前へ</a>
+    <a href="section7_2tetris.html">次へ</a>
+    <h1>section7_1tetrisDigital</h1>
+    <canvas id="myCanvas" width="480" height="640"></canvas>
+    <script type="text/javascript" src="section7_1tetrisDigital.js"></script><br>
+    <p>S: LEFT</p>
+    <p>&ensp;F: RIGHT</p><br>
+    <p>J, L: ROTATION A</p>
+    <p>&ensp;K: ROTATION B</p><br>
+    <p>横一列に揃えたら<b>消える</b>。</p>
+    <p>上に消えた分の配列を積む。</p><br>
+    <details open>
+      <summary>section7_1tetrisDigital.js</summary>
+<pre><code>
+const canvas = document.getElementById(('myCanvas'))
+const context = canvas.getContext('2d')
+const bgColor = '#222'
+let screenX = screenY = 0
+const nextNumber = 3
+let size = 24
+let nextTetrimino = []
+let current = {
+  name: 'a',
+  color: '#000',
+  shape: [[]],
+  condition: 0
+}
+
+// mino.. 配列ベースの位置関係
+// location.. sizeベースの位置関係 = size * mono
+
+const minoOffsetLeft = 5
+let minoDigitalX = minoOffsetLeft
+let locationX = size * minoOffsetLeft
+
+const minoOffsetTop = 1
+let minoDigitalY = minoOffsetTop
+// next表示分にheaderとってあるからminoOffsetTopよりズレる
+// next分ってことを明示するconst置けばよくない？
+const nextMinoOffsetTop = 3
+let locationY = size * (minoOffsetTop + nextMinoOffsetTop)
+let dy = 1
+let lockDelayTime = 0
+let LockDelayLimit = 30
+const testSize = 5
+const sizeOffsetTop = 4
+const sizeOffsetLeft = 1
+const empty = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+let field = [
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+]
+for (let i = 0; i < 21; i++) {
+  field.unshift(empty.concat())
+}
+let jFired = false
+let lFired = false
+let kFired = false
+let sFired = false
+let fFired = false
+let jTime = 0
+let lTime = 0
+let kTime = 0
+let sTime = 0
+let fTime = 0
+function onKeyDown(e) {
+  if (e.keyCode === 74) {
+    jFired = true
+  }
+  if (e.keyCode === 76) {
+    lFired = true
+  }
+  if (e.keyCode === 75) {
+    kFired = true
+  }
+  if (e.keyCode === 83) {
+    sFired = true
+  }
+  if (e.keyCode === 70) {
+    fFired = true
+  }
+}
+function onKeyUp(e) {
+  if (e.keyCode === 74) {
+    jFired = false
+    jTime = 0
+  }
+  if (e.keyCode === 76) {
+    lFired = false
+    lTime = 0
+  }
+  if (e.keyCode === 75) {
+    kFired = false
+    kTime = 0
+  }
+  if (e.keyCode === 83) {
+    sFired = false
+    sTime = 0
+  }
+  if (e.keyCode === 70) {
+    fFired = false
+    fTime = 0
+  }
+}
+function shuffle() {
+  let arr = ['T', 'J', 'L', 'Z', 'S', 'I', 'O']
+  for (let i = arr.length - 1; i > 0; i--){
+    let r = Math.floor(Math.random() * (i + 1))
+    let tmp = arr[i]
+    arr[i] = arr[r]
+    arr[r] = tmp
+  }
+  return arr
+}
+function setTetrimino(obj, target) {
+  switch (target) {
+    case 'T':
+      obj.name = 'T'
+      obj.color = '#0ff'
+      obj.shape = [
+        [0, 0, 0],
+        [1, 1, 1],
+        [0, 1, 0]]
+      break;
+    case 'J':
+      obj.name = 'J'
+      obj.color = '#00f'
+      obj.shape = [
+        [0, 0, 0],
+        [1, 1, 1],
+        [0, 0, 1]]
+      break;
+    case 'L':
+      obj.name = 'L'
+      obj.color = '#f60'
+      obj.shape = [
+        [0, 0, 0],
+        [1, 1, 1],
+        [1, 0, 0]]
+      break;
+    case 'Z':
+      obj.name = 'Z'
+      obj.color = '#0f0'
+      obj.shape = [
+        [0, 0, 0],
+        [1, 1, 0],
+        [0, 1, 1]]
+      break;
+    case 'S':
+      obj.name = 'S'
+      obj.color = '#f0f'
+      obj.shape = [
+        [0, 0, 0],
+        [0, 1, 1],
+        [1, 1, 0]]
+      break;
+    case 'I':
+      obj.name = 'I'
+      obj.color = '#f00'
+      obj.shape = [
+        [0, 0, 0, 0],
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]]
+      break;
+    case 'O':
+      obj.name = 'O'
+      obj.color = '#ff0'
+      obj.shape = [
+        [0, 0, 0],
+        [0, 1, 1],
+        [0, 1, 1]]
+      break;
+  }
+  obj.condition = 0
+  return obj
+}
+function drawTetrimino() {
+  for (let i = 0;  i < current.shape.length;  i++) {
+    for (let j = 0;  j < current.shape[i].length;  j++) {
+      if (current.shape[i][j] === 1) {
+        field[minoDigitalY + i - 1][minoDigitalX + j - 1] = 1
+        context.fillStyle = current.color
+        context.fillRect(locationX + j * size, locationY + i * size, size, size)
+      }
+    }
+  }
+}
+function drawNext() {
+  let next = {
+    name: 'a',
+    color: '#000',
+    shape: [[]],
+    condition: 0
+  }
+  let nextShowX = minoOffsetLeft * size
+  let nextShowY = 2 * size
+  let nextShowWidth = 4 * size
+  let nextShowHeight = 2 * size
+  context.clearRect(nextShowX, nextShowY, nextShowWidth, nextShowHeight)
+  setTetrimino(next, nextTetrimino[0])
+  for (let i = 0;  i < next.shape.length;  i++) {
+    for (let j = 0;  j < next.shape[i].length;  j++) {
+      if (next.shape[i][j] === 1) {
+        context.fillStyle = next.color
+        context.fillRect(size * (minoOffsetLeft + j),size * (minoOffsetTop + i), size, size)
+      }
+    }
+  }
+}
+function debugPointing() {
+  for (let i = 0;  i < field.length;  i++) {
+    for (let j = 0;  j < field[i].length;  j++) {
+      if (field[i][j] === 1) {
+        context.fillStyle = '#333'
+        context.fillRect((j + sizeOffsetLeft) * size, (i + sizeOffsetTop) * size, testSize, testSize)
+      }else{
+        context.fillStyle = '#fff'
+        context.fillRect((j + sizeOffsetLeft) * size, (i + sizeOffsetTop) * size, testSize, testSize)
+      }
+    }
+  }
+}
+function rotation(clockwise) {
+  refresh()
+  current.condition %= 4
+  let originalShape = current.shape
+  let isOverlap = false
+  let rows = current.shape.length
+  let columns = current.shape[0].length
+  let buffer = new Array(rows)
+  for (let i = 0; i < columns; i++) {
+    buffer[i] = new Array(rows).fill(0)
+  }
+  function roll(clockwise) {
+    if (clockwise) {
+      for (let i = 0;  i < rows;  i++) {
+        for (let j = 0;  j < columns;  j++) {
+          buffer[j][i] = current.shape[columns - i - 1][j]
+        }
+      }
+    }else{
+      for (let i = 0;  i < rows;  i++) {
+        for (let j = 0;  j < columns;  j++) {
+          buffer[j][i] = current.shape[i][rows - j - 1]
+        }
+      }
+    }
+    current.shape = buffer
+  }
+  switch (current.name) {
+    case 'O':
+      break;
+    case 'Z':
+      if(current.condition % 2) {
+        roll(true)
+      }else{
+        roll(false)
+      }
+      break;
+    case 'S':
+    case 'I':
+      if(current.condition % 2) {
+        roll(false)
+      }else{
+        roll(true)
+      }
+      break;
+    default:
+      if (clockwise) {
+        if (current.condition === 2) {
+          let bufferShape = current.shape.shift()
+          current.shape.push(bufferShape)
+        }
+        roll(true)
+        if (current.condition === 3) {
+          let bufferShape = current.shape.pop()
+          current.shape.unshift(bufferShape)
+        }
+      }else{
+        if (current.condition === 2) {
+          let bufferShape = current.shape.shift()
+          current.shape.push(bufferShape)
+        }
+        roll(false)
+        if (current.condition === 1) {
+          let bufferShape = current.shape.pop()
+          current.shape.unshift(bufferShape)
+        }
+      }
+      break;
+  }
+  for (let i = 0;  i < rows;  i++) {
+    for (let j = 0;  j < columns;  j++) {
+      if (buffer[i][j] === 1) {
+        console.log(field[minoDigitalY + i - 1][minoDigitalX + j - 1])
+        if (field[minoDigitalY + i - 1][minoDigitalX + j - 1] === 1) {
+          isOverlap = true
+        }
+      }
+    }
+  }
+  if(lockDelayTime === 0 && !isOverlap){
+    for (let i = 0;  i < buffer.length;  i++) {
+      for (let j = 0;  j < buffer.length;  j++) {
+        if (buffer[i][j] === 1) {
+          if (field[minoDigitalY + i][minoDigitalX + j - 1] === 1) {
+            isOverlap = true
+          }
+        }
+      }
+    }
+  }
+  if (isOverlap) {
+    current.shape = originalShape
+  }else{
+    if (clockwise) {
+      current.condition += 3
+    } else {
+      current.condition += 1
+    }
+  }
+}
+function chkUnder() {
+  for (let i = 0;  i < current.shape.length;  i++) {
+    for (let j = 0;  j < current.shape[i].length;  j++) {
+      if (current.shape[i][j] === 1) {
+        if (field[minoDigitalY + i][minoDigitalX + j - 1] === 1) {
+          return true
+        }
+      }
+    }
+  }
+}
+function judgment() {
+  // landing
+  if (chkUnder()) {
+    lockDelayTime += 1
+    if(LockDelayLimit <= lockDelayTime){
+      for (let i = 0;  i < current.shape.length;  i++) {
+        for (let j = 0;  j < current.shape[i].length;  j++) {
+          if (current.shape[i][j] === 1) {
+            field[minoDigitalY + i - 1][minoDigitalX + j - 1] = 1
+            context.fillStyle = current.color
+            context.fillRect(locationX + j * size, locationY + i * size, size, size)
+          }
+        }
+      }
+      lockDelayTime = 0
+      // lottery
+      if (nextTetrimino.length < nextNumber) {
+        nextTetrimino.push(...shuffle())
+      }
+      setTetrimino(current, nextTetrimino.shift())
+      minoDigitalX = minoOffsetLeft
+      locationX = size * minoOffsetLeft
+      minoDigitalY = minoOffsetTop
+      locationY = size * (minoOffsetTop + nextMinoOffsetTop)
+      drawNext()
+      clearline()
+    }
+  }else{
+    // falling
+    locationY += dy
+    minoDigitalY = Math.floor(locationY / size) - nextMinoOffsetTop
+    if(0 < lockDelayTime) {
+      lockDelayTime = 0
+    }
+  }
+}
+function refresh() {
+  for (let i = 0;  i < current.shape.length;  i++) {
+    for (let j = 0;  j < current.shape[i].length;  j++) {
+      if (current.shape[i][j] === 1) {
+        field[minoDigitalY + i - 1][minoDigitalX + j - 1] = 0
+        context.fillStyle = bgColor
+        context.fillRect(locationX + j * size, locationY + i * size, size, size)
+      }
+    }
+  }
+}
+function refreshDigital() {
+  for (let i = 0;  i < current.shape.length;  i++) {
+    for (let j = 0;  j < current.shape[i].length;  j++) {
+      if (current.shape[i][j] === 1) {
+        field[minoDigitalY + i - 1][minoDigitalX + j - 1] = 0
+      }
+    }
+  }
+}
+function slideLeft() {
+  refreshDigital()
+  let detect = false
+  for (let i = 0;  i < current.shape.length;  i++) {
+    for (let j = 0;  j < current.shape[i].length;  j++) {
+      if (current.shape[i][j] === 1) {
+        if (field[minoDigitalY + i - 1][minoDigitalX + j - 2] === 1) {
+          detect = true
+        }
+      }
+    }
+  }
+  if (lockDelayTime === 0 && !detect) {
+    for (let i = 0;  i < current.shape.length;  i++) {
+      for (let j = 0;  j < current.shape[i].length;  j++) {
+        if (current.shape[i][j] === 1) {
+          if (field[minoDigitalY + i][minoDigitalX + j - 2] === 1) {
+            return true
+          }
+        }
+      }
+    }
+  }
+  if (!detect) {
+    minoDigitalX -= 1
+    refresh()
+    locationX = size * minoDigitalX
+  }
+}
+function slideRight() {
+  refreshDigital()
+  let detect = false
+  for (let i = 0;  i < current.shape.length;  i++) {
+    for (let j = 0;  j < current.shape[i].length;  j++) {
+      if (current.shape[i][j] === 1) {
+        if (field[minoDigitalY + i - 1][minoDigitalX + j] === 1) {
+          detect = true
+        }
+      }
+    }
+  }
+  if (lockDelayTime === 0 && !detect) {
+    for (let i = 0;  i < current.shape.length;  i++) {
+      for (let j = 0;  j < current.shape[i].length;  j++) {
+        if (current.shape[i][j] === 1) {
+          if (field[minoDigitalY + i][minoDigitalX + j] === 1) {
+            detect = true
+          }
+        }
+      }
+    }
+  }
+  if (!detect) {
+    minoDigitalX += 1
+    refresh()
+    locationX = size * minoDigitalX
+  }
+}
+function clearline() {
+  let line = 0
+  for (let i = 0; i < field.length - 1; i++) {
+    console.log(i, field[i])
+    if(field[i].every(x => x === 1)) {
+      console.log(i, field[i].length)
+      field.splice(i, 1)
+      line++
+    }
+
+  }
+  for (let i = 0; i < line; i++) {
+    field.unshift(empty.concat())
+  }
+}
+function inputProcessing() {
+  if (jFired) {
+    if (jTime === 0) {
+      rotation(false)
+    }
+    jTime += 1
+  }
+  if (lFired) {
+    if (lTime === 0) {
+      rotation(false)
+    }
+    lTime += 1
+  }
+  if (kFired) {
+    if (kTime === 0) {
+      rotation(true)
+    }
+    kTime += 1
+  }
+  if (sFired) {
+    if (sTime === 0) {
+      slideLeft()
+    } else if (14 <= sTime) {
+      slideLeft()
+    }
+    sTime += 1
+  }
+  if (fFired) {
+    console.log(fTime)
+    if (fTime === 0) {
+      slideRight()
+    } else if (14 <= fTime) {
+      slideRight()
+    }
+    fTime += 1
+  }
+}
+// setup
+!function() {
+  context.fillStyle = '#ccc'
+  context.fillRect(size, size, size * field[0].length, size * (nextMinoOffsetTop + field.length))
+  context.fillStyle = bgColor
+  const fieldOffsetLeft = size * 2
+  const fieldOffsetTop = size * 5
+  const fieldWidth = size * 10
+  const fieldHeight = size * 20
+  context.fillRect(fieldOffsetLeft, fieldOffsetTop, fieldWidth, fieldHeight)
+  nextTetrimino.push(...shuffle())
+  setTetrimino(current, nextTetrimino.shift())
+  drawNext()
+  }()
+  function draw(){
+    refresh()
+    judgment()
+    drawTetrimino()
+    debugPointing()
+    inputProcessing()
+    requestAnimationFrame(draw)
+}
+draw();
+
+document.addEventListener('keydown', onKeyDown, false)
+document.addEventListener('keyup', onKeyUp, false)
+</code></pre>
+    </details><br>
+    <p>地形の再描画ができてない。</p>
+  </main>
+  <footer>ここはふったー</footer>
+</body>
+</html>
