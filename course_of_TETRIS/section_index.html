@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-      <meta charset="utf-8">
+      <meta charset='utf-8'>
       <title>section_index</title>
-      <link rel="stylesheet" href="../style.css">
+      <link rel='stylesheet' href='../style.css'>
     </head>
 <body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
+  <header><a href='../../index.html'>あいうえおチャンネル</a></header>
   <main>
-    <a href="../mypage.html">マイページ</a>
+    <a href='../index.html'>マイページ</a>
      > JSのあしあと
     <h1>ゼロから作るTETRIS THE GRAND MASTER</h1>
     <p>テトリスのコーディング知識のない状態で、</p>
@@ -16,24 +16,24 @@
     <p>要は、フルスクラッチしてみる。</p>
     <h2>とりあえず動くまでの工程</h2>
     <ul>
-      <li>1. <a href="section1_order.html">ツモ順</a></li>
-      <li>2_1. <a href="section2_1mono.html">モノクロハンコ</a></li>
-      <li>2_2. <a href="section2_2class.html">クラス化？</a></li>
-      <li>2_3. <a href="section2_3following.html">ついてくる</a></li>
-      <li>3_1. <a href="section3_1rotationIncomplete.html">まわす</a></li>
-      <li>3_2. <a href="section3_2rotation.html">回転</a></li>
-      <li>4. <a href="section4_falling.html">自由落下</a></li>
-      <li>5_1. <a href="section5_1fieldBroke.html">ぶっこわれフィールド</a></li>
-      <li>5_2. <a href="section5_2fieldIncomplete.html">ふかんぜんフィールド</a></li>
-      <li>5_3. <a href="section5_3lock.html">設置</a></li>
-      <li>5_4. <a href="section5_4landing.html">着地</a></li>
-      <li>6_1. <a href="section6_1Input.html">キー入力</a></li>
-      <li>6_2. <a href="section6_2slideIncomplete.html">ふかんぜん横移動</a></li>
-      <li>6_3. <a href="section6_3slide.html">横入れ</a></li>
-      <li>7_1. <a href="section7_1tetrisDigital.html">でじたる</a></li>
-      <li>7_2. <a href="section7_2tetris.html">そろえる</a></li>
-      <li>8. <a href="section8softDrop.html">落下操作</a></li>
-      <li>fin. <a href="section_end.html">終えてみて</a></li>
+      <li>1. <a href='section1_order.html'>ツモ順</a></li>
+      <li>2_1. <a href='section2_1mono.html'>モノクロハンコ</a></li>
+      <li>2_2. <a href='section2_2class.html'>クラス化？</a></li>
+      <li>2_3. <a href='section2_3following.html'>ついてくる</a></li>
+      <li>3_1. <a href='section3_1rotationIncomplete.html'>まわす</a></li>
+      <li>3_2. <a href='section3_2rotation.html'>回転</a></li>
+      <li>4. <a href='section4_falling.html'>自由落下</a></li>
+      <li>5_1. <a href='section5_1fieldBroke.html'>ぶっこわれフィールド</a></li>
+      <li>5_2. <a href='section5_2fieldIncomplete.html'>ふかんぜんフィールド</a></li>
+      <li>5_3. <a href='section5_3lock.html'>設置</a></li>
+      <li>5_4. <a href='section5_4landing.html'>着地</a></li>
+      <li>6_1. <a href='section6_1Input.html'>キー入力</a></li>
+      <li>6_2. <a href='section6_2slideIncomplete.html'>ふかんぜん横移動</a></li>
+      <li>6_3. <a href='section6_3slide.html'>横入れ</a></li>
+      <li>7_1. <a href='section7_1tetrisDigital.html'>でじたる</a></li>
+      <li>7_2. <a href='section7_2tetris.html'>そろえる</a></li>
+      <li>8. <a href='section8softDrop.html'>落下操作</a></li>
+      <li>fin. <a href='section_end.html'>終えてみて</a></li>
     </ul>
     <h2>縛り内容</h2>
     <p>JavaScriptや基本的なコーディングに関するものは調べる。</p>
@@ -66,7 +66,7 @@
     <p>10年近く前に、他言語でテトリスの作り方を見ていた気がする。</p>
     <p>テトリミノを二次元配列に入れていたくらいの記憶はあるような、</p>
     <p>ないような、そんな感じ。</p>
-    <p>JavaScriptは触って1週間くらい。<a href="https://developer.mozilla.org/ja/docs/Games/Workflows/2D_Breakout_game_pure_JavaScript">MDNのブロック崩し</a>だけ作った。</p>
+    <p>JavaScriptは触って1週間くらい。<a href='https://developer.mozilla.org/ja/docs/Games/Workflows/2D_Breakout_game_pure_JavaScript'>MDNのブロック崩し</a>だけ作った。</p>
 <section>
 <h2><b>JS</b>で悩んだところ......///</h2>
 <p>配列の配列を部分的に複製したいときは</p>
@@ -75,12 +75,12 @@
 <p>取り出した要素が[[[1, 2, 3]], [1, 2, 3], [4, 5, 6]] ってなってるから</p>
 <p>array.splice(0, 0, array[0].slice(0, 1)) ってやろう</p>
 <br>
-<a href="https://qiita.com/akyao/items/a718cc78436df68d7e15">JavaScriptでループ中にスリープしたい。それも読みやすいコードで</a>
+<a href='https://qiita.com/akyao/items/a718cc78436df68d7e15'>JavaScriptでループ中にスリープしたい。それも読みやすいコードで</a>
 <p>早とちりしました</p>
 <p>JSは非同期まみれ</p>
 <br>
 <p>classでsetter使えばよかったのかな</p>
-<p><a href="https://qiita.com/katolisa/items/6cfd1a2a87058678d646">結局のところgetter／setterは要るのか？要らないのか？</a></p>
+<p><a href='https://qiita.com/katolisa/items/6cfd1a2a87058678d646'>結局のところgetter／setterは要るのか？要らないのか？</a></p>
 <p>いや，アブストラクトにモノ見れねーのかよ</p>
 <p>言いたいことはわかった。getter / setterは使わないし，</p>
 <p>加工した値をもらうようにする。Tell, Don't Ask.</p>
