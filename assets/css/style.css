@@ -20,6 +20,7 @@ canvas {
   content: '>';
   font-size: 80%;
   font-weight: bold;
+  margin-left: 10px;
   padding: 0 3px;
 }
 body {
