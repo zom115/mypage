@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang='ja'>
+<head>
+  <meta charset='utf-8'>
+  <title>JSが好きすぎて爆発しそう</title>
+  <link rel='stylesheet' href='../../assets/css/style.css'>
+  <script async src='https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst'></script>
+</head>
+<body>
+<header>
+<a class='index' href=''>あいうえおチャンネル</a>
+<nav class='crumbs'>
+<ul>
+  <li class='crumb'><a href='../../'>マイページ</a></li>
+  <li class='crumb'>~~~~~~~~JSJSJSJSJSJSJSJS!!!!!!!!</li>
+</ul>
+</nav>
+</header>
+<div id='content'>
+<main>
+<article>
+<section>
+<h1>JSのハマりどころ</h1>
+<p>目次</p>
+<ul>
+  <li><a href='#dom'>DOM先読み</a></li>
+  <li><a href='#object'>オブジェエクトリテラル</a></li>
+  <li><a href='#savnac'>canvas画像反転</a></li>
+  <li><a href='#storage'>localstorage</a></li>
+  <li><a href='#test'>実行速度検証</a></li>
+</ul>
+<h2 id='dom'>DOM先読み</h2>
+<p>書き方忘れそうだから書いておく。</p>
+<pre class='prettyprint lang-js linenums'>
+document.addEventListener('DOMContentLoaded', () => {}) // が便利
+window.onload () => {} // も同じく
+</pre>
+<p>ただし，on～系は最後の記述のみ処理されるから同じ命令を複数使う場合は使用不可</p>
+<h2 id='object'>オブジェクトリテラル</h2>
+<p>Object.values()はES2017で追加。便利だなあ。</p>
+<pre class='prettyprint lang-js linenums'>
+const someObject = {
+  keyA: 'someA',
+  keyB: 'someB'
+}
+console.log(Object.keys(someObject)) // ['keyA', 'keyB']
+console.log(Object.values(someObject)) // ['someA', 'someB']
+</pre>
+<h2 id='savnac'>canvas画像反転</h2>
+<p>後から書いててロクにテストしてないからそのままじゃ動かないかも。</p>
+<br>
+<p>scale(x, y)で変形したら，座標も(x, y)倍されるみたい。</p>
+<pre class='prettyprint lang-js linenums'>
+const canvas = document.getElementById`myCanvas`
+const context = canvas.getContext`2d`
+
+let img = new Image()
+img.src = './img/js.png' // 任意の画像を読み込み
+context.save() // 今の状態を保存
+context.scale(-1, 1) // 左右反転
+const coordinate = {x: 100, y: 100} // 任意の座標
+context.drawImage(-coordinate.x - img.width, coordinate.y) // でやっと思い通りの位置に表示できる
+context.restore() // さっきのセーブ内容を戻す
+</pre>
+<h2 id='storage'>localstorage</h2>
+<p>文字列しか保存できないから気をつけよう。</p>
+<pre class='prettyprint lang-js linenums'>
+const storage = sessionStorage
+storage.setItem('test', false)
+
+const reverse = (key) { // こんなふうに書くと，文字列'false'は存在するからtrueを返す
+  if (storage.getItem(key)) storage.setItem(key, !storage.getItem(key))
+}
+reverse('test')
+console.log(storage.getItem('test')) //
+
+storage.setItem('test', 'NO')
+
+const reverse = (key) {
+  if (getStorage(key) === 'YES') setStorage(key, 'NO')
+  else setStorage(key, 'YES')
+} // めんどくさいね
+reverse('test') // 'YES'
+reverse('test') // 'NO'
+</pre>
+<h2 id='test'>JSぺたぺたJSてすと</h2>
+<pre class='prettyprint lang-js linenums'>
+!(x = () => { 'use strict'
+let counterA = 0
+const trialA = () => counterA = (counterA+1)|0
+let counterB = [0]
+const trialB = () => counterB[0] = (counterB[0]+1)|0
+let counterC = {counter: 0}
+const trialC = () => counterC.counter = (counterC.counter+1)|0
+
+const testA = x => {}
+const testB = () => {}
+const testC = arg => {}
+const testD = (x, y) => {}
+function testE(){}
+function testF(x){}
+function testG(arg){}
+function testH(x, y){}
+
+const spaceA=()=>{}
+const spaceB = () => {}
+const        spaceC        =        ()        =>        {}
+
+const measure = (name, func) => { // 関数の実行時間を計測する関数
+  const start = performance.now()
+  for (let i = 0; i< 1e8; i=(i+1)|0) func()
+  const end = performance.now()
+
+  const elapsed = (end - start)
+  const elapsedStr = elapsed.toPrecision(3)
+  console.log(`${name}: ${elapsedStr}`) // 実行にかかった時間をミリ秒で出力
+}
+measure('dummy', testA) // ダミーいれないと最初爆速だよみたいに言われる
+measure('dummy', testB)
+for (let i = 0; i< 4; i=(i+1)|0) {
+  measure('a', trialA)
+  measure('b', trialB)
+  measure('c', trialC) // 自分の環境の場合，オブジェクトリテラルが一番早かった
+
+  measure('a', testA)
+  measure('b', testB) // これが早かった
+  measure('c', testC)
+  measure('d', testD)
+  measure('e', testE) // こいつもなかなか
+  measure('f', testF)
+  measure('g', testG)
+  measure('h', testH)
+
+  // こっちはどれも変わらない
+  measure('a', spaceA)
+  measure('b', spaceB)
+  measure('c', spaceC)
+}
+})()
+</pre>
+<p>各自こぴぺ汁</p>
+<br>
+<p>const f = x => {}みたいな書き方して1文字稼いでたけど，</p>
+<p>やっぱり，引数取る分だけ実行時間に差が出るみたいだから控えよう。</p>
+<p>どっちの関数宣言も速度差はないみたい。</p>
+<br>
+<p>lintとかで注意されないから積極的に変な空白を揃える気が起きなかったけど，</p>
+<p>そんな神経質にならなくても，どうでもいいみたいね。</p>
+<br>
+<p>最初だけタイマーがおかしくなるのは，わかんない。</p>
+<p>読み込み時にはperformance.now()って動けないのかな？</p>
+<br>
+<p>コレで夜も安心。</p>
+<p>new演算子とかも気になってきた。多用するようなら調べよう。</p>
+</section>
+</article>
+</main>
+<aside>
+<ul>
+  <li class='link'><a href='https://nogak.github.io/mypage/'>Nogami's Room</a></li><br>
+  <li class='link'><a href='https://Oono10.github.io/mypage/'>Oono's Room</a></li>
+</ul>
+</aside>
+</div>
+<footer>ここはふったー</footer>
+</body>
+</html>
