@@ -3,46 +3,46 @@
 const canvas = document.getElementById`idle`
 const context = canvas.getContext`2d`
 const imagePathList = [
-  './img/Unitychan/BasicActions/Unitychan_Idle_1.png', // 0
-  './img/Unitychan/BasicActions/Unitychan_Idle_2.png',
-  './img/Unitychan/BasicActions/Unitychan_Idle_3.png',
-  './img/Unitychan/BasicActions/Unitychan_Idle_4.png',
-  './img/Toko/Toko_Idle_1.png', // 4
-  './img/Toko/Toko_Idle_2.png',
-  './img/Toko/Toko_Idle_3.png',
-  './img/Toko/Toko_Idle_4.png',
-  './img/Holger/Holger_Idle_2.png', // 8
-  './img/Holger/Holger_Idle_3.png',
-  './img/Holger/Holger_Idle_4.png',
-  './img/Holger/Holger_Idle_5.png',
-  './img/Cindy/Cindy_Idle_1.png', // 12
-  './img/Cindy/Cindy_Idle_3.png',
-  './img/Cindy/Cindy_Idle_1.png',
-  './img/Cindy/Cindy_Idle_2.png',
-  './img/Yuko/Yuko_Idle_2.png', // 16
-  './img/Yuko/Yuko_Idle_3.png',
-  './img/Yuko/Yuko_Idle_4.png',
-  './img/Yuko/Yuko_Idle_1.png',
-  './img/Marie/Marie_Idle_2.png', // 20
-  './img/Marie/Marie_Idle_3.png',
-  './img/Marie/Marie_Idle_4.png',
-  './img/Marie/Marie_Idle_1.png',
-  './img/Misaki/Misaki_Idle_2.png', // 24
-  './img/Misaki/Misaki_Idle_3.png',
-  './img/Misaki/Misaki_Idle_4.png',
-  './img/Misaki/Misaki_Idle_1.png',
-  './img/Yuji/Yuji_Idle_1.png', // 28
-  './img/Yuji/Yuji_Idle_2.png',
-  './img/Yuji/Yuji_Idle_3.png',
-  './img/Yuji/Yuji_Idle_4.png',
-  './img/Jack/Jack_Idle_2.png', // 32
-  './img/Jack/Jack_Idle_3.png',
-  './img/Jack/Jack_Idle_4.png',
-  './img/Jack/Jack_Idle_1.png',
-  './img/Mariabell/Mariabell_Idle_2.png', // 36
-  './img/Mariabell/Mariabell_Idle_3.png',
-  './img/Mariabell/Mariabell_Idle_4.png',
-  './img/Mariabell/Mariabell_Idle_1.png'
+  'img/Unitychan/BasicActions/Unitychan_Idle_1.png', // 0
+  'img/Unitychan/BasicActions/Unitychan_Idle_2.png',
+  'img/Unitychan/BasicActions/Unitychan_Idle_3.png',
+  'img/Unitychan/BasicActions/Unitychan_Idle_4.png',
+  'img/Toko/Toko_Idle_1.png', // 4
+  'img/Toko/Toko_Idle_2.png',
+  'img/Toko/Toko_Idle_3.png',
+  'img/Toko/Toko_Idle_4.png',
+  'img/Holger/Holger_Idle_2.png', // 8
+  'img/Holger/Holger_Idle_3.png',
+  'img/Holger/Holger_Idle_4.png',
+  'img/Holger/Holger_Idle_5.png',
+  'img/Cindy/Cindy_Idle_1.png', // 12
+  'img/Cindy/Cindy_Idle_3.png',
+  'img/Cindy/Cindy_Idle_1.png',
+  'img/Cindy/Cindy_Idle_2.png',
+  'img/Yuko/Yuko_Idle_2.png', // 16
+  'img/Yuko/Yuko_Idle_3.png',
+  'img/Yuko/Yuko_Idle_4.png',
+  'img/Yuko/Yuko_Idle_1.png',
+  'img/Marie/Marie_Idle_2.png', // 20
+  'img/Marie/Marie_Idle_3.png',
+  'img/Marie/Marie_Idle_4.png',
+  'img/Marie/Marie_Idle_1.png',
+  'img/Misaki/Misaki_Idle_2.png', // 24
+  'img/Misaki/Misaki_Idle_3.png',
+  'img/Misaki/Misaki_Idle_4.png',
+  'img/Misaki/Misaki_Idle_1.png',
+  'img/Yuji/Yuji_Idle_1.png', // 28
+  'img/Yuji/Yuji_Idle_2.png',
+  'img/Yuji/Yuji_Idle_3.png',
+  'img/Yuji/Yuji_Idle_4.png',
+  'img/Jack/Jack_Idle_2.png', // 32
+  'img/Jack/Jack_Idle_3.png',
+  'img/Jack/Jack_Idle_4.png',
+  'img/Jack/Jack_Idle_1.png',
+  'img/Mariabell/Mariabell_Idle_2.png', // 36
+  'img/Mariabell/Mariabell_Idle_3.png',
+  'img/Mariabell/Mariabell_Idle_4.png',
+  'img/Mariabell/Mariabell_Idle_1.png'
 ]
 let imgList = []
 let imgMap = []
