@@ -15,8 +15,8 @@ const resetField = () => {
 }
 resetField()
 let ownPosition = [{x: (width / 2)|0, y: height - 1}]
-let counter = 0
-let speed = 15
+let time = 0
+let speed = {timestamp: 0, limit: 15}
 let itemSpeed = 300
 let getItemFlag = false
 let key = {a: false, d: false, s: false, w: false}
@@ -47,6 +47,7 @@ const input = () => {
   if (current !== direction) exectionFlag = true
 }
 const move = () => {
+  speed.timestamp = time
   if (direction === 'left') ownPosition.unshift({x: ownPosition[0].x - 1, y: ownPosition[0].y})
   else if (direction === 'right') ownPosition.unshift({x: ownPosition[0].x + 1, y: ownPosition[0].y})
   else if (direction === 'down') ownPosition.unshift({x: ownPosition[0].x, y: ownPosition[0].y + 1})
@@ -58,10 +59,10 @@ const move = () => {
     resetField()
     ownPosition = [{x: (width / 2)|0, y: height - 1}]
     direction = 'up'
-    counter = 1
+    time = 0
     if (highscore < score) highscore = score
     score = 0
-    speed = 15
+    speed = {timestamp: 0, limit: 15}
   }
   if ((
     ownPosition[0].x < 0 || width <= ownPosition[0].x ||
@@ -82,7 +83,10 @@ const getItem = () => {
     field[ownPosition[0].x][ownPosition[0].y] = 0
     getItemFlag = true
     score += 10
-    if (score % 50 === 0 && 1 < speed) speed -= 1
+    if (score % 50 === 0 && 1 < speed.limit) {
+      speed.limit -= 1
+      speed.current = time
+    }
   }
 }
 const drawIndicator = () => {
@@ -133,10 +137,10 @@ const drawCell = () => {
 const main = () => {
   const internalProcess = () => {
     input()
-    counter += 1
-    if (counter % speed === 0) move()
+    time += 1
+    if (time === speed.timestamp + speed.limit) move()
     getItem()
-    if (counter % itemSpeed === 0) createItem()
+    if (time % itemSpeed === 0) createItem()
   }
   internalProcess()
   const draw = () => {
