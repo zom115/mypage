@@ -94,8 +94,10 @@ body {
   grid-auto-rows: minmax(100px, auto);
 }
 #panel {
-  width: 240px;
+  border: 1px solid #666;
   margin: 0 0 20px 15px;
   padding: 10px;
-  border: 1px solid #666;
+  text-align: center;
+  width: 240px;
 }
+#panelText {text-align: left;}
