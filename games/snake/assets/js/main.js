@@ -87,7 +87,7 @@ const getItem = () => {
 }
 const drawIndicator = () => {
   context.font = `${size}px sans-serif`
-  context.fillStyle = 'hsl(0, 100%, 100%)'
+  context.fillStyle = 'hsl(0, 0%, 100%)'
   context.fillText('score :', size * 2.5, size * 1.5)
   context.fillText(score, size * 6.5, size * 1.5, size * 10)
   context.fillText('highscore :', canvas.offsetWidth - size * 15.5, size * 1.5)
@@ -109,14 +109,24 @@ const drawCell = () => {
         context.fill()
       }
     })
-    context.fillStyle = 'hsl(0, 100%, 100%)'
-    ownPosition.forEach(own => {
-      context.fillRect(
-        size * 2.5 + size * own.x,
-        size * 2 + size * own.y,
-        size*.9,
-        size*.9
-      )
+    ownPosition.forEach((value, index) => {
+      if (index !== 0) {
+        context.fillStyle = 'hsl(0, 0%, 80%)'
+        context.fillRect(
+          size * 2.5 + size * value.x,
+          size * 2 + size * value.y,
+          size*.9,
+          size*.9
+          )
+        } else {
+          context.fillStyle = 'hsl(0, 0%, 100%)'
+          context.fillRect(
+            size * 2.5 + size * value.x,
+            size * 2 + size * value.y,
+            size*.9,
+            size*.9
+          )
+      }
     });
   })
 }
