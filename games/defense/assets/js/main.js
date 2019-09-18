@@ -51,7 +51,6 @@ const shot = () => {
   if (rapidFireRate < enemyAppearanceRate && reactionRate < rapidFireRate) {
     rapidFireRate -= burstRate
   }
-  console.log(rapidFireRate, enemyAppearanceRate)
   const info = {
     x: canvas.offsetWidth / 2 - mouseCooldinate.x,
     y: canvas.offsetHeight / 2 - mouseCooldinate.y

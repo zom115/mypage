@@ -29,12 +29,14 @@ let ball = {
 let firstMessage = true
 let defeatFlag = false
 let extraFlag = false
-
-document.onkeydown = () => {
+const operation = () => {
   [posX.x, posX.y, posY.x, posY.y] = [posY.x, posY.y, posX.x, posX.y]
   radX = (180 < radX) ? radX - 180 : radX + 180
   count += 1
 }
+document.addEventListener('keydown', operation, false)
+canvas.addEventListener('mousedown', operation, false)
+
 const createObject = () => {
   const setObject = (x, y, w, h) => {
     return {

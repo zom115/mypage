@@ -3,6 +3,7 @@ canvas {
   background: hsl(0, 0%, 60%);
   display: block;
   margin: 0 auto;
+  user-select: none;
 }
 .index, .index:visited{
   color: hsl(190, 100%, 50%);

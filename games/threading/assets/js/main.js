@@ -32,8 +32,10 @@ const setInitValue = () => {
 }
 setInitValue()
 let key = false
-document.addEventListener('keydown', () => {key = true}, false)
-document.addEventListener('keyup', () => {key = false}, false)
+document.addEventListener('keydown', () => key = true, false)
+document.addEventListener('keyup', () => key = false, false)
+canvas.addEventListener('mousedown', () => key = true, false)
+canvas.addEventListener('mouseup', () => key = false, false)
 const input = () => {
   if (key) {
     if(-dyMax < ownCondition.dy) ownCondition.dy += -dy
