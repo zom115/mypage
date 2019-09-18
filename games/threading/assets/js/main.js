@@ -4,29 +4,29 @@ const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 2
 const startPoint = (canvas.offsetWidth * 1 / 8)|0
-let timer = 0
+let time
 let ownCondition = {}
 let locus = []
 let needle = []
-let needleCount = 0
+let needleCount
 let holeSize
 let dy
 let dyMax
 let speed
 let interval
 let highscore = 0
-let score
+let score = 0
 const setInitValue = () => {
-  timer = 0
+  time = 0
   ownCondition = {y: (canvas.offsetHeight * 1 / 8)|0, dy: -3}
   locus = []
   needle = []
   needleCount = 0
   holeSize = 60
   dy = .1
-  dyMax = 3
+  dyMax = 4
   speed = 2
-  interval = 200
+  interval = {timestamp: 0, limit: 200}
   if (highscore < score) highscore = score
   score = 0
 }
@@ -50,12 +50,26 @@ const hole = () => {
       flag: true
     })
     needleCount += 1
+    interval.limit -= 1
+    if (needleCount % 5 === 0) {
+      if (20 < holeSize && needleCount % 100 - 1 < 50) holeSize -= 2
+      else if (10 < holeSize) holeSize -= 1
+    }
+    if (needleCount % 40 === 20) interval.limit -= 50
+    else if (needleCount % 40 === 0) interval.limit += 50
+    if (needleCount % 100 === 0) {
+      holeSize += 10
+      interval.limit += 75
+    } else if (needleCount % 50 === 0) {
+      holeSize += 15
+      interval.limit += 25
+    }
   }
   if (needle.length === 0) addHole()
   else needle.forEach(v => v.x -= speed)
-  if (timer % interval === 0) {
+  if (time === interval.timestamp + interval.limit) {
+    interval.timestamp = time
     addHole()
-    timer = 0
   }
 }
 const move = () => {
@@ -66,28 +80,20 @@ const move = () => {
 }
 const collisionDetect = () => {
   if (needle[0].x < 0) needle.shift()
-  if (
-    needle[0].x < startPoint &&
-    needle[0].flag
-  ) {
+  if (needle[0].x < startPoint && needle[0].flag) {
     if (
       needle[0].y < ownCondition.y &&
       ownCondition.y < needle[0].y + needle[0].hole
     ) {
       score += 1
       if (highscore < score) highscore = score
-      if (score % 10 === 0) {
-        if (20 < holeSize) holeSize -= 5
-        else if (10 < holeSize) holeSize -= 2
-        if (score === 50 || score === 100) {
-          holeSize += 15
-          dy += .05
-          dyMax += 1.5
-          speed += 1
-          interval -= 50
-          timer -= 50
-        }
+      const speedUp = (arg = 1) => {
+        dy += .001 * arg
+        dyMax += .04 * arg
+        speed += .02 * arg
       }
+      speedUp()
+      if (score % 50 === 0) speedUp(-45)
       needle[0].flag = false
     } else setInitValue()
   }
@@ -114,25 +120,15 @@ const draw = () => {
   })
   context.textAlign = 'center'
   context.fillText('穴の大きさ', canvas.offsetWidth * 3/5, canvas.offsetHeight * 1/16)
-  context.textAlign = 'right'
-  context.fillText(holeSize, canvas.offsetWidth * 3/5, canvas.offsetHeight * 2/16)
-  context.textAlign = 'left'
-  context.fillText('mm', canvas.offsetWidth * 3/5, canvas.offsetHeight * 2/16)
-  context.textAlign = 'center'
+  const displayHoleSize = (needle.length === 0) ? holeSize : (needle[0].flag) ? needle[0].hole : needle[1].hole
+  context.fillText(`${displayHoleSize}mm`, canvas.offsetWidth * 3/5, canvas.offsetHeight * 2/16)
   context.fillText('現在', canvas.offsetWidth * 3/4, canvas.offsetHeight * 1/16)
-  context.textAlign = 'right'
-  context.fillText(score, canvas.offsetWidth * 3/4, canvas.offsetHeight * 2/16)
-  context.textAlign = 'left'
-  context.fillText('本', canvas.offsetWidth * 3/4, canvas.offsetHeight * 2/16)
-  context.textAlign = 'center'
+  context.fillText(`${score}本`, canvas.offsetWidth * 3/4, canvas.offsetHeight * 2/16)
   context.fillText('最高', canvas.offsetWidth * 7/8, canvas.offsetHeight * 1/16)
-  context.textAlign = 'right'
-  context.fillText(highscore, canvas.offsetWidth * 7/8, canvas.offsetHeight * 2/16)
-  context.textAlign = 'left'
-  context.fillText('本', canvas.offsetWidth * 7/8, canvas.offsetHeight * 2/16)
+  context.fillText(`${highscore}本`, canvas.offsetWidth * 7/8, canvas.offsetHeight * 2/16)
 }
 const main = () => {
-  timer += 1
+  time += 1
   input()
   hole()
   move()
