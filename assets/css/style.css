@@ -5,7 +5,7 @@ canvas {
   margin: 0 auto;
   user-select: none;
 }
-.index, .index:visited{
+.index, .index:visited {
   color: hsl(190, 100%, 50%);
   font-size: 48px;
   white-space: nowrap;

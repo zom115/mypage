@@ -34,8 +34,11 @@ setInitValue()
 let key = false
 document.addEventListener('keydown', () => key = true, false)
 document.addEventListener('keyup', () => key = false, false)
-canvas.addEventListener('mousedown', () => key = true, false)
-canvas.addEventListener('mouseup', () => key = false, false)
+const press = (window.ontouchstart === undefined) ? 'mousedown' : 'touchstart'
+const release = (window.ontouchstart === undefined) ? 'mouseup' : 'touchend'
+canvas.addEventListener(press, () => key = true, false)
+canvas.addEventListener(release, () => key = false, false)
+canvas.addEventListener('contextmenu', e => e.preventDefault(), false)
 const input = () => {
   if (key) {
     if(-dyMax < ownCondition.dy) ownCondition.dy += -dy

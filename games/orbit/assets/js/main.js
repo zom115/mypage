@@ -35,7 +35,9 @@ const operation = () => {
   count += 1
 }
 document.addEventListener('keydown', operation, false)
-canvas.addEventListener('mousedown', operation, false)
+const press = (window.ontouchstart === undefined) ? 'mousedown' : 'touchstart'
+canvas.addEventListener(press, operation, false)
+canvas.addEventListener('contextmenu', e => e.preventDefault(), false)
 
 const createObject = () => {
   const setObject = (x, y, w, h) => {
