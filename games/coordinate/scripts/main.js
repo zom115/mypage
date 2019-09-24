@@ -148,7 +148,7 @@ const shuffle = arg => {
   }
 }
 const reset = () => {
-  if (time.best < time.elapsed) time.best = time.elapsed
+  if (time.elapsed < time.best || time.best === 0) time.best = time.elapsed
   time.elapsed = 0
   left = 13
   shuffle(alphabet)
@@ -158,7 +158,6 @@ const reset = () => {
   target.x = numset.concat()
   shuffle(numset)
   target.y = numset.concat()
-  time.start = Date.now()
 }
 reset()
 const game = () => {
@@ -181,7 +180,7 @@ const internalProcess = () => {
   if (state === 'title') {
     if (key['space']) {
       state = 'game'
-      reset()
+      time.start = Date.now()
     }
   } else if (state === 'game') game()
 }

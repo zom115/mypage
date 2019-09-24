@@ -1,27 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section4_falling</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>4 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section3_2rotation.html">前へ</a>
-    <a href="section5_1fieldBroke.html">次へ</a>
-    <h1>section4_falling</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section4_falling.js"></script><br>
-    <p>落ち物パズルゲーたる所以、<b>落下</b>。</p>
-    <p>画面上から出てきて、画面下に触れるまえに消える。</p>
-    <p>それだけ。</p><br>
-    <details open>
-      <summary>section4_falling.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>4</span>
+      </nav>
+      <article><a href="section3_2rotation.html">前へ</a><span> - </span><a href="section5_1fieldBroke.html">次へ</a>
+<h1>section4_falling</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>落ち物パズルゲーたる所以、<b>落下</b>。</p>
+<p>画面上から出てきて、画面下に触れるまえに消える。</p>
+<p>それだけ。</p><br>
+<details open>
+<summary>section4_falling.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 let nextTetrimino = []
 let screenX = screenY = 0
@@ -189,10 +198,11 @@ draw();
 
 canvas.addEventListener('mousedown', onDown, false)
 canvas.addEventListener('click', onClick, false)
-canvas.addEventListener('mousemove', onMouseMove, false)
-</code></pre>
-    </details>
-  </main>
-  <footer>ここはふったー</footer>
-</body>
+canvas.addEventListener('mousemove', onMouseMove, false)</pre></details>
+      </article>
+    </main>
+    <footer>
+    </footer>
+    <script src="scripts/section4_falling.js"></script>
+  </body>
 </html>

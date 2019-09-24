@@ -1,35 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section5_1fieldBroke</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>5_1 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section4_falling.html">前へ</a>
-    <a href="section5_2fieldIncomplete.html">次へ</a>
-    <h1>section5_1fieldBroke</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section5_1fieldBroke.js"></script><br>
-    <p><b>フィールド形状</b></p>
-    <p>(20 + 1行) * 10列</p>
-    <p>ついでに<b>ネクスト表示</b>もしたぞ。</p>
-    <p>でも、見た目を先行させすぎた。</p><br>
-    <p>OOPの教科書的なハマり方をした。思いっきりシャローコピーしてる。</p>
-    <p>具体的にはネクストの回転が前の状態を踏襲してる。</p>
-    <p>シャローコピーじゃなくて参照の値渡しらしいけど。</p><br>
-    <p>てかconstなのに書き換わるのか。意味ないじゃん。</p>
-    <p>クラスもオブジェクトも浅くなる。果てはJSのクラスはクラスじゃないという始末。</p>
-    <p><a href="https://woshidan.hatenablog.com/entry/2014/09/06/002003">JavaScriptのオブジェクトを扱うとき、=はただの値渡しではない</a></p><br>
-    <p>じゃあ、生の値を与え続けるのがラクっぽい？</p><br>
-    <details open>
-      <summary>section5_1fieldBroke.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>5_1</span>
+      </nav>
+      <article><a href="section4_falling.html">前へ</a><span> - </span><a href="section5_2fieldIncomplete.html">次へ</a>
+<h1>section5_1fieldBroke</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p><b>フィールド形状</b></p>
+<p>(20 + 1行) * 10列</p>
+<p>ついでに<b>ネクスト表示</b>もしたぞ。</p>
+<p>でも、見た目を先行させすぎた。</p><br>
+<p>OOPの教科書的なハマり方をした。思いっきりシャローコピーしてる。</p>
+<p>具体的にはネクストの回転が前の状態を踏襲してる。</p>
+<p>シャローコピーじゃなくて参照の値渡しらしいけど。</p><br>
+<p>てかconstなのに書き換わるのか。意味ないじゃん。</p>
+<p>クラスもオブジェクトも浅くなる。果てはJSのクラスはクラスじゃないという始末。</p>
+<p><a href="https://woshidan.hatenablog.com/entry/2014/09/06/002003">JavaScriptのオブジェクトを扱うとき、=はただの値渡しではない</a></p><br>
+<p>じゃあ、生の値を与え続けるのがラクっぽい？</p><br>
+<details open>
+<summary>section5_1fieldBroke.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 let screenX = screenY = 0
 const nextNumber = 3
@@ -232,10 +241,11 @@ draw();
 
 canvas.addEventListener('mousedown', onDown, false)
 canvas.addEventListener('click', onClick, false)
-canvas.addEventListener('mousemove', onMouseMove, false)
-</code></pre>
-    </details>
-  </main>
-  <footer>ここはふったー</footer>
-</body>
+canvas.addEventListener('mousemove', onMouseMove, false)</pre></details>
+      </article>
+    </main>
+    <footer>
+    </footer>
+    <script src="scripts/section5_1fieldBroke.js"></script>
+  </body>
 </html>

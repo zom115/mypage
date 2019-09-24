@@ -1,41 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section2_1mono</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>2_1 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section1_order.html">前へ</a>
-    <a href="section2_2class.html">次へ</a>
-    <h1>section2_1mono</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section2_1mono.js"></script><br>
-    <p>画面を<b>クリック</b>!!</p>
-    <p>スクロールした分だけ、見事にズレるね。</p><br>
-    <p><a href="https://qiita.com/kyrieleison/items/a3ebf7c55295c3e7d8f0">HTML5 Canvas 入門</a></p>
-    <p>ここを改造してテトリミノハンコをつくる。</p>
-    <p>初期形状に違和感？
-      <a href="http://www13.plala.or.jp/TETRiS_TGM/kouza/index.htm">ここ</a> とか
-      <a href="http://www10.plala.or.jp/code1484/TETRiS_EX/tetris_ex.htm">ここ</a>
-      に多くの知見が蓄えられている。</p><br>
-    <p>おほー、黒いテトリミノいっぱい。黒い……黒い。色は？</p>
-    <p>Q. どこに書くの？</p>
-    <p>A. クラスを定義したい。</p>
-    <h2>// !!Caution!! //</h2>
-    <p>有効な対策に行き着かず、のちに機能変更をするため、</p>
-    <p>クラス化については読み飛ばして構わないです。</p>
-    <p>JSのクラスは参照の値渡しをするため、</p>
-    <p>初期値でほしいテトリミノをクラス実装するのは悪手です。</p><br>
-    <p>とか能書きたれてるけど、要はOOPをものにできてないだけです。</p><br>
-    <details open>
-      <summary>section2_1mono.js</summary>
-<pre><code>
-var canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>2_1</span>
+      </nav>
+      <article><a href="section1_order.html">前へ</a><span> - </span><a href="section2_2class.html">次へ</a>
+        <h1>section2_1mono</h1>
+        <canvas id="myCanvas" width="480" height="640"></canvas><br>
+        <p>画面を<b>クリック</b>!!</p>
+        <p>スクロールした分だけ、見事にズレるね。</p><br>
+        <p><a href="https://qiita.com/kyrieleison/items/a3ebf7c55295c3e7d8f0">HTML5 Canvas 入門</a></p>
+        <p>ここを改造してテトリミノハンコをつくる。</p>
+        <p>初期形状に違和感？<a href="http://www13.plala.or.jp/TETRiS_TGM/kouza/index.htm">ここ</a> とか<a href="http://www10.plala.or.jp/code1484/TETRiS_EX/tetris_ex.htm">ここ</a>      に多くの知見が蓄えられている。</p><br>
+        <p>おほー、黒いテトリミノいっぱい。黒い……黒い。色は？</p>
+        <p>Q. どこに書くの？</p>
+        <p>A. クラスを定義したい。</p>
+        <h2>// !!Caution!! //</h2>
+        <p>有効な対策に行き着かず、のちに機能変更をするため、</p>
+        <p>クラス化については読み飛ばして構わないです。</p>
+        <p>JSのクラスは参照の値渡しをするため、</p>
+        <p>初期値でほしいテトリミノをクラス実装するのは悪手です。</p><br>
+        <p>とか能書きたれてるけど、要はOOPをものにできてないだけです。</p><br>
+        <details open="">
+          <summary>section2_1mono.js</summary>
+          <pre class="prettyprint lang-js linenums">var canvas = document.getElementById(('myCanvas'))
 var context = canvas.getContext('2d')
 var currentTetrimino = []
 var nextNumber = 3
@@ -117,10 +123,12 @@ function onClick(e) {
 }
 
 canvas.addEventListener('mousedown', onDown, false)
-canvas.addEventListener('click', onClick, false)
-</code></pre>
-    </details>
-  </main>
-  <footer>ここはふったー</footer>
-</body>
+canvas.addEventListener('click', onClick, false)</pre>
+        </details>
+      </article>
+    </main>
+    <footer>
+    </footer>
+    <script src="scripts/section2_1mono.js"></script>
+  </body>
 </html>

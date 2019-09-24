@@ -1,7 +1,7 @@
 !(_ = () => { 'use strict'
 
 const version = 'v.0.8.2'
-const canvas = document.getElementById`myCanvas`
+const canvas = document.getElementById`canvas`
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -723,15 +723,15 @@ const cloneProcess = () => {
   if (60 < clonePosition.length) clonePosition.shift()
 }
 const setOwnImage = arg => {
-  return (arg === 1) ? 'assets/img/TP2U.png'
-  : (arg === 3) ? 'assets/img/TP2RU.png'
-  : (arg === 2) ? 'assets/img/TP2R.png'
-  : (arg === 6) ? 'assets/img/TP2RD.png'
-  : (arg === 4) ? 'assets/img/TP2D.png'
-  : (arg === 12) ? 'assets/img/TP2LD.png'
-  : (arg === 8) ? 'assets/img/TP2L.png'
-  : (arg === 9) ? 'assets/img/TP2LU.png'
-  : 'assets/img/TP2F.png'
+  return (arg === 1) ? 'images/TP2U.png'
+  : (arg === 3) ? 'images/TP2RU.png'
+  : (arg === 2) ? 'images/TP2R.png'
+  : (arg === 6) ? 'images/TP2RD.png'
+  : (arg === 4) ? 'images/TP2D.png'
+  : (arg === 12) ? 'images/TP2LD.png'
+  : (arg === 8) ? 'images/TP2L.png'
+  : (arg === 9) ? 'images/TP2LU.png'
+  : 'images/TP2F.png'
 }
 const drawClone = () => {
   const imgClone = new Image()
@@ -739,7 +739,7 @@ const drawClone = () => {
   imgClone.src = ((
     ownStepLimit / 2 + delayStep <= ownStep || ownStep < delayStep)
     && cloneSpeed <= ownSpeed.max
-  ) ? 'assets/img/TP2F.png'
+  ) ? 'images/TP2F.png'
   : (0 < angle) ? setOwnImage(angle)
   : setOwnImage(direction)
   const pos = {
@@ -775,7 +775,7 @@ const drawMyself = () => {
   else ownStep = (ownStep+1)|0
   imgMyself.src = (
     ownStepLimit / 2 <= ownStep && ownSpeed.current <= ownSpeed.max
-  ) ? 'assets/img/TP2F.png'
+  ) ? 'images/TP2F.png'
   : (ownSpeed.max < ownSpeed.current && 0 < currentDirection) ? setOwnImage(currentDirection)
   : (0 < angle) ? setOwnImage(angle)
   : setOwnImage(direction)
@@ -1086,12 +1086,12 @@ const drawEnemies = () => {
     } else {
       const imgEnemy = new Image()
       const imgPath = (enemy.imageID === 0)
-      ? {F: 'assets/img/JK32F.png', L: 'assets/img/JK32L.png', R: 'assets/img/JK32R.png'}
+      ? {F: 'images/JK32F.png', L: 'images/JK32L.png', R: 'images/JK32R.png'}
       : (enemy.imageID === 1)
-      ? {F: 'assets/img/JK33F.png', L: 'assets/img/JK33L.png', R: 'assets/img/JK33R.png'}
+      ? {F: 'images/JK33F.png', L: 'images/JK33L.png', R: 'images/JK33R.png'}
       : (enemy.imageID === 2)
-      ? {F: 'assets/img/JK34F.png', L: 'assets/img/JK34L.png', R: 'assets/img/JK34R.png'}
-      : {F: 'assets/img/JK35Fv1.png', L:'assets/img/JK35Fv1.png', R: 'assets/img/JK35Fv1.png'}
+      ? {F: 'images/JK34F.png', L: 'images/JK34L.png', R: 'images/JK34R.png'}
+      : {F: 'images/JK35Fv1.png', L:'images/JK35Fv1.png', R: 'images/JK35Fv1.png'}
       imgEnemy.src = (enemy.step <= enemy.stepLimit * 3 / 8) ? imgPath.R
       : (enemy.stepLimit / 2 <= enemy.step && enemy.step <= enemy.stepLimit * 7 / 8)
       ? imgPath.L : imgPath.F
@@ -1448,18 +1448,18 @@ const drawIndicator = () => {
   context.fillStyle = 'hsl(330, 100%, 50%)'
   context.globalAlpha = .7
   if (homingFlag) {
-    imgIcon.src = 'assets/img/Homingv1.jpg'
+    imgIcon.src = 'images/Homingv1.jpg'
     context.drawImage(imgIcon, ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
   } else if (explosive1Flag) {
-    imgIcon.src = 'assets/img/TP2F.png'
+    imgIcon.src = 'images/TP2F.png'
     context.drawImage(imgIcon, ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
     context.fillText('1', c.x - size * 2, c.y - size * 8)
   } else if (explosive2Flag) {
-    imgIcon.src = 'assets/img/TP2F.png'
+    imgIcon.src = 'images/TP2F.png'
     context.drawImage(imgIcon, ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
     context.fillText('2', c.x - size * 2, c.y - size * 8)
   } else if (explosive3Flag) {
-    imgIcon.src = 'assets/img/TP2F.png'
+    imgIcon.src = 'images/TP2F.png'
     context.drawImage(imgIcon, ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
     context.fillText('3', c.x - size * 2, c.y - size * 8)
   }
@@ -2235,9 +2235,9 @@ const drawStore = () => {
     } else {
       const imgStore = new Image()
       context.save()
-      imgStore.src = (object.ID === 0) ? 'assets/img/st1v2.png'
-      : (object.ID === 1) ? 'assets/img/st2v1.png'
-      : 'assets/img/stv1.png'
+      imgStore.src = (object.ID === 0) ? 'images/st1v2.png'
+      : (object.ID === 1) ? 'images/st2v1.png'
+      : 'images/stv1.png'
       if (index === 6) {
         context.scale(1, 1)
         context.drawImage(imgStore, ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
@@ -2414,44 +2414,44 @@ const drawStore = () => {
       && (object.y <= ownPosition.y && ownPosition.y <= object.y + object.height)
     ) {
       if (index === 0) {
-        topColumn(afterglow.offensivePower, inventory[0].offensivePower, ammo, 'assets/img/TASTEv1.jpg')
-        if (homingFlag) rightColumn(afterglow.homing, inventory[0].homing, ammo, 'assets/img/Homingv1.jpg')
-        else rightColumn(afterglow.homing, inventory[0].homing, ammo, 'assets/img/Homingv1.jpg')
-        downColumn(afterglow.slide, inventory[0].slide, point, 'assets/img/EASY_TO_DRINKV1.jpg')
-        leftColumn(afterglow.bulletSpeed, inventory[0].bulletSpeedCost, point, 'assets/img/TAPIOCA_SPEEDv1.png')
+        topColumn(afterglow.offensivePower, inventory[0].offensivePower, ammo, 'images/TASTEv1.jpg')
+        if (homingFlag) rightColumn(afterglow.homing, inventory[0].homing, ammo, 'images/Homingv1.jpg')
+        else rightColumn(afterglow.homing, inventory[0].homing, ammo, 'images/Homingv1.jpg')
+        downColumn(afterglow.slide, inventory[0].slide, point, 'images/EASY_TO_DRINKV1.jpg')
+        leftColumn(afterglow.bulletSpeed, inventory[0].bulletSpeedCost, point, 'images/TAPIOCA_SPEEDv1.png')
       } else if (index === 1) {
-        topColumn(afterglow.magazine, inventory[0].magazine, point, 'assets/img/CUP_SIZEv1.png')
-        rightColumn(afterglow.magAmount, inventory[0].magAmount, point, 'assets/img/CUP_AMOUNTv1.png')
-        downColumn(afterglow.loading, inventory[0].loading, point, 'assets/img/COOKING_TIMEv1.png')
-        leftColumn(afterglow.ammo, ammoLog, ammo, 'assets/img/TAPIOCA_CAPACITYv1.png')
+        topColumn(afterglow.magazine, inventory[0].magazine, point, 'images/CUP_SIZEv1.png')
+        rightColumn(afterglow.magAmount, inventory[0].magAmount, point, 'images/CUP_AMOUNTv1.png')
+        downColumn(afterglow.loading, inventory[0].loading, point, 'images/COOKING_TIMEv1.png')
+        leftColumn(afterglow.ammo, ammoLog, ammo, 'images/TAPIOCA_CAPACITYv1.png')
       } else if (index === 2) {
-        topColumn(afterglow.dashDamage, cost.dashDamage, ammo, 'assets/img/JK34F.png')
+        topColumn(afterglow.dashDamage, cost.dashDamage, ammo, 'images/JK34F.png')
         context.fillText(
           'DASH ATTACK DAMAGE +',
           relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
         )
-        rightColumn(afterglow.dashDistance, cost.dashDistance, point, 'assets/img/JK34R.png')
+        rightColumn(afterglow.dashDistance, cost.dashDistance, point, 'images/JK34R.png')
         context.fillText(
           'DASH DISTANCE +',
           relativeX(object.x + size * 6), relativeY(object.y + size * 3)
         )
-        downColumn(afterglow.dashCooltime, cost.dashCooltime, point, 'assets/img/JK34F.png')
+        downColumn(afterglow.dashCooltime, cost.dashCooltime, point, 'images/JK34F.png')
         context.fillText(
           'DASH COOLTIME -',
           relativeX(object.x - size * 2.5), relativeY(object.y + size * 8.5)
         )
-        leftColumn(afterglow.dashSpeed, cost.dashDistance, point, 'assets/img/JK34L.png')
+        leftColumn(afterglow.dashSpeed, cost.dashDistance, point, 'images/JK34L.png')
         context.fillText(
           'DASH SPEED +',
           relativeX(object.x-size * 9.5), relativeY(object.y + size * 3)
         )
       } else if (index === 3) {
-        topColumn(afterglow.bulletLife, inventory[0].bulletLifeCost, point, 'assets/img/JK32F.png')
+        topColumn(afterglow.bulletLife, inventory[0].bulletLifeCost, point, 'images/JK32F.png')
         context.fillText(
           'SHELF LIFE +', relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
         )
         if (!cloneFlag) {
-          rightColumn(afterglow.clone, cost.clone, point, 'assets/img/JK33R.png')
+          rightColumn(afterglow.clone, cost.clone, point, 'images/JK33R.png')
           context.fillText(
             'TAPIOCA DRINK DUPLICATOR',
             relativeX(object.x + size * 6), relativeY(object.y + size * 3)
@@ -2459,40 +2459,40 @@ const drawStore = () => {
         }
         downColumn(
           afterglow.penetrationForce, inventory[0].penetrationForceCost, point,
-          'assets/img/TAPIOCA_PENETRATEv1.png'
+          'images/TAPIOCA_PENETRATEv1.png'
         )
         context.fillText(
           'PENETRATION FORCE +',
           relativeX(object.x + size * 2), relativeY(object.y + size * 8.5)
         )
       } else if (index === 4) {
-        topColumn(afterglow.explosive1, inventory[0].explosive1, ammo, 'assets/img/TP2F.png')
+        topColumn(afterglow.explosive1, inventory[0].explosive1, ammo, 'images/TP2F.png')
         context.fillText(
           'EXPLOSIVE TYPE I',
           relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
         )
-        rightColumn(afterglow.explosive2, inventory[0].explosive2, ammo, 'assets/img/TP2F.png')
+        rightColumn(afterglow.explosive2, inventory[0].explosive2, ammo, 'images/TP2F.png')
         context.fillText(
           'EXPLOSIVE TYPE II',
           relativeX(object.x+size * 6), relativeY(object.y+size * 3)
         )
-        downColumn(afterglow.explosive3, inventory[0].explosive3, ammo, 'assets/img/TP2F.png')
+        downColumn(afterglow.explosive3, inventory[0].explosive3, ammo, 'images/TP2F.png')
         context.fillText(
           'EXPLOSIVE TYPE III',
           relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
         )
-        leftColumn(afterglow.explosiveRange, inventory[0].explosiveRange, point, 'assets/img/TP2F.png')
+        leftColumn(afterglow.explosiveRange, inventory[0].explosiveRange, point, 'images/TP2F.png')
         context.fillText(
           'EXPLOSIVE RANGE +',
           relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
         )
       } else if (index === 5) {
-        topColumn(afterglow.limitBreak, inventory[0].limitBreak, point, 'assets/img/JK32F_O1.png')
+        topColumn(afterglow.limitBreak, inventory[0].limitBreak, point, 'images/JK32F_O1.png')
         context.fillText(
           'RIMIT BREAK CHANCE',
           relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
         )
-        leftColumn(afterglow.reset, cost.reset, point, 'assets/img/JK32F.png')
+        leftColumn(afterglow.reset, cost.reset, point, 'images/JK32F.png')
         context.save()
         context.textAlign = 'right'
         context.fillText('RESET YOUR LIFE',
@@ -2530,7 +2530,7 @@ const drawStore = () => {
           )
           const imgSwamp = new Image()
           context.save()
-          imgSwamp.src = 'assets/img/JK32F_O2.png'
+          imgSwamp.src = 'images/JK32F_O2.png'
           context.scale(3, 3)
           context.drawImage(
             imgSwamp,
@@ -2546,22 +2546,22 @@ const drawStore = () => {
           )
         }
       } else if (index === 6) {
-        topColumn(afterglow.explosive1, cost.reset, point, 'assets/img/JK34F.png')
+        topColumn(afterglow.explosive1, cost.reset, point, 'images/JK34F.png')
         context.fillText(
           'CLONE DASH TYPE I',
           relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
         )
-        rightColumn(afterglow.explosive2, cost.reset, point, 'assets/img/JK34R.png')
+        rightColumn(afterglow.explosive2, cost.reset, point, 'images/JK34R.png')
         context.fillText(
           'CLONE DASH TYPE II',
           relativeX(object.x+size * 6), relativeY(object.y+size * 3)
         )
-        downColumn(afterglow.explosive3, cost.reset, point, 'assets/img/JK34F.png')
+        downColumn(afterglow.explosive3, cost.reset, point, 'images/JK34F.png')
         context.fillText(
           'CLONE DASH TYPE III',
           relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
         )
-        leftColumn(afterglow.explosiveRange, cost.reset, point, 'assets/img/JK34L.png')
+        leftColumn(afterglow.explosiveRange, cost.reset, point, 'images/JK34L.png')
         context.fillText(
           'CLONE COME BUCK',
           relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
@@ -2768,7 +2768,7 @@ const drawTitleScreen = () => {
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
   const imgTitle = new Image()
-  imgTitle.src = 'assets/img/ROGOv1.2.png'
+  imgTitle.src = 'images/ROGOv1.2.png'
   context.drawImage(imgTitle, ~~(((canvas.offsetWidth-imgTitle.width) / 2)+.5), ~~(size*4+.5))
   context.textAlign = 'center'
   context.font = `${size}px sans-serif`
@@ -2801,16 +2801,16 @@ const drawTitleScreen = () => {
     context.restore()
   }
   if (ss % 2 === 1 && ~~(ms/100) === 0) c.y = c.y - size/16
-  drawCharacter('assets/img/JK32F.png', c.x, c.y)
+  drawCharacter('images/JK32F.png', c.x, c.y)
   if (ss % 2 === 1 && ~~(ms/100) === 0) c.y = c.y + size/16
   if (ss % 2 === 1 && ~~(ms/100) === 5) c.y = c.y - size/16
-  drawCharacter('assets/img/JK33F.png', c.x + size * 2, c.y)
+  drawCharacter('images/JK33F.png', c.x + size * 2, c.y)
   if (ss % 2 === 1 && ~~(ms/100) === 5) c.y = c.y + size/16
   if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y - size/16
-  drawCharacter('assets/img/JK34F.png', c.x + size * 4, c.y)
+  drawCharacter('images/JK34F.png', c.x + size * 4, c.y)
   if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y + size/16
   if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
-  drawCharacter('assets/img/JK35Fv1.png', c.x + size * 6, c.y)
+  drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
 }
 const titleProcess = () => {
   resetScreen()
@@ -2897,7 +2897,7 @@ const resultProcess = () => {
   context.save()
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
-  imgCutin.src = (ss % 3 === 0) ? 'assets/img/drinking.png' : 'assets/img/drinkSmile.png'
+  imgCutin.src = (ss % 3 === 0) ? 'images/drinking.png' : 'images/drinkSmile.png'
   context.scale(3, 3)
   context.drawImage(
     imgCutin,
@@ -3196,47 +3196,47 @@ const loop = () => {
   requestAnimationFrame(loop)
 }
 const imagePathList = [
-  'assets/img/TP2F.png',
-  'assets/img/TP2U.png',
-  'assets/img/TP2RU.png',
-  'assets/img/TP2R.png',
-  'assets/img/TP2RD.png',
-  'assets/img/TP2D.png',
-  'assets/img/TP2LD.png',
-  'assets/img/TP2L.png',
-  'assets/img/TP2LU.png',
-  'assets/img/JK32F.png',
-  'assets/img/JK32L.png',
-  'assets/img/JK32R.png',
-  'assets/img/JK32F_O1.png',
-  'assets/img/JK32F_O2.png',
-  'assets/img/JK33F.png',
-  'assets/img/JK33L.png',
-  'assets/img/JK33R.png',
-  'assets/img/JK34F.png',
-  'assets/img/JK34L.png',
-  'assets/img/JK34R.png',
-  'assets/img/JK35Fv1.png',
-  'assets/img/drinkSmile.png',
-  'assets/img/drinking.png',
-  'assets/img/ROGOv1.png',
-  'assets/img/ROGOv1.2.png',
-  'assets/img/stv1.png',
-  'assets/img/st1v2.png',
-  'assets/img/st2v1.png',
-  'assets/img/Homingv1.jpg',
-  'assets/img/TAPIOCA_PENETRATEv1.png',
-  'assets/img/TASTEv1.jpg',
-  'assets/img/EASY_TO_DRINKV1.jpg' ,
-  'assets/img/TAPIOCA_SPEEDv1.png',
-  'assets/img/TAPIOCA_PENETRATEv1.png',
-  'assets/img/COOKING_TIMEv1.png',
-  'assets/img/CUP_AMOUNTv1.png',
-  'assets/img/CUP_SIZEv1.png',
-  'assets/img/TAPIOCA_CAPACITYv1.png',
-  'assets/img/arrowDown.png',
-  'assets/img/arrowRight.png',
-  'assets/img/arrowUp.png'
+  'images/TP2F.png',
+  'images/TP2U.png',
+  'images/TP2RU.png',
+  'images/TP2R.png',
+  'images/TP2RD.png',
+  'images/TP2D.png',
+  'images/TP2LD.png',
+  'images/TP2L.png',
+  'images/TP2LU.png',
+  'images/JK32F.png',
+  'images/JK32L.png',
+  'images/JK32R.png',
+  'images/JK32F_O1.png',
+  'images/JK32F_O2.png',
+  'images/JK33F.png',
+  'images/JK33L.png',
+  'images/JK33R.png',
+  'images/JK34F.png',
+  'images/JK34L.png',
+  'images/JK34R.png',
+  'images/JK35Fv1.png',
+  'images/drinkSmile.png',
+  'images/drinking.png',
+  'images/ROGOv1.png',
+  'images/ROGOv1.2.png',
+  'images/stv1.png',
+  'images/st1v2.png',
+  'images/st2v1.png',
+  'images/Homingv1.jpg',
+  'images/TAPIOCA_PENETRATEv1.png',
+  'images/TASTEv1.jpg',
+  'images/EASY_TO_DRINKV1.jpg' ,
+  'images/TAPIOCA_SPEEDv1.png',
+  'images/TAPIOCA_PENETRATEv1.png',
+  'images/COOKING_TIMEv1.png',
+  'images/CUP_AMOUNTv1.png',
+  'images/CUP_SIZEv1.png',
+  'images/TAPIOCA_CAPACITYv1.png',
+  'images/arrowDown.png',
+  'images/arrowRight.png',
+  'images/arrowUp.png'
 ]
 let loadedList = []
 let loadedMap = []

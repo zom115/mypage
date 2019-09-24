@@ -1,28 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section5_4landing</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>5_4 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section5_3lock.html">前へ</a>
-    <a href="section6_1Input.html">次へ</a>
-    <h1>section5_4landing</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section5_4landing.js"></script><br>
-    <p>refleshのあとに、今操作してるテトリミノの下の情報を<b>チェック</b>する。</p>
-    <p>既にミノがあれば固定開始。</p><br>
-    <p>なんかあっさりできた。</p>
-    <p>終了条件書くまでもなくデッドしてるし、いいやこれで。</p><br>
-    <details open>
-      <summary>section5_4landing.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>5_4</span>
+      </nav>
+      <article><a href="section5_3lock.html">前へ</a><span> - </span><a href="section6_1Input.html">次へ</a>
+<h1>section5_4landing</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>refleshのあとに、今操作してるテトリミノの下の情報を<b>チェック</b>する。</p>
+<p>既にミノがあれば固定開始。</p><br>
+<p>なんかあっさりできた。</p>
+<p>終了条件書くまでもなくデッドしてるし、いいやこれで。</p><br>
+<details open>
+<summary>section5_4landing.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 const bgColor = '#222'
 let screenX = screenY = 0
@@ -351,11 +360,12 @@ draw();
 
 canvas.addEventListener('mousedown', onDown, false)
 canvas.addEventListener('click', onClick, false)
-canvas.addEventListener('mousemove', onMouseMove, false)
-</code></pre>
-    </details><br>
-    <p>でもこいつら、回転させると地形を破壊するからもう少し書き直す。</p>
+canvas.addEventListener('mousemove', onMouseMove, false)</pre></details><br>
+<p>でもこいつら、回転させると地形を破壊するからもう少し書き直す。</p>
+      </article>
     </main>
-  <footer>ここはふったー</footer>
-</body>
+    <footer>
+    </footer>
+    <script src="scripts/section5_4landing.js"></script>
+  </body>
 </html>

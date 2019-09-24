@@ -1,27 +1,27 @@
 !(_ = () => {'use strict'
 
 const imagePathList = [
-  '../../assets/img/Misaki/Misaki_Blink_1.png', // 0
-  '../../assets/img/Misaki/Misaki_Blink_2.png',
-  '../../assets/img/Misaki/Misaki_Blink_3.png',
-  '../../assets/img/Misaki/Misaki_Walk_1.png', // 3
-  '../../assets/img/Misaki/Misaki_Walk_2.png',
-  '../../assets/img/Misaki/Misaki_Walk_3.png',
-  '../../assets/img/Misaki/Misaki_Walk_4.png',
-  '../../assets/img/Misaki/Misaki_Walk_5.png',
-  '../../assets/img/Misaki/Misaki_Walk_6.png',
-  '../../assets/img/Misaki/Misaki_Crouch_1.png', // 9
-  '../../assets/img/Misaki/Misaki_Crouch_2.png',
-  '../../assets/img/Misaki/Misaki_Crouch_3.png',
-  '../../assets/img/Misaki/Misaki_Jump_up_1.png', // 12
-  '../../assets/img/Misaki/Misaki_Jump_up_2.png',
-  '../../assets/img/Misaki/Misaki_Jump_up_3.png',
-  '../../assets/img/Misaki/Misaki_Jump_MidAir_1.png', // 15
-  '../../assets/img/Misaki/Misaki_Jump_MidAir_2.png',
-  '../../assets/img/Misaki/Misaki_Jump_MidAir_3.png',
-  '../../assets/img/Misaki/Misaki_Jump_Fall_1.png', // 18
-  '../../assets/img/Misaki/Misaki_Jump_Fall_2.png',
-  '../../assets/img/Misaki/Misaki_Jump_Fall_3.png',
+  '../../images/Misaki/Misaki_Blink_1.png', // 0
+  '../../images/Misaki/Misaki_Blink_2.png',
+  '../../images/Misaki/Misaki_Blink_3.png',
+  '../../images/Misaki/Misaki_Walk_1.png', // 3
+  '../../images/Misaki/Misaki_Walk_2.png',
+  '../../images/Misaki/Misaki_Walk_3.png',
+  '../../images/Misaki/Misaki_Walk_4.png',
+  '../../images/Misaki/Misaki_Walk_5.png',
+  '../../images/Misaki/Misaki_Walk_6.png',
+  '../../images/Misaki/Misaki_Crouch_1.png', // 9
+  '../../images/Misaki/Misaki_Crouch_2.png',
+  '../../images/Misaki/Misaki_Crouch_3.png',
+  '../../images/Misaki/Misaki_Jump_up_1.png', // 12
+  '../../images/Misaki/Misaki_Jump_up_2.png',
+  '../../images/Misaki/Misaki_Jump_up_3.png',
+  '../../images/Misaki/Misaki_Jump_MidAir_1.png', // 15
+  '../../images/Misaki/Misaki_Jump_MidAir_2.png',
+  '../../images/Misaki/Misaki_Jump_MidAir_3.png',
+  '../../images/Misaki/Misaki_Jump_Fall_1.png', // 18
+  '../../images/Misaki/Misaki_Jump_Fall_2.png',
+  '../../images/Misaki/Misaki_Jump_Fall_3.png',
 ]
 let loadedList = []
 let loadedMap = []

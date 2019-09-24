@@ -1,33 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section7_2tetris</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>7_2 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section7_1tetrisDigital.html">前へ</a>
-    <a href="section8softDrop.html">次へ</a>
-    <h1>section7_2tetris</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section7_2tetris.js"></script><br>
-    <p>S: LEFT</p>
-    <p>&ensp;F: RIGHT</p><br>
-    <p>J, L: ROTATION A</p>
-    <p>&ensp;K: ROTATION B</p><br>
-    <p>配列は書き換わるけど、表示してるテトリミノが下段に落ちない。</p>
-    <p>配列にミノの情報を格納したほうがいいのかな。</p>
-    <p>ゴリ押しswitch-caseで色を格納。</p><br>
-    <p>テトリスの体は整ったけど、なんかつまんない。</p>
-    <p>なんでかは知ってる。<b>自分が操作してる感が足りない</b>から。</p><br>
-    <details open>
-      <summary>section7_2tetris.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>7_2</span>
+      </nav>
+      <article><a href="section7_1tetrisDigital.html">前へ</a><span> - </span><a href="section8softDrop.html">次へ</a>
+<h1>section7_2tetris</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>S: LEFT</p>
+<p>&ensp;F: RIGHT</p><br>
+<p>J, L: ROTATION A</p>
+<p>&ensp;K: ROTATION B</p><br>
+<p>配列は書き換わるけど、表示してるテトリミノが下段に落ちない。</p>
+<p>配列にミノの情報を格納したほうがいいのかな。</p>
+<p>ゴリ押しswitch-caseで色を格納。</p><br>
+<p>テトリスの体は整ったけど、なんかつまんない。</p>
+<p>なんでかは知ってる。<b>自分が操作してる感が足りない</b>から。</p><br>
+<details open>
+<summary>section7_2tetris.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 const bgColor = '#222'
 let screenX = screenY = 0
@@ -580,10 +589,11 @@ function inputProcessing() {
 draw();
 
 document.addEventListener('keydown', onKeyDown, false)
-document.addEventListener('keyup', onKeyUp, false)
-</code></pre>
-    </details>
-  </main>
-  <footer>ここはふったー</footer>
-</body>
+document.addEventListener('keyup', onKeyUp, false)</pre></details>
+      </article>
+    </main>
+    <footer>
+    </footer>
+    <script src="scripts/section7_2tetris.js"></script>
+  </body>
 </html>

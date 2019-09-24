@@ -1,30 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section6_2slideIncomplete</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>6_2 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section6_1Input.html">前へ</a>
-    <a href="section6_3slide.html">次へ</a>
-    <h1>section6_2slideIncomplete</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section6_2slideIncomplete.js"></script><br>
-    <p>S: LEFT</p>
-    <p>&ensp;F: RIGHT</p><br>
-    <p>J, L: ROTATION A</p>
-    <p>&ensp;K: ROTATION B</p><br>
-    <p>とりあえず単発押下で<b>横移動</b>。</p>
-    <p>未来読みして、重なるようだったらとどまるようにした。</p><br>
-    <details open>
-      <summary>section6_2slideIncomplete.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>6_2</span>
+      </nav>
+      <article><a href="section6_1Input.html">前へ</a><span> - </span><a href="section6_3slide.html">次へ</a>
+<h1>section6_2slideIncomplete</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>S: LEFT</p>
+<p>&ensp;F: RIGHT</p><br>
+<p>J, L: ROTATION A</p>
+<p>&ensp;K: ROTATION B</p><br>
+<p>とりあえず単発押下で<b>横移動</b>。</p>
+<p>未来読みして、重なるようだったらとどまるようにした。</p><br>
+<details open>
+<summary>section6_2slideIncomplete.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 const bgColor = '#222'
 let screenX = screenY = 0
@@ -470,10 +479,11 @@ function slideRight() {
 draw();
 
 document.addEventListener('keydown', onKeyDown, false)
-document.addEventListener('keyup', onKeyUp, false)
-</code></pre>
-    </details>
+document.addEventListener('keyup', onKeyUp, false)</pre></details>
+      </article>
     </main>
-  <footer>ここはふったー</footer>
-</body>
+    <footer>
+    </footer>
+    <script src="scripts/section6_2slideIncomplete.js"></script>
+  </body>
 </html>

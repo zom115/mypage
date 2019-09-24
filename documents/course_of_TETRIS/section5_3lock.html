@@ -1,29 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section5_3lock</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>5_3 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section5_2fieldIncomplete.html">前へ</a>
-    <a href="section5_4landing.html">次へ</a>
-    <h1>section5_3lock</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section5_3lock.js"></script><br>
-    <p>フィールドを黒背景に。</p>
-    <p>回転すると配列に残るから、回転時にも<b>refresh</b>する。</p>
-    <p>さっきと比べてほしい。</p><br>
-    <p>ただ固定時間がきたときに1にするだけだと、nextTetriminoの形ぶん0にされる。</p>
-    <p>minoDigitalYもリセット。</p><br>
-    <details open>
-      <summary>section5_3lock.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>5_3</span>
+      </nav>
+      <article><a href="section5_2fieldIncomplete.html">前へ</a><span> - </span><a href="section5_4landing.html">次へ</a>
+<h1>section5_3lock</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>フィールドを黒背景に。</p>
+<p>回転すると配列に残るから、回転時にも<b>refresh</b>する。</p>
+<p>さっきと比べてほしい。</p><br>
+<p>ただ固定時間がきたときに1にするだけだと、nextTetriminoの形ぶん0にされる。</p>
+<p>minoDigitalYもリセット。</p><br>
+<details open>
+<summary>section5_3lock.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 const bgColor = '#222'
 let screenX = screenY = 0
@@ -341,12 +350,13 @@ draw();
 
 canvas.addEventListener('mousedown', onDown, false)
 canvas.addEventListener('click', onClick, false)
-canvas.addEventListener('mousemove', onMouseMove, false)
-</code></pre>
-    </details><br>
-    <p>ていうかわかりにくい変数作りすぎ、配列ベースでわかりやすくなるように、</p>
-    <p>及び、一時しのぎのマジックナンバーを整理。</p>
-  </main>
-  <footer>ここはふったー</footer>
-</body>
+canvas.addEventListener('mousemove', onMouseMove, false)</pre></details><br>
+<p>ていうかわかりにくい変数作りすぎ、配列ベースでわかりやすくなるように、</p>
+<p>及び、一時しのぎのマジックナンバーを整理。</p>
+      </article>
+    </main>
+    <footer>
+    </footer>
+    <script src="scripts/section5_3lock.js"></script>
+  </body>
 </html>

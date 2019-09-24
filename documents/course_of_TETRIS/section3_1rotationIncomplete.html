@@ -1,32 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section3_1rotationIncomplete</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>3_1 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section2_3following.html">前へ</a>
-    <a href="section3_2rotation.html">次へ</a>
-    <h1>section3_1rotationIncomplete</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section3_1rotationIncomplete.js"></script><br>
-    <p>左側をクリック: A回転</p>
-    <p>&ensp;右側をクリック: B回転</p><br>
-    <p>マウスが画面から<b>離れる</b>とネクスト。</p>
-    <p>でも、求めてるのはただの回転じゃないんだ。</p>
-    <p>地を這うように、地べたを這いずりまわるように、地の底でうごめくようでなきゃ。</p>
-    <p>それがセガ則だから。</p><br>
-    <p>参考</p>
-    <p><a href="https://qiita.com/butchi_y/items/db3078dced4592872a9c">2次元配列の初期化（ES2015)</a></p><br>
-    <details open>
-      <summary>section3_1rotationIncomplete.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>3_1</span>
+      </nav>
+      <article><a href="section2_3following.html">前へ</a><span> - </span><a href="section3_2rotation.html">次へ</a>
+<h1>section3_1rotationIncomplete</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>左側をクリック: A回転</p>
+<p>&ensp;右側をクリック: B回転</p><br>
+<p>マウスが画面から<b>離れる</b>とネクスト。</p>
+<p>でも、求めてるのはただの回転じゃないんだ。</p>
+<p>地を這うように、地べたを這いずりまわるように、地の底でうごめくようでなきゃ。</p>
+<p>それがセガ則だから。</p><br>
+<p>参考</p>
+<p><a href="https://qiita.com/butchi_y/items/db3078dced4592872a9c">2次元配列の初期化（ES2015)</a></p><br>
+<details open>
+<summary>section3_1rotationIncomplete.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 var nextTetrimino = []
 const nextNumber = 3
@@ -175,10 +184,11 @@ canvas.addEventListener('mousedown', onDown, false)
 canvas.addEventListener('click', onClick, false)
 canvas.addEventListener('mouseover', onMouseOver, false)
 canvas.addEventListener('mousemove', onMouseMove, false)
-canvas.addEventListener('mouseout', onMouseOut, false)
-</code></pre>
-    </details>
+canvas.addEventListener('mouseout', onMouseOut, false)</pre></details>
+      </article>
     </main>
-  <footer>ここはふったー</footer>
-</body>
+    <footer>
+    </footer>
+    <script src="scripts/section3_1rotationIncomplete.js"></script>
+  </body>
 </html>

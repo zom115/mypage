@@ -1,29 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>section6_3slide</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>6_3 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section6_2slideIncomplete.html">前へ</a>
-    <a href="section7_1tetrisDigital.html">次へ</a>
-    <h1>section6_3slide</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section6_3slide.js"></script><br>
-    <p>S: LEFT</p>
-    <p>&ensp;F: RIGHT</p><br>
-    <p>J, L: ROTATION A</p>
-    <p>&ensp;K: ROTATION B</p><br>
-    <p><b>横溜め</b>実装</p><br>
-    <details open>
-      <summary>section6_3slide.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>6_3</span>
+      </nav>
+      <article><a href="section6_2slideIncomplete.html">前へ</a><span> - </span><a href="section7_1tetrisDigital.html">次へ</a>
+<h1>section6_3slide</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>S: LEFT</p>
+<p>&ensp;F: RIGHT</p><br>
+<p>J, L: ROTATION A</p>
+<p>&ensp;K: ROTATION B</p><br>
+<p><b>横溜め</b>実装</p><br>
+<details open>
+<summary>section6_3slide.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 const bgColor = '#222'
 let screenX = screenY = 0
@@ -517,22 +526,23 @@ function inputProcessing() {
 draw();
 
 document.addEventListener('keydown', onKeyDown, false)
-document.addEventListener('keyup', onKeyUp, false)
-</code></pre>
-    </details><br>
-    <p>キーボードのハード的仕様かOSの悪さで、</p>
-    <p>押下直後は入力がリピートされないようになってる。</p>
-    <p>aaaaaaaaaaaって打つときの最初のアレ。</p>
-    <p>AHKの時には気にしなくてよかったから多分Winちゃんの仕様。</p><br>
-    <p>なのでJS内でキーリピート判定を見る。</p>
-    <p>キープレスは連続して受け付けてくれてるから、</p>
-    <p>キーリリースまでカウンタを置いてあげる。</p><br>
-    <p>横入れっぱなしでテトリミノが見えなくなるので、</p>
-    <p>refreshDigital()作って解消。</p>
-    <p>あんまり意味ねーな。多分1ループの中で処理と描画の順序がおかしいんだ。</p><br>
-    <p>やっぱり中途半端なところで横入れすると消滅する。</p>
-    <p>移動後の下も調べて、埋まらないようにする。</p>
-  </main>
-  <footer>ここはふったー</footer>
-</body>
+document.addEventListener('keyup', onKeyUp, false)</pre></details><br>
+<p>キーボードのハード的仕様かOSの悪さで、</p>
+<p>押下直後は入力がリピートされないようになってる。</p>
+<p>aaaaaaaaaaaって打つときの最初のアレ。</p>
+<p>AHKの時には気にしなくてよかったから多分Winちゃんの仕様。</p><br>
+<p>なのでJS内でキーリピート判定を見る。</p>
+<p>キープレスは連続して受け付けてくれてるから、</p>
+<p>キーリリースまでカウンタを置いてあげる。</p><br>
+<p>横入れっぱなしでテトリミノが見えなくなるので、</p>
+<p>refreshDigital()作って解消。</p>
+<p>あんまり意味ねーな。多分1ループの中で処理と描画の順序がおかしいんだ。</p><br>
+<p>やっぱり中途半端なところで横入れすると消滅する。</p>
+<p>移動後の下も調べて、埋まらないようにする。</p>
+      </article>
+    </main>
+    <footer>
+    </footer>
+    <script src="scripts/section6_3slide.js"></script>
+  </body>
 </html>

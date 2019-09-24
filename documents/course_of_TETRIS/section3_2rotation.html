@@ -1,29 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <title>3_2 | Okada's mypage</title>
   </head>
-<body>
-  <header><a href="../../index.html">あいうえおチャンネル</a></header>
-  <main>
-    <a href="../mypage.html">マイページ</a>
-     > <a href="section_index.html">JSのあしあと</a><br>
-    <a href="section3_1rotationIncomplete.html">前へ</a>
-    <a href="section4_falling.html">次へ</a>
-    <h1 id="section32rotation">section3_2rotation</h1>
-    <canvas id="myCanvas" width="480" height="640"></canvas>
-    <script type="text/javascript" src="section3_2rotation.js"></script><br>
-    <p>なんか<b>メイドインワ○オ</b>みある。</p>
-    <p>Arrey.shift()でcurrentTetriminoに入れた方がいいかなと思ったけど、</p>
-    <p>クラスまで作っちゃったからなあ。</p><br>
-    <p>文字だけのnextTetriminoを、クラスに書いてある情報を使って表示、</p>
-    <p>のほうがメモリ食わないよね。</p>
-    <p>ホールド実装まで、文字通り保留。</p><br>
-    <details open>
-      <summary>section3_2rotation.js</summary>
-<pre><code>
-const canvas = document.getElementById(('myCanvas'))
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">とっぷ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>3_2</span>
+      </nav>
+      <article><a href="section3_1rotationIncomplete.html">前へ</a><span> - </span><a href="section4_falling.html">次へ</a>
+<h1 id="section32rotation">section3_2rotation</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>なんか<b>メイドインワ○オ</b>みある。</p>
+<p>Arrey.shift()でcurrentTetriminoに入れた方がいいかなと思ったけど、</p>
+<p>クラスまで作っちゃったからなあ。</p><br>
+<p>文字だけのnextTetriminoを、クラスに書いてある情報を使って表示、</p>
+<p>のほうがメモリ食わないよね。</p>
+<p>ホールド実装まで、文字通り保留。</p><br>
+<details open>
+<summary>section3_2rotation.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
 const context = canvas.getContext('2d')
 let nextTetrimino = []
 let x = y = 0
@@ -194,15 +204,16 @@ canvas.addEventListener('mousedown', onDown, false)
 canvas.addEventListener('click', onClick, false)
 canvas.addEventListener('mouseover', onMouseOver, false)
 canvas.addEventListener('mousemove', onMouseMove, false)
-canvas.addEventListener('mouseout', onMouseOut, false)
-</code></pre>
-    </details>
-    <h2>雑記その2</h2>
-    <p><a href="https://qiita.com/yas-nyan/items/3783ad8839072022ad97">【全てのJSのオブジェクト指向嫌いマンに告ぐ】ES6のclass構文が素敵すぎて鼻水が止まらない</a></p>
-    <p>反面教師、読む気をそいでくる文体、見直さないと。</p>
-    <p>この世はネタに溢れている。僕がマネしても、陳腐そのものだ。</p><br>
-    <p>そもそも記事タイトルに【】なんて使ってるのがおかしいよね。</p>
-  </main>
-  <footer>ここはふったー</footer>
-</body>
+canvas.addEventListener('mouseout', onMouseOut, false)</pre></details>
+<h2>雑記その2</h2>
+<p><a href="https://qiita.com/yas-nyan/items/3783ad8839072022ad97">【全てのJSのオブジェクト指向嫌いマンに告ぐ】ES6のclass構文が素敵すぎて鼻水が止まらない</a></p>
+<p>反面教師、読む気をそいでくる文体、見直さないと。</p>
+<p>この世はネタに溢れている。僕がマネしても、陳腐そのものだ。</p><br>
+<p>そもそも記事タイトルに【】なんて使ってるのがおかしいよね。</p>
+      </article>
+    </main>
+    <footer>
+    </footer>
+    <script src="scripts/section3_2rotation.js"></script>
+  </body>
 </html>

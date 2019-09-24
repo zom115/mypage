@@ -6,19 +6,19 @@ const cnv = imageCanvas
 const ctx = imageContext
 
 const imagePathList = [
-  'assets/img/TP2F.png',
-  'assets/img/TP2U.png',
-  'assets/img/TP2RU.png',
-  'assets/img/TP2R.png',
-  'assets/img/TP2RD.png',
-  'assets/img/TP2D.png',
-  'assets/img/TP2LD.png',
-  'assets/img/TP2L.png',
-  'assets/img/TP2LU.png',
-  'assets/img/TP2F.png',
-  'assets/img/JK32F.png',
-  'assets/img/JK32L.png',
-  'assets/img/JK32R.png'
+  'images/TP2F.png',
+  'images/TP2U.png',
+  'images/TP2RU.png',
+  'images/TP2R.png',
+  'images/TP2RD.png',
+  'images/TP2D.png',
+  'images/TP2LD.png',
+  'images/TP2L.png',
+  'images/TP2LU.png',
+  'images/TP2F.png',
+  'images/JK32F.png',
+  'images/JK32L.png',
+  'images/JK32R.png'
 ]
 let loadedList = []
 let loadedMap = []
@@ -46,12 +46,12 @@ let tFrame = 0
 const drawImage = () => {
   const frameSector = [40, 60, 100]
   let img = new Image()
-  img.src = 'assets/img/JK32F.png'
+  img.src = 'images/JK32F.png'
   const imgOffset = [(cnv.offsetWidth - img.width) / 2, (cnv.offsetHeight - img.height) / 2]
   ctx.save()
-  if (frame < frameSector[0]) img.src = 'assets/img/JK32R.png'
+  if (frame < frameSector[0]) img.src = 'images/JK32R.png'
   else if (frameSector[1] <= frame && frame < frameSector[2]) {
-    img.src = 'assets/img/JK32R.png'
+    img.src = 'images/JK32R.png'
     imgOffset[0] = -imgOffset[0] - img.width
     ctx.scale(-1, 1)
   }
@@ -61,9 +61,9 @@ const drawImage = () => {
 const drawTP = () => {
   const frameSector = [10, 30, 45]
   let img = new Image()
-  img.src = 'assets/img/TP2F.png'
+  img.src = 'images/TP2F.png'
   const imgOffset = [(cnv.offsetWidth - img.width) * 3 / 4, (cnv.offsetHeight - img.height) / 2]
-  if (tFrame < frameSector[1]) img.src = 'assets/img/TP2R.png'
+  if (tFrame < frameSector[1]) img.src = 'images/TP2R.png'
   if (frameSector[0] <= tFrame && tFrame <= frameSector[2]) {
     ctx.drawImage(img, imgOffset[0], imgOffset[1] - 1)
   } else ctx.drawImage(img, imgOffset[0], imgOffset[1])
@@ -71,9 +71,9 @@ const drawTP = () => {
 const drawTapioca = () => {
   const frameSector = [25, 8, 36, 53]
   let img = new Image()
-  img.src = 'assets/img/TP2F.png'
+  img.src = 'images/TP2F.png'
   const imgOffset = [(cnv.offsetWidth - img.width) / 4, (cnv.offsetHeight - img.height) / 2]
-  if (frameSector[1] <= tFrame && tFrame <= frameSector[3]) img.src = 'assets/img/TP2R.png'
+  if (frameSector[1] <= tFrame && tFrame <= frameSector[3]) img.src = 'images/TP2R.png'
   if (frameSector[0] <= tFrame && tFrame <= frameSector[2]) {
     ctx.drawImage(img, imgOffset[0], imgOffset[1] - 1)
   } else ctx.drawImage(img, imgOffset[0], imgOffset[1])
