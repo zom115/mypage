@@ -77,12 +77,13 @@ let moveConstant = 3
 const normalConstant = 3
 const dashConstant = 6
 const stopConstant = .1
-const brakeConstant = .6
-const gravityConstant = 1
-const jumpConstant = size
+const brakeConstant = .9
+const gravityConstant = 1.45
+const jumpConstant = 10
 let jumpFlag = false
 let jumpTime = 0
 let jumpChargeTime = 0
+let jumpCooltime = 0
 let timer = 0
 
 let key = {a: false, d: false, j: false, k: false, s: false, w: false}
@@ -103,17 +104,18 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 87) key.w = false
 }, false)
 const input = () => {
-  if (ownCondition.dx < 0) ownCondition.direction = 'left'
-  else if (0 <= ownCondition.dx) ownCondition.direction = 'right'
-  if (key.a || key.d) {
-    if (key.a && -moveConstant < ownCondition.dx) ownCondition.dx -= moveAcceleration
-    if (key.d && ownCondition.dx < moveConstant) ownCondition.dx += moveAcceleration
-    if (ownCondition.state !== 'jump') ownCondition.state = 'walk'
-  } else if (ownCondition.state !== 'jump') ownCondition.state = 'idle'
-  if (key.j) {
+  if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
+  if (ownCondition.state !== 'jump') ownCondition.dx *= brakeConstant
+  const speed = (key.k) ? 4.2 : .7
+  if (key.a && -speed < ownCondition.dx) ownCondition.dx -= .7
+  if (key.d && ownCondition.dx < speed) ownCondition.dx += .7
+  if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
+  if (0 < jumpCooltime) jumpCooltime -= 1
+  if (key.j && !jumpCooltime) {
       jumpTime += 1
     if (!jumpFlag) {
       ownCondition.dy -= jumpConstant
+      ownCondition.state = 'jump'
       jumpFlag = true
     }
   } else {
@@ -121,58 +123,60 @@ const input = () => {
     if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
     jumpTime = 0
   }
-  if (key.k) {
-    moveConstant =  dashConstant
-    if (-stopConstant < ownCondition.dx && ownCondition.dx < stopConstant) {
-      ownCondition.dx = ownCondition.dx / 2
-    }
-  } else moveConstant = normalConstant
   if (key.s) {
-    if (jumpChargeTime < jumpConstant && !jumpFlag) jumpChargeTime += 1
-    if (ownCondition.state !== 'jump') ownCondition.state = 'crouch'
+    if (jumpChargeTime < jumpConstant - 1 && !jumpFlag) jumpChargeTime += 1
+    if (ownCondition.state !== 'jump') {
+      ownCondition.state = 'crouch'
+    }
   } else if (jumpChargeTime !== 0) {
-    ownCondition.dy -= jumpChargeTime
+    if (!jumpFlag) ownCondition.dy -= jumpChargeTime
+    else ownCondition.dy = -jumpChargeTime
     ownCondition.state = 'jump'
     jumpChargeTime = 0
     jumpFlag = true
   }
-  if (key.w) {
-    if (!jumpFlag) {
-      ownCondition.dy -= jumpConstant
-      jumpFlag = true
-    }
-  }
-}
-const collisionDetect = () => {
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
   ownCondition.dy += gravityConstant
-  if (size < ownCondition.dy) ownCondition.dy = size // terminal speed
+  if (size * 2.5 < ownCondition.dy) ownCondition.dy = size * 2.5 // terminal speed
+}
+const collisionDetect = () => {
   ground.forEach(obj => {
     if (
       obj.x - size < ownCondition.x && ownCondition.x < obj.x + obj.w + size &&
-      obj.y - size < ownCondition.y && ownCondition.y < obj.y + obj.h + size
+      obj.y < ownCondition.y && ownCondition.y < obj.y + obj.h + size
     ) {
       if (ownCondition.x < obj.x) {}
       if (ownCondition.y < obj.y + size) {
-        ownCondition.y = obj.y - size
-        jumpFlag = false
-        ownCondition.dx = ownCondition.dx * brakeConstant
+        ownCondition.y = obj.y
+        if (jumpFlag) {
+          jumpFlag = false
+          jumpCooltime = 10
+        }
         ownCondition.dy = 0
         if (ownCondition.state !== 'crouch' && ownCondition.state !== 'walk') ownCondition.state = 'idle'
-      } else if (obj.y + obj.h - size < ownCondition.y) {
+      } else if (obj.y + obj.h < ownCondition.y) {
         ownCondition.y = obj.y+ obj.h + size
         ownCondition.dy = -ownCondition.dy
       }
     }
     if (
       obj.x - size < ownCondition.x && ownCondition.x < obj.x + obj.w + size &&
-      obj.y - size < ownCondition.y && ownCondition.y < obj.y + obj.h + size
+      obj.y < ownCondition.y && ownCondition.y < obj.y + obj.h + size
     ) {
       ownCondition.x -= ownCondition.dx
       ownCondition.dx = -ownCondition.dx
     }
   })
+}
+const stateUpdate = () => {
+  if (key.a) ownCondition.direction = 'left'
+  else if (key.d) ownCondition.direction = 'right'
+  if (ownCondition.state !== 'jump') {
+    ownCondition.state = (-.6 < ownCondition.dx  && ownCondition.dx < .6) ? 'idle'
+    : (ownCondition.dx < -.5 || .5 < ownCondition.dx) ?'walk'
+    : (ownCondition.dx < -3.4 || 3.4 < ownCondition.dx) ? 'idle' : ''
+  }
 }
 let eyeBlinkTime = 1
 let eyeState = 0
@@ -189,7 +193,7 @@ let walkTime = 6
 let walkState = 0
 const walk = () => {
   if (walkTime === 0) walkTime = 6
-  else if (timer % 8 === 0) walkTime -= 1
+  else if (timer % 10 === 0) walkTime -= 1
   if (walkTime === 6) walkState = 3
   else if (walkTime === 5) walkState = 4
   else if (walkTime === 4) walkState = 5
@@ -203,8 +207,6 @@ const crouch = () => {
   if (timer % 7 === 0) crouchTime += 1
   if (ownCondition.state !== 'crouch') crouchTime = 0
   if (crouchTime === 0) crouchState = 9
-  // else if (crouchTime === 1) crouchState = 10
-  // else if (1 < crouchTime) crouchState = 11
 }
 const draw = () => {
   const drawGround = () => {
@@ -213,20 +215,21 @@ const draw = () => {
   }
   drawGround()
   crouch()
+  const offset = {x: 24, y: 53}
   if (ownCondition.state === 'idle') {
     eyeBlink()
     if (ownCondition.direction === 'right') {
-      drawImage(eyeState, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
-    } else drawInvImage(eyeState, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
+      drawImage(eyeState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+    } else drawInvImage(eyeState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   } else if (ownCondition.state === 'walk') {
     walk()
     if (ownCondition.direction === 'right') {
-      drawImage(walkState, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
-    } else drawInvImage(walkState, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
+      drawImage(walkState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+    } else drawInvImage(walkState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   } else if (ownCondition.state === 'crouch') {
     if (ownCondition.direction === 'right'){
-      drawImage(crouchState, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
-    } else drawInvImage(crouchState, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
+      drawImage(crouchState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+    } else drawInvImage(crouchState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   } else if (ownCondition.state === 'jump') {
     const id = (ownCondition.dy < -12) ? 12
     : (ownCondition.dy < -9) ? 13
@@ -237,20 +240,18 @@ const draw = () => {
     : (6 < ownCondition.dy) ? 18
     : (9 < ownCondition.dy) ? 19 : 20
     if (ownCondition.direction === 'right'){
-      drawImage(id, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
-    } else drawInvImage(id, (ownCondition.x - 24)|0, (ownCondition.y - 36)|0)
+      drawImage(id, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+    } else drawInvImage(id, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   }
-  console.log(ownCondition.state,ownCondition.dy)
+  context.fillStyle = 'hsl(300, 100%, 50%)'
+  context.fillRect(ownCondition.x, ownCondition.y, 10, -1)
 }
 const main = () => {
   timer += 1
   // internal process
   input()
   collisionDetect()
-  // createObject()
-  // move()
-  // collisionDetect()
-  // draw process
+  stateUpdate()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
   window.requestAnimationFrame(main)
