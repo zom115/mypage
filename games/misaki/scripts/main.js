@@ -1,25 +1,51 @@
 !(_ = () => {'use strict'
 
+const imgStat = {
+  idle: {start: 0, length: 12, condition: 0, time: 0, maxInterval: 30, frame: 5,
+    blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
+  },
+  walk: {start: 12, length: 6, condition: 12, time: 1, maxInterval: 0, frame: 10},
+  run: {start: 18, length: 8, condition: 18, time: 1, maxInterval: 0, frame: 7},
+  crouch: {start: 26, length: 3, condition: 26, time: 1, maxInterval: 0, frame: 7},
+  jump: {start: 29, length: 9}
+}
 const imagePathList = [
-  '../../images/Misaki/Misaki_Blink_1.png', // 0
-  '../../images/Misaki/Misaki_Blink_2.png',
-  '../../images/Misaki/Misaki_Blink_3.png',
-  '../../images/Misaki/Misaki_Walk_1.png', // 3
+  '../../images/Misaki/Misaki_Idle_1.png', // 0
+  '../../images/Misaki/Misaki_Idle_1_Blink_1.png',
+  '../../images/Misaki/Misaki_Idle_1_Blink_2.png',
+  '../../images/Misaki/Misaki_Idle_2.png',
+  '../../images/Misaki/Misaki_Idle_2_Blink_1.png',
+  '../../images/Misaki/Misaki_Idle_2_Blink_2.png',
+  '../../images/Misaki/Misaki_Idle_3.png',
+  '../../images/Misaki/Misaki_Idle_3_Blink_1.png',
+  '../../images/Misaki/Misaki_Idle_3_Blink_2.png',
+  '../../images/Misaki/Misaki_Idle_4.png',
+  '../../images/Misaki/Misaki_Idle_4_Blink_1.png',
+  '../../images/Misaki/Misaki_Idle_4_Blink_2.png',
+  '../../images/Misaki/Misaki_Walk_1.png', // 12
   '../../images/Misaki/Misaki_Walk_2.png',
   '../../images/Misaki/Misaki_Walk_3.png',
   '../../images/Misaki/Misaki_Walk_4.png',
   '../../images/Misaki/Misaki_Walk_5.png',
   '../../images/Misaki/Misaki_Walk_6.png',
-  '../../images/Misaki/Misaki_Crouch_1.png', // 9
+  '../../images/Misaki/Misaki_Run_1.png', // 18
+  '../../images/Misaki/Misaki_Run_2.png',
+  '../../images/Misaki/Misaki_Run_3.png',
+  '../../images/Misaki/Misaki_Run_4.png',
+  '../../images/Misaki/Misaki_Run_5.png',
+  '../../images/Misaki/Misaki_Run_6.png',
+  '../../images/Misaki/Misaki_Run_7.png',
+  '../../images/Misaki/Misaki_Run_8.png',
+  '../../images/Misaki/Misaki_Crouch_1.png', // 26
   '../../images/Misaki/Misaki_Crouch_2.png',
   '../../images/Misaki/Misaki_Crouch_3.png',
-  '../../images/Misaki/Misaki_Jump_up_1.png', // 12
+  '../../images/Misaki/Misaki_Jump_up_1.png', // 29
   '../../images/Misaki/Misaki_Jump_up_2.png',
   '../../images/Misaki/Misaki_Jump_up_3.png',
-  '../../images/Misaki/Misaki_Jump_MidAir_1.png', // 15
+  '../../images/Misaki/Misaki_Jump_MidAir_1.png',
   '../../images/Misaki/Misaki_Jump_MidAir_2.png',
   '../../images/Misaki/Misaki_Jump_MidAir_3.png',
-  '../../images/Misaki/Misaki_Jump_Fall_1.png', // 18
+  '../../images/Misaki/Misaki_Jump_Fall_1.png',
   '../../images/Misaki/Misaki_Jump_Fall_2.png',
   '../../images/Misaki/Misaki_Jump_Fall_3.png',
 ]
@@ -72,12 +98,7 @@ let ground = [{
 }, {
   x: canvas.offsetWidth * 3/4, y: canvas.offsetHeight * 18 / 32, w: size * 4, h: size * 4
 }]
-const moveAcceleration = 1
-let moveConstant = 3
-const normalConstant = 3
-const dashConstant = 6
-const stopConstant = .1
-const brakeConstant = .9
+const brakeConstant = .94
 const gravityConstant = 1.45
 const jumpConstant = 10
 let jumpFlag = false
@@ -106,7 +127,7 @@ document.addEventListener('keyup', e => {
 const input = () => {
   if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
   if (ownCondition.state !== 'jump') ownCondition.dx *= brakeConstant
-  const speed = (key.k) ? 4.2 : .7
+  const speed = (key.k) ? 2.8 : .7
   if (key.a && -speed < ownCondition.dx) ownCondition.dx -= .7
   if (key.d && ownCondition.dx < speed) ownCondition.dx += .7
   if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
@@ -173,40 +194,48 @@ const stateUpdate = () => {
   if (key.a) ownCondition.direction = 'left'
   else if (key.d) ownCondition.direction = 'right'
   if (ownCondition.state !== 'jump') {
-    ownCondition.state = (-.6 < ownCondition.dx  && ownCondition.dx < .6) ? 'idle'
-    : (ownCondition.dx < -.5 || .5 < ownCondition.dx) ?'walk'
-    : (ownCondition.dx < -3.4 || 3.4 < ownCondition.dx) ? 'idle' : ''
+    ownCondition.state = (-.2 < ownCondition.dx  && ownCondition.dx < .2) ? 'idle'
+    : (-1.4 < ownCondition.dx  && ownCondition.dx < 1.4) ? 'walk' : 'run'
+  }console.log(ownCondition.dx)
+  if (ownCondition.state === 'idle') {
+    const i = imgStat.idle
+    i.time += 1
+    // breath
+    if (i.time % i.breathInterval === 0) i.condition += 3
+    if (i.length <= i.condition && i.condition <= i.length + 3) {
+      i.condition -= i.length
+      if (i.breathInterval < i.maxBreath) i.breathInterval += 1
+      i.time = 0
+    }
+    // eye blink
+    if (timer % i.frame === 0) {
+      i.blinkTime += 1
+      if (i.blinkTime === 4) i.blinkTime = -(Math.random() * i.maxInterval)|0
+      if (i.blinkTime === 0 || i.blinkTime === 1) i.condition += 1
+      else if (i.blinkTime === 2 || i.blinkTime === 3)  i.condition -= 1
+    }
+  } else if (ownCondition.state === 'walk') {
+    const i = imgStat.walk
+    if (timer % i.frame === 0) i.condition += 1
+    if (i.condition === i.start + i.length) {
+      i.condition = i.start
+      const b = imgStat.idle
+      if (b.midBreath < b.breathInterval) b.breathInterval -= 1
+    }
+  } else if (ownCondition.state === 'run') {
+    const i = imgStat.run
+    if (timer % i.frame === 0) i.condition += 1
+    if (i.condition === i.start + i.length) {
+      i.condition = i.start
+      const b = imgStat.idle
+      if (b.minBreath < b.breathInterval) b.breathInterval -= 1
+    }
+  } else if (ownCondition.state === 'crouch') {
+    const i = imgStat.crouch
+    if (timer % i.frame === 0) i.time += 1
+    if (ownCondition.state !== 'crouch') i.time = 0
+    if (i.time === 0) i.condition = 9
   }
-}
-let eyeBlinkTime = 1
-let eyeState = 0
-const eyeBlink = () => {
-  const interval = 30
-  if (timer % 5 === 0) eyeBlinkTime -= 1
-  if (eyeBlinkTime === 0) eyeBlinkTime = (Math.random() * interval)|0 + 3
-  if (eyeBlinkTime === 3) eyeState = 1
-  else if (eyeBlinkTime === 2) eyeState = 2
-  else if (eyeBlinkTime === 1) eyeState = 1
-  else eyeState = 0
-}
-let walkTime = 6
-let walkState = 0
-const walk = () => {
-  if (walkTime === 0) walkTime = 6
-  else if (timer % 10 === 0) walkTime -= 1
-  if (walkTime === 6) walkState = 3
-  else if (walkTime === 5) walkState = 4
-  else if (walkTime === 4) walkState = 5
-  else if (walkTime === 3) walkState = 6
-  else if (walkTime === 2) walkState = 7
-  else if (walkTime === 1) walkState = 8
-}
-let crouchTime = 0
-let crouchState = 0
-const crouch = () => {
-  if (timer % 7 === 0) crouchTime += 1
-  if (ownCondition.state !== 'crouch') crouchTime = 0
-  if (crouchTime === 0) crouchState = 9
 }
 const draw = () => {
   const drawGround = () => {
@@ -214,37 +243,28 @@ const draw = () => {
     ground.forEach(obj => context.fillRect(obj.x, obj.y, obj.w, obj.h))
   }
   drawGround()
-  crouch()
   const offset = {x: 24, y: 53}
-  if (ownCondition.state === 'idle') {
-    eyeBlink()
-    if (ownCondition.direction === 'right') {
-      drawImage(eyeState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-    } else drawInvImage(eyeState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-  } else if (ownCondition.state === 'walk') {
-    walk()
-    if (ownCondition.direction === 'right') {
-      drawImage(walkState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-    } else drawInvImage(walkState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-  } else if (ownCondition.state === 'crouch') {
-    if (ownCondition.direction === 'right'){
-      drawImage(crouchState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-    } else drawInvImage(crouchState, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-  } else if (ownCondition.state === 'jump') {
-    const id = (ownCondition.dy < -12) ? 12
-    : (ownCondition.dy < -9) ? 13
-    : (ownCondition.dy < -6) ? 14
-    : (ownCondition.dy < -3) ? 15
-    : (0 < ownCondition.dy) ? 16
-    : (3 < ownCondition.dy) ? 17
-    : (6 < ownCondition.dy) ? 18
-    : (9 < ownCondition.dy) ? 19 : 20
-    if (ownCondition.direction === 'right'){
-      drawImage(id, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-    } else drawInvImage(id, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+  let i
+  if (ownCondition.state === 'idle') i = imgStat.idle.condition
+  else if (ownCondition.state === 'walk') i = imgStat.walk.condition
+  else if (ownCondition.state === 'run') i = imgStat.run.condition
+  else if (ownCondition.state === 'crouch') i = imgStat.crouch.condition
+  else if (ownCondition.state === 'jump') {
+    const ij = imgStat.jump
+    i = (ownCondition.dy < -12) ? ij.start
+    : (ownCondition.dy < -9) ? ij.start + 1
+    : (ownCondition.dy < -6) ? ij.start + 2
+    : (ownCondition.dy < -3) ? ij.start + 3
+    : (0 < ownCondition.dy) ? ij.start + 4
+    : (3 < ownCondition.dy) ? ij.start + 5
+    : (6 < ownCondition.dy) ? ij.start + 6
+    : (9 < ownCondition.dy) ? ij.start + 7 : ij.start + 8
   }
+  if (ownCondition.direction === 'right'){
+    drawImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+  } else drawInvImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   context.fillStyle = 'hsl(300, 100%, 50%)'
-  context.fillRect(ownCondition.x, ownCondition.y, 10, -1)
+  // context.fillRect(ownCondition.x, ownCondition.y, 10, -1)
 }
 const main = () => {
   timer += 1
