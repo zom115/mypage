@@ -1,14 +1,19 @@
 !(_ = () => {'use strict'
 
+const imgChangeList = [0, 12, 18, 20, 28, 31, 33]
 const imgStat = {
-  idle: {start: 0, length: 12, condition: 0, time: 0, maxInterval: 30, frame: 5,
+  idle: {start: imgChangeList[0], length: 12, condition: imgChangeList[0], time: 0, maxInterval: 30, frame: 5,
     blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
-  },
-  walk: {start: 12, length: 6, condition: 12, time: 1, maxInterval: 0, frame: 10},
-  run: {start: 18, length: 8, condition: 18, time: 1, maxInterval: 0, frame: 7},
-  crouch: {start: 26, length: 3, condition: 26, time: 1, maxInterval: 0, frame: 7},
-  jump: {start: 29, length: 9}
-}
+  }, walk: {start: imgChangeList[1], length: 6, condition: imgChangeList[1],
+    time: 0, maxInterval: 0, frame: 10
+  }, turn: {start: imgChangeList[2], length: 2, condition: imgChangeList[2],
+    time: 0, maxInterval: 0, frame: 7
+  }, run: {start: imgChangeList[3], length: 8, condition: imgChangeList[3],
+    time: 1, maxInterval: 0, frame: 7
+  }, crouch: {start: imgChangeList[4], length: 3, condition: imgChangeList[4],
+    time: 1, maxInterval: 0, frame: 7
+  }, jump: {start: imgChangeList[5], length: 9
+}}
 const imagePathList = [
   '../../images/Misaki/Misaki_Idle_1.png', // 0
   '../../images/Misaki/Misaki_Idle_1_Blink_1.png',
@@ -28,7 +33,9 @@ const imagePathList = [
   '../../images/Misaki/Misaki_Walk_4.png',
   '../../images/Misaki/Misaki_Walk_5.png',
   '../../images/Misaki/Misaki_Walk_6.png',
-  '../../images/Misaki/Misaki_Run_1.png', // 18
+  '../../images/Misaki/Misaki_Turn_3.png', // 18
+  '../../images/Misaki/Misaki_Turn_2.png',
+  '../../images/Misaki/Misaki_Run_1.png', // 20
   '../../images/Misaki/Misaki_Run_2.png',
   '../../images/Misaki/Misaki_Run_3.png',
   '../../images/Misaki/Misaki_Run_4.png',
@@ -36,10 +43,10 @@ const imagePathList = [
   '../../images/Misaki/Misaki_Run_6.png',
   '../../images/Misaki/Misaki_Run_7.png',
   '../../images/Misaki/Misaki_Run_8.png',
-  '../../images/Misaki/Misaki_Crouch_1.png', // 26
+  '../../images/Misaki/Misaki_Crouch_1.png', // 28
   '../../images/Misaki/Misaki_Crouch_2.png',
   '../../images/Misaki/Misaki_Crouch_3.png',
-  '../../images/Misaki/Misaki_Jump_up_1.png', // 29
+  '../../images/Misaki/Misaki_Jump_up_1.png', // 31
   '../../images/Misaki/Misaki_Jump_up_2.png',
   '../../images/Misaki/Misaki_Jump_up_3.png',
   '../../images/Misaki/Misaki_Jump_MidAir_1.png',
@@ -98,6 +105,7 @@ let ground = [{
 }, {
   x: canvas.offsetWidth * 3/4, y: canvas.offsetHeight * 18 / 32, w: size * 4, h: size * 4
 }]
+const walkSpeed = .7
 const brakeConstant = .94
 const gravityConstant = .272
 const jumpConstant = 5
@@ -128,9 +136,9 @@ const input = () => {
   if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
   if (ownCondition.state !== 'jump') {
     ownCondition.dx *= brakeConstant
-    const speed = (key.k) ? 2.8 : .7
-    if (key.a && -speed < ownCondition.dx) ownCondition.dx -= .7
-    if (key.d && ownCondition.dx < speed) ownCondition.dx += .7
+    const speed = (key.k) ? 2.8 : walkSpeed
+    if (key.a && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed
+    if (key.d && ownCondition.dx < speed) ownCondition.dx += walkSpeed
   }
   if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
   if (0 < jumpCooltime) jumpCooltime -= 1
@@ -158,6 +166,18 @@ const input = () => {
     jumpChargeTime = 0
     jumpFlag = true
   }
+  const detectChangeDirection = () => {
+    if (ownCondition.state !== 'jump') {
+      if (key.d && ownCondition.dx < walkSpeed) {
+        ownCondition.state = 'turn'
+      }
+      if (key.a && -walkSpeed < ownCondition.dx) {
+        ownCondition.state = 'turn'
+      }
+      if (key.a && key.d) ownCondition.state = 'idle'
+    }
+  }
+  detectChangeDirection()
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
   ownCondition.dy += gravityConstant
@@ -177,7 +197,10 @@ const collisionDetect = () => {
           jumpCooltime = 10
         }
         ownCondition.dy = 0
-        if (ownCondition.state !== 'crouch' && ownCondition.state !== 'walk') ownCondition.state = 'idle'
+        if (
+          ownCondition.state !== 'crouch' && ownCondition.state !== 'walk'
+          && ownCondition.state !== 'turn'
+        ) ownCondition.state = 'idle'
       } else if (obj.y + obj.h < ownCondition.y) {
         ownCondition.y = obj.y+ obj.h + size
         ownCondition.dy = -ownCondition.dy
@@ -193,12 +216,14 @@ const collisionDetect = () => {
   })
 }
 const stateUpdate = () => {
-  if (key.a) ownCondition.direction = 'left'
-  else if (key.d) ownCondition.direction = 'right'
+  ownCondition.direction = (key.a && key.d) ? ownCondition.direction
+  : (key.a) ? 'left'
+  : (key.d) ? 'right' : ownCondition.direction
   if (ownCondition.state !== 'jump') {
-    ownCondition.state = (-.2 < ownCondition.dx  && ownCondition.dx < .2) ? 'idle'
+    ownCondition.state = (ownCondition.state === 'turn') ? 'turn'
+    : (-.2 < ownCondition.dx  && ownCondition.dx < .2) ? 'idle'
     : (-1.4 < ownCondition.dx  && ownCondition.dx < 1.4) ? 'walk' : 'run'
-  }console.log(ownCondition.dx)
+  }
   if (ownCondition.state === 'idle') {
     const i = imgStat.idle
     i.time += 1
@@ -218,11 +243,22 @@ const stateUpdate = () => {
     }
   } else if (ownCondition.state === 'walk') {
     const i = imgStat.walk
-    if (timer % i.frame === 0) i.condition += 1
+    i.time += 1
+    if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
-      i.condition = i.start
+      i.condition -= i.length
+      i.time = 0
       const b = imgStat.idle
       if (b.midBreath < b.breathInterval) b.breathInterval -= 1
+    }
+  } else if (ownCondition.state === 'turn') {
+    const i = imgStat.turn
+    i.time += 1
+    if (i.time % i.frame === 0) i.condition += 1
+    if (i.condition === i.start + i.length) {
+      i.condition -= i.length
+      i.time = 0
+      ownCondition.state = 'walk'
     }
   } else if (ownCondition.state === 'run') {
     const i = imgStat.run
@@ -247,8 +283,9 @@ const draw = () => {
   drawGround()
   const offset = {x: 24, y: 53}
   let i
-  if (ownCondition.state === 'idle') i = imgStat.idle.condition
+  if (ownCondition.state === 'idle') i = imgStat.idle.condition // don't nessessary?
   else if (ownCondition.state === 'walk') i = imgStat.walk.condition
+  else if (ownCondition.state === 'turn') i = imgStat.turn.condition
   else if (ownCondition.state === 'run') i = imgStat.run.condition
   else if (ownCondition.state === 'crouch') i = imgStat.crouch.condition
   else if (ownCondition.state === 'jump') {
