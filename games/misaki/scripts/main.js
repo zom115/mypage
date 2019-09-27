@@ -99,8 +99,8 @@ let ground = [{
   x: canvas.offsetWidth * 3/4, y: canvas.offsetHeight * 18 / 32, w: size * 4, h: size * 4
 }]
 const brakeConstant = .94
-const gravityConstant = 1.45
-const jumpConstant = 10
+const gravityConstant = .272
+const jumpConstant = 5
 let jumpFlag = false
 let jumpTime = 0
 let jumpChargeTime = 0
@@ -126,10 +126,12 @@ document.addEventListener('keyup', e => {
 }, false)
 const input = () => {
   if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
-  if (ownCondition.state !== 'jump') ownCondition.dx *= brakeConstant
-  const speed = (key.k) ? 2.8 : .7
-  if (key.a && -speed < ownCondition.dx) ownCondition.dx -= .7
-  if (key.d && ownCondition.dx < speed) ownCondition.dx += .7
+  if (ownCondition.state !== 'jump') {
+    ownCondition.dx *= brakeConstant
+    const speed = (key.k) ? 2.8 : .7
+    if (key.a && -speed < ownCondition.dx) ownCondition.dx -= .7
+    if (key.d && ownCondition.dx < speed) ownCondition.dx += .7
+  }
   if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
   if (0 < jumpCooltime) jumpCooltime -= 1
   if (key.j && !jumpCooltime) {
@@ -145,7 +147,7 @@ const input = () => {
     jumpTime = 0
   }
   if (key.s) {
-    if (jumpChargeTime < jumpConstant - 1 && !jumpFlag) jumpChargeTime += 1
+    if (jumpChargeTime < jumpConstant && !jumpFlag) jumpChargeTime += 1
     if (ownCondition.state !== 'jump') {
       ownCondition.state = 'crouch'
     }
