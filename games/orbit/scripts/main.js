@@ -46,6 +46,7 @@ const updateRecord = () => {
   }
   if (newRecordFlag) storage.setItem('records', JSON.stringify(recordList))
 }
+
 const records = document.getElementById`records`
 const table = document.createElement`table`
 records.append(table)
@@ -74,8 +75,17 @@ const toTable = () => {
         death: document.createElement('td'),
         time: document.createElement('td')
       })
+      const button = document.createElement`button`
+      button.textContent = value[0]
+      button.addEventListener('mousedown', () => {
+        stage = +value[0]
+        resetPosition()
+        internalTime = 0
+        createObject()
+        resetCurrentRecord()
+      })
+      td[index + 1].stage.append(button)
     }
-    td[index + 1].stage.textContent = value[0]
     td[index + 1].count.textContent = value[1].count
     td[index + 1].death.textContent = value[1].death
     const mm = ('0' + ~~(value[1].time / 6e4)).slice(-2)
