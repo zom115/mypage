@@ -2,16 +2,93 @@
 
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
+const storage = localStorage
+const setStorageFirst = (key, value) => {
+  const exists = JSON.parse(storage.getItem(key))
+  if (exists) return exists
+  storage.setItem(key, JSON.stringify(value))
+  return value
+}
 const size = 16
 let posX = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 let posY = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 let radX = 0
 let object = []
 const exitLine = canvas.offsetWidth * ((size - 1) / size)
-let timer = 0
-let count = 0
-let death = 0
+let total = {count: 0, death: 0, time: 0}
+let internalTime = 0
 let stage = 1
+const dynamicStageList = [7, 14, 103, 106]
+let currentRecord = {stage: 0, count: 0, death: 0, timeStamp: 0}
+let recordList = {}
+const setNewStage = arg => {
+  recordList[arg] = recordList[arg] || {count: 9999, death: 9999, time: 6e4 * 59 + 59e3 + 999}
+}
+setNewStage(stage)
+recordList = setStorageFirst('records', recordList)
+const resetCurrentRecord = () => {
+  currentRecord = {stage: stage, count: 0, death: 0, timeStamp: 0}
+}
+resetCurrentRecord()
+const updateRecord = () => {
+  let newRecordFlag = false
+  if (currentRecord.count < recordList[currentRecord.stage].count) {
+    recordList[currentRecord.stage].count = currentRecord.count
+    newRecordFlag = true
+  }
+  if (currentRecord.death < recordList[currentRecord.stage].death) {
+    recordList[currentRecord.stage].death = currentRecord.death
+    newRecordFlag = true
+  }
+  if (Date.now() - currentRecord.timeStamp < recordList[currentRecord.stage].time) {
+    recordList[currentRecord.stage].time = Date.now() - currentRecord.timeStamp
+    newRecordFlag = true
+  }
+  if (newRecordFlag) storage.setItem('records', JSON.stringify(recordList))
+}
+const records = document.getElementById`records`
+const table = document.createElement`table`
+records.append(table)
+let tr = [document.createElement`tr`]
+tr[0].setAttribute('align', 'right')
+let td = [{
+  stage: document.createElement('td'),
+  count: document.createElement('td'),
+  death: document.createElement('td'),
+  time: document.createElement('td')
+}]
+td[0].stage.textContent = 'Stage'
+td[0].count.textContent = 'Count'
+td[0].death.textContent = 'Death'
+td[0].time.textContent = 'Time [mm:ss:ms]'
+tr[0].append(td[0].stage, td[0].count, td[0].death, td[0].time)
+table.append(tr[0])
+const toTable = () => {
+  Object.entries(recordList).forEach((value, index) => {
+    if (!tr[index + 1]){
+      tr.push(document.createElement`tr`)
+      tr[index + 1].setAttribute('align', 'right')
+      td.push({
+        stage: document.createElement('td'),
+        count: document.createElement('td'),
+        death: document.createElement('td'),
+        time: document.createElement('td')
+      })
+    }
+    td[index + 1].stage.textContent = value[0]
+    td[index + 1].count.textContent = value[1].count
+    td[index + 1].death.textContent = value[1].death
+    const mm = ('0' + ~~(value[1].time / 6e4)).slice(-2)
+    const ss = ('0' + ~~(value[1].time % 6e4 / 1e3)).slice(-2)
+    const ms = ('00' + ~~(value[1].time % 1e3)).slice(-3)
+    td[index + 1].time.textContent = `${mm}:${ss}:${ms}`
+    tr[index + 1].append(
+      td[index + 1].stage, td[index + 1].count, td[index + 1].death, td[index + 1].time
+    )
+    table.append(tr[index + 1])
+  })
+}
+toTable()
 let bossFlag = false
 let bossLife = 0
 let bossPosition = {}
@@ -32,20 +109,24 @@ let extraFlag = false
 const operation = () => {
   [posX.x, posX.y, posY.x, posY.y] = [posY.x, posY.y, posX.x, posX.y]
   radX = (180 < radX) ? radX - 180 : radX + 180
-  count += 1
+  total.count += 1
+  currentRecord.count += 1
+  if (currentRecord.timeStamp === 0) currentRecord.timeStamp = Date.now()
+  if (total.time === 0) total.time = Date.now()
 }
 document.addEventListener('keydown', operation, false)
 const press = (window.ontouchstart === undefined) ? 'mousedown' : 'touchstart'
 canvas.addEventListener(press, operation, false)
 canvas.addEventListener('contextmenu', e => e.preventDefault(), false)
 
-const createObject = () => {
-  const setObject = (x, y, w, h) => {
-    return {
-      x: (canvas.offsetWidth * x)|0, y: (canvas.offsetHeight * y)|0,
-      w: (canvas.offsetWidth * w)|0, h: (canvas.offsetHeight * h)|0
-    }
+const setObject = (x, y, w, h) => {
+  return {
+    x: (canvas.offsetWidth * x)|0, y: (canvas.offsetHeight * y)|0,
+    w: (canvas.offsetWidth * w)|0, h: (canvas.offsetHeight * h)|0
   }
+}
+const createObject = () => {
+  object = []
   object = (stage === 1) ? [
     setObject(4  / 16, 7  / 16, 1 / 16, 1 / 16),
     setObject(5  / 16, 8  / 16, 1 / 16, 1 / 16),
@@ -113,10 +194,10 @@ const createObject = () => {
     setObject(9  / 16, 5 / 8, 1 / 16, 1 / 8),
     setObject(10 / 16, 7 / 8, 1 / 16, 1 / 8)
   ] : (stage === 7) ? [
-    setObject(1 / 4,       timer % 1080 / 1080, 1 / 4, 2 / 3),
-    setObject(1 / 4, - 1 + timer % 1080 / 1080, 1 / 4, 2 / 3),
-    setObject(2 / 4,   1 - timer % 1080 / 1080, 1 / 4, 2 / 3),
-    setObject(2 / 4,     - timer % 1080 / 1080, 1 / 4, 2 / 3)
+    setObject(1 / 4,       internalTime % 1080 / 1080, 1 / 4, 2 / 3),
+    setObject(1 / 4, - 1 + internalTime % 1080 / 1080, 1 / 4, 2 / 3),
+    setObject(2 / 4,   1 - internalTime % 1080 / 1080, 1 / 4, 2 / 3),
+    setObject(2 / 4,     - internalTime % 1080 / 1080, 1 / 4, 2 / 3)
   ] : (stage === 8) ? [
     setObject(3  / 16, 3 / 8, 1 / 16, 1 / 8),
     setObject(4  / 16, 2 / 8, 1 / 16, 1 / 8),
@@ -210,10 +291,10 @@ const createObject = () => {
     setObject(7 / 8, 5 / 8, 1  / 32, 6 / 16),
     setObject(7 / 8, 5 / 8, 2  / 32, 1 / 16)
   ] : (stage === 14) ? [
-    setObject(2 / 3,       timer % 480 / 480, 1 / 16, 2 / 3),
-    setObject(2 / 3, - 1 + timer % 480 / 480, 1 / 16, 2 / 3),
-    setObject(1 / 3,   1 - timer % 480 / 480, 1 / 16, 3 / 4),
-    setObject(1 / 3,     - timer % 480 / 480, 1 / 16, 3 / 4)
+    setObject(2 / 3,       internalTime % 480 / 480, 1 / 16, 2 / 3),
+    setObject(2 / 3, - 1 + internalTime % 480 / 480, 1 / 16, 2 / 3),
+    setObject(1 / 3,   1 - internalTime % 480 / 480, 1 / 16, 3 / 4),
+    setObject(1 / 3,     - internalTime % 480 / 480, 1 / 16, 3 / 4)
   ] : (stage === 15) ? [
     setObject(2 / 8, 0    , 1 / 16, 1 / 16),
     setObject(2 / 8, 1 / 8, 1 / 16, 1 / 16),
@@ -273,22 +354,6 @@ const createObject = () => {
   ] : (stage === 18) ? [
     setObject(1/4, 0, 2/4,3/4)
   ] : (stage === 101) ? [
-    setObject(4  / 16, 7  / 16, 1 / 16, 1 / 16),
-    setObject(5  / 16, 8  / 16, 1 / 16, 1 / 16),
-    setObject(6  / 16, 9  / 16, 1 / 16, 1 / 16),
-    setObject(1  / 16, 10 / 16, 7 / 16, 1 / 16),
-    setObject(4  / 16, 13 / 16, 1 / 16, 1 / 16),
-    setObject(5  / 16, 12 / 16, 1 / 16, 1 / 16),
-    setObject(6  / 16, 11 / 16, 1 / 16, 1 / 16),
-    setObject(11 / 16, 2  / 16, 1 / 16, 1 / 16),
-    setObject(12 / 16, 3  / 16, 1 / 16, 1 / 16),
-    setObject(13 / 16, 4  / 16, 1 / 16, 1 / 16),
-    setObject(8  / 16, 5  / 16, 7 / 16, 1 / 16),
-    setObject(11 / 16, 8  / 16, 1 / 16, 1 / 16),
-    setObject(12 / 16, 7  / 16, 1 / 16, 1 / 16),
-    setObject(13 / 16, 6  / 16, 1 / 16, 1 / 16),
-    setObject(28 / 32, 7  / 16, 1 / 32, 7 / 16)
-  ] : (stage === 102) ? [
     setObject(1 / 3 - 2 / 10.675, 0      , 1 / 64, 1  / 32),
     setObject(1 / 3 - 1 / 10.675, 0      , 1 / 64, 1  / 32),
     setObject(1 / 3             , 0      , 1 / 64, 1  / 32),
@@ -301,12 +366,7 @@ const createObject = () => {
     setObject(2 / 3 + 1 / 10.675, 31 / 32, 1 / 64, 1  / 32),
     setObject(2 / 3 + 2 / 10.675, 31 / 32, 1 / 64, 1  / 32),
     setObject(2 / 3             , 0      , 1 / 64, 5  / 6)
-  ] : (stage === 103) ? [
-    setObject(2 / 3,       timer % 240 / 240, 1 / 32, 2 / 3),
-    setObject(2 / 3, - 1 + timer % 240 / 240, 1 / 32, 2 / 3),
-    setObject(1 / 3,   1 - timer % 240 / 240, 1 / 32, 3 / 4),
-    setObject(1 / 3,     - timer % 240 / 240, 1 / 32, 3 / 4)
-  ] : (stage === 104) ? [
+  ] : (stage === 102) ? [
     setObject(7  / 16, 0      , 1  / 64, 15 / 32),
     setObject(7  / 16, 9  / 16, 1  / 64, 14 / 32),
     setObject(8  / 16, 0      , 1  / 64, 15 / 32),
@@ -315,7 +375,12 @@ const createObject = () => {
     setObject(9  / 16, 7  / 16, 21 / 64, 1  / 32),
     setObject(3  / 64, 9  / 16, 22 / 64, 1  / 32),
     setObject(9  / 16, 9  / 16, 21 / 64, 1  / 32)
-  ] : (stage === 105) ? [
+  ] : (stage === 103) ? [
+    setObject(2 / 3,       internalTime % 240 / 240, 1 / 32, 2 / 3),
+    setObject(2 / 3, - 1 + internalTime % 240 / 240, 1 / 32, 2 / 3),
+    setObject(1 / 3,   1 - internalTime % 240 / 240, 1 / 32, 3 / 4),
+    setObject(1 / 3,     - internalTime % 240 / 240, 1 / 32, 3 / 4)
+  ] : (stage === 104) ? [
     setObject(17 / 64, 11 / 32, 4  / 64, 1  / 32),
     setObject(20 / 64, 12 / 32, 1  / 64, 4  / 32),
     setObject(24 / 64, 2  / 32, 1  / 64, 9  / 32),
@@ -329,7 +394,7 @@ const createObject = () => {
     setObject(32 / 64, 15 / 32, 1  / 64, 15 / 32),
     setObject(48 / 64, 2  / 32, 1  / 64, 28 / 32),
     setObject(59 / 64, 1  / 32, 1  / 64, 27 / 32)
-  ] : (stage === 108) ? [
+  ] : (stage === 105) ? [
     setObject(3 / 8, 2 / 8, 1 / 16, 1 / 16),
     setObject(3 / 8, 3 / 8, 1 / 16, 1 / 16),
     setObject(3 / 8, 4 / 8, 1 / 16, 1 / 16),
@@ -351,10 +416,10 @@ const createObject = () => {
     setObject(5 / 8, 4 / 8, 1 / 16, 1 / 16),
     setObject(5 / 8, 5 / 8, 1 / 16, 1 / 16),
     setObject(5 / 8, 6 / 8, 1 / 16, 1 / 16),
-  ] : (stage === 107) ? [
-    setObject(1 / 4, 0, 1 / 4, 1 / 2),
-    setObject(-1/4+timer % 480 / 360, 1 / 2, 1 / 4, 1 / 2)
   ] : (stage === 106) ? [
+    setObject(1 / 4, 0, 1 / 4, 1 / 2),
+    setObject(-1/4 + internalTime % 480 / 360, 1 / 2, 1 / 4, 1 / 2)
+  ] : (stage === 107) ? [
     setObject(5  / 16, 0    , 1 / 16, 1 / 8),
     setObject(7  / 16, 0    , 1 / 16, 1 / 8),
     setObject(4  / 16, 1 / 8, 1 / 16, 1 / 8),
@@ -398,7 +463,9 @@ const createObject = () => {
     x: 0, y: 0, w: size / 4, h: canvas.offsetHeight
   })
 }
+createObject()
 const bossProcess = () => {
+  createObject()
   if (!bossFlag && canvas.offsetWidth / 4 <= posY.x) {
     bossFlag = true
     bossLife = 3
@@ -422,7 +489,7 @@ const bossProcess = () => {
   if (bossFlag) {
     bossPosition = {
       x: canvas.offsetWidth * 11 / 16,
-      y: canvas.offsetHeight * (.1 + ((1 - Math.sin(timer / 100)) / 2) * .8)
+      y: canvas.offsetHeight * (.1 + ((1 - Math.sin(internalTime / 100)) / 2) * .8)
     }
   }
   if (ball.attackFlag) {
@@ -445,7 +512,11 @@ const bossProcess = () => {
 const extraProcess = () => {
   if (posY.x <= canvas.offsetWidth * (3 / 16) && canvas.offsetHeight * (11 / 16) <= posY.y) {
     extraFlag = true
-    stage += 100
+    // stage += 100
+    object.push({
+      x: (canvas.offsetWidth * 28 / 32)|0, y: (canvas.offsetHeight * 7  / 16)|0,
+      w: (canvas.offsetWidth * 1 / 32)|0, h: (canvas.offsetHeight * 7 / 16)|0
+    })
   }
 }
 const move = () => {
@@ -466,16 +537,23 @@ const collisionDetect = () => {
       obj.x < posY.x && posY.x < obj.x + obj.w) && (obj.y < posY.y && posY.y < obj.y + obj.h
     ))) {
       resetPosition()
-      death += 1
-      timer = 0
+      total.death += 1
+      internalTime = 0
+      currentRecord.death += 1
     }
   })
   const nextStage = () => {
     if (exitLine <= posX.x || exitLine <= posY.x) {
       resetPosition()
-      if (stage === 18) stage = 1
+      if (stage === 1 && extraFlag) stage += 100
+      else if (stage === 18) stage = 1
       else stage += 1
-      timer = 0
+      internalTime = 0
+      createObject()
+      setNewStage(stage)
+      updateRecord()
+      resetCurrentRecord()
+      toTable()
     }
   }
   nextStage()
@@ -562,17 +640,31 @@ const drawObject = () => {
 const drawIndicator = () => {
   context.font = `${size}px sans-serif`
   context.fillStyle = 'hsl(300, 100%, 50%)'
-  context.fillText('stage', exitLine, size * 2, size * 3)
-  context.fillText(stage, exitLine + size, size * 4, size * 2)
-  context.fillText('count', exitLine, size * 8, size * 3)
-  context.fillText(count, exitLine + size, size * 10, size * 2)
-  context.fillText('death', exitLine, size * 14, size * 3)
-  context.fillText(death, exitLine + size, size * 16, size * 2)
+  context.textAlign = 'center'
+  context.fillText('Stage', exitLine + size * 1.65, size *  2, size * 3)
+  context.fillText('Count', exitLine + size * 1.65, size *  8, size * 3)
+  context.fillText('Death', exitLine + size * 1.65, size * 16, size * 3)
+  context.fillText('Time' , exitLine + size * 1.65, size * 24, size * 3)
+  context.textAlign = 'right'
+  const elapsedTime = (currentRecord.timeStamp === 0) ? 0 : Date.now() - currentRecord.timeStamp
+  const totalTime = (total.time === 0) ? 0 : Date.now() - total.time
+  const toTime = t => {
+    const mm = ('0' + ~~(t / 6e4)).slice(-2)
+    const ss = ('0' + ~~(t % 6e4 / 1e3)).slice(-2)
+    return `${mm}:${ss}`
+  }
+  context.fillText(stage              , exitLine + size * 3.1, size *  4, size * 3)
+  context.fillText(currentRecord.count, exitLine + size * 3.1, size * 10, size * 3)
+  context.fillText(total.count        , exitLine + size * 3.1, size * 12, size * 3)
+  context.fillText(currentRecord.death, exitLine + size * 3.1, size * 18, size * 3)
+  context.fillText(total.death        , exitLine + size * 3.1, size * 20, size * 3)
+  context.fillText(toTime(elapsedTime), exitLine + size * 3.1, size * 26, size * 3)
+  context.fillText(toTime(totalTime)  , exitLine + size * 3.1, size * 28, size * 3)
 }
 const main = () => {
   // internal process
-  timer += 1
-  createObject()
+  internalTime += 1
+  if (dynamicStageList.some(v => {return v === stage})) createObject()
   if (stage === 18 && !defeatFlag) bossProcess()
   if (stage === 1 && !extraFlag) extraProcess()
   move()
