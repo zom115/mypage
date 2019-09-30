@@ -134,11 +134,15 @@ document.addEventListener('keyup', e => {
 }, false)
 const input = () => {
   if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
+    const speed = (key.k) ? 2.8 : walkSpeed
   if (ownCondition.state !== 'jump') {
     ownCondition.dx *= brakeConstant
-    const speed = (key.k) ? 2.8 : walkSpeed
     if (key.a && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed
     if (key.d && ownCondition.dx < speed) ownCondition.dx += walkSpeed
+  } else {
+    // airal brake
+    if (key.a && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed / 3
+    if (key.d && ownCondition.dx < speed) ownCondition.dx += walkSpeed / 3
   }
   if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
   if (0 < jumpCooltime) jumpCooltime -= 1
