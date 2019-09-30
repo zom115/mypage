@@ -290,20 +290,20 @@ const draw = () => {
   else if (ownCondition.state === 'crouch') i = imgStat.crouch.condition
   else if (ownCondition.state === 'jump') {
     const ij = imgStat.jump
-    i = (ownCondition.dy < -12) ? ij.start
-    : (ownCondition.dy < -9) ? ij.start + 1
-    : (ownCondition.dy < -6) ? ij.start + 2
-    : (ownCondition.dy < -3) ? ij.start + 3
+    i = (ownCondition.dy < -6) ? ij.start
+    : (ownCondition.dy < -4) ? ij.start + 1
+    : (ownCondition.dy < -2) ? ij.start + 2
+    : (ownCondition.dy < -1) ? ij.start + 3
+    : (6 < ownCondition.dy) ? ij.start + 7
+    : (4 < ownCondition.dy) ? ij.start + 6
+    : (2 < ownCondition.dy) ? ij.start + 5
     : (0 < ownCondition.dy) ? ij.start + 4
-    : (3 < ownCondition.dy) ? ij.start + 5
-    : (6 < ownCondition.dy) ? ij.start + 6
-    : (9 < ownCondition.dy) ? ij.start + 7 : ij.start + 8
+    : ij.start + 8
   }
   if (ownCondition.direction === 'right'){
     drawImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   } else drawInvImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   context.fillStyle = 'hsl(300, 100%, 50%)'
-  // context.fillRect(ownCondition.x, ownCondition.y, 10, -1)
 }
 const main = () => {
   timer += 1
