@@ -111,7 +111,7 @@ let jumpTime = 0
 let jumpChargeTime = 0
 let jumpCooltime = 0
 let timer = 0
-
+let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j'}
 let key = {a: false, d: false, j: false, k: false, s: false, w: false}
 document.addEventListener('keydown', e => {
   if (e.keyCode === 65) key.a = true
@@ -131,19 +131,19 @@ document.addEventListener('keyup', e => {
 }, false)
 const input = () => {
   if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
-    const speed = (key.k) ? 2.8 : walkSpeed
+    const speed = (key[action.dash]) ? 2.8 : walkSpeed
   if (ownCondition.state !== 'jump') {
     ownCondition.dx *= brakeConstant
-    if (key.a && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed
-    if (key.d && ownCondition.dx < speed) ownCondition.dx += walkSpeed
+    if (key[action.left] && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed
+    if (key[action.right] && ownCondition.dx < speed) ownCondition.dx += walkSpeed
   } else {
     // airal brake
-    if (key.a && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed / 3
-    if (key.d && ownCondition.dx < speed) ownCondition.dx += walkSpeed / 3
+    if (key[action.left] && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed / 3
+    if (key[action.right] && ownCondition.dx < speed) ownCondition.dx += walkSpeed / 3
   }
   if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
   if (0 < jumpCooltime) jumpCooltime -= 1
-  if (key.j && !jumpCooltime) {
+  if (key[action.jump] && !jumpCooltime) {
       jumpTime += 1
     if (!jumpFlag) {
       ownCondition.dy -= jumpConstant
@@ -155,7 +155,7 @@ const input = () => {
     if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
     jumpTime = 0
   }
-  if (key.s) {
+  if (key[action.down]) {
     if (jumpChargeTime < jumpConstant && !jumpFlag) jumpChargeTime += 1
     if (ownCondition.state !== 'jump') {
       ownCondition.state = 'crouch'
@@ -169,13 +169,13 @@ const input = () => {
   }
   const detectChangeDirection = () => {
     if (ownCondition.state !== 'jump') {
-      if (key.d && ownCondition.dx < walkSpeed) {
+      if (key[action.right] && ownCondition.dx < walkSpeed) {
         ownCondition.state = 'turn'
       }
-      if (key.a && -walkSpeed < ownCondition.dx) {
+      if (key[action.left] && -walkSpeed < ownCondition.dx) {
         ownCondition.state = 'turn'
       }
-      if (key.a && key.d) ownCondition.state = 'idle'
+      if (key[action.left] && key[action.right]) ownCondition.state = 'idle'
     }
   }
   detectChangeDirection()
@@ -217,9 +217,9 @@ const collisionDetect = () => {
   })
 }
 const stateUpdate = () => {
-  ownCondition.direction = (key.a && key.d) ? ownCondition.direction
-  : (key.a) ? 'left'
-  : (key.d) ? 'right' : ownCondition.direction
+  ownCondition.direction = (key[action.left] && key[action.right]) ? ownCondition.direction
+  : (key[action.left]) ? 'left'
+  : (key[action.right]) ? 'right' : ownCondition.direction
   if (ownCondition.state !== 'jump') {
     ownCondition.state = (ownCondition.state === 'turn') ? 'turn'
     : (-.2 < ownCondition.dx  && ownCondition.dx < .2) ? 'idle'
