@@ -1,5 +1,4 @@
-!(_ = () => {'use strict'
-
+'use strict'
 const imgChangeList = [0, 12, 18, 20, 28, 31, 33]
 const imgStat = {
   idle: {start: imgChangeList[0], length: 12, condition: imgChangeList[0], time: 0, maxInterval: 30, frame: 5,
@@ -73,13 +72,11 @@ const timerId = setInterval(() => { // loading monitoring
   }
 }, 100)
 const drawImage = (arg, x, y) => {
-  const img = new Image()
-  img.src = imagePathList[arg]
+  const img = loadedMap[imagePathList[arg]]
   context.drawImage(img, x, y)
 }
 const drawInvImage = (arg, x, y) => {
-  const img = new Image()
-  img.src = imagePathList[arg]
+  const img = loadedMap[imagePathList[arg]]
   context.save()
   context.scale(-1, 1)
   context.drawImage(img, -x - img.width, y)
@@ -319,5 +316,3 @@ const main = () => {
   draw()
   window.requestAnimationFrame(main)
 }
-
-})()
