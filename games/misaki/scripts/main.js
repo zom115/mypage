@@ -109,8 +109,8 @@ const jumpConstant = 5
 let jumpFlag = false
 let jumpTime = 0
 let jumpChargeTime = 0
-let jumpCooltime = 0
-let timer = 0
+let cooltime = {leftStep: 0, rightStep: 0, jump: 0}
+let time = 0
 let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j'}
 let key = {a: false, d: false, j: false, k: false, s: false, w: false}
 document.addEventListener('keydown', e => {
@@ -129,7 +129,13 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 83) key.s = false
   if (e.keyCode === 87) key.w = false
 }, false)
+let keyHistory = {pressed: {}, released: {}}
+Object.values(action).forEach(act => {
+  keyHistory['pressed'][act] = -1
+  keyHistory['released'][act] = 0
+})
 const input = () => {
+  // walk
   if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
     const speed = (key[action.dash]) ? 2.8 : walkSpeed
   if (ownCondition.state !== 'jump') {
@@ -141,9 +147,32 @@ const input = () => {
     if (key[action.left] && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed / 3
     if (key[action.right] && ownCondition.dx < speed) ownCondition.dx += walkSpeed / 3
   }
+  // step
+  if (cooltime.leftStep === 0) {
+    if (
+      key[action.left]
+      && time - keyHistory['pressed'][action.left] < 15
+      && 0 < keyHistory['released'][action.left] - keyHistory['pressed'][action.left]
+      && keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < 15
+    ) {
+      ownCondition.dx -= 4
+      cooltime.leftStep = 15
+    }
+  } else if (ownCondition.state !== 'jump') cooltime.leftStep -= 1
+  if (cooltime.rightStep === 0) {
+    if (
+      key[action.right]
+      && time - keyHistory['pressed'][action.right] < 15
+      && 0 < keyHistory['released'][action.right] - keyHistory['pressed'][action.right]
+      && keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < 15
+    ) {
+      ownCondition.dx += 4
+      cooltime.rightStep = 15
+    }
+  } else if (ownCondition.state !== 'jump') cooltime.rightStep -= 1
   if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
-  if (0 < jumpCooltime) jumpCooltime -= 1
-  if (key[action.jump] && !jumpCooltime) {
+  if (0 < cooltime.jump) cooltime.jump -= 1
+  if (key[action.jump] && !cooltime.jump) {
       jumpTime += 1
     if (!jumpFlag) {
       ownCondition.dy -= jumpConstant
@@ -183,6 +212,18 @@ const input = () => {
   ownCondition.y += ownCondition.dy
   ownCondition.dy += gravityConstant
   if (size * 2.5 < ownCondition.dy) ownCondition.dy = size * 2.5 // terminal speed
+  Object.values(action).forEach(act => {
+    if (key[act]) {
+      if (keyHistory['pressed'][act] < keyHistory['released'][act]) {
+        keyHistory['pressed'][act] = time
+      }
+    }
+    else {
+      if (keyHistory['released'][act] < keyHistory['pressed'][act]) {
+        keyHistory['released'][act] = time
+      }
+    }
+  })
 }
 const collisionDetect = () => {
   ground.forEach(obj => {
@@ -195,7 +236,7 @@ const collisionDetect = () => {
         ownCondition.y = obj.y
         if (jumpFlag) {
           jumpFlag = false
-          jumpCooltime = 10
+          cooltime.jump = 10
         }
         ownCondition.dy = 0
         if (
@@ -236,7 +277,7 @@ const stateUpdate = () => {
       i.time = 0
     }
     // eye blink
-    if (timer % i.frame === 0) {
+    if (time % i.frame === 0) {
       i.blinkTime += 1
       if (i.blinkTime === 4) i.blinkTime = -(Math.random() * i.maxInterval)|0
       if (i.blinkTime === 0 || i.blinkTime === 1) i.condition += 1
@@ -263,7 +304,7 @@ const stateUpdate = () => {
     }
   } else if (ownCondition.state === 'run') {
     const i = imgStat.run
-    if (timer % i.frame === 0) i.condition += 1
+    if (time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
       i.condition = i.start
       const b = imgStat.idle
@@ -271,7 +312,7 @@ const stateUpdate = () => {
     }
   } else if (ownCondition.state === 'crouch') {
     const i = imgStat.crouch
-    if (timer % i.frame === 0) i.time += 1
+    if (time % i.frame === 0) i.time += 1
     if (ownCondition.state !== 'crouch') i.time = 0
     if (i.time === 0) i.condition = 9
   }
@@ -307,7 +348,7 @@ const draw = () => {
   context.fillStyle = 'hsl(300, 100%, 50%)'
 }
 const main = () => {
-  timer += 1
+  time += 1
   // internal process
   input()
   collisionDetect()
