@@ -1,4 +1,4 @@
-'use strict';{
+'use strict'
 const imageCanvas = document.getElementById`drawCanvas`
 const imageContext = imageCanvas.getContext`2d`
 
@@ -16,7 +16,7 @@ const imagePathList = [
   'images/TP2L.png',
   'images/TP2LU.png',
   'images/TP2F.png',
-  'images/JK32F.png',
+  'images/JK32F.png', // 10
   'images/JK32L.png',
   'images/JK32R.png'
 ]
@@ -45,17 +45,20 @@ let tFrame = 0
 
 const drawImage = () => {
   const frameSector = [40, 60, 100]
-  let img = new Image()
-  img.src = 'images/JK32F.png'
-  const imgOffset = [(cnv.offsetWidth - img.width) / 2, (cnv.offsetHeight - img.height) / 2]
+  let img = frame < frameSector[0] || frameSector[1] <= frame && frame < frameSector[2]
+  ? loadedMap[imagePathList[12]]
+  : loadedMap[imagePathList[10]]
   ctx.save()
-  if (frame < frameSector[0]) img.src = 'images/JK32R.png'
-  else if (frameSector[1] <= frame && frame < frameSector[2]) {
-    img.src = 'images/JK32R.png'
-    imgOffset[0] = -imgOffset[0] - img.width
+  let imgOffset
+  if (frameSector[1] <= frame && frame < frameSector[2]) {
+    imgOffset = -(cnv.offsetWidth + img.width) / 2
     ctx.scale(-1, 1)
+  } else {
+    imgOffset = (cnv.offsetWidth - img.width) / 2
   }
-  ctx.drawImage(img, imgOffset[0], imgOffset[1])
+  ctx.drawImage(img,
+    imgOffset,
+    (cnv.offsetHeight - img.height) / 2)
   ctx.restore()
 }
 const drawTP = () => {
@@ -114,5 +117,4 @@ const imageLoop = x => {
   }
   if (tLimit <= tFrame) tFrame = 0
   requestAnimationFrame(imageLoop)
-}
 }
