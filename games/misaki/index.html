@@ -24,16 +24,17 @@
       <article>
         <section>
           <h1>not Unity Chan</h1>
-          <canvas id="canvas" width="854" height="480"></canvas>
-          <p>右上に行けたら勝ち。</p>
+          <canvas id="canvas" width="854" height="480"></canvas><span>volume</span>
+          <input type="range" value=".5" min="0" max="1" step=".01" oninput="document.getElementById(&quot;volume&quot;).value=this.value">
+          <output id="volume">0.5</output><br>
         </section>
         <section>
           <h2>うごかしかた</h2>
-          <p>A: ←，D: →，</p>
-          <p>J: スプリント，K: ジャンプです。</p>
-          <p>G: ヒットボックス表示</p><br>
-          <p>二段ジャンプできます。</p>
-          <p>横2連打でステップとかスライドのようなものがでます。</p>
+          <p>A: ←，D: →，J: スプリント，K: 二段ジャンプできます。</p>
+          <p>G: デバッグ表示，H: ヒットボックス表示。</p><br>
+          <p>横2連打でステップとかスライドのようなものがでます。</p><br>
+          <p>右上に行けたら勝ちです。</p>
+          <audio src="audio/Misaki/V2032.wav" controls></audio>
         </section>
         <section>
           <h2>わかったこと</h2>
@@ -41,11 +42,13 @@
           <p>アニメーションは面倒くさい。</p>
           <p>ミサキチはかわいい。</p>
           <p>JKの呼吸とか歩行時速の平均に詳しくなった。</p>
-          <p>空ダ，エアスラ，エアドッジロール？の調整がむずかしそう。今はまだ減衰いれてない。</p>
+          <p>html5のaudioがわりとしっかりしてる。ただ環境差があるらしいから乱用厳禁かな。</p>
+          <p>空ジャンを判別するために音声が必須。重要ファクターなんやなあ。</p>
         </section>
         <section>
           <h2>かいぜんてん</h2>
           <p>当たり判定。</p>
+          <p>空ダ，エアスラ，エアドッジロール？の調整がむずかしそう。今はまだ減衰いれてない。</p>
           <p>着地，スライディング差分がほしい。(ﾁﾗｯﾁﾗｯ</p>
         </section>
         <section>

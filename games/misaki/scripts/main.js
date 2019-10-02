@@ -1,17 +1,18 @@
 'use strict'
-const imgChangeList = [0, 12, 18, 20, 28, 31, 33]
-const imgStat = {
-  idle: {start: imgChangeList[0], length: 12, condition: imgChangeList[0], time: 0, maxInterval: 30, frame: 5,
+const imageChangeList = [0, 12, 18, 20, 28, 31, 33]
+const imageStat = {
+  idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
+    time: 0, maxInterval: 30, frame: 5,
     blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
-  }, walk: {start: imgChangeList[1], length: 6, condition: imgChangeList[1],
+  }, walk: {start: imageChangeList[1], length: 6, condition: imageChangeList[1],
     time: 0, maxInterval: 0, frame: 10
-  }, turn: {start: imgChangeList[2], length: 2, condition: imgChangeList[2],
+  }, turn: {start: imageChangeList[2], length: 2, condition: imageChangeList[2],
     time: 0, maxInterval: 0, frame: 7
-  }, run: {start: imgChangeList[3], length: 8, condition: imgChangeList[3],
+  }, run: {start: imageChangeList[3], length: 8, condition: imageChangeList[3],
     time: 1, maxInterval: 0, frame: 7
-  }, crouch: {start: imgChangeList[4], length: 3, condition: imgChangeList[4],
+  }, crouch: {start: imageChangeList[4], length: 3, condition: imageChangeList[4],
     time: 1, maxInterval: 0, frame: 7
-  }, jump: {start: imgChangeList[5], length: 9
+  }, jump: {start: imageChangeList[5], length: 9
 }}
 const imagePathList = [
   '../../images/Misaki/Misaki_Idle_1.png', // 0
@@ -55,32 +56,57 @@ const imagePathList = [
   '../../images/Misaki/Misaki_Jump_Fall_2.png',
   '../../images/Misaki/Misaki_Jump_Fall_3.png',
 ]
-let loadedList = []
-let loadedMap = []
+let imageLoadedList = []
+let imageLoadedMap = []
 imagePathList.forEach(path => {
   const imgPreload = new Image()
   imgPreload.src = path
   imgPreload.addEventListener('load', () => {
-    loadedList.push(path)
-    loadedMap[path] = imgPreload
+    imageLoadedList.push(path)
+    imageLoadedMap[path] = imgPreload
+  })
+})
+const audioStat = {jump: 0, doubleJump: 1, breath: 2, win: 3}
+const audioPathList = [
+  'audio/Misaki/V2001.wav',
+  'audio/Misaki/V2002.wav',
+  'audio/Misaki/V2005.wav',
+  'audio/Misaki/V2024.wav'
+]
+let audioLoadedList = []
+let audioLoadedMap = []
+audioPathList.forEach(path => {
+  const audioPreload = new Audio()
+  audioPreload.src = path
+  audioPreload.volume = .5
+  audioPreload.addEventListener('canplaythrough', () => {
+    audioLoadedList.push(path)
+    audioLoadedMap[path] = audioPreload
   })
 })
 const timerId = setInterval(() => { // loading monitoring
-  if (loadedList.length === imagePathList.length) { // untrustworthy length in assosiative
+  if (
+    imageLoadedList.length === imagePathList.length &&
+    audioLoadedList.length === audioPathList.length
+    ) { // untrustworthy length in assosiative
     clearInterval(timerId)
     main()
   }
 }, 100)
 const drawImage = (arg, x, y) => {
-  const img = loadedMap[imagePathList[arg]]
+  const img = imageLoadedMap[imagePathList[arg]]
   context.drawImage(img, x, y)
 }
 const drawInvImage = (arg, x, y) => {
-  const img = loadedMap[imagePathList[arg]]
+  const img = imageLoadedMap[imagePathList[arg]]
   context.save()
   context.scale(-1, 1)
   context.drawImage(img, -x - img.width, y)
   context.restore()
+}
+const playAudio = (value, startTime = 0) => {
+  audioLoadedMap[audioPathList[value]].currentTime = startTime
+  audioLoadedMap[audioPathList[value]].play()
 }
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -128,12 +154,14 @@ const jumpConstant = 5
 let time = 0
 let jump = {flag: false, double: false, time: 0, cooltime: 0, chargeTime: 0}
 let cooltime = {leftStep: 0, rightStep: 0}
-let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j', debug: 'b'}
-let key = {a: false, b: false, d: false, j: false, k: false, s: false, w: false}
+let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j', debug: 'g', hitbox: 'h'}
+let key = {a: false, b: false, d: false, g: false, h: false, j: false, k: false, s: false, w: false}
 document.addEventListener('keydown', e => {
   if (e.keyCode === 65) key.a = true
   if (e.keyCode === 66) key.b = true
   if (e.keyCode === 68) key.d = true
+  if (e.keyCode === 71) key.g = true
+  if (e.keyCode === 72) key.h = true
   if (e.keyCode === 74) key.j = true
   if (e.keyCode === 75) key.k = true
   if (e.keyCode === 83) key.s = true
@@ -143,6 +171,8 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 65) key.a = false
   if (e.keyCode === 66) key.b = false
   if (e.keyCode === 68) key.d = false
+  if (e.keyCode === 71) key.g = false
+  if (e.keyCode === 72) key.h = false
   if (e.keyCode === 74) key.j = false
   if (e.keyCode === 75) key.k = false
   if (e.keyCode === 83) key.s = false
@@ -153,10 +183,20 @@ Object.values(action).forEach(act => {
   keyHistory['pressed'][act] = -1
   keyHistory['released'][act] = 0
 })
-let debugMode = false
+const volume = document.getElementsByTagName`input`[0]
+volume.addEventListener('input', () => {
+  audioPathList.forEach(path=> {
+    audioLoadedMap[path].volume = volume.value
+  })
+})
+let display = {debug: false, hitbox: false}
 const input = () => {
   // warp
-  if (size * 53 < ownCondition.x) ownCondition.x = 50
+  if (size * 53 < ownCondition.x) {
+    ownCondition.x = 50
+    audioLoadedMap[audioPathList[audioStat.win]].currentTime = 0
+    audioLoadedMap[audioPathList[audioStat.win]].play()
+  }
   // walk
     const speed = (key[action.dash]) ? 2.8 : walkSpeed
   if (ownCondition.action !== 'jump') {
@@ -198,12 +238,20 @@ const input = () => {
       if (!jump.double && jump.time === 0) {
         ownCondition.dy = -jumpConstant
         jump.double = true
+        playAudio(audioStat.doubleJump)
+        if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       }
     } else if (jump.cooltime === 0) {
       ownCondition.dy = -jumpConstant
       ownCondition.action = 'jump'
       jump.flag = true
-      if (ownCondition.state === 'aerial') jump.double = true
+      if (ownCondition.state === 'aerial') {
+        jump.double = true
+        playAudio(audioStat.doubleJump)
+      } else {
+        playAudio(audioStat.jump)
+      }
+      if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       ownCondition.state = 'aerial'
       jump.cooltime = 10
     }
@@ -236,13 +284,22 @@ const stateUpdate = () => {
     : (-1.4 < ownCondition.dx  && ownCondition.dx < 1.4) ? 'walk' : 'run'
   }
   if (ownCondition.action === 'idle') {
-    const i = imgStat.idle
+    const i = imageStat.idle
     i.time += 1
     // breath
     if (i.time % i.breathInterval === 0) i.condition += 3
     if (i.length <= i.condition && i.condition <= i.length + 3) {
       i.condition -= i.length
-      if (i.breathInterval < i.maxBreath) i.breathInterval += 1
+      if (i.breathInterval < i.maxBreath) {
+        i.breathInterval += 1
+        if (i.breathInterval < 25) {
+          const num = Math.random()
+          const list = num < .9 ? {value: audioStat.breath, startTime: .3}
+          : num < .95 ? {value: audioStat.jump, startTime: .3}
+          : {value: audioStat.doubleJump, startTime: .33}
+          playAudio(list.value, list.startTime)
+        }
+      }
       i.time = 0
     }
     // eye blink
@@ -253,17 +310,17 @@ const stateUpdate = () => {
       else if (i.blinkTime === 2 || i.blinkTime === 3)  i.condition -= 1
     }
   } else if (ownCondition.action === 'walk') {
-    const i = imgStat.walk
+    const i = imageStat.walk
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
       i.condition -= i.length
       i.time = 0
-      const b = imgStat.idle
+      const b = imageStat.idle
       if (b.midBreath < b.breathInterval) b.breathInterval -= 1
     }
   } else if (ownCondition.action === 'turn') {
-    const i = imgStat.turn
+    const i = imageStat.turn
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
@@ -272,15 +329,15 @@ const stateUpdate = () => {
       ownCondition.action = 'walk'
     }
   } else if (ownCondition.action === 'run') {
-    const i = imgStat.run
+    const i = imageStat.run
     if (time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
       i.condition = i.start
-      const b = imgStat.idle
+      const b = imageStat.idle
       if (b.minBreath < b.breathInterval) b.breathInterval -= 1
     }
   } else if (ownCondition.action === 'crouch') {
-    const i = imgStat.crouch
+    const i = imageStat.crouch
     if (time % i.frame === 0) i.time += 1
     if (ownCondition.action !== 'crouch') i.time = 0
     if (i.time === 0) i.condition = 9
@@ -302,7 +359,8 @@ const stateUpdate = () => {
       }
     }
   })
-  if (keyHistory['pressed'][action.debug] === time) debugMode = !debugMode
+  if (keyHistory['pressed'][action.debug] === time) display.debug = !display.debug
+  if (keyHistory['pressed'][action.hitbox] === time) display.hitbox = !display.hitbox
 }
 const collisionDetect = () => {
   hitbox.x = ownCondition.x - size / 2
@@ -359,13 +417,13 @@ const draw = () => {
   drawGround()
   const offset = {x: 24, y: 53}
   let i
-  if (ownCondition.action === 'idle') i = imgStat.idle.condition // don't nessessary?
-  else if (ownCondition.action === 'walk') i = imgStat.walk.condition
-  else if (ownCondition.action === 'turn') i = imgStat.turn.condition
-  else if (ownCondition.action === 'run') i = imgStat.run.condition
-  else if (ownCondition.action === 'crouch') i = imgStat.crouch.condition
+  if (ownCondition.action === 'idle') i = imageStat.idle.condition // don't nessessary?
+  else if (ownCondition.action === 'walk') i = imageStat.walk.condition
+  else if (ownCondition.action === 'turn') i = imageStat.turn.condition
+  else if (ownCondition.action === 'run') i = imageStat.run.condition
+  else if (ownCondition.action === 'crouch') i = imageStat.crouch.condition
   else if (ownCondition.action === 'jump') {
-    const ij = imgStat.jump
+    const ij = imageStat.jump
     i = (ownCondition.dy < -6) ? ij.start
     : (ownCondition.dy < -4) ? ij.start + 1
     : (ownCondition.dy < -2) ? ij.start + 2
@@ -379,7 +437,17 @@ const draw = () => {
   if (ownCondition.direction === 'right'){
     drawImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
   } else drawInvImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+}
+const debugDisplay = () => {
+  context.fillStyle = 'hsl(120, 100%, 50%)'
+  context.font = `${size}px sans-serif`
+  context.fillText(`jumpCooltime: ${jump.cooltime}`, size * 2, size)
+  context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size * 2)
+}
+const displayHitbox = () => {
   context.fillStyle = 'hsl(300, 100%, 50%)'
+  context.fillRect(hitbox.x, hitbox.y+hitbox.h*.1, hitbox.w, hitbox.h*.7)
+  context.fillRect(hitbox.x+hitbox.w*.2, hitbox.y+hitbox.h*.8, hitbox.w*.6, hitbox.h*.2)
 }
 const main = () => {
   time += 1
@@ -389,9 +457,7 @@ const main = () => {
   collisionDetect()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
-  if (debugMode) {
-    context.fillRect(hitbox.x, hitbox.y+hitbox.h*.1, hitbox.w, hitbox.h*.7)
-    context.fillRect(hitbox.x+hitbox.w*.2, hitbox.y+hitbox.h*.8, hitbox.w*.6, hitbox.h*.2)
-  }
+  if (display.debug) debugDisplay()
+  if (display.hitbox) displayHitbox()
   window.requestAnimationFrame(main)
 }
