@@ -87,34 +87,52 @@ const context = canvas.getContext`2d`
 const size = 16
 let ownCondition = {
   x: canvas.offsetWidth * 1 / 8, y: canvas.offsetHeight * 7 / 8,
-  dx: 0, dy: 0, state: 'idle', direction: 'right'
+  dx: 0, dy: 0, action: 'idle', direction: 'right', state: 'aerial'
 }
-let ground = [{
-  x: 0, y: canvas.offsetHeight * 31 / 32, w: canvas.offsetWidth, h: size
-}, {
-  x: 0, y: 0, w: size, h: canvas.offsetHeight
-}, {
-  x: canvas.offsetWidth - size, y: 0, w: size, h: canvas.offsetHeight
-}, {
-  x: canvas.offsetWidth * 1/4, y: canvas.offsetHeight * 24 / 32, w: size * 6, h: size * 4
-}, {
-  x: canvas.offsetWidth * 2/4, y: canvas.offsetHeight * 21 / 32, w: size * 5, h: size * 4
-}, {
-  x: canvas.offsetWidth * 3/4, y: canvas.offsetHeight * 18 / 32, w: size * 4, h: size * 4
-}]
+const hitbox = {
+  x: ownCondition.x - size / 2,
+  y: ownCondition.y - size * 3,
+  w: size,
+  h: size * 3
+}
+let ground = []
+const setGround = (x, y, w, h) => {
+  ground.push({x: x * size, y: y * size, w: w * size, h: h * size})
+}
+// frame
+setGround(0, 29, 53, 1)
+setGround(0, 0, 1, 27)
+setGround(53, 1, 1, 29)
+// object
+setGround(4, 7, 12, 1)
+setGround(8, 13, 6, 1)
+setGround(3, 19, 9, 1)
+setGround(4, 25, 5, 1)
+setGround(24, 24, 5, 2)
+setGround(36, 22, 2, 1)
+setGround(39, 22, 1, 2)
+setGround(42, 22, 2, 1)
+setGround(45, 22, 1, 2)
+setGround(49, 22, 2, 2)
+setGround(18, 15, 12, 1)
+setGround(46, 10, 3, 4)
+setGround(47, 16, 3, 3)
+setGround(14, 8, 1, 2)
+setGround(15, 12, 1, 7)
+setGround(37, 4, 2, 9)
+setGround(37, 1, 8, 1)
 const walkSpeed = .7
 const brakeConstant = .94
 const gravityConstant = .272
 const jumpConstant = 5
-let jumpFlag = false
-let jumpTime = 0
-let jumpChargeTime = 0
-let cooltime = {leftStep: 0, rightStep: 0, jump: 0}
 let time = 0
-let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j'}
-let key = {a: false, d: false, j: false, k: false, s: false, w: false}
+let jump = {flag: false, double: false, time: 0, cooltime: 0, chargeTime: 0}
+let cooltime = {leftStep: 0, rightStep: 0}
+let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j', debug: 'b'}
+let key = {a: false, b: false, d: false, j: false, k: false, s: false, w: false}
 document.addEventListener('keydown', e => {
   if (e.keyCode === 65) key.a = true
+  if (e.keyCode === 66) key.b = true
   if (e.keyCode === 68) key.d = true
   if (e.keyCode === 74) key.j = true
   if (e.keyCode === 75) key.k = true
@@ -123,6 +141,7 @@ document.addEventListener('keydown', e => {
 }, false)
 document.addEventListener('keyup', e => {
   if (e.keyCode === 65) key.a = false
+  if (e.keyCode === 66) key.b = false
   if (e.keyCode === 68) key.d = false
   if (e.keyCode === 74) key.j = false
   if (e.keyCode === 75) key.k = false
@@ -134,11 +153,13 @@ Object.values(action).forEach(act => {
   keyHistory['pressed'][act] = -1
   keyHistory['released'][act] = 0
 })
+let debugMode = false
 const input = () => {
+  // warp
+  if (size * 53 < ownCondition.x) ownCondition.x = 50
   // walk
-  if (canvas.offsetWidth * .9 < ownCondition.x) ownCondition.x = 50
     const speed = (key[action.dash]) ? 2.8 : walkSpeed
-  if (ownCondition.state !== 'jump') {
+  if (ownCondition.action !== 'jump') {
     ownCondition.dx *= brakeConstant
     if (key[action.left] && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed
     if (key[action.right] && ownCondition.dx < speed) ownCondition.dx += walkSpeed
@@ -150,123 +171,71 @@ const input = () => {
   // step
   if (cooltime.leftStep === 0) {
     if (
-      key[action.left]
-      && time - keyHistory['pressed'][action.left] < 15
-      && 0 < keyHistory['released'][action.left] - keyHistory['pressed'][action.left]
-      && keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < 15
+      key[action.left] &&
+      time - keyHistory['pressed'][action.left] < 15 &&
+      0 < keyHistory['released'][action.left] - keyHistory['pressed'][action.left] &&
+      keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < 15
     ) {
       ownCondition.dx -= 4
       cooltime.leftStep = 15
     }
-  } else if (ownCondition.state !== 'jump') cooltime.leftStep -= 1
+  } else if (ownCondition.action !== 'jump') cooltime.leftStep -= 1
   if (cooltime.rightStep === 0) {
     if (
-      key[action.right]
-      && time - keyHistory['pressed'][action.right] < 15
-      && 0 < keyHistory['released'][action.right] - keyHistory['pressed'][action.right]
-      && keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < 15
+      key[action.right] &&
+      time - keyHistory['pressed'][action.right] < 15 &&
+      0 < keyHistory['released'][action.right] - keyHistory['pressed'][action.right] &&
+      keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < 15
     ) {
       ownCondition.dx += 4
       cooltime.rightStep = 15
     }
-  } else if (ownCondition.state !== 'jump') cooltime.rightStep -= 1
-  if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
-  if (0 < cooltime.jump) cooltime.jump -= 1
-  if (key[action.jump] && !cooltime.jump) {
-      jumpTime += 1
-    if (!jumpFlag) {
-      ownCondition.dy -= jumpConstant
-      ownCondition.state = 'jump'
-      jumpFlag = true
+  } else if (ownCondition.action !== 'jump') cooltime.rightStep -= 1
+  // jump
+  if (0 < jump.cooltime && ownCondition.state === 'land') jump.cooltime -= 1
+  if (key[action.jump]) {
+    if (jump.flag) {
+      if (!jump.double && jump.time === 0) {
+        ownCondition.dy = -jumpConstant
+        jump.double = true
+      }
+    } else if (jump.cooltime === 0) {
+      ownCondition.dy = -jumpConstant
+      ownCondition.action = 'jump'
+      jump.flag = true
+      if (ownCondition.state === 'aerial') jump.double = true
+      ownCondition.state = 'aerial'
+      jump.cooltime = 10
     }
+    jump.time += 1
   } else {
-    if (jumpConstant < jumpTime) jumpTime = 0
-    if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
-    jumpTime = 0
-  }
-  if (key[action.down]) {
-    if (jumpChargeTime < jumpConstant && !jumpFlag) jumpChargeTime += 1
-    if (ownCondition.state !== 'jump') {
-      ownCondition.state = 'crouch'
-    }
-  } else if (jumpChargeTime !== 0) {
-    if (!jumpFlag) ownCondition.dy -= jumpChargeTime
-    else ownCondition.dy = -jumpChargeTime
-    ownCondition.state = 'jump'
-    jumpChargeTime = 0
-    jumpFlag = true
+    if (jumpConstant < jump.time / 3) jump.time = 0
+    if (jump.time !== 0) ownCondition.dy += jumpConstant - jump.time / 3
+    jump.time = 0
   }
   const detectChangeDirection = () => {
-    if (ownCondition.state !== 'jump') {
+    if (ownCondition.action !== 'jump') {
       if (key[action.right] && ownCondition.dx < walkSpeed) {
-        ownCondition.state = 'turn'
+        ownCondition.action = 'turn'
       }
       if (key[action.left] && -walkSpeed < ownCondition.dx) {
-        ownCondition.state = 'turn'
+        ownCondition.action = 'turn'
       }
-      if (key[action.left] && key[action.right]) ownCondition.state = 'idle'
+      if (key[action.left] && key[action.right]) ownCondition.action = 'idle'
     }
   }
   detectChangeDirection()
-  ownCondition.x += ownCondition.dx
-  ownCondition.y += ownCondition.dy
-  ownCondition.dy += gravityConstant
-  if (size * 2.5 < ownCondition.dy) ownCondition.dy = size * 2.5 // terminal speed
-  Object.values(action).forEach(act => {
-    if (key[act]) {
-      if (keyHistory['pressed'][act] < keyHistory['released'][act]) {
-        keyHistory['pressed'][act] = time
-      }
-    }
-    else {
-      if (keyHistory['released'][act] < keyHistory['pressed'][act]) {
-        keyHistory['released'][act] = time
-      }
-    }
-  })
-}
-const collisionDetect = () => {
-  ground.forEach(obj => {
-    if (
-      obj.x - size < ownCondition.x && ownCondition.x < obj.x + obj.w + size &&
-      obj.y < ownCondition.y && ownCondition.y < obj.y + obj.h + size
-    ) {
-      if (ownCondition.x < obj.x) {}
-      if (ownCondition.y < obj.y + size) {
-        ownCondition.y = obj.y
-        if (jumpFlag) {
-          jumpFlag = false
-          cooltime.jump = 10
-        }
-        ownCondition.dy = 0
-        if (
-          ownCondition.state !== 'crouch' && ownCondition.state !== 'walk'
-          && ownCondition.state !== 'turn'
-        ) ownCondition.state = 'idle'
-      } else if (obj.y + obj.h < ownCondition.y) {
-        ownCondition.y = obj.y+ obj.h + size
-        ownCondition.dy = -ownCondition.dy
-      }
-    }
-    if (
-      obj.x - size < ownCondition.x && ownCondition.x < obj.x + obj.w + size &&
-      obj.y < ownCondition.y && ownCondition.y < obj.y + obj.h + size
-    ) {
-      ownCondition.x -= ownCondition.dx
-      ownCondition.dx = -ownCondition.dx
-    }
-  })
 }
 const stateUpdate = () => {
   ownCondition.direction = (key[action.left] && key[action.right]) ? ownCondition.direction
   : (key[action.left]) ? 'left'
   : (key[action.right]) ? 'right' : ownCondition.direction
-  if (ownCondition.state !== 'jump') {
-    ownCondition.state = (ownCondition.state === 'turn') ? 'turn'
+  if (ownCondition.action !== 'jump') {
+    ownCondition.action = (ownCondition.action === 'turn') ? 'turn'
     : (-.2 < ownCondition.dx  && ownCondition.dx < .2) ? 'idle'
     : (-1.4 < ownCondition.dx  && ownCondition.dx < 1.4) ? 'walk' : 'run'
   }
-  if (ownCondition.state === 'idle') {
+  if (ownCondition.action === 'idle') {
     const i = imgStat.idle
     i.time += 1
     // breath
@@ -283,7 +252,7 @@ const stateUpdate = () => {
       if (i.blinkTime === 0 || i.blinkTime === 1) i.condition += 1
       else if (i.blinkTime === 2 || i.blinkTime === 3)  i.condition -= 1
     }
-  } else if (ownCondition.state === 'walk') {
+  } else if (ownCondition.action === 'walk') {
     const i = imgStat.walk
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
@@ -293,16 +262,16 @@ const stateUpdate = () => {
       const b = imgStat.idle
       if (b.midBreath < b.breathInterval) b.breathInterval -= 1
     }
-  } else if (ownCondition.state === 'turn') {
+  } else if (ownCondition.action === 'turn') {
     const i = imgStat.turn
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
       i.condition -= i.length
       i.time = 0
-      ownCondition.state = 'walk'
+      ownCondition.action = 'walk'
     }
-  } else if (ownCondition.state === 'run') {
+  } else if (ownCondition.action === 'run') {
     const i = imgStat.run
     if (time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
@@ -310,12 +279,77 @@ const stateUpdate = () => {
       const b = imgStat.idle
       if (b.minBreath < b.breathInterval) b.breathInterval -= 1
     }
-  } else if (ownCondition.state === 'crouch') {
+  } else if (ownCondition.action === 'crouch') {
     const i = imgStat.crouch
     if (time % i.frame === 0) i.time += 1
-    if (ownCondition.state !== 'crouch') i.time = 0
+    if (ownCondition.action !== 'crouch') i.time = 0
     if (i.time === 0) i.condition = 9
   }
+  ownCondition.x += ownCondition.dx
+  if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
+  if (ownCondition.state === 'aerial') ownCondition.y += ownCondition.dy
+  ownCondition.dy += gravityConstant
+  if (size * 2.5 < ownCondition.dy) ownCondition.dy = size * 2.5 // terminal speed
+  Object.values(action).forEach(act => {
+    if (key[act]) {
+      if (keyHistory['pressed'][act] < keyHistory['released'][act]) {
+        keyHistory['pressed'][act] = time
+      }
+    }
+    else {
+      if (keyHistory['released'][act] < keyHistory['pressed'][act]) {
+        keyHistory['released'][act] = time
+      }
+    }
+  })
+  if (keyHistory['pressed'][action.debug] === time) debugMode = !debugMode
+}
+const collisionDetect = () => {
+  hitbox.x = ownCondition.x - size / 2
+  hitbox.y = ownCondition.y - size * 3
+  hitbox.w = size
+  hitbox.h = size * 3
+  let aerialFlag = true
+  ground.forEach(obj => {
+    if (
+      hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
+      hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
+    ) {
+      if (
+        hitbox.x + hitbox.w * .2 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .8
+      ) {
+        if (hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5) {
+          ownCondition.y += hitbox.h * .1
+          ownCondition.dy = 0
+          ownCondition.state = 'aerial'
+        } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) {
+          ownCondition.y = obj.y
+          ownCondition.dy = 0
+          aerialFlag = false
+          ownCondition.state = 'land'
+          jump.flag = false
+          jump.double = false
+          if (
+            ownCondition.action !== 'run' &&
+            ownCondition.action !== 'crouch' &&
+            ownCondition.action !== 'walk' &&
+            ownCondition.action !== 'turn'
+          ) ownCondition.action = 'idle'
+        }
+      }
+      if (
+        hitbox.y + hitbox.h * .2 <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h * .8
+      ) {
+        ownCondition.dx = -ownCondition.dx / 3
+        if (hitbox.x <= obj.x + obj.w && obj.x < hitbox.x + hitbox.w * .2) {
+          ownCondition.x += hitbox.w / 4
+        } else if (hitbox.x + hitbox.w * .8 < obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) {
+          ownCondition.x -= hitbox.w / 4
+        }
+      }
+    }
+  })
+  if (aerialFlag) ownCondition.state = 'aerial'
 }
 const draw = () => {
   const drawGround = () => {
@@ -325,12 +359,12 @@ const draw = () => {
   drawGround()
   const offset = {x: 24, y: 53}
   let i
-  if (ownCondition.state === 'idle') i = imgStat.idle.condition // don't nessessary?
-  else if (ownCondition.state === 'walk') i = imgStat.walk.condition
-  else if (ownCondition.state === 'turn') i = imgStat.turn.condition
-  else if (ownCondition.state === 'run') i = imgStat.run.condition
-  else if (ownCondition.state === 'crouch') i = imgStat.crouch.condition
-  else if (ownCondition.state === 'jump') {
+  if (ownCondition.action === 'idle') i = imgStat.idle.condition // don't nessessary?
+  else if (ownCondition.action === 'walk') i = imgStat.walk.condition
+  else if (ownCondition.action === 'turn') i = imgStat.turn.condition
+  else if (ownCondition.action === 'run') i = imgStat.run.condition
+  else if (ownCondition.action === 'crouch') i = imgStat.crouch.condition
+  else if (ownCondition.action === 'jump') {
     const ij = imgStat.jump
     i = (ownCondition.dy < -6) ? ij.start
     : (ownCondition.dy < -4) ? ij.start + 1
@@ -351,9 +385,13 @@ const main = () => {
   time += 1
   // internal process
   input()
-  collisionDetect()
   stateUpdate()
+  collisionDetect()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
+  if (debugMode) {
+    context.fillRect(hitbox.x, hitbox.y+hitbox.h*.1, hitbox.w, hitbox.h*.7)
+    context.fillRect(hitbox.x+hitbox.w*.2, hitbox.y+hitbox.h*.8, hitbox.w*.6, hitbox.h*.2)
+  }
   window.requestAnimationFrame(main)
 }
