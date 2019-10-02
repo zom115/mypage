@@ -153,7 +153,10 @@ const gravityConstant = .272
 const jumpConstant = 5
 let time = 0
 let jump = {flag: false, double: false, time: 0, cooltime: 0, chargeTime: 0}
-let cooltime = {leftStep: 0, rightStep: 0}
+let cooltime = {
+  step: 0, stepLimit: 15,stepDeferment: 15,
+  slide: 2, slideLimit: 45
+}
 let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j', debug: 'g', hitbox: 'h'}
 let key = {a: false, b: false, d: false, g: false, h: false, j: false, k: false, s: false, w: false}
 document.addEventListener('keydown', e => {
@@ -209,28 +212,48 @@ const input = () => {
     if (key[action.right] && ownCondition.dx < speed) ownCondition.dx += walkSpeed / 3
   }
   // step
-  if (cooltime.leftStep === 0) {
+  if (cooltime.step === 0) {
     if (
       key[action.left] &&
-      time - keyHistory['pressed'][action.left] < 15 &&
+      time - keyHistory['pressed'][action.left] < cooltime.stepLimit &&
       0 < keyHistory['released'][action.left] - keyHistory['pressed'][action.left] &&
-      keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < 15
+      keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < cooltime.stepLimit
     ) {
       ownCondition.dx -= 4
-      cooltime.leftStep = 15
+      cooltime.step = cooltime.stepDeferment
     }
-  } else if (ownCondition.action !== 'jump') cooltime.leftStep -= 1
-  if (cooltime.rightStep === 0) {
     if (
       key[action.right] &&
-      time - keyHistory['pressed'][action.right] < 15 &&
+      time - keyHistory['pressed'][action.right] < cooltime.stepLimit &&
       0 < keyHistory['released'][action.right] - keyHistory['pressed'][action.right] &&
-      keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < 15
+      keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < cooltime.stepLimit
     ) {
       ownCondition.dx += 4
-      cooltime.rightStep = 15
+      cooltime.step = cooltime.stepDeferment
     }
-  } else if (ownCondition.action !== 'jump') cooltime.rightStep -= 1
+  } else if (ownCondition.action !== 'jump') cooltime.step -= 1
+  // slide
+  if (cooltime.slide === 0) {
+    if (key[action.down] && ownCondition.state === 'land') {
+      const slideConstant = 2
+      const boostConstant = 6
+      let flag = false
+      if (slideConstant < ownCondition.dx) {
+        ownCondition.dx += boostConstant
+        flag = true
+      } else if (ownCondition.dx < -slideConstant) {
+        ownCondition.dx -= boostConstant
+        flag = true
+      }
+      if (flag) {
+        cooltime.slide = cooltime.slideLimit
+        if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
+      }
+    }
+  } else {
+    if (ownCondition.state === 'aerial' && 1 < cooltime.slide) cooltime.slide -= 2
+    else cooltime.slide -= 1
+  }
   // jump
   if (0 < jump.cooltime && ownCondition.state === 'land') jump.cooltime -= 1
   if (key[action.jump]) {
@@ -441,8 +464,11 @@ const draw = () => {
 const debugDisplay = () => {
   context.fillStyle = 'hsl(120, 100%, 50%)'
   context.font = `${size}px sans-serif`
-  context.fillText(`jumpCooltime: ${jump.cooltime}`, size * 2, size)
-  context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size * 2)
+  context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
+  context.fillText('cooltime', size * 10, size )
+  context.fillText(`jump : ${jump.cooltime}`, size * 16, size)
+  context.fillText(`step : ${cooltime.step}`, size * 16, size * 3)
+  context.fillText(`slide: ${cooltime.slide}`, size * 16, size * 5)
 }
 const displayHitbox = () => {
   context.fillStyle = 'hsl(300, 100%, 50%)'
