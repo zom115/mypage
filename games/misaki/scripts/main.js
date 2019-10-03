@@ -265,6 +265,7 @@ const input = () => {
         jump.double = true
         playAudio(audioStat.doubleJump)
         if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
+        jump.time = 0
       }
     } else if (jump.cooltime === 0) {
       player.dy = -jumpConstant
@@ -279,9 +280,12 @@ const input = () => {
       if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       player.state = 'aerial'
       jump.cooltime = 10
+      jump.time = 0
     }
     jump.time += 1
+    console.log(jump.time)
   } else {
+    if (jump.time < 5) jump.time = 14
     if (jumpConstant < jump.time / 3) jump.time = 0
     if (jump.time !== 0) player.dy += jumpConstant - jump.time / 3
     jump.time = 0
