@@ -163,7 +163,8 @@ setGround(14, 18, 1, 2)
 setGround(15, 22, 1, 7)
 setGround(37, 14, 2, 9)
 setGround(37, 11, 8, 1)
-const walkSpeed = .7
+const walkSpeed = .7 // dx := 1.4
+const dashSpeed = 2.8 // dx := 3.5
 const brakeConstant = .94
 const gravityConstant = .272
 const jumpConstant = 5
@@ -223,7 +224,7 @@ const input = () => {
   //   audioLoadedMap[audioPathList[audioStat.win]].play()
   // }
   // walk
-    const speed = (key[action.dash]) ? 2.8 : walkSpeed
+  const speed = (key[action.dash]) ? dashSpeed : walkSpeed
   if (player.action !== 'jump') {
     player.dx *= brakeConstant
     if (key[action.left] && -speed < player.dx) player.dx -= walkSpeed
@@ -235,6 +236,7 @@ const input = () => {
   }
   // step
   if (cooltime.step === 0) {
+    let stepFlag = false
     if (
       key[action.left] &&
       time - keyHistory['pressed'][action.left] < cooltime.stepLimit &&
@@ -242,7 +244,7 @@ const input = () => {
       keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < cooltime.stepLimit
     ) {
       player.dx -= 4
-      cooltime.step = cooltime.stepDeferment
+      stepFlag = true
     }
     if (
       key[action.right] &&
@@ -251,6 +253,10 @@ const input = () => {
       keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < cooltime.stepLimit
     ) {
       player.dx += 4
+      stepFlag = true
+    }
+    if (stepFlag) {
+      if (0 < player.dy) player.dy *= .7
       cooltime.step = cooltime.stepDeferment
     }
   } else if (player.action !== 'jump') cooltime.step -= 1
@@ -295,6 +301,7 @@ const input = () => {
         jump.double = true
         playAudio(audioStat.doubleJump)
       } else {
+        if (player.dx < -3.5 || 3.5 < player.dx) player.dx *= .7
         playAudio(audioStat.jump)
       }
       if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
@@ -312,7 +319,6 @@ const input = () => {
       } else if (jump.time !== 0) jump.time += 1
     }
   }
-  console.log(jump.time)
   const detectChangeDirection = () => {
     if (player.action !== 'jump') {
       if (key[action.right] && player.dx < walkSpeed) player.action = 'turn'
@@ -478,7 +484,7 @@ const draw = () => {
   : ((player.y - ratio.y) / (stage.height - ratio.y * 2)) * (stage.height - canvas.offsetHeight)
   const drawGround = () => {
     context.fillStyle = 'hsl(180, 100%, 50%)'
-    ground.forEach(obj => context.fillRect(obj.x - stageOffset.x, obj.y - stageOffset.y, obj.w, obj.h))
+    ground.forEach(obj => context.fillRect((obj.x - stageOffset.x)|0, (obj.y - stageOffset.y)|0, obj.w|0, obj.h|0))
   }
   drawGround()
   const imageOffset = {x: 24, y: 53}
