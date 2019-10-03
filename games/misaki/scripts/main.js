@@ -136,6 +136,20 @@ setGround(8, 25, 6, 1)
 setGround(3, 31, 9, 1)
 setGround(4, 37, 6, 1)
 setGround(4, 43, 5, 1)
+setGround(18, 37, 1, 3)
+setGround(18, 43, 1, 1)
+setGround(22, 37, 1, 3)
+setGround(22, 43, 1, 1)
+setGround(26, 37, 1, 3)
+setGround(26, 43, 1, 1)
+setGround(29, 36, 1, 3)
+setGround(29, 42, 1, 1)
+setGround(33, 35, 1, 3)
+setGround(32, 41, 3, 1)
+setGround(37, 36, 1, 3)
+setGround(37, 42, 1, 1)
+setGround(40, 37, 1, 3)
+setGround(40, 43, 1, 1)
 setGround(24, 34, 5, 2)
 setGround(41, 32, 2, 1)
 setGround(44, 32, 1, 2)
@@ -159,8 +173,12 @@ let cooltime = {
   step: 0, stepLimit: 15,stepDeferment: 15,
   slide: 2, slideLimit: 45
 }
-let action = {up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j', debug: 'g', hitbox: 'h'}
-let key = {a: false, b: false, d: false, g: false, h: false, j: false, k: false, s: false, w: false}
+let action = {
+  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j', debug: 'g', hitbox: 'h'
+}
+let key = {
+  a: false, b: false, d: false, g: false, h: false, j: false, k: false, s: false, w: false
+}
 document.addEventListener('keydown', e => {
   if (e.keyCode === 65) key.a = true
   if (e.keyCode === 66) key.b = true
@@ -190,11 +208,13 @@ Object.values(action).forEach(act => {
 })
 const volume = document.getElementsByTagName`input`[0]
 volume.addEventListener('input', () => {
-  audioPathList.forEach(path=> {
-    audioLoadedMap[path].volume = volume.value
-  })
+  audioPathList.forEach(path => audioLoadedMap[path].volume = volume.value)
 })
-let display = {debug: false, hitbox: false}
+let mode = {DECO: false, debug: false, hitbox: false}
+const inputDOM = document.getElementsByTagName`input`
+inputDOM.DECO.addEventListener('change', () => {mode.DECO = !mode.DECO}, false)
+inputDOM.debug.addEventListener('change', () => {mode.debug = !mode.debug}, false)
+inputDOM.hitbox.addEventListener('change', () => {mode.hitbox = !mode.hitbox}, false)
 const input = () => {
   // warp
   // if (size * 53 < player.x) {
@@ -283,21 +303,20 @@ const input = () => {
       jump.time = 0
     }
     jump.time += 1
-    console.log(jump.time)
   } else {
-    if (jump.time < 5) jump.time = 14
-    if (jumpConstant < jump.time / 3) jump.time = 0
-    if (jump.time !== 0) player.dy += jumpConstant - jump.time / 3
-    jump.time = 0
+    if (mode.DECO) jump.time = 0
+    else {
+      if (5 < jump.time) {
+        if (player.dy < 0) player.dy = 0
+        jump.time = 0
+      } else if (jump.time !== 0) jump.time += 1
+    }
   }
+  console.log(jump.time)
   const detectChangeDirection = () => {
     if (player.action !== 'jump') {
-      if (key[action.right] && player.dx < walkSpeed) {
-        player.action = 'turn'
-      }
-      if (key[action.left] && -walkSpeed < player.dx) {
-        player.action = 'turn'
-      }
+      if (key[action.right] && player.dx < walkSpeed) player.action = 'turn'
+      if (key[action.left] && -walkSpeed < player.dx) player.action = 'turn'
       if (key[action.left] && key[action.right]) player.action = 'idle'
     }
   }
@@ -388,8 +407,18 @@ const stateUpdate = () => {
       }
     }
   })
-  if (keyHistory['pressed'][action.debug] === time) display.debug = !display.debug
-  if (keyHistory['pressed'][action.hitbox] === time) display.hitbox = !display.hitbox
+  if (keyHistory['pressed'][action.up] === time) {
+    mode.DECO = !mode.DECO
+    inputDOM.DECO.checked = !inputDOM.DECO.checked
+  }
+  if (keyHistory['pressed'][action.debug] === time) {
+    mode.debug = !mode.debug
+    inputDOM.debug.checked = !inputDOM.debug.checked
+  }
+  if (keyHistory['pressed'][action.hitbox] === time) {
+    mode.hitbox = !mode.hitbox
+    inputDOM.hitbox.checked = !inputDOM.hitbox.checked
+  }
 }
 const collisionDetect = () => {
   hitbox.x = player.x - size / 2
@@ -474,7 +503,13 @@ const draw = () => {
   const x = (player.x - imageOffset.x - stageOffset.x)|0
   if (player.direction === 'right'){
     drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
-  } else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0, true)
+    } else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0, true)
+  const displayHitbox = () => {
+    context.fillStyle = 'hsl(300, 100%, 50%)'
+    context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
+    context.fillRect(hitbox.x+hitbox.w*.2 - stageOffset.x, hitbox.y+hitbox.h*.8 - stageOffset.y, hitbox.w*.6, hitbox.h*.2)
+  }
+  if (mode.hitbox) displayHitbox()
 }
 const displayDebug = () => {
   context.fillStyle = 'hsl(120, 100%, 50%)'
@@ -485,11 +520,6 @@ const displayDebug = () => {
   context.fillText(`step : ${cooltime.step}`, size * 16, size * 3)
   context.fillText(`slide: ${cooltime.slide}`, size * 16, size * 5)
 }
-const displayHitbox = () => {
-  context.fillStyle = 'hsl(300, 100%, 50%)'
-  context.fillRect(hitbox.x, hitbox.y+hitbox.h*.1, hitbox.w, hitbox.h*.7)
-  context.fillRect(hitbox.x+hitbox.w*.2, hitbox.y+hitbox.h*.8, hitbox.w*.6, hitbox.h*.2)
-}
 const main = () => {
   time += 1
   // internal process
@@ -498,7 +528,6 @@ const main = () => {
   collisionDetect()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
-  if (display.debug) displayDebug()
-  if (display.hitbox) displayHitbox()
+  if (mode.debug) displayDebug()
   window.requestAnimationFrame(main)
 }

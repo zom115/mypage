@@ -24,9 +24,37 @@
       <article>
         <section>
           <h1>not a Unity Chan</h1>
-          <canvas id="canvas" width="854" height="480"></canvas><span>volume</span>
-          <input type="range" value=".2" min="0" max="1" step=".01" oninput="document.getElementById(&quot;volume&quot;).value=this.value">
-          <output id="volume">0.2</output><br>
+          <canvas id="canvas" width="854" height="480"></canvas>
+          <p>volume
+            <input type="range" value=".2" min="0" max="1" step=".01" oninput="document.getElementById(&quot;volume&quot;).value=this.value">
+            <output id="volume">0.2</output>
+          </p><br>
+          <table>
+            <tr>
+              <td>
+                <input type="checkbox" name="DECO" value="true">
+              </td>
+              <td>W</td>
+              <td>:</td>
+              <td>DECOジャン</td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" name="debug" value="true">
+              </td>
+              <td>G</td>
+              <td>:</td>
+              <td>デバッグ</td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" name="hitbox" value="true">
+              </td>
+              <td>H</td>
+              <td>:</td>
+              <td>ヒットボックス</td>
+            </tr>
+          </table>
         </section>
         <section>
           <h2>うごかしかた</h2>
