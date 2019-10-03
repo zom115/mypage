@@ -517,7 +517,7 @@ const collisionDetect = () => {
   })
   if (aerialFlag) player.state = 'aerial'
 }
-const draw = () => {
+const draw = () => {console.log(player.action)
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0
@@ -536,14 +536,14 @@ const draw = () => {
   if (player.action === 'slide') i = imageStat.slide.condition
   else if (player.action === 'jump' || player.state === 'aerial') {
     const ij = imageStat.jump
-    i = (player.dy < -6) ? ij.start
-    : (player.dy < -4) ? ij.start + 1
-    : (player.dy < -2) ? ij.start + 2
-    : (player.dy < -1) ? ij.start + 3
-    : (6 < player.dy) ? ij.start + 7
+    i = (6 < player.dy) ? ij.start + 7
     : (4 < player.dy) ? ij.start + 6
     : (2 < player.dy) ? ij.start + 5
     : (0 < player.dy) ? ij.start + 4
+    : (-1 < player.dy) ? ij.start + 3
+    : (-2 < player.dy) ? ij.start + 2
+    : (-4 < player.dy) ? ij.start + 1
+    : (-6 < player.dy) ? ij.start
     : ij.start + 8
   } else if (player.action === 'idle') i = imageStat.idle.condition // is nessessary?
   else if (player.action === 'walk') i = imageStat.walk.condition
