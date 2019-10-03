@@ -97,10 +97,10 @@ const timerId = setInterval(() => { // loading monitoring
     main()
   }
 }, 100)
-const drawImage = (arg, x, y, invFlag = false) => {
+const drawImage = (arg, x, y) => {
   const img = imageLoadedMap[imagePathList[arg]]
   context.save()
-  if (invFlag) {
+  if (player.direction === 'left') {
     context.scale(-1, 1)
     context.drawImage(img, -x - img.width, y)
   } else context.drawImage(img, x, y)
@@ -137,10 +137,7 @@ setGround(8, 25, 6, 1)
 setGround(3, 31, 9, 1)
 setGround(4, 37, 6, 1)
 setGround(5, 43, 4, 1)
-setGround(26, 37, 1, 3)
-setGround(26, 43, 1, 1)
-setGround(29, 36, 1, 3)
-setGround(29, 42, 1, 1)
+setGround(20, 41, 5, 1)
 setGround(33, 35, 1, 3)
 setGround(32, 41, 3, 1)
 setGround(37, 36, 1, 3)
@@ -158,7 +155,7 @@ setGround(47, 32, 2, 1)
 setGround(50, 32, 1, 2)
 setGround(54, 32, 2, 2)
 setGround(18, 25, 12, 1)
-setGround(31, 19, 5, 1)
+setGround(30, 18, 5, 1)
 setGround(51, 20, 3, 4)
 setGround(52, 26, 3, 3)
 setGround(14, 18, 1, 2)
@@ -222,7 +219,7 @@ const inputDOM = document.getElementsByTagName`input`
 inputDOM.DECO.addEventListener('change', () => {mode.DECO = !mode.DECO}, false)
 inputDOM.debug.addEventListener('change', () => {mode.debug = !mode.debug}, false)
 inputDOM.hitbox.addEventListener('change', () => {mode.hitbox = !mode.hitbox}, false)
-inputDOM.hitbox.addEventListener('change', () => {mode.map = !mode.map}, false)
+inputDOM.map.addEventListener('change', () => {mode.map = !mode.map}, false)
 const input = () => {
   // warp
   // if (size * 53 < player.x) {
@@ -281,6 +278,7 @@ const input = () => {
         flag = true
       }
       if (flag) {
+        player.action = 'slide'
         cooltime.slide = cooltime.slideLimit
         if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       }
@@ -341,8 +339,9 @@ const stateUpdate = () => {
   : (key[action.right]) ? 'right' : player.direction
   if (player.action !== 'jump') {
     player.action = (player.action === 'turn') ? 'turn'
-    : (-.2 < player.dx  && player.dx < .2) ? 'idle'
-    : (-1.4 < player.dx  && player.dx < 1.4) ? 'walk' : 'run'
+    : (-.2 < player.dx && player.dx < .2) ? 'idle'
+    : (-1.4 < player.dx && player.dx < 1.4) ? 'walk'
+    : (player.action === 'slide' && (player.dx < -3.5 || 3.5 < player.dx)) ? 'slide' : 'run'
   }
   if (player.action === 'idle') {
     const i = imageStat.idle
@@ -379,6 +378,7 @@ const stateUpdate = () => {
       i.time = 0
       const b = imageStat.idle
       if (b.midBreath < b.breathInterval) b.breathInterval -= 1
+      else if (b.breathInterval < b.midBreath)b.breathInterval += 1
     }
   } else if (player.action === 'turn') {
     const i = imageStat.turn
@@ -396,6 +396,7 @@ const stateUpdate = () => {
       i.condition = i.start
       const b = imageStat.idle
       if (b.minBreath < b.breathInterval) b.breathInterval -= 1
+      else if (b.breathInterval < b.minBreath) b.breathInterval += 1
     }
   } else if (player.action === 'crouch') {
     const i = imageStat.crouch
@@ -438,10 +439,18 @@ const stateUpdate = () => {
   }
 }
 const collisionDetect = () => {
-  hitbox.x = player.x - size / 2
-  hitbox.y = player.y - size * 3
-  hitbox.w = size
-  hitbox.h = size * 3
+  if (player.action === 'slide') {
+    if (player.direction === 'left') hitbox.x = player.x - size * 2.5
+    else hitbox.x = player.x - size / 2
+    hitbox.y = player.y - size
+    hitbox.w = size * 3
+    hitbox.h = size
+  } else {
+    hitbox.x = player.x - size / 2
+    hitbox.y = player.y - size * 3
+    hitbox.w = size
+    hitbox.h = size * 3
+  }
   let aerialFlag = true
   field.forEach(obj => {
     if (
@@ -466,7 +475,8 @@ const collisionDetect = () => {
             player.action !== 'run' &&
             player.action !== 'crouch' &&
             player.action !== 'walk' &&
-            player.action !== 'turn'
+            player.action !== 'turn' &&
+            player.action !== 'slide'
           ) player.action = 'idle'
         }
       }
@@ -518,9 +528,16 @@ const draw = () => {
     : ij.start + 8
   }
   const x = (player.x - imageOffset.x - stageOffset.x)|0
-  if (player.direction === 'right'){
-    drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
-    } else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0, true)
+  if (player.action === 'slide') {
+    context.fillStyle = 'hsl(350, 100%, 25%)'
+    if (player.direction === 'left') {
+      context.fillRect(
+        x - size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
+      )
+    } else context.fillRect(
+      x + size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
+    )
+  } else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
   const displayHitbox = () => {
     context.fillStyle = 'hsl(300, 100%, 50%)'
     context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
