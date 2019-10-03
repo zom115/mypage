@@ -1,4 +1,8 @@
 'use strict'
+const audioControls = document.getElementsByTagName`audio`[0]
+audioControls.volume = .2
+const canvas = document.getElementById`canvas`
+const context = canvas.getContext`2d`
 const imageChangeList = [0, 12, 18, 20, 28, 31, 33]
 const imageStat = {
   idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
@@ -78,7 +82,7 @@ let audioLoadedMap = []
 audioPathList.forEach(path => {
   const audioPreload = new Audio()
   audioPreload.src = path
-  audioPreload.volume = .5
+  audioPreload.volume = .2
   audioPreload.addEventListener('canplaythrough', () => {
     audioLoadedList.push(path)
     audioLoadedMap[path] = audioPreload
@@ -93,31 +97,28 @@ const timerId = setInterval(() => { // loading monitoring
     main()
   }
 }, 100)
-const drawImage = (arg, x, y) => {
-  const img = imageLoadedMap[imagePathList[arg]]
-  context.drawImage(img, x, y)
-}
-const drawInvImage = (arg, x, y) => {
+const drawImage = (arg, x, y, invFlag = false) => {
   const img = imageLoadedMap[imagePathList[arg]]
   context.save()
-  context.scale(-1, 1)
-  context.drawImage(img, -x - img.width, y)
+  if (invFlag) {
+    context.scale(-1, 1)
+    context.drawImage(img, -x - img.width, y)
+  } else context.drawImage(img, x, y)
   context.restore()
 }
 const playAudio = (value, startTime = 0) => {
   audioLoadedMap[audioPathList[value]].currentTime = startTime
   audioLoadedMap[audioPathList[value]].play()
 }
-const canvas = document.getElementById`canvas`
-const context = canvas.getContext`2d`
 const size = 16
-let ownCondition = {
-  x: canvas.offsetWidth * 1 / 8, y: canvas.offsetHeight * 7 / 8,
+let stage = {width: size * 60, height: size * 45}
+let player = {
+  x: stage.width * 1 / 8, y: stage.height * 7 / 8,
   dx: 0, dy: 0, action: 'idle', direction: 'right', state: 'aerial'
 }
 const hitbox = {
-  x: ownCondition.x - size / 2,
-  y: ownCondition.y - size * 3,
+  x: player.x - size / 2,
+  y: player.y - size * 3,
   w: size,
   h: size * 3
 }
@@ -126,27 +127,28 @@ const setGround = (x, y, w, h) => {
   ground.push({x: x * size, y: y * size, w: w * size, h: h * size})
 }
 // frame
-setGround(0, 29, 53, 1)
-setGround(0, 0, 1, 27)
-setGround(53, 1, 1, 29)
+setGround(0, stage.height / size - 1, stage.width / size, 1)
+setGround(0, 0, 1, stage.height / size)
+setGround(stage.width / size - 1, 1, 1, stage.height / size)
 // object
-setGround(4, 7, 12, 1)
-setGround(8, 13, 6, 1)
-setGround(3, 19, 9, 1)
-setGround(4, 25, 5, 1)
-setGround(24, 24, 5, 2)
-setGround(36, 22, 2, 1)
-setGround(39, 22, 1, 2)
-setGround(42, 22, 2, 1)
-setGround(45, 22, 1, 2)
-setGround(49, 22, 2, 2)
-setGround(18, 15, 12, 1)
-setGround(46, 10, 3, 4)
-setGround(47, 16, 3, 3)
-setGround(14, 8, 1, 2)
-setGround(15, 12, 1, 7)
-setGround(37, 4, 2, 9)
-setGround(37, 1, 8, 1)
+setGround(4, 17, 12, 1)
+setGround(8, 25, 6, 1)
+setGround(3, 31, 9, 1)
+setGround(4, 37, 6, 1)
+setGround(4, 43, 5, 1)
+setGround(24, 34, 5, 2)
+setGround(41, 32, 2, 1)
+setGround(44, 32, 1, 2)
+setGround(47, 32, 2, 1)
+setGround(50, 32, 1, 2)
+setGround(54, 32, 2, 2)
+setGround(18, 25, 12, 1)
+setGround(51, 20, 3, 4)
+setGround(52, 26, 3, 3)
+setGround(14, 18, 1, 2)
+setGround(15, 22, 1, 7)
+setGround(37, 14, 2, 9)
+setGround(37, 11, 8, 1)
 const walkSpeed = .7
 const brakeConstant = .94
 const gravityConstant = .272
@@ -195,21 +197,21 @@ volume.addEventListener('input', () => {
 let display = {debug: false, hitbox: false}
 const input = () => {
   // warp
-  if (size * 53 < ownCondition.x) {
-    ownCondition.x = 50
-    audioLoadedMap[audioPathList[audioStat.win]].currentTime = 0
-    audioLoadedMap[audioPathList[audioStat.win]].play()
-  }
+  // if (size * 53 < player.x) {
+  //   player.x = 50
+  //   audioLoadedMap[audioPathList[audioStat.win]].currentTime = 0
+  //   audioLoadedMap[audioPathList[audioStat.win]].play()
+  // }
   // walk
     const speed = (key[action.dash]) ? 2.8 : walkSpeed
-  if (ownCondition.action !== 'jump') {
-    ownCondition.dx *= brakeConstant
-    if (key[action.left] && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed
-    if (key[action.right] && ownCondition.dx < speed) ownCondition.dx += walkSpeed
+  if (player.action !== 'jump') {
+    player.dx *= brakeConstant
+    if (key[action.left] && -speed < player.dx) player.dx -= walkSpeed
+    if (key[action.right] && player.dx < speed) player.dx += walkSpeed
   } else {
     // airal brake
-    if (key[action.left] && -speed < ownCondition.dx) ownCondition.dx -= walkSpeed / 3
-    if (key[action.right] && ownCondition.dx < speed) ownCondition.dx += walkSpeed / 3
+    if (key[action.left] && -speed < player.dx) player.dx -= walkSpeed / 3
+    if (key[action.right] && player.dx < speed) player.dx += walkSpeed / 3
   }
   // step
   if (cooltime.step === 0) {
@@ -219,7 +221,7 @@ const input = () => {
       0 < keyHistory['released'][action.left] - keyHistory['pressed'][action.left] &&
       keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < cooltime.stepLimit
     ) {
-      ownCondition.dx -= 4
+      player.dx -= 4
       cooltime.step = cooltime.stepDeferment
     }
     if (
@@ -228,21 +230,21 @@ const input = () => {
       0 < keyHistory['released'][action.right] - keyHistory['pressed'][action.right] &&
       keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < cooltime.stepLimit
     ) {
-      ownCondition.dx += 4
+      player.dx += 4
       cooltime.step = cooltime.stepDeferment
     }
-  } else if (ownCondition.action !== 'jump') cooltime.step -= 1
+  } else if (player.action !== 'jump') cooltime.step -= 1
   // slide
   if (cooltime.slide === 0) {
-    if (key[action.down] && ownCondition.state === 'land') {
+    if (key[action.down] && player.state === 'land') {
       const slideConstant = 2
       const boostConstant = 6
       let flag = false
-      if (slideConstant < ownCondition.dx) {
-        ownCondition.dx += boostConstant
+      if (slideConstant < player.dx) {
+        player.dx += boostConstant
         flag = true
-      } else if (ownCondition.dx < -slideConstant) {
-        ownCondition.dx -= boostConstant
+      } else if (player.dx < -slideConstant) {
+        player.dx -= boostConstant
         flag = true
       }
       if (flag) {
@@ -251,62 +253,62 @@ const input = () => {
       }
     }
   } else {
-    if (ownCondition.state === 'aerial' && 1 < cooltime.slide) cooltime.slide -= 2
+    if (player.state === 'aerial' && 1 < cooltime.slide) cooltime.slide -= 2
     else cooltime.slide -= 1
   }
   // jump
-  if (0 < jump.cooltime && ownCondition.state === 'land') jump.cooltime -= 1
+  if (0 < jump.cooltime && player.state === 'land') jump.cooltime -= 1
   if (key[action.jump]) {
     if (jump.flag) {
       if (!jump.double && jump.time === 0) {
-        ownCondition.dy = -jumpConstant
+        player.dy = -jumpConstant
         jump.double = true
         playAudio(audioStat.doubleJump)
         if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       }
     } else if (jump.cooltime === 0) {
-      ownCondition.dy = -jumpConstant
-      ownCondition.action = 'jump'
+      player.dy = -jumpConstant
+      player.action = 'jump'
       jump.flag = true
-      if (ownCondition.state === 'aerial') {
+      if (player.state === 'aerial') {
         jump.double = true
         playAudio(audioStat.doubleJump)
       } else {
         playAudio(audioStat.jump)
       }
       if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
-      ownCondition.state = 'aerial'
+      player.state = 'aerial'
       jump.cooltime = 10
     }
     jump.time += 1
   } else {
     if (jumpConstant < jump.time / 3) jump.time = 0
-    if (jump.time !== 0) ownCondition.dy += jumpConstant - jump.time / 3
+    if (jump.time !== 0) player.dy += jumpConstant - jump.time / 3
     jump.time = 0
   }
   const detectChangeDirection = () => {
-    if (ownCondition.action !== 'jump') {
-      if (key[action.right] && ownCondition.dx < walkSpeed) {
-        ownCondition.action = 'turn'
+    if (player.action !== 'jump') {
+      if (key[action.right] && player.dx < walkSpeed) {
+        player.action = 'turn'
       }
-      if (key[action.left] && -walkSpeed < ownCondition.dx) {
-        ownCondition.action = 'turn'
+      if (key[action.left] && -walkSpeed < player.dx) {
+        player.action = 'turn'
       }
-      if (key[action.left] && key[action.right]) ownCondition.action = 'idle'
+      if (key[action.left] && key[action.right]) player.action = 'idle'
     }
   }
   detectChangeDirection()
 }
 const stateUpdate = () => {
-  ownCondition.direction = (key[action.left] && key[action.right]) ? ownCondition.direction
+  player.direction = (key[action.left] && key[action.right]) ? player.direction
   : (key[action.left]) ? 'left'
-  : (key[action.right]) ? 'right' : ownCondition.direction
-  if (ownCondition.action !== 'jump') {
-    ownCondition.action = (ownCondition.action === 'turn') ? 'turn'
-    : (-.2 < ownCondition.dx  && ownCondition.dx < .2) ? 'idle'
-    : (-1.4 < ownCondition.dx  && ownCondition.dx < 1.4) ? 'walk' : 'run'
+  : (key[action.right]) ? 'right' : player.direction
+  if (player.action !== 'jump') {
+    player.action = (player.action === 'turn') ? 'turn'
+    : (-.2 < player.dx  && player.dx < .2) ? 'idle'
+    : (-1.4 < player.dx  && player.dx < 1.4) ? 'walk' : 'run'
   }
-  if (ownCondition.action === 'idle') {
+  if (player.action === 'idle') {
     const i = imageStat.idle
     i.time += 1
     // breath
@@ -332,7 +334,7 @@ const stateUpdate = () => {
       if (i.blinkTime === 0 || i.blinkTime === 1) i.condition += 1
       else if (i.blinkTime === 2 || i.blinkTime === 3)  i.condition -= 1
     }
-  } else if (ownCondition.action === 'walk') {
+  } else if (player.action === 'walk') {
     const i = imageStat.walk
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
@@ -342,16 +344,16 @@ const stateUpdate = () => {
       const b = imageStat.idle
       if (b.midBreath < b.breathInterval) b.breathInterval -= 1
     }
-  } else if (ownCondition.action === 'turn') {
+  } else if (player.action === 'turn') {
     const i = imageStat.turn
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
       i.condition -= i.length
       i.time = 0
-      ownCondition.action = 'walk'
+      player.action = 'walk'
     }
-  } else if (ownCondition.action === 'run') {
+  } else if (player.action === 'run') {
     const i = imageStat.run
     if (time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
@@ -359,17 +361,17 @@ const stateUpdate = () => {
       const b = imageStat.idle
       if (b.minBreath < b.breathInterval) b.breathInterval -= 1
     }
-  } else if (ownCondition.action === 'crouch') {
+  } else if (player.action === 'crouch') {
     const i = imageStat.crouch
     if (time % i.frame === 0) i.time += 1
-    if (ownCondition.action !== 'crouch') i.time = 0
+    if (player.action !== 'crouch') i.time = 0
     if (i.time === 0) i.condition = 9
   }
-  ownCondition.x += ownCondition.dx
-  if (-.01 < ownCondition.dx && ownCondition.dx < .01) ownCondition.dx = 0
-  if (ownCondition.state === 'aerial') ownCondition.y += ownCondition.dy
-  ownCondition.dy += gravityConstant
-  if (size * 2.5 < ownCondition.dy) ownCondition.dy = size * 2.5 // terminal speed
+  player.x += player.dx
+  if (-.01 < player.dx && player.dx < .01) player.dx = 0
+  if (player.state === 'aerial') player.y += player.dy
+  player.dy += gravityConstant
+  if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
   Object.values(action).forEach(act => {
     if (key[act]) {
       if (keyHistory['pressed'][act] < keyHistory['released'][act]) {
@@ -386,8 +388,8 @@ const stateUpdate = () => {
   if (keyHistory['pressed'][action.hitbox] === time) display.hitbox = !display.hitbox
 }
 const collisionDetect = () => {
-  hitbox.x = ownCondition.x - size / 2
-  hitbox.y = ownCondition.y - size * 3
+  hitbox.x = player.x - size / 2
+  hitbox.y = player.y - size * 3
   hitbox.w = size
   hitbox.h = size * 3
   let aerialFlag = true
@@ -400,68 +402,77 @@ const collisionDetect = () => {
         hitbox.x + hitbox.w * .2 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .8
       ) {
         if (hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5) {
-          ownCondition.y += hitbox.h * .1
-          ownCondition.dy = 0
-          ownCondition.state = 'aerial'
+          player.y += hitbox.h * .1
+          player.dy = 0
+          player.state = 'aerial'
         } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) {
-          ownCondition.y = obj.y
-          ownCondition.dy = 0
+          player.y = obj.y
+          player.dy = 0
           aerialFlag = false
-          ownCondition.state = 'land'
+          player.state = 'land'
           jump.flag = false
           jump.double = false
           if (
-            ownCondition.action !== 'run' &&
-            ownCondition.action !== 'crouch' &&
-            ownCondition.action !== 'walk' &&
-            ownCondition.action !== 'turn'
-          ) ownCondition.action = 'idle'
+            player.action !== 'run' &&
+            player.action !== 'crouch' &&
+            player.action !== 'walk' &&
+            player.action !== 'turn'
+          ) player.action = 'idle'
         }
       }
       if (
         hitbox.y + hitbox.h * .2 <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h * .8
       ) {
-        ownCondition.dx = -ownCondition.dx / 3
+        player.dx = -player.dx / 3
         if (hitbox.x <= obj.x + obj.w && obj.x < hitbox.x + hitbox.w * .2) {
-          ownCondition.x += hitbox.w / 4
+          player.x += hitbox.w / 4
         } else if (hitbox.x + hitbox.w * .8 < obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) {
-          ownCondition.x -= hitbox.w / 4
+          player.x -= hitbox.w / 4
         }
       }
     }
   })
-  if (aerialFlag) ownCondition.state = 'aerial'
+  if (aerialFlag) player.state = 'aerial'
 }
 const draw = () => {
+  const stageOffset = {x: 0, y: 0}
+  const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
+  stageOffset.x = player.x < ratio.x ? 0
+  : stage.width - ratio.x < player.x ? stage.width - canvas.offsetWidth
+  : ((player.x - ratio.x) / (stage.width - ratio.x * 2)) * (stage.width - canvas.offsetWidth)
+  stageOffset.y = player.y < ratio.y ? 0
+  : stage.height - ratio.y < player.y ? stage.height - canvas.offsetHeight
+  : ((player.y - ratio.y) / (stage.height - ratio.y * 2)) * (stage.height - canvas.offsetHeight)
   const drawGround = () => {
     context.fillStyle = 'hsl(180, 100%, 50%)'
-    ground.forEach(obj => context.fillRect(obj.x, obj.y, obj.w, obj.h))
+    ground.forEach(obj => context.fillRect(obj.x - stageOffset.x, obj.y - stageOffset.y, obj.w, obj.h))
   }
   drawGround()
-  const offset = {x: 24, y: 53}
+  const imageOffset = {x: 24, y: 53}
   let i
-  if (ownCondition.action === 'idle') i = imageStat.idle.condition // don't nessessary?
-  else if (ownCondition.action === 'walk') i = imageStat.walk.condition
-  else if (ownCondition.action === 'turn') i = imageStat.turn.condition
-  else if (ownCondition.action === 'run') i = imageStat.run.condition
-  else if (ownCondition.action === 'crouch') i = imageStat.crouch.condition
-  else if (ownCondition.action === 'jump') {
+  if (player.action === 'idle') i = imageStat.idle.condition // don't nessessary?
+  else if (player.action === 'walk') i = imageStat.walk.condition
+  else if (player.action === 'turn') i = imageStat.turn.condition
+  else if (player.action === 'run') i = imageStat.run.condition
+  else if (player.action === 'crouch') i = imageStat.crouch.condition
+  else if (player.action === 'jump') {
     const ij = imageStat.jump
-    i = (ownCondition.dy < -6) ? ij.start
-    : (ownCondition.dy < -4) ? ij.start + 1
-    : (ownCondition.dy < -2) ? ij.start + 2
-    : (ownCondition.dy < -1) ? ij.start + 3
-    : (6 < ownCondition.dy) ? ij.start + 7
-    : (4 < ownCondition.dy) ? ij.start + 6
-    : (2 < ownCondition.dy) ? ij.start + 5
-    : (0 < ownCondition.dy) ? ij.start + 4
+    i = (player.dy < -6) ? ij.start
+    : (player.dy < -4) ? ij.start + 1
+    : (player.dy < -2) ? ij.start + 2
+    : (player.dy < -1) ? ij.start + 3
+    : (6 < player.dy) ? ij.start + 7
+    : (4 < player.dy) ? ij.start + 6
+    : (2 < player.dy) ? ij.start + 5
+    : (0 < player.dy) ? ij.start + 4
     : ij.start + 8
   }
-  if (ownCondition.direction === 'right'){
-    drawImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
-  } else drawInvImage(i, (ownCondition.x - offset.x)|0, (ownCondition.y - offset.y)|0)
+  const x = (player.x - imageOffset.x - stageOffset.x)|0
+  if (player.direction === 'right'){
+    drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
+  } else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0, true)
 }
-const debugDisplay = () => {
+const displayDebug = () => {
   context.fillStyle = 'hsl(120, 100%, 50%)'
   context.font = `${size}px sans-serif`
   context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
@@ -483,7 +494,7 @@ const main = () => {
   collisionDetect()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
-  if (display.debug) debugDisplay()
+  if (display.debug) displayDebug()
   if (display.hitbox) displayHitbox()
   window.requestAnimationFrame(main)
 }
