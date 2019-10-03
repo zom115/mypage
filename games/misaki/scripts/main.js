@@ -3,7 +3,7 @@ const audioControls = document.getElementsByTagName`audio`[0]
 audioControls.volume = .2
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const imageChangeList = [0, 12, 18, 20, 28, 31, 33]
+const imageChangeList = [0, 12, 18, 20, 28, 31, 40]
 const imageStat = {
   idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
     time: 0, maxInterval: 30, frame: 5,
@@ -17,6 +17,7 @@ const imageStat = {
   }, crouch: {start: imageChangeList[4], length: 3, condition: imageChangeList[4],
     time: 1, maxInterval: 0, frame: 7
   }, jump: {start: imageChangeList[5], length: 9
+  }, slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]
 }}
 const imagePathList = [
   '../../images/Misaki/Misaki_Idle_1.png', // 0
@@ -59,6 +60,7 @@ const imagePathList = [
   '../../images/Misaki/Misaki_Jump_Fall_1.png',
   '../../images/Misaki/Misaki_Jump_Fall_2.png',
   '../../images/Misaki/Misaki_Jump_Fall_3.png',
+  '../../images/Misaki/Misaki_S1.png'
 ]
 let imageLoadedList = []
 let imageLoadedMap = []
@@ -526,18 +528,20 @@ const draw = () => {
     : (2 < player.dy) ? ij.start + 5
     : (0 < player.dy) ? ij.start + 4
     : ij.start + 8
-  }
+  } else if (player.action === 'slide') i = imageStat.slide.condition
   const x = (player.x - imageOffset.x - stageOffset.x)|0
-  if (player.action === 'slide') {
-    context.fillStyle = 'hsl(350, 100%, 25%)'
-    if (player.direction === 'left') {
-      context.fillRect(
-        x - size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
-      )
-    } else context.fillRect(
-      x + size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
-    )
-  } else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
+  // if (player.action === 'slide') {
+  //   context.fillStyle = 'hsl(350, 100%, 25%)'
+  //   if (player.direction === 'left') {
+  //     context.fillRect(
+  //       x - size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
+  //     )
+  //   } else context.fillRect(
+  //     x + size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
+  //   )
+  // } else
+  if (player.action === 'slide') drawImage(i, x - size, (player.y - imageOffset.y - stageOffset.y - size * 1.25)|0)
+  else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
   const displayHitbox = () => {
     context.fillStyle = 'hsl(300, 100%, 50%)'
     context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
