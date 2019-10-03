@@ -360,7 +360,19 @@ const stateUpdate = () => {
     const i = imageStat.idle
     i.time += 1
     // breath
-    if (i.time % i.breathInterval === 0) i.condition += 3
+    if (
+      (i.start <= i.condition && i.condition < i.start + i.length / 4 &&
+      i.time % ~~(i.breathInterval) === 0) ||
+      (i.start + i.length / 4 <= i.condition && i.condition < i.start + i.length *.5 &&
+      i.time % ~~(i.breathInterval*.5) === 0) ||
+      (i.start + i.length * .5 <= i.condition && i.condition < i.start + i.length * 3 / 4 &&
+      i.time % ~~(i.breathInterval*2) === 0) ||
+      (i.start + i.length * 3 / 4 <= i.condition && i.condition < i.start + i.length &&
+      i.time % ~~(i.breathInterval*.5) === 0)
+    ) {
+      i.condition += 3
+      i.time = 0
+    }
     if (i.length <= i.condition && i.condition <= i.length + 3) {
       i.condition -= i.length
       if (i.breathInterval < i.maxBreath) {
@@ -373,7 +385,6 @@ const stateUpdate = () => {
           playAudio(list.value, list.startTime)
         }
       }
-      i.time = 0
     }
     // eye blink
     if (time % i.frame === 0) {
