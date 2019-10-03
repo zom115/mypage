@@ -20,47 +20,47 @@ const imageStat = {
   }, slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]
 }}
 const imagePathList = [
-  '../../images/Misaki/Misaki_Idle_1.png', // 0
-  '../../images/Misaki/Misaki_Idle_1_Blink_1.png',
-  '../../images/Misaki/Misaki_Idle_1_Blink_2.png',
-  '../../images/Misaki/Misaki_Idle_2.png',
-  '../../images/Misaki/Misaki_Idle_2_Blink_1.png',
-  '../../images/Misaki/Misaki_Idle_2_Blink_2.png',
-  '../../images/Misaki/Misaki_Idle_3.png',
-  '../../images/Misaki/Misaki_Idle_3_Blink_1.png',
-  '../../images/Misaki/Misaki_Idle_3_Blink_2.png',
-  '../../images/Misaki/Misaki_Idle_4.png',
-  '../../images/Misaki/Misaki_Idle_4_Blink_1.png',
-  '../../images/Misaki/Misaki_Idle_4_Blink_2.png',
-  '../../images/Misaki/Misaki_Walk_1.png', // 12
-  '../../images/Misaki/Misaki_Walk_2.png',
-  '../../images/Misaki/Misaki_Walk_3.png',
-  '../../images/Misaki/Misaki_Walk_4.png',
-  '../../images/Misaki/Misaki_Walk_5.png',
-  '../../images/Misaki/Misaki_Walk_6.png',
-  '../../images/Misaki/Misaki_Turn_3.png', // 18
-  '../../images/Misaki/Misaki_Turn_2.png',
-  '../../images/Misaki/Misaki_Run_1.png', // 20
-  '../../images/Misaki/Misaki_Run_2.png',
-  '../../images/Misaki/Misaki_Run_3.png',
-  '../../images/Misaki/Misaki_Run_4.png',
-  '../../images/Misaki/Misaki_Run_5.png',
-  '../../images/Misaki/Misaki_Run_6.png',
-  '../../images/Misaki/Misaki_Run_7.png',
-  '../../images/Misaki/Misaki_Run_8.png',
-  '../../images/Misaki/Misaki_Crouch_1.png', // 28
-  '../../images/Misaki/Misaki_Crouch_2.png',
-  '../../images/Misaki/Misaki_Crouch_3.png',
-  '../../images/Misaki/Misaki_Jump_up_1.png', // 31
-  '../../images/Misaki/Misaki_Jump_up_2.png',
-  '../../images/Misaki/Misaki_Jump_up_3.png',
-  '../../images/Misaki/Misaki_Jump_MidAir_1.png',
-  '../../images/Misaki/Misaki_Jump_MidAir_2.png',
-  '../../images/Misaki/Misaki_Jump_MidAir_3.png',
-  '../../images/Misaki/Misaki_Jump_Fall_1.png',
-  '../../images/Misaki/Misaki_Jump_Fall_2.png',
-  '../../images/Misaki/Misaki_Jump_Fall_3.png',
-  '../../images/Misaki/Misaki_S1.png'
+  'images/Misaki/Misaki_Idle_1.png', // 0
+  'images/Misaki/Misaki_Idle_1_Blink_1.png',
+  'images/Misaki/Misaki_Idle_1_Blink_2.png',
+  'images/Misaki/Misaki_Idle_2.png',
+  'images/Misaki/Misaki_Idle_2_Blink_1.png',
+  'images/Misaki/Misaki_Idle_2_Blink_2.png',
+  'images/Misaki/Misaki_Idle_3.png',
+  'images/Misaki/Misaki_Idle_3_Blink_1.png',
+  'images/Misaki/Misaki_Idle_3_Blink_2.png',
+  'images/Misaki/Misaki_Idle_4.png',
+  'images/Misaki/Misaki_Idle_4_Blink_1.png',
+  'images/Misaki/Misaki_Idle_4_Blink_2.png',
+  'images/Misaki/Misaki_Walk_1.png', // 12
+  'images/Misaki/Misaki_Walk_2.png',
+  'images/Misaki/Misaki_Walk_3.png',
+  'images/Misaki/Misaki_Walk_4.png',
+  'images/Misaki/Misaki_Walk_5.png',
+  'images/Misaki/Misaki_Walk_6.png',
+  'images/Misaki/Misaki_Turn_3.png', // 18
+  'images/Misaki/Misaki_Turn_2.png',
+  'images/Misaki/Misaki_Run_1.png', // 20
+  'images/Misaki/Misaki_Run_2.png',
+  'images/Misaki/Misaki_Run_3.png',
+  'images/Misaki/Misaki_Run_4.png',
+  'images/Misaki/Misaki_Run_5.png',
+  'images/Misaki/Misaki_Run_6.png',
+  'images/Misaki/Misaki_Run_7.png',
+  'images/Misaki/Misaki_Run_8.png',
+  'images/Misaki/Misaki_Crouch_1.png', // 28
+  'images/Misaki/Misaki_Crouch_2.png',
+  'images/Misaki/Misaki_Crouch_3.png',
+  'images/Misaki/Misaki_Jump_up_1.png', // 31
+  'images/Misaki/Misaki_Jump_up_2.png',
+  'images/Misaki/Misaki_Jump_up_3.png',
+  'images/Misaki/Misaki_Jump_MidAir_1.png',
+  'images/Misaki/Misaki_Jump_MidAir_2.png',
+  'images/Misaki/Misaki_Jump_MidAir_3.png',
+  'images/Misaki/Misaki_Jump_Fall_1.png',
+  'images/Misaki/Misaki_Jump_Fall_2.png',
+  'images/Misaki/Misaki_Jump_Fall_3.png',
+  'images/Misaki/Misaki_Slide_1.png'
 ]
 let imageLoadedList = []
 let imageLoadedMap = []
@@ -464,8 +464,7 @@ const stateUpdate = () => {
 }
 const collisionDetect = () => {
   if (player.action === 'slide') {
-    if (player.direction === 'left') hitbox.x = player.x - size * 2.5
-    else hitbox.x = player.x - size / 2
+    hitbox.x = player.x - size * 1.5
     hitbox.y = player.y - size
     hitbox.w = size * 3
     hitbox.h = size
@@ -532,14 +531,10 @@ const draw = () => {
     field.forEach(obj => context.fillRect((obj.x - stageOffset.x)|0, (obj.y - stageOffset.y)|0, obj.w|0, obj.h|0))
   }
   drawGround()
-  const imageOffset = {x: 24, y: 53}
+  const imageOffset = {x: 64, y: 125}
   let i
-  if (player.action === 'idle') i = imageStat.idle.condition // don't nessessary?
-  else if (player.action === 'walk') i = imageStat.walk.condition
-  else if (player.action === 'turn') i = imageStat.turn.condition
-  else if (player.action === 'run') i = imageStat.run.condition
-  else if (player.action === 'crouch') i = imageStat.crouch.condition
-  else if (player.action === 'jump') {
+  if (player.action === 'slide') i = imageStat.slide.condition
+  else if (player.action === 'jump' || player.state === 'aerial') {
     const ij = imageStat.jump
     i = (player.dy < -6) ? ij.start
     : (player.dy < -4) ? ij.start + 1
@@ -550,10 +545,13 @@ const draw = () => {
     : (2 < player.dy) ? ij.start + 5
     : (0 < player.dy) ? ij.start + 4
     : ij.start + 8
-  } else if (player.action === 'slide') i = imageStat.slide.condition
+  } else if (player.action === 'idle') i = imageStat.idle.condition // is nessessary?
+  else if (player.action === 'walk') i = imageStat.walk.condition
+  else if (player.action === 'turn') i = imageStat.turn.condition
+  else if (player.action === 'run') i = imageStat.run.condition
+  else if (player.action === 'crouch') i = imageStat.crouch.condition
   const x = (player.x - imageOffset.x - stageOffset.x)|0
-  if (player.action === 'slide') drawImage(i, x - size, (player.y - imageOffset.y - stageOffset.y - size * 1.25)|0)
-  else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
+  drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
   const displayHitbox = () => {
     context.fillStyle = 'hsl(300, 100%, 50%)'
     context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
