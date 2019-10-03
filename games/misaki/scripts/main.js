@@ -122,24 +122,21 @@ const hitbox = {
   w: size,
   h: size * 3
 }
-let ground = []
+let field = []
 const setGround = (x, y, w, h) => {
-  ground.push({x: x * size, y: y * size, w: w * size, h: h * size})
+  field.push({x: x * size, y: y * size, w: w * size, h: h * size})
 }
 // frame
 setGround(0, stage.height / size - 1, stage.width / size, 1)
-setGround(0, 0, 1, stage.height / size)
-setGround(stage.width / size - 1, 1, 1, stage.height / size)
+setGround(0, 0, 1, stage.height / size - 1)
+setGround(stage.width / size - 1, 1, 1, stage.height / size - 2)
 // object
-setGround(4, 17, 12, 1)
+setGround(7, 16, 9, 1)
+setGround(5, 19, 4, 1)
 setGround(8, 25, 6, 1)
 setGround(3, 31, 9, 1)
 setGround(4, 37, 6, 1)
-setGround(4, 43, 5, 1)
-setGround(18, 37, 1, 3)
-setGround(18, 43, 1, 1)
-setGround(22, 37, 1, 3)
-setGround(22, 43, 1, 1)
+setGround(5, 43, 4, 1)
 setGround(26, 37, 1, 3)
 setGround(26, 43, 1, 1)
 setGround(29, 36, 1, 3)
@@ -150,6 +147,10 @@ setGround(37, 36, 1, 3)
 setGround(37, 42, 1, 1)
 setGround(40, 37, 1, 3)
 setGround(40, 43, 1, 1)
+setGround(43, 37, 1, 3)
+setGround(43, 43, 1, 1)
+setGround(47, 37, 1, 3)
+setGround(47, 43, 1, 1)
 setGround(24, 34, 5, 2)
 setGround(41, 32, 2, 1)
 setGround(44, 32, 1, 2)
@@ -157,6 +158,7 @@ setGround(47, 32, 2, 1)
 setGround(50, 32, 1, 2)
 setGround(54, 32, 2, 2)
 setGround(18, 25, 12, 1)
+setGround(31, 19, 5, 1)
 setGround(51, 20, 3, 4)
 setGround(52, 26, 3, 3)
 setGround(14, 18, 1, 2)
@@ -175,10 +177,12 @@ let cooltime = {
   slide: 2, slideLimit: 45
 }
 let action = {
-  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j', debug: 'g', hitbox: 'h'
+  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j',
+  map: 'm', debug: 'g', hitbox: 'h'
 }
 let key = {
-  a: false, b: false, d: false, g: false, h: false, j: false, k: false, s: false, w: false
+  a: false, b: false, d: false, g: false, h: false,
+  j: false, k: false, m: false, s: false, w: false
 }
 document.addEventListener('keydown', e => {
   if (e.keyCode === 65) key.a = true
@@ -188,6 +192,7 @@ document.addEventListener('keydown', e => {
   if (e.keyCode === 72) key.h = true
   if (e.keyCode === 74) key.j = true
   if (e.keyCode === 75) key.k = true
+  if (e.keyCode === 77) key.m = true
   if (e.keyCode === 83) key.s = true
   if (e.keyCode === 87) key.w = true
 }, false)
@@ -199,6 +204,7 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 72) key.h = false
   if (e.keyCode === 74) key.j = false
   if (e.keyCode === 75) key.k = false
+  if (e.keyCode === 77) key.m = false
   if (e.keyCode === 83) key.s = false
   if (e.keyCode === 87) key.w = false
 }, false)
@@ -211,11 +217,12 @@ const volume = document.getElementsByTagName`input`[0]
 volume.addEventListener('input', () => {
   audioPathList.forEach(path => audioLoadedMap[path].volume = volume.value)
 })
-let mode = {DECO: false, debug: false, hitbox: false}
+let mode = {DECO: false, debug: false, hitbox: false, map: false}
 const inputDOM = document.getElementsByTagName`input`
 inputDOM.DECO.addEventListener('change', () => {mode.DECO = !mode.DECO}, false)
 inputDOM.debug.addEventListener('change', () => {mode.debug = !mode.debug}, false)
 inputDOM.hitbox.addEventListener('change', () => {mode.hitbox = !mode.hitbox}, false)
+inputDOM.hitbox.addEventListener('change', () => {mode.map = !mode.map}, false)
 const input = () => {
   // warp
   // if (size * 53 < player.x) {
@@ -425,6 +432,10 @@ const stateUpdate = () => {
     mode.hitbox = !mode.hitbox
     inputDOM.hitbox.checked = !inputDOM.hitbox.checked
   }
+  if (keyHistory['pressed'][action.map] === time) {
+    mode.map = !mode.map
+    inputDOM.map.checked = !inputDOM.map.checked
+  }
 }
 const collisionDetect = () => {
   hitbox.x = player.x - size / 2
@@ -432,7 +443,7 @@ const collisionDetect = () => {
   hitbox.w = size
   hitbox.h = size * 3
   let aerialFlag = true
-  ground.forEach(obj => {
+  field.forEach(obj => {
     if (
       hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
       hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
@@ -484,7 +495,7 @@ const draw = () => {
   : ((player.y - ratio.y) / (stage.height - ratio.y * 2)) * (stage.height - canvas.offsetHeight)
   const drawGround = () => {
     context.fillStyle = 'hsl(180, 100%, 50%)'
-    ground.forEach(obj => context.fillRect((obj.x - stageOffset.x)|0, (obj.y - stageOffset.y)|0, obj.w|0, obj.h|0))
+    field.forEach(obj => context.fillRect((obj.x - stageOffset.x)|0, (obj.y - stageOffset.y)|0, obj.w|0, obj.h|0))
   }
   drawGround()
   const imageOffset = {x: 24, y: 53}
@@ -515,16 +526,38 @@ const draw = () => {
     context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
     context.fillRect(hitbox.x+hitbox.w*.2 - stageOffset.x, hitbox.y+hitbox.h*.8 - stageOffset.y, hitbox.w*.6, hitbox.h*.2)
   }
-  if (mode.hitbox) displayHitbox()
-}
-const displayDebug = () => {
-  context.fillStyle = 'hsl(120, 100%, 50%)'
-  context.font = `${size}px sans-serif`
-  context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
-  context.fillText('cooltime', size * 10, size )
-  context.fillText(`jump : ${jump.cooltime}`, size * 16, size)
-  context.fillText(`step : ${cooltime.step}`, size * 16, size * 3)
-  context.fillText(`slide: ${cooltime.slide}`, size * 16, size * 5)
+    if (mode.hitbox) displayHitbox()
+  const displayDebug = () => {
+    context.fillStyle = 'hsl(120, 100%, 50%)'
+    context.font = `${size}px sans-serif`
+    context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
+    context.fillText('cooltime', size * 10, size )
+    context.fillText(`jump : ${jump.cooltime}`, size * 16, size)
+    context.fillText(`step : ${cooltime.step}`, size * 16, size * 3)
+    context.fillText(`slide: ${cooltime.slide}`, size * 16, size * 5)
+  }
+  if (mode.debug) displayDebug()
+  const displayMap = () => {
+    const multiple = 2
+    const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.width / size, y: size}
+    context.strokeStyle = 'hsla(0, 100%, 100%, .5)'
+    context.strokeRect(
+      mapOffset.x|0, mapOffset.y|0,
+      multiple * stage.width / size, multiple * stage.height / size)|0
+    context.fillStyle = 'hsla(10, 100%, 50%, .5)'
+    const playerSize = {x: 1, y: 2}
+    context.fillRect(
+      mapOffset.x + multiple * player.x / size|0,
+      mapOffset.y + multiple * (player.y / size - playerSize.y)|0,
+      multiple * playerSize.x, multiple * playerSize.y
+    )
+    context.fillStyle = 'hsla(90, 100%, 50%, .5)'
+    field.forEach(obj => context.fillRect(
+      mapOffset.x + multiple * obj.x/size|0, mapOffset.y + multiple * obj.y/size|0,
+      multiple * obj.w/size|0, multiple * obj.h/size|0)
+    )
+  }
+  if (mode.map) displayMap()
 }
 const main = () => {
   time += 1
@@ -534,6 +567,5 @@ const main = () => {
   collisionDetect()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
-  if (mode.debug) displayDebug()
   window.requestAnimationFrame(main)
 }
