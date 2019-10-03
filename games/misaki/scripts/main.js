@@ -1,6 +1,6 @@
 'use strict'
 const audioControls = document.getElementsByTagName`audio`[0]
-audioControls.volume = .2
+audioControls.volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const imageChangeList = [0, 12, 18, 20, 28, 31, 40]
@@ -84,7 +84,7 @@ let audioLoadedMap = []
 audioPathList.forEach(path => {
   const audioPreload = new Audio()
   audioPreload.src = path
-  audioPreload.volume = .2
+  audioPreload.volume = .1
   audioPreload.addEventListener('canplaythrough', () => {
     audioLoadedList.push(path)
     audioLoadedMap[path] = audioPreload
@@ -530,16 +530,6 @@ const draw = () => {
     : ij.start + 8
   } else if (player.action === 'slide') i = imageStat.slide.condition
   const x = (player.x - imageOffset.x - stageOffset.x)|0
-  // if (player.action === 'slide') {
-  //   context.fillStyle = 'hsl(350, 100%, 25%)'
-  //   if (player.direction === 'left') {
-  //     context.fillRect(
-  //       x - size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
-  //     )
-  //   } else context.fillRect(
-  //     x + size, (player.y - imageOffset.y - stageOffset.y) + size * 2|0, hitbox.w, hitbox.h * 1.25
-  //   )
-  // } else
   if (player.action === 'slide') drawImage(i, x - size, (player.y - imageOffset.y - stageOffset.y - size * 1.25)|0)
   else drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
   const displayHitbox = () => {
