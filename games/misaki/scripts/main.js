@@ -176,14 +176,24 @@ let cooltime = {
   slide: 2, slideLimit: 45
 }
 let action = {
+  space: 'space',
   up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j',
   map: 'm', debug: 'g', hitbox: 'h'
 }
 let key = {
+  space: false,
   a: false, b: false, d: false, g: false, h: false,
   j: false, k: false, m: false, s: false, w: false
 }
 document.addEventListener('keydown', e => {
+  if (e.keyCode === 32) {
+    key.space = true
+    if (e.preventDefault) e.preventDefault()
+    else {
+      e.keyCode = 0
+      return false
+    }
+  }
   if (e.keyCode === 65) key.a = true
   if (e.keyCode === 66) key.b = true
   if (e.keyCode === 68) key.d = true
@@ -196,6 +206,7 @@ document.addEventListener('keydown', e => {
   if (e.keyCode === 87) key.w = true
 }, false)
 document.addEventListener('keyup', e => {
+  if (e.keyCode === 32) key.space = false
   if (e.keyCode === 65) key.a = false
   if (e.keyCode === 66) key.b = false
   if (e.keyCode === 68) key.d = false
@@ -291,7 +302,7 @@ const input = () => {
   }
   // jump
   if (0 < jump.cooltime && player.state === 'land') jump.cooltime -= 1
-  if (key[action.jump]) {
+  if (key[action.jump] || key[action.space]) {
     if (jump.flag) {
       if (!jump.double && jump.time === 0) {
         player.dy = -jumpConstant
