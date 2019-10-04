@@ -2,7 +2,7 @@
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const imageChangeList = [0, 12, 18, 20, 28, 31, 40]
+const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41]
 const imageStat = {
   idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
     time: 0, maxInterval: 30, frame: 5,
@@ -17,6 +17,7 @@ const imageStat = {
     time: 1, maxInterval: 0, frame: 7
   }, jump: {start: imageChangeList[5], length: 9
   }, slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]
+  }, push: {start: imageChangeList[7], length: 1, condition: imageChangeList[7]
 }}
 const imagePathList = [
   'images/Misaki/Misaki_Idle_1.png', // 0
@@ -59,7 +60,8 @@ const imagePathList = [
   'images/Misaki/Misaki_Jump_Fall_1.png',
   'images/Misaki/Misaki_Jump_Fall_2.png',
   'images/Misaki/Misaki_Jump_Fall_3.png',
-  'images/Misaki/Misaki_Slide_1.png'
+  'images/Misaki/Misaki_Slide_1.png',
+  'images/Misaki/Misaki_Push_1.png'
 ]
 let imageLoadedList = []
 let imageLoadedMap = []
@@ -112,7 +114,7 @@ const playAudio = (value, startTime = 0) => {
   audioLoadedMap[audioPathList[value]].play()
 }
 const size = 16
-let stage = {width: size * 60, height: size * 45}
+let stage = {width: size * 64, height: size * 80}
 let player = {
   x: stage.width * 1 / 8, y: stage.height * 7 / 8,
   dx: 0, dy: 0, action: 'idle', direction: 'right', wallFlag: false, state: 'aerial'
@@ -129,6 +131,7 @@ const setGround = (x, y, w, h) => {
 }
 // frame
 setGround(0, stage.height / size - 1, stage.width / size, 1)
+setGround(1, 0, stage.width / size - 1, 1)
 setGround(0, 0, 1, stage.height / size - 1)
 setGround(stage.width / size - 1, 1, 1, stage.height / size - 2)
 // object
@@ -158,11 +161,22 @@ setGround(54, 32, 2, 2)
 setGround(18, 25, 12, 1)
 setGround(30, 18, 5, 1)
 setGround(51, 20, 3, 4)
+setGround(58, 18, 3, 3)
 setGround(52, 26, 3, 3)
 setGround(14, 18, 1, 2)
 setGround(15, 22, 1, 7)
 setGround(37, 14, 2, 9)
 setGround(37, 11, 8, 1)
+setGround(10, 50, 1, 25)
+setGround(19, 50, 1, 25)
+setGround(27, 50, 1, 25)
+setGround(34, 50, 1, 25)
+setGround(40, 50, 1, 25)
+setGround(45, 50, 1, 25)
+setGround(49, 50, 1, 25)
+setGround(52, 50, 1, 25)
+setGround(54, 50, 1, 25)
+setGround(57, 46, 3, 3)
 const walkSpeed = .7 // dx := 1.4
 const dashSpeed = 2.8 // dx := 3.5
 const brakeConstant = .94
@@ -312,12 +326,13 @@ Object.values(action).forEach(act => {
   keyHistory.pressed[act] = -1
   keyHistory.released[act] = 0
 })
-let mode = {DECO: false, debug: false, hitbox: false, map: false}
+let mode = {wallkick: false, DECO: false, debug: false, hitbox: false, map: false}
 const inputDOM = document.getElementsByTagName`input`
 inputDOM[0].addEventListener('input', e => {
   audioPathList.forEach(path => audioLoadedMap[path].volume = e.target.value)
   document.getElementsByTagName`output`[0].value = e.target.value
 })
+inputDOM.wallkick.addEventListener('change', () => mode.wallkick = !mode.wallkick, false)
 inputDOM.DECO.addEventListener('change', () => mode.DECO = !mode.DECO, false)
 inputDOM.debug.addEventListener('change', () => mode.debug = !mode.debug, false)
 inputDOM.hitbox.addEventListener('change', () => mode.hitbox = !mode.hitbox, false)
@@ -333,7 +348,6 @@ const input = () => {
   // walk
   const speed = (key[action.dash]) ? dashSpeed : walkSpeed
   if (player.action !== 'jump') {
-    player.dx *= brakeConstant
     if (key[action.left] && -speed < player.dx) player.dx -= walkSpeed
     if (key[action.right] && player.dx < speed) player.dx += walkSpeed
   } else {
@@ -394,7 +408,7 @@ const input = () => {
   if (0 < jump.cooltime && player.state === 'land') jump.cooltime -= 1
   if (key[action.jump] || key[action.space]) {
     if (jump.flag) {
-      if (!jump.double && jump.time === 0) {
+      if (!jump.double && jump.time === 0 && !player.wallFlag) {
         player.dy = -jumpConstant
         jump.double = true
         playAudio(audioStat.doubleJump)
@@ -405,7 +419,7 @@ const input = () => {
       player.dy = -jumpConstant
       player.action = 'jump'
       jump.flag = true
-      if (player.state === 'aerial') {
+      if (player.state === 'aerial' && !player.wallFlag) {
         jump.double = true
         playAudio(audioStat.doubleJump)
       } else {
@@ -427,7 +441,43 @@ const input = () => {
       } else if (jump.time !== 0) jump.time += 1
     }
   }
+  // wall kick
+  if (player.wallFlag && 0 < player.dy) {
+    if (key[action.dash]) player.dy *= .5
+    let flag = false
+    if (mode.wallkick) {
+      if (key[action.jump] === 1 && key[action.dash] && player.direction === 'right') {
+        player.dx -= 4
+        player.direction = 'left'
+        flag = true
+      } else if (key[action.jump] === 1 && key[action.dash] && player.direction === 'left') {
+        player.dx += 4
+        player.direction = 'right'
+        flag = true
+      }
+    } else {
+      if (key[action.left] && key[action.dash] && player.direction === 'right') {
+        player.dx -= 4
+        player.direction = 'left'
+        flag = true
+      } else if (key[action.right] && key[action.dash] && player.direction === 'left') {
+        player.dx += 4
+        player.direction = 'right'
+        flag = true
+      }
+    }
+    if (flag) {
+      player.dy = -jumpConstant
+      player.wallFlag = false
+      jump.flag = true
+      player.action = 'jump'
+    }
+  }
   if (key[action.up] === 1) {
+    mode.wallkick = !mode.wallkick
+    inputDOM.wallkick.checked = !inputDOM.wallkick.checked
+  }
+  if (key.e === 1) {
     mode.DECO = !mode.DECO
     inputDOM.DECO.checked = !inputDOM.DECO.checked
   }
@@ -446,7 +496,7 @@ const input = () => {
 }
 const modelUpdate = () => {
   if (-.01 < player.dx && player.dx < .01) player.dx = 0
-  if (player.state === 'aerial') player.y += player.dy
+  player.y += player.dy
   player.dy += gravityConstant
   if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
   Object.values(action).forEach(act => {
@@ -463,6 +513,7 @@ const modelUpdate = () => {
   })
 }
 const collisionDetect = () => {
+  let check = {x: false, y: false}
   if (player.action === 'slide') {
     hitbox.x = player.x - size * 1.5
     hitbox.y = player.y - size
@@ -474,71 +525,85 @@ const collisionDetect = () => {
     hitbox.w = size
     hitbox.h = size * 3
   }
-  let aerialFlag = true
+  if (player.wallFlag) player.wallFlag = false
   field.forEach(obj => {
     if (
       hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
       hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
     ) {
       if (
+        hitbox.y + hitbox.h * .2 < obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .8
+      ) {
+        check.x = true
+        // left
+        if (hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .2) {
+          player.wallFlag = true
+          if (0 < player.dx) player.x += player.dx
+          player.direction = 'left'
+        }
+        // right
+        if (hitbox.x + hitbox.w * .8 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) {
+          player.wallFlag = true
+          if (player.dx < 0) player.x += player.dx
+          player.direction = 'right'
+        }
+      }
+      if (
         hitbox.x + hitbox.w * .2 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .8
       ) {
+        check.y = true
         // head
-        if (hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5) {
+        if (
+          hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5 &&
+          !player.wallFlag
+        ) {
           player.y += hitbox.h * .1
           player.dy = 0
           player.state = 'aerial'
         // foot
         } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) {
-          player.y = obj.y
-          player.dy = 0
-          aerialFlag = false
-          player.state = 'land'
-          jump.flag = false
-          jump.double = false
-          if (
-            player.action !== 'run' &&
-            player.action !== 'crouch' &&
-            player.action !== 'walk' &&
-            player.action !== 'turn' &&
-            player.action !== 'slide'
-          ) player.action = 'idle'
-        }
-      }
-      if (
-        hitbox.y + hitbox.h * .2 <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h * .8
-      ) {
-          player.wallFlag = true
-          // left
-          if (hitbox.x < obj.x + obj.w && obj.x < hitbox.x + hitbox.w * .2) {
-            if (0 < player.dx) player.x += player.dx
-          // right
+          if (!player.wallFlag) {
+            player.y = obj.y
+            player.dy = 0
+            player.state = 'land'
+            jump.flag = false
+            jump.double = false
+            if (
+              player.action !== 'run' &&
+              player.action !== 'crouch' &&
+              player.action !== 'walk' &&
+              player.action !== 'turn' &&
+              player.action !== 'slide'
+            ) player.action = 'idle'
           }
-          if (hitbox.x + hitbox.w * .8 < obj.x + obj.w && obj.x < hitbox.x + hitbox.w) {
-            if (player.dx < 0) player.x += player.dx
-        } else {
         }
       }
     }
   })
-  if (aerialFlag) player.state = 'aerial'
-  if (player.wallFlag) player.wallFlag = false
-  else player.x += player.dx
+  if (player.wallFlag) {
+    if (0 <= player.dy) player.dx = 0
+  }
+  else {
+    player.x += player.dx
+    if (player.state === 'land') player.dx *= brakeConstant
+  }
 }
 const viewUpdate = () => {
-  const detectChangeDirection = () => {
-    if (player.action !== 'jump') {
-      if (key[action.right] && player.dx < walkSpeed) player.action = 'turn'
-      if (key[action.left] && -walkSpeed < player.dx) player.action = 'turn'
-      if (key[action.left] && key[action.right]) player.action = 'idle'
-    }
+  if (player.action !== 'jump') {
+    if (key[action.right] && player.dx < walkSpeed * brakeConstant) player.action = 'turn'
+    if (key[action.left] && -walkSpeed * brakeConstant < player.dx) player.action = 'turn'
+    if (player.wallFlag && player.state !== 'aerial') player.action = 'push'
+    if (key[action.left] && key[action.right]) player.action = 'idle'
   }
-  detectChangeDirection()
-  player.direction = (key[action.left] && key[action.right]) ? player.direction
+  player.direction = ((key[action.left] && key[action.right]) || player.wallFlag) ? player.direction
   : (key[action.left]) ? 'left'
-  : (key[action.right]) ? 'right' : player.direction
+  : (key[action.right]) ? 'right'
+  : (player.dx < 0) ? 'left'
+  : (0 < player.dx) ? 'right'
+  : player.direction
   if (player.action !== 'jump') {
     player.action = (player.action === 'turn') ? 'turn'
+    : (player.action === 'push') ? 'push'
     : (-.2 < player.dx && player.dx < .2) ? 'idle'
     : (-1.4 < player.dx && player.dx < 1.4) ? 'walk'
     : (player.action === 'slide' && (player.dx < -3.5 || 3.5 < player.dx)) ? 'slide' : 'run'
@@ -598,7 +663,7 @@ const viewUpdate = () => {
     if (i.condition === i.start + i.length) {
       i.condition -= i.length
       i.time = 0
-      player.action = 'walk'
+      if (!(player.wallFlag && key[action.left] && key[action.right])) player.action = 'walk'
     }
   } else if (player.action === 'run') {
     const i = imageStat.run
@@ -633,6 +698,7 @@ const draw = () => {
   const imageOffset = {x: 64, y: 125}
   let i
   if (player.action === 'slide') i = imageStat.slide.condition
+  if (player.action === 'push') i = imageStat.push.condition
   else if (player.action === 'jump' || player.state === 'aerial') {
     const ij = imageStat.jump
     i = (6 < player.dy) ? ij.start + 7
