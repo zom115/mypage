@@ -517,7 +517,7 @@ const collisionDetect = () => {
   })
   if (aerialFlag) player.state = 'aerial'
 }
-const draw = () => {console.log(player.action)
+const draw = () => {
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0
