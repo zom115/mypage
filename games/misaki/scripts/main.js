@@ -115,7 +115,7 @@ const size = 16
 let stage = {width: size * 60, height: size * 45}
 let player = {
   x: stage.width * 1 / 8, y: stage.height * 7 / 8,
-  dx: 0, dy: 0, action: 'idle', direction: 'right', state: 'aerial'
+  dx: 0, dy: 0, action: 'idle', direction: 'right', wallFlag: false, state: 'aerial'
 }
 let hitbox = {
   x: player.x - size / 2,
@@ -445,7 +445,6 @@ const input = () => {
   }
 }
 const modelUpdate = () => {
-  player.x += player.dx
   if (-.01 < player.dx && player.dx < .01) player.dx = 0
   if (player.state === 'aerial') player.y += player.dy
   player.dy += gravityConstant
@@ -509,16 +508,22 @@ const collisionDetect = () => {
       if (
         hitbox.y + hitbox.h * .2 <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h * .8
       ) {
-        player.dx = -player.dx / 3
-        if (hitbox.x <= obj.x + obj.w && obj.x < hitbox.x + hitbox.w * .2) {
-          player.x += hitbox.w / 4
-        } else if (hitbox.x + hitbox.w * .8 < obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) {
-          player.x -= hitbox.w / 4
+          player.wallFlag = true
+          // left
+          if (hitbox.x < obj.x + obj.w && obj.x < hitbox.x + hitbox.w * .2) {
+            if (0 < player.dx) player.x += player.dx
+          // right
+          }
+          if (hitbox.x + hitbox.w * .8 < obj.x + obj.w && obj.x < hitbox.x + hitbox.w) {
+            if (player.dx < 0) player.x += player.dx
+        } else {
         }
       }
     }
   })
   if (aerialFlag) player.state = 'aerial'
+  if (player.wallFlag) player.wallFlag = false
+  else player.x += player.dx
 }
 const viewUpdate = () => {
   const detectChangeDirection = () => {
