@@ -1,6 +1,5 @@
 'use strict'
-const audioControls = document.getElementsByTagName`audio`[0]
-audioControls.volume = .1
+document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const imageChangeList = [0, 12, 18, 20, 28, 31, 40]
@@ -118,7 +117,7 @@ let player = {
   x: stage.width * 1 / 8, y: stage.height * 7 / 8,
   dx: 0, dy: 0, action: 'idle', direction: 'right', state: 'aerial'
 }
-const hitbox = {
+let hitbox = {
   x: player.x - size / 2,
   y: player.y - size * 3,
   w: size,
@@ -181,59 +180,150 @@ let action = {
   map: 'm', debug: 'g', hitbox: 'h'
 }
 let key = {
-  space: false,
-  a: false, b: false, d: false, g: false, h: false,
-  j: false, k: false, m: false, s: false, w: false
+  shiftFlag: false, shift: 0,
+  spaceFlag: false, space: 0,
+  aFlag: false, a: 0,
+  bFlag: false, b: 0,
+  cFlag: false, c: 0,
+  dFlag: false, d: 0,
+  eFlag: false, e: 0,
+  fFlag: false, f: 0,
+  gFlag: false, g: 0,
+  hFlag: false, h: 0,
+  iFlag: false, i: 0,
+  jFlag: false, j: 0,
+  kFlag: false, k: 0,
+  lFlag: false, l: 0,
+  mFlag: false, m: 0,
+  nFlag: false, n: 0,
+  oFlag: false, o: 0,
+  pFlag: false, p: 0,
+  qFlag: false, q: 0,
+  rFlag: false, r: 0,
+  sFlag: false, s: 0,
+  tFlag: false, t: 0,
+  uFlag: false, u: 0,
+  vFlag: false, v: 0,
+  wFlag: false, w: 0,
+  xFlag: false, x: 0,
+  yFlag: false, y: 0,
+  zFlag: false, z: 0
 }
 document.addEventListener('keydown', e => {
+  if (e.keyCode === 16) key.shiftFlag = true
+  if (key.shiftFlag) key.shift = (key.shift+1)|0
   if (e.keyCode === 32) {
-    key.space = true
+    key.spaceFlag = true
     if (e.preventDefault) e.preventDefault()
     else {
       e.keyCode = 0
       return false
     }
   }
-  if (e.keyCode === 65) key.a = true
-  if (e.keyCode === 66) key.b = true
-  if (e.keyCode === 68) key.d = true
-  if (e.keyCode === 71) key.g = true
-  if (e.keyCode === 72) key.h = true
-  if (e.keyCode === 74) key.j = true
-  if (e.keyCode === 75) key.k = true
-  if (e.keyCode === 77) key.m = true
-  if (e.keyCode === 83) key.s = true
-  if (e.keyCode === 87) key.w = true
+  if (e.keyCode === 65) key.aFlag = true
+  if (e.keyCode === 66) key.bFlag = true
+  if (e.keyCode === 67) key.cFlag = true
+  if (e.keyCode === 68) key.dFlag = true
+  if (e.keyCode === 69) key.eFlag = true
+  if (e.keyCode === 70) key.fFlag = true
+  if (e.keyCode === 71) key.gFlag = true
+  if (e.keyCode === 72) key.hFlag = true
+  if (e.keyCode === 73) key.iFlag = true
+  if (e.keyCode === 74) key.jFlag = true
+  if (e.keyCode === 75) key.kFlag = true
+  if (e.keyCode === 76) key.lFlag = true
+  if (e.keyCode === 77) key.mFlag = true
+  if (e.keyCode === 78) key.nFlag = true
+  if (e.keyCode === 79) key.oFlag = true
+  if (e.keyCode === 80) key.pFlag = true
+  if (e.keyCode === 81) key.qFlag = true
+  if (e.keyCode === 82) key.rFlag = true
+  if (e.keyCode === 83) key.sFlag = true
+  if (e.keyCode === 84) key.tFlag = true
+  if (e.keyCode === 85) key.uFlag = true
+  if (e.keyCode === 86) key.vFlag = true
+  if (e.keyCode === 87) key.wFlag = true
+  if (e.keyCode === 88) key.xFlag = true
+  if (e.keyCode === 89) key.yFlag = true
+  if (e.keyCode === 90) key.zFlag = true
 }, false)
 document.addEventListener('keyup', e => {
-  if (e.keyCode === 32) key.space = false
-  if (e.keyCode === 65) key.a = false
-  if (e.keyCode === 66) key.b = false
-  if (e.keyCode === 68) key.d = false
-  if (e.keyCode === 71) key.g = false
-  if (e.keyCode === 72) key.h = false
-  if (e.keyCode === 74) key.j = false
-  if (e.keyCode === 75) key.k = false
-  if (e.keyCode === 77) key.m = false
-  if (e.keyCode === 83) key.s = false
-  if (e.keyCode === 87) key.w = false
+  if (e.keyCode === 16) key.shiftFlag = false, key.shift = 0
+  if (e.keyCode === 32) key.spaceFlag = false, key.space = 0
+  if (e.keyCode === 65) key.aFlag = false, key.a = 0
+  if (e.keyCode === 66) key.bFlag = false, key.b = 0
+  if (e.keyCode === 67) key.cFlag = false, key.c = 0
+  if (e.keyCode === 68) key.dFlag = false, key.d = 0
+  if (e.keyCode === 69) key.eFlag = false, key.e = 0
+  if (e.keyCode === 70) key.fFlag = false, key.f = 0
+  if (e.keyCode === 71) key.gFlag = false, key.g = 0
+  if (e.keyCode === 72) key.hFlag = false, key.h = 0
+  if (e.keyCode === 73) key.iFlag = false, key.i = 0
+  if (e.keyCode === 74) key.jFlag = false, key.j = 0
+  if (e.keyCode === 75) key.kFlag = false, key.k = 0
+  if (e.keyCode === 76) key.lFlag = false, key.l = 0
+  if (e.keyCode === 77) key.mFlag = false, key.m = 0
+  if (e.keyCode === 78) key.nFlag = false, key.n = 0
+  if (e.keyCode === 79) key.oFlag = false, key.o = 0
+  if (e.keyCode === 80) key.pFlag = false, key.p = 0
+  if (e.keyCode === 81) key.qFlag = false, key.q = 0
+  if (e.keyCode === 82) key.rFlag = false, key.r = 0
+  if (e.keyCode === 83) key.sFlag = false, key.s = 0
+  if (e.keyCode === 84) key.tFlag = false, key.t = 0
+  if (e.keyCode === 85) key.uFlag = false, key.u = 0
+  if (e.keyCode === 86) key.vFlag = false, key.v = 0
+  if (e.keyCode === 87) key.wFlag = false, key.w = 0
+  if (e.keyCode === 88) key.xFlag = false, key.x = 0
+  if (e.keyCode === 89) key.yFlag = false, key.y = 0
+  if (e.keyCode === 90) key.zFlag = false, key.z = 0
 }, false)
+const inputProcess = () => {
+  if (key.shiftFlag) key.shift = (key.shift+1)|0
+  if (key.spaceFlag) key.space = (key.space+1)|0
+  if (key.aFlag) key.a = (key.a+1)|0
+  if (key.bFlag) key.b = (key.b+1)|0
+  if (key.cFlag) key.c = (key.c+1)|0
+  if (key.dFlag) key.d = (key.d+1)|0
+  if (key.eFlag) key.e = (key.e+1)|0
+  if (key.fFlag) key.f = (key.f+1)|0
+  if (key.gFlag) key.g = (key.g+1)|0
+  if (key.hFlag) key.h = (key.h+1)|0
+  if (key.iFlag) key.i = (key.i+1)|0
+  if (key.jFlag) key.j = (key.j+1)|0
+  if (key.kFlag) key.k = (key.k+1)|0
+  if (key.lFlag) key.l = (key.l+1)|0
+  if (key.mFlag) key.m = (key.m+1)|0
+  if (key.nFlag) key.n = (key.n+1)|0
+  if (key.oFlag) key.o = (key.o+1)|0
+  if (key.pFlag) key.p = (key.p+1)|0
+  if (key.qFlag) key.q = (key.q+1)|0
+  if (key.rFlag) key.r = (key.r+1)|0
+  if (key.sFlag) key.s = (key.s+1)|0
+  if (key.tFlag) key.t = (key.t+1)|0
+  if (key.uFlag) key.u = (key.u+1)|0
+  if (key.vFlag) key.v = (key.v+1)|0
+  if (key.wFlag) key.w = (key.w+1)|0
+  if (key.xFlag) key.x = (key.x+1)|0
+  if (key.yFlag) key.y = (key.y+1)|0
+  if (key.zFlag) key.z = (key.z+1)|0
+}
 let keyHistory = {pressed: {}, released: {}}
 Object.values(action).forEach(act => {
-  keyHistory['pressed'][act] = -1
-  keyHistory['released'][act] = 0
-})
-const volume = document.getElementsByTagName`input`[0]
-volume.addEventListener('input', () => {
-  audioPathList.forEach(path => audioLoadedMap[path].volume = volume.value)
+  keyHistory.pressed[act] = -1
+  keyHistory.released[act] = 0
 })
 let mode = {DECO: false, debug: false, hitbox: false, map: false}
 const inputDOM = document.getElementsByTagName`input`
-inputDOM.DECO.addEventListener('change', () => {mode.DECO = !mode.DECO}, false)
-inputDOM.debug.addEventListener('change', () => {mode.debug = !mode.debug}, false)
-inputDOM.hitbox.addEventListener('change', () => {mode.hitbox = !mode.hitbox}, false)
-inputDOM.map.addEventListener('change', () => {mode.map = !mode.map}, false)
+inputDOM[0].addEventListener('input', e => {
+  audioPathList.forEach(path => audioLoadedMap[path].volume = e.target.value)
+  document.getElementsByTagName`output`[0].value = e.target.value
+})
+inputDOM.DECO.addEventListener('change', () => mode.DECO = !mode.DECO, false)
+inputDOM.debug.addEventListener('change', () => mode.debug = !mode.debug, false)
+inputDOM.hitbox.addEventListener('change', () => mode.hitbox = !mode.hitbox, false)
+inputDOM.map.addEventListener('change', () => mode.map = !mode.map, false)
 const input = () => {
+  inputProcess()
   // warp
   // if (size * 53 < player.x) {
   //   player.x = 50
@@ -256,18 +346,18 @@ const input = () => {
     let stepFlag = false
     if (
       key[action.left] &&
-      time - keyHistory['pressed'][action.left] < cooltime.stepLimit &&
-      0 < keyHistory['released'][action.left] - keyHistory['pressed'][action.left] &&
-      keyHistory['released'][action.left] - keyHistory['pressed'][action.left] < cooltime.stepLimit
+      time - keyHistory.pressed[action.left] < cooltime.stepLimit &&
+      0 < keyHistory.released[action.left] - keyHistory.pressed[action.left] &&
+      keyHistory.released[action.left] - keyHistory.pressed[action.left] < cooltime.stepLimit
     ) {
       player.dx -= 4
       stepFlag = true
     }
     if (
       key[action.right] &&
-      time - keyHistory['pressed'][action.right] < cooltime.stepLimit &&
-      0 < keyHistory['released'][action.right] - keyHistory['pressed'][action.right] &&
-      keyHistory['released'][action.right] - keyHistory['pressed'][action.right] < cooltime.stepLimit
+      time - keyHistory.pressed[action.right] < cooltime.stepLimit &&
+      0 < keyHistory.released[action.right] - keyHistory.pressed[action.right] &&
+      keyHistory.released[action.right] - keyHistory.pressed[action.right] < cooltime.stepLimit
     ) {
       player.dx += 4
       stepFlag = true
@@ -337,6 +427,100 @@ const input = () => {
       } else if (jump.time !== 0) jump.time += 1
     }
   }
+  if (key[action.up] === 1) {
+    mode.DECO = !mode.DECO
+    inputDOM.DECO.checked = !inputDOM.DECO.checked
+  }
+  if (key[action.debug] === 1) {
+    mode.debug = !mode.debug
+    inputDOM.debug.checked = !inputDOM.debug.checked
+  }
+  if (key[action.hitbox] === 1) {
+    mode.hitbox = !mode.hitbox
+    inputDOM.hitbox.checked = !inputDOM.hitbox.checked
+  }
+  if (key[action.map] === 1) {
+    mode.map = !mode.map
+    inputDOM.map.checked = !inputDOM.map.checked
+  }
+}
+const modelUpdate = () => {
+  player.x += player.dx
+  if (-.01 < player.dx && player.dx < .01) player.dx = 0
+  if (player.state === 'aerial') player.y += player.dy
+  player.dy += gravityConstant
+  if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
+  Object.values(action).forEach(act => {
+    if (key[act]) {
+      if (keyHistory.pressed[act] < keyHistory.released[act]) {
+        keyHistory.pressed[act] = time
+      }
+    }
+    else {
+      if (keyHistory.released[act] < keyHistory.pressed[act]) {
+        keyHistory.released[act] = time
+      }
+    }
+  })
+}
+const collisionDetect = () => {
+  if (player.action === 'slide') {
+    hitbox.x = player.x - size * 1.5
+    hitbox.y = player.y - size
+    hitbox.w = size * 3
+    hitbox.h = size
+  } else {
+    hitbox.x = player.x - size / 2
+    hitbox.y = player.y - size * 3
+    hitbox.w = size
+    hitbox.h = size * 3
+  }
+  let aerialFlag = true
+  field.forEach(obj => {
+    if (
+      hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
+      hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
+    ) {
+      if (
+        hitbox.x + hitbox.w * .2 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .8
+      ) {
+        // head
+        if (hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5) {
+          player.y += hitbox.h * .1
+          player.dy = 0
+          player.state = 'aerial'
+        // foot
+        } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) {
+          player.y = obj.y
+          player.dy = 0
+          aerialFlag = false
+          player.state = 'land'
+          jump.flag = false
+          jump.double = false
+          if (
+            player.action !== 'run' &&
+            player.action !== 'crouch' &&
+            player.action !== 'walk' &&
+            player.action !== 'turn' &&
+            player.action !== 'slide'
+          ) player.action = 'idle'
+        }
+      }
+      if (
+        hitbox.y + hitbox.h * .2 <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h * .8
+      ) {
+        player.dx = -player.dx / 3
+        if (hitbox.x <= obj.x + obj.w && obj.x < hitbox.x + hitbox.w * .2) {
+          player.x += hitbox.w / 4
+        } else if (hitbox.x + hitbox.w * .8 < obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) {
+          player.x -= hitbox.w / 4
+        }
+      }
+    }
+  })
+  if (aerialFlag) player.state = 'aerial'
+}
+const viewUpdate = () => {
   const detectChangeDirection = () => {
     if (player.action !== 'jump') {
       if (key[action.right] && player.dx < walkSpeed) player.action = 'turn'
@@ -345,8 +529,6 @@ const input = () => {
     }
   }
   detectChangeDirection()
-}
-const stateUpdate = () => {
   player.direction = (key[action.left] && key[action.right]) ? player.direction
   : (key[action.left]) ? 'left'
   : (key[action.right]) ? 'right' : player.direction
@@ -428,94 +610,6 @@ const stateUpdate = () => {
     if (player.action !== 'crouch') i.time = 0
     if (i.time === 0) i.condition = 9
   }
-  player.x += player.dx
-  if (-.01 < player.dx && player.dx < .01) player.dx = 0
-  if (player.state === 'aerial') player.y += player.dy
-  player.dy += gravityConstant
-  if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
-  Object.values(action).forEach(act => {
-    if (key[act]) {
-      if (keyHistory['pressed'][act] < keyHistory['released'][act]) {
-        keyHistory['pressed'][act] = time
-      }
-    }
-    else {
-      if (keyHistory['released'][act] < keyHistory['pressed'][act]) {
-        keyHistory['released'][act] = time
-      }
-    }
-  })
-  if (keyHistory['pressed'][action.up] === time) {
-    mode.DECO = !mode.DECO
-    inputDOM.DECO.checked = !inputDOM.DECO.checked
-  }
-  if (keyHistory['pressed'][action.debug] === time) {
-    mode.debug = !mode.debug
-    inputDOM.debug.checked = !inputDOM.debug.checked
-  }
-  if (keyHistory['pressed'][action.hitbox] === time) {
-    mode.hitbox = !mode.hitbox
-    inputDOM.hitbox.checked = !inputDOM.hitbox.checked
-  }
-  if (keyHistory['pressed'][action.map] === time) {
-    mode.map = !mode.map
-    inputDOM.map.checked = !inputDOM.map.checked
-  }
-}
-const collisionDetect = () => {
-  if (player.action === 'slide') {
-    hitbox.x = player.x - size * 1.5
-    hitbox.y = player.y - size
-    hitbox.w = size * 3
-    hitbox.h = size
-  } else {
-    hitbox.x = player.x - size / 2
-    hitbox.y = player.y - size * 3
-    hitbox.w = size
-    hitbox.h = size * 3
-  }
-  let aerialFlag = true
-  field.forEach(obj => {
-    if (
-      hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
-      hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
-    ) {
-      if (
-        hitbox.x + hitbox.w * .2 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .8
-      ) {
-        if (hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5) {
-          player.y += hitbox.h * .1
-          player.dy = 0
-          player.state = 'aerial'
-        } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) {
-          player.y = obj.y
-          player.dy = 0
-          aerialFlag = false
-          player.state = 'land'
-          jump.flag = false
-          jump.double = false
-          if (
-            player.action !== 'run' &&
-            player.action !== 'crouch' &&
-            player.action !== 'walk' &&
-            player.action !== 'turn' &&
-            player.action !== 'slide'
-          ) player.action = 'idle'
-        }
-      }
-      if (
-        hitbox.y + hitbox.h * .2 <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h * .8
-      ) {
-        player.dx = -player.dx / 3
-        if (hitbox.x <= obj.x + obj.w && obj.x < hitbox.x + hitbox.w * .2) {
-          player.x += hitbox.w / 4
-        } else if (hitbox.x + hitbox.w * .8 < obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) {
-          player.x -= hitbox.w / 4
-        }
-      }
-    }
-  })
-  if (aerialFlag) player.state = 'aerial'
 }
 const draw = () => {
   const stageOffset = {x: 0, y: 0}
@@ -574,13 +668,13 @@ const draw = () => {
     context.strokeStyle = 'hsla(0, 100%, 100%, .5)'
     context.strokeRect(
       mapOffset.x|0, mapOffset.y|0,
-      multiple * stage.width / size, multiple * stage.height / size)|0
+      multiple * stage.width / size|0, multiple * stage.height / size|0)
     context.fillStyle = 'hsla(10, 100%, 50%, .5)'
     const playerSize = {x: 1, y: 2}
     context.fillRect(
       mapOffset.x + multiple * player.x / size|0,
       mapOffset.y + multiple * (player.y / size - playerSize.y)|0,
-      multiple * playerSize.x, multiple * playerSize.y
+      multiple * playerSize.x|0, multiple * playerSize.y|0
     )
     context.fillStyle = 'hsla(90, 100%, 50%, .5)'
     field.forEach(obj => context.fillRect(
@@ -594,8 +688,9 @@ const main = () => {
   time += 1
   // internal process
   input()
-  stateUpdate()
+  modelUpdate()
   collisionDetect()
+  viewUpdate()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
   window.requestAnimationFrame(main)
