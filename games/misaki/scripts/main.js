@@ -114,7 +114,7 @@ const playAudio = (value, startTime = 0) => {
   audioLoadedMap[audioPathList[value]].play()
 }
 const size = 16
-let stage = {width: size * 64, height: size * 80}
+let stage = {width: size * 240, height: size * 80}
 let player = {
   x: stage.width * 1 / 8, y: stage.height * 7 / 8,
   dx: 0, dy: 0, action: 'idle', direction: 'right', wallFlag: false, state: 'aerial'
@@ -167,16 +167,25 @@ setGround(14, 18, 1, 2)
 setGround(15, 22, 1, 7)
 setGround(37, 14, 2, 9)
 setGround(37, 11, 8, 1)
-setGround(10, 50, 1, 25)
-setGround(19, 50, 1, 25)
-setGround(27, 50, 1, 25)
-setGround(34, 50, 1, 25)
-setGround(40, 50, 1, 25)
-setGround(45, 50, 1, 25)
-setGround(49, 50, 1, 25)
-setGround(52, 50, 1, 25)
-setGround(54, 50, 1, 25)
-setGround(57, 46, 3, 3)
+setGround(50, 47, 1, 9)
+setGround(55, 40, 1, 11)
+setGround(56, 40, 7, 1)
+setGround(63, 30, 1, 11)
+for (let i = 0; i < 40; i++) setGround(150 + i * 2, 78, 1, 1)
+let interval = 150
+for (let i = 12 ; 0 < i; i--) {
+  setGround(interval, 50, 1, 25)
+  interval += i
+}
+for (let i = 3; i < 10; i++) setGround(100 + i * 5, 69 - i, 1, 10)
+setGround(11, 48, 39, 1)
+setGround(16, 49, 1, 23)
+setGround(23, 56, 1, 20)
+setGround(29, 49, 1, 8)
+setGround(29, 57, 6, 6)
+setGround(41, 53, 1, 14)
+setGround(50, 65, 10, 1)
+setGround(50, 76, 6, 1)
 const walkSpeed = .7 // dx := 1.4
 const dashSpeed = 2.8 // dx := 3.5
 const brakeConstant = .94
@@ -332,7 +341,21 @@ inputDOM[0].addEventListener('input', e => {
   audioPathList.forEach(path => audioLoadedMap[path].volume = e.target.value)
   document.getElementsByTagName`output`[0].value = e.target.value
 })
-inputDOM.wallkick.addEventListener('change', () => mode.wallkick = !mode.wallkick, false)
+const wallkick = document.getElementsByTagName`form`[0]
+const changeWallkick = () => {
+  let buffer
+  wallkick.wallkick.forEach(e => {
+    if (e.checked === true) {
+      buffer = e.value
+      e.checked = false
+    }
+  })
+  wallkick.wallkick.forEach(e => {
+    if (buffer !== e.value) e.checked = true
+  })
+  mode.wallkick = JSON.parse(wallkick.wallkick.value)
+}
+wallkick.addEventListener('change', e => mode.wallkick = JSON.parse(e.target.value), false)
 inputDOM.DECO.addEventListener('change', () => mode.DECO = !mode.DECO, false)
 inputDOM.debug.addEventListener('change', () => mode.debug = !mode.debug, false)
 inputDOM.hitbox.addEventListener('change', () => mode.hitbox = !mode.hitbox, false)
@@ -474,8 +497,7 @@ const input = () => {
     }
   }
   if (key[action.up] === 1) {
-    mode.wallkick = !mode.wallkick
-    inputDOM.wallkick.checked = !inputDOM.wallkick.checked
+    changeWallkick()
   }
   if (key.e === 1) {
     mode.DECO = !mode.DECO
@@ -559,7 +581,6 @@ const collisionDetect = () => {
         ) {
           player.y += hitbox.h * .1
           player.dy = 0
-          player.state = 'aerial'
         // foot
         } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) {
           if (!player.wallFlag) {
@@ -580,6 +601,11 @@ const collisionDetect = () => {
       }
     }
   })
+  if (0 < player.dy) {
+    player.state = 'aerial'
+    jump.flag = true
+    jump.cooltime = 10
+  }
   if (player.wallFlag) {
     if (0 <= player.dy) player.dx = 0
   }
@@ -736,8 +762,8 @@ const draw = () => {
   const displayMap = () => {
     const multiple = 2
     const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.width / size, y: size}
-    context.strokeStyle = 'hsla(0, 100%, 100%, .5)'
-    context.strokeRect(
+    context.fillStyle = 'hsla(0, 0%, 0%, .25)'
+    context.fillRect(
       mapOffset.x|0, mapOffset.y|0,
       multiple * stage.width / size|0, multiple * stage.height / size|0)
     context.fillStyle = 'hsla(10, 100%, 50%, .5)'

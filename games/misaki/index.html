@@ -31,44 +31,47 @@
           </p><br>
           <table>
             <tr>
-              <td>
-                <input type="checkbox" name="wallkick">
-              </td>
               <td>W</td>
               <td>:</td>
-              <td>ウォールキック(方向 / ジャンプ)</td>
+              <td>ウォールキック</td>
+              <td>
+                <form>
+                  <input type="radio" name="wallkick" value="false" checked><span>方向</span>
+                  <input type="radio" name="wallkick" value="true"><span>ジャンプ</span>
+                </form>
+              </td>
             </tr>
             <tr>
-              <td>
-                <input type="checkbox" name="DECO">
-              </td>
               <td>E</td>
               <td>:</td>
               <td>DECOジャン</td>
+              <td>
+                <input type="checkbox" name="DECO">
+              </td>
             </tr>
             <tr>
-              <td>
-                <input type="checkbox" name="debug">
-              </td>
               <td>G</td>
               <td>:</td>
               <td>デバッグ</td>
+              <td>
+                <input type="checkbox" name="debug">
+              </td>
             </tr>
             <tr>
-              <td>
-                <input type="checkbox" name="hitbox">
-              </td>
               <td>H</td>
               <td>:</td>
               <td>ヒットボックス</td>
+              <td>
+                <input type="checkbox" name="hitbox">
+              </td>
             </tr>
             <tr>
-              <td>
-                <input type="checkbox" name="map">
-              </td>
               <td>M</td>
               <td>:</td>
               <td>マップ</td>
+              <td>
+                <input type="checkbox" name="map">
+              </td>
             </tr>
           </table>
         </section>
@@ -83,6 +86,7 @@
           <h2>よてい</h2>
           <p>かべのなかにいる。コリジョン抜けがひどい。</p>
           <p>スピードによってジャンプ高度は可変にする。</p>
+          <p>もう少しモーションにディレイがほしい。てか画像差分がほしい。</p>
           <p>空中を着地判定にする技と組み合わせてエアスラしたい。</p>
           <p>メトロイドヴァニア，アビリティ追加機能実装。</p>
           <p>攻撃手段と敵追加。</p>
