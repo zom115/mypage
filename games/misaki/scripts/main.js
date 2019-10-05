@@ -443,7 +443,7 @@ const input = () => {
         jump.time = 0
       }
     } else if (jump.cooltime === 0) {
-      player.dy = -jumpConstant
+      player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
       player.action = 'jump'
       jump.flag = true
       if (!player.landFlag && !player.wallFlag) {
@@ -601,7 +601,8 @@ const modelUpdate = () => {
   } else {
     // jump.flag = true
     // jump.cooltime = 10
-    if (player.action !== 'slide') player.action = 'jump'
+    player.action = 'jump'
+    // if (player.action !== 'slide') player.action = 'jump'
   }
   Object.values(action).forEach(act => {
     if (key[act]) {
@@ -708,8 +709,18 @@ const viewUpdate = () => {
     if (i.time === 0) i.condition = 9
   }
 }
+let max = 0
 const draw = () => {
-  console.log(player.action, player.dx, player.dy, player.wallFlag)
+  if (max < player.dx) {
+    max = player.dx
+    console.log(max, max ** .5)
+  }
+  // walk 1.3 1.4
+  // run 3.92 4
+  // step 5.6 6
+  // slide 9.58 10
+  // combo 15?
+
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0
