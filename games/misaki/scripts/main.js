@@ -134,7 +134,7 @@ const size = 16
 let stage = {width: size * 240, height: size * 80}
 let player = {
   x: stage.width * 1 / 8, y: stage.height * 7 / 8,
-  dx: 0, dy: 0, action: 'idle', direction: 'right', wallFlag: false, state: 'aerial'
+  dx: 0, dy: 0, action: 'idle', direction: 'right', landFlag: false, wallFlag: false
 }
 let hitbox = {
   x: player.x - size / 2,
@@ -146,75 +146,78 @@ let field = []
 const setGround = (x, y, w, h) => {
   field.push({x: x * size, y: y * size, w: w * size, h: h * size})
 }
-// frame
-setGround(0, stage.height / size - 1, stage.width / size, 1)
-setGround(1, 0, stage.width / size - 1, 1)
-setGround(0, 0, 1, stage.height / size - 1)
-setGround(stage.width / size - 1, 1, 1, stage.height / size - 2)
-// object
-setGround(7, 16, 9, 1)
-setGround(5, 19, 4, 1)
-setGround(8, 25, 6, 1)
-setGround(3, 31, 9, 1)
-setGround(4, 37, 6, 1)
-setGround(5, 43, 4, 1)
-setGround(20, 41, 5, 1)
-setGround(33, 35, 1, 3)
-setGround(32, 41, 3, 1)
-setGround(37, 36, 1, 3)
-setGround(37, 42, 1, 1)
-setGround(40, 37, 1, 3)
-setGround(40, 43, 1, 1)
-setGround(43, 37, 1, 3)
-setGround(43, 43, 1, 1)
-setGround(47, 37, 1, 3)
-setGround(47, 43, 1, 1)
-setGround(24, 34, 5, 2)
-setGround(41, 32, 2, 1)
-setGround(44, 32, 1, 2)
-setGround(47, 32, 2, 1)
-setGround(50, 32, 1, 2)
-setGround(54, 32, 2, 2)
-setGround(18, 25, 12, 1)
-setGround(30, 18, 5, 1)
-setGround(51, 20, 3, 4)
-setGround(58, 18, 3, 3)
-setGround(52, 26, 3, 3)
-setGround(14, 18, 1, 2)
-setGround(15, 22, 1, 7)
-setGround(37, 14, 2, 9)
-setGround(37, 11, 8, 1)
-setGround(50, 47, 1, 9)
-setGround(55, 40, 1, 10)
-setGround(56, 40, 7, 1)
-setGround(63, 30, 1, 11)
-for (let i = 0; i < 40; i++) setGround(150 + i * 2, 78, 1, 1)
-for (let i = 0; i < 40; i++) setGround(64 + i * 2, 50, 1, 1)
-let interval = 150
-for (let i = 12 ; 0 < i; i--) {
-  setGround(interval, 50, 1, 25)
-  interval += i
+{
+  setGround(0, stage.height / size - 1, stage.width / size, 1) // frame
+  setGround(1, 0, stage.width / size - 1, 1)
+  setGround(0, 0, 1, stage.height / size - 1)
+  setGround(stage.width / size - 1, 1, 1, stage.height / size - 2)
+  setGround(7, 16, 9, 1) // object
+  setGround(5, 19, 4, 1)
+  setGround(8, 25, 6, 1)
+  setGround(3, 31, 9, 1)
+  setGround(4, 37, 6, 1)
+  setGround(5, 43, 4, 1)
+  setGround(20, 41, 5, 1)
+  setGround(33, 35, 1, 3)
+  setGround(32, 41, 3, 1)
+  setGround(37, 36, 1, 3)
+  setGround(37, 42, 1, 1)
+  setGround(40, 37, 1, 3)
+  setGround(40, 43, 1, 1)
+  setGround(43, 37, 1, 3)
+  setGround(43, 43, 1, 1)
+  setGround(47, 37, 1, 3)
+  setGround(47, 43, 1, 1)
+  setGround(24, 34, 5, 2)
+  setGround(41, 32, 2, 1)
+  setGround(44, 32, 1, 2)
+  setGround(47, 32, 2, 1)
+  setGround(50, 32, 1, 2)
+  setGround(54, 32, 2, 2)
+  setGround(18, 25, 12, 1)
+  setGround(30, 18, 5, 1)
+  setGround(51, 20, 3, 4)
+  setGround(58, 18, 3, 3)
+  setGround(52, 26, 3, 3)
+  setGround(14, 18, 1, 2)
+  setGround(15, 22, 1, 7)
+  setGround(37, 14, 2, 9)
+  setGround(37, 11, 8, 1)
+  setGround(50, 47, 1, 9)
+  setGround(55, 40, 1, 10)
+  setGround(56, 40, 7, 1)
+  setGround(63, 30, 1, 11)
+  for (let i = 0; i < 40; i++) setGround(150 + i * 2, 78, 1, 1)
+  for (let i = 0; i < 40; i++) setGround(64 + i * 2, 50, 1, 1)
+  let interval = 150
+  for (let i = 12 ; 0 < i; i--) {
+    setGround(interval, 50, 1, 25)
+    interval += i
+  }
+  for (let i = 3; i < 10; i++) setGround(100 + i * 5, 69 - i, 1, 10)
+  setGround(11, 48, 39, 1)
+  setGround(16, 49, 1, 23)
+  setGround(23, 56, 1, 20)
+  setGround(29, 49, 1, 8)
+  setGround(29, 57, 6, 6)
+  setGround(41, 53, 1, 14)
+  setGround(50, 65, 10, 1)
+  setGround(50, 76, 6, 1)
+  setGround(55, 56, 1, 5)
+  setGround(60, 53, 1, 10)
 }
-for (let i = 3; i < 10; i++) setGround(100 + i * 5, 69 - i, 1, 10)
-setGround(11, 48, 39, 1)
-setGround(16, 49, 1, 23)
-setGround(23, 56, 1, 20)
-setGround(29, 49, 1, 8)
-setGround(29, 57, 6, 6)
-setGround(41, 53, 1, 14)
-setGround(50, 65, 10, 1)
-setGround(50, 76, 6, 1)
-setGround(55, 56, 1, 5)
-setGround(60, 53, 1, 10)
-const walkSpeed = .7 // dx := 1.4
-const dashSpeed = 2.8 // dx := 3.5
+const walkConstant = .7 // dx := 1.4
+const dashConstant = 2.1 // dx := 3.5
+const stepConstant = 4
+const slideConstant = 2
+const boostConstant = 6
 const brakeConstant = .94
 const gravityConstant = .272
 const jumpConstant = 5
 let time = 0
 let jump = {flag: false, double: false, time: 0, cooltime: 0, chargeTime: 0}
 let cooltime = {
-  step: 0, stepLimit: 15,stepDeferment: 15,
+  step: 0, stepLimit: 15, stepDeferment: 15,
   slide: 2, slideLimit: 45
 }
 let action = {
@@ -369,7 +372,7 @@ const wallkick = document.getElementsByTagName`form`[0]
 const changeWallkick = () => {
   let buffer
   wallkick.wallkick.forEach(e => {
-    if (e.checked === true) {
+    if (e.checked) {
       buffer = e.value
       e.checked = false
     }
@@ -386,73 +389,49 @@ inputDOM.hitbox.addEventListener('change', () => mode.hitbox = !mode.hitbox, fal
 inputDOM.map.addEventListener('change', () => mode.map = !mode.map, false)
 const input = () => {
   inputProcess()
-  // warp
-  // if (size * 53 < player.x) {
+  // if (size * 53 < player.x) { // warp
   //   player.x = 50
   //   audioLoadedMap[audioPathList[audioStat.win]].currentTime = 0
   //   audioLoadedMap[audioPathList[audioStat.win]].play()
   // }
-  // walk
-  const speed = (key[action.dash]) ? dashSpeed : walkSpeed
-  if (player.action !== 'jump') {
-    if (key[action.left] && -speed < player.dx) player.dx -= walkSpeed
-    if (key[action.right] && player.dx < speed) player.dx += walkSpeed
-  } else {
-    // airal brake
-    if (key[action.left] && -speed < player.dx) player.dx -= walkSpeed / 3
-    if (key[action.right] && player.dx < speed) player.dx += walkSpeed / 3
+  if (!(key[action.left] && key[action.right])) { // walk
+    let speed = (key[action.dash]) ? dashConstant : walkConstant
+    speed = key[action.left] && -speed < player.dx ? -speed
+    : key[action.right] && player.dx < speed ? speed : 0
+    speed = player.landFlag ? speed : speed / 3 // aerial brake
+    player.dx += speed
   }
-  // step
-  if (cooltime.step === 0) {
-    let stepFlag = false
-    if (
-      key[action.left] &&
-      time - keyHistory.pressed[action.left] < cooltime.stepLimit &&
-      0 < keyHistory.released[action.left] - keyHistory.pressed[action.left] &&
-      keyHistory.released[action.left] - keyHistory.pressed[action.left] < cooltime.stepLimit
-    ) {
-      player.dx -= 4
-      stepFlag = true
-    }
-    if (
-      key[action.right] &&
-      time - keyHistory.pressed[action.right] < cooltime.stepLimit &&
-      0 < keyHistory.released[action.right] - keyHistory.pressed[action.right] &&
-      keyHistory.released[action.right] - keyHistory.pressed[action.right] < cooltime.stepLimit
-    ) {
-      player.dx += 4
-      stepFlag = true
-    }
-    if (stepFlag) {
+  if (cooltime.step === 0) { // step
+    const stepSpeed = key[action.left] &&
+      time - keyHistory.pressed[action.left] < cooltime.stepDeferment &&
+      0 < keyHistory.released[action.left] - keyHistory.pressed[action.left]
+    ? -stepConstant
+    : key[action.right] &&
+      time - keyHistory.pressed[action.right] < cooltime.stepDeferment &&
+      0 < keyHistory.released[action.right] - keyHistory.pressed[action.right]
+    ? stepConstant : 0
+    if (stepSpeed !== 0) {
+      player.dx += stepSpeed
       if (0 < player.dy) player.dy *= .7
-      cooltime.step = cooltime.stepDeferment
+      cooltime.step = cooltime.stepLimit
     }
   } else if (player.action !== 'jump') cooltime.step -= 1
-  // slide
-  if (cooltime.slide === 0) {
-    if (key[action.down] && player.state === 'land') {
-      const slideConstant = 2
-      const boostConstant = 6
-      let flag = false
-      if (slideConstant < player.dx) {
-        player.dx += boostConstant
-        flag = true
-      } else if (player.dx < -slideConstant) {
-        player.dx -= boostConstant
-        flag = true
-      }
-      if (flag) {
+  if (cooltime.slide === 0) { // slide
+    if (key[action.down] && player.landFlag) {
+      const slideSpeed = slideConstant < player.dx ? boostConstant
+      : player.dx < -slideConstant ? -boostConstant : 0
+      if (slideSpeed !== 0) {
+        player.dx += slideSpeed
         player.action = 'slide'
         cooltime.slide = cooltime.slideLimit
         if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       }
     }
   } else {
-    if (player.state === 'aerial' && 1 < cooltime.slide) cooltime.slide -= 2
+    if (player.landFlag === false && 1 < cooltime.slide) cooltime.slide -= 2
     else cooltime.slide -= 1
   }
-  // jump
-  if (0 < jump.cooltime && player.state === 'land') jump.cooltime -= 1
+  if (0 < jump.cooltime && player.landFlag) jump.cooltime -= 1 // jump
   if (key[action.jump] || key[action.space]) {
     if (jump.flag) {
       if (!jump.double && jump.time === 0 && !player.wallFlag) {
@@ -466,15 +445,15 @@ const input = () => {
       player.dy = -jumpConstant
       player.action = 'jump'
       jump.flag = true
-      if (player.state === 'aerial' && !player.wallFlag) {
+      if (player.landFlag === false && !player.wallFlag) {
         jump.double = true
         playAudio(voiceStat.doubleJump)
       } else {
-        if (player.dx < -3.5 || 3.5 < player.dx) player.dx *= .7
+        player.dx *= .7
         playAudio(voiceStat.jump)
       }
       if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
-      player.state = 'aerial'
+      player.landFlag = false
       jump.cooltime = 10
       jump.time = 0
     }
@@ -488,8 +467,7 @@ const input = () => {
       } else if (jump.time !== 0) jump.time += 1
     }
   }
-  // wall kick
-  if (player.wallFlag && 0 < player.dy) {
+  if (player.wallFlag && 0 < player.dy) { // wall kick
     if (key[action.dash]) player.dy *= .5
     let flag = false
     if (mode.wallkick) {
@@ -545,7 +523,6 @@ const input = () => {
   }
 }
 const modelUpdate = () => {
-  if (-.01 < player.dx && player.dx < .01) player.dx = 0
   player.y += player.dy
   player.dy += gravityConstant
   if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
@@ -561,10 +538,7 @@ const modelUpdate = () => {
       }
     }
   })
-}
-const collisionDetect = () => {
-  let check = {x: false, y: false}
-  if (player.action === 'slide') {
+  if (player.action === 'slide') { // collision detect
     hitbox.x = player.x - size * 1.5
     hitbox.y = player.y - size
     hitbox.w = size * 3
@@ -584,15 +558,12 @@ const collisionDetect = () => {
       if (
         hitbox.y + hitbox.h * .2 < obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .8
       ) {
-        check.x = true
-        // left
-        if (hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .2) {
+        if (hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .2) { // left
           player.wallFlag = true
           if (0 < player.dx) player.x += player.dx
           player.direction = 'left'
         }
-        // right
-        if (hitbox.x + hitbox.w * .8 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) {
+        if (hitbox.x + hitbox.w * .8 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) { // right
           player.wallFlag = true
           if (player.dx < 0) player.x += player.dx
           player.direction = 'right'
@@ -601,20 +572,17 @@ const collisionDetect = () => {
       if (
         hitbox.x + hitbox.w * .2 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .8
       ) {
-        check.y = true
-        // head
-        if (
+        if ( // head
           hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5 &&
           !player.wallFlag
         ) {
           player.y += hitbox.h * .1
           player.dy = 0
-        // foot
-        } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) {
+        } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) { // foot
           if (!player.wallFlag) {
             player.y = obj.y
             player.dy = 0
-            player.state = 'land'
+            player.landFlag = true
             jump.flag = false
             jump.double = false
             if (
@@ -630,7 +598,7 @@ const collisionDetect = () => {
     }
   })
   if (0 < player.dy) {
-    player.state = 'aerial'
+    player.landFlag = false
     jump.flag = true
     jump.cooltime = 10
   }
@@ -639,14 +607,15 @@ const collisionDetect = () => {
   }
   else {
     player.x += player.dx
-    if (player.state === 'land') player.dx *= brakeConstant
+    if (player.landFlag) player.dx *= brakeConstant
+    if (-.01 < player.dx && player.dx < .01) player.dx = 0
   }
 }
 const viewUpdate = () => {
   if (player.action !== 'jump') {
-    if (key[action.right] && player.dx < walkSpeed * brakeConstant) player.action = 'turn'
-    if (key[action.left] && -walkSpeed * brakeConstant < player.dx) player.action = 'turn'
-    if (player.wallFlag && player.state !== 'aerial') player.action = 'push'
+    if (key[action.right] && player.dx < walkConstant * brakeConstant) player.action = 'turn'
+    if (key[action.left] && -walkConstant * brakeConstant < player.dx) player.action = 'turn'
+    if (player.wallFlag && player.landFlag !== false) player.action = 'push'
     if (key[action.left] && key[action.right]) player.action = 'idle'
   }
   player.direction = ((key[action.left] && key[action.right]) || player.wallFlag) ? player.direction
@@ -665,8 +634,7 @@ const viewUpdate = () => {
   if (player.action === 'idle') {
     const i = imageStat.idle
     i.time += 1
-    // breath
-    if (
+    if ( // breath
       (i.start <= i.condition && i.condition < i.start + i.length / 4 &&
       i.time % ~~(i.breathInterval) === 0) ||
       (i.start + i.length / 4 <= i.condition && i.condition < i.start + i.length *.5 &&
@@ -692,8 +660,7 @@ const viewUpdate = () => {
         }
       }
     }
-    // eye blink
-    if (time % i.frame === 0) {
+    if (time % i.frame === 0) { // eye blink
       i.blinkTime += 1
       if (i.blinkTime === 4) i.blinkTime = -(Math.random() * i.maxInterval)|0
       if (i.blinkTime === 0 || i.blinkTime === 1) i.condition += 1
@@ -753,7 +720,7 @@ const draw = () => {
   let i
   if (player.action === 'slide') i = imageStat.slide.condition
   if (player.action === 'push') i = imageStat.push.condition
-  else if (player.action === 'jump' || player.state === 'aerial') {
+  else if (player.action === 'jump' || player.landFlag === false) {
     const ij = imageStat.jump
     i = (6 < player.dy) ? ij.start + 7
     : (4 < player.dy) ? ij.start + 6
@@ -811,17 +778,15 @@ const draw = () => {
 }
 let playFlag = false
 const musicProcess = () => {
-  if (!playFlag && Object.values(key).some(value => {return value === true})) {
+  if (!playFlag && Object.values(key).some(value => {return 0 < value})) {
     playFlag = true
     musicLoadedMap[musicPathList[0]].play()
   }
 }
 const main = () => {
   time += 1
-  // internal process
   input()
   modelUpdate()
-  collisionDetect()
   viewUpdate()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
