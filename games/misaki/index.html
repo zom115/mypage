@@ -24,56 +24,77 @@
       <article>
         <section>
           <h1>not a Unity Chan</h1>
-          <canvas id="canvas" width="854" height="480"></canvas>
-          <p>volume :
-            <input type="range" value=".1" min="0" max="1" step=".01">
-            <output>0.1</output>
-          </p><br>
-          <table>
-            <tr>
-              <td>W</td>
-              <td>:</td>
-              <td>ウォールキック</td>
-              <td>
-                <form>
-                  <input type="radio" name="wallkick" value="false" checked><span>方向</span>
-                  <input type="radio" name="wallkick" value="true"><span>ジャンプ</span>
-                </form>
-              </td>
-            </tr>
-            <tr>
-              <td>E</td>
-              <td>:</td>
-              <td>DECOジャン</td>
-              <td>
-                <input type="checkbox" name="DECO">
-              </td>
-            </tr>
-            <tr>
-              <td>G</td>
-              <td>:</td>
-              <td>デバッグ</td>
-              <td>
-                <input type="checkbox" name="debug">
-              </td>
-            </tr>
-            <tr>
-              <td>H</td>
-              <td>:</td>
-              <td>ヒットボックス</td>
-              <td>
-                <input type="checkbox" name="hitbox">
-              </td>
-            </tr>
-            <tr>
-              <td>M</td>
-              <td>:</td>
-              <td>マップ</td>
-              <td>
-                <input type="checkbox" name="map">
-              </td>
-            </tr>
-          </table>
+          <canvas id="canvas" width="854" height="480"></canvas><br>
+          <div class="container">
+            <table>
+              <tr>
+                <td>W</td>
+                <td>:</td>
+                <td>ウォールキック</td>
+                <td>
+                  <form>
+                    <input type="radio" name="wallkick" value="false" checked><span>方向</span>
+                    <input type="radio" name="wallkick" value="true"><span>ジャンプ</span>
+                  </form>
+                </td>
+              </tr>
+              <tr>
+                <td>E</td>
+                <td>:</td>
+                <td>DECOジャン</td>
+                <td>
+                  <input type="checkbox" name="DECO">
+                </td>
+              </tr>
+              <tr>
+                <td>G</td>
+                <td>:</td>
+                <td>デバッグ</td>
+                <td>
+                  <input type="checkbox" name="debug">
+                </td>
+              </tr>
+              <tr>
+                <td>H</td>
+                <td>:</td>
+                <td>ヒットボックス</td>
+                <td>
+                  <input type="checkbox" name="hitbox">
+                </td>
+              </tr>
+              <tr>
+                <td>M</td>
+                <td>:</td>
+                <td>マップ</td>
+                <td>
+                  <input type="checkbox" name="map">
+                </td>
+              </tr>
+            </table>
+            <table>
+              <tr>
+                <td>voice</td>
+                <td>:</td>
+                <td>
+                  <input id="voiceInput" type="range" value=".1" min="0" max="1" step=".01">
+                </td>
+                <td>
+                  <output id="voiceOutput">.1</output>
+                </td>
+              </tr>
+              <tr>
+                <td>music</td>
+                <td>:</td>
+                <td>
+                  <input id="musicInput" type="range" value=".02" min="0" max="1" step=".01">
+                </td>
+                <td>
+                  <output id="musicOutput">.02</output>
+                </td>
+              </tr>
+              <tr></tr>
+            </table>
+          </div>
         </section>
         <section>
           <h2>うごかしかた</h2>
@@ -86,7 +107,7 @@
           <h2>よてい</h2>
           <p>かべのなかにいる。コリジョン抜けがひどい。</p>
           <p>スピードによってジャンプ高度は可変にする。</p>
-          <p>もう少しモーションにディレイがほしい。てか画像差分がほしい。</p>
+          <p>もう少しモーションに発生猶予がほしい。てか画像差分がほしい。</p>
           <p>空中を着地判定にする技と組み合わせてエアスラしたい。</p>
           <p>メトロイドヴァニア，アビリティ追加機能実装。</p>
           <p>攻撃手段と敵追加。</p>
@@ -94,7 +115,11 @@
         </section>
         <section>
           <h2>ライセンス</h2><img src="../../images/LicenseLogo/Light_Frame.png" alt="ユニティちゃんライセンス">
-          <p>このゲームはユニティちゃんライセンスに拘束されている。</p>
+          <p>このゲームはユニティちゃんライセンスに拘束されている。</p><br>
+          <p>使用楽曲</p>
+          <ul>
+            <li><a href="https://commons.nicovideo.jp/material/nc109026">テレフォン・ダンス | ニコニ・コモンズ</a></li>
+          </ul>
         </section>
       </article>
     </main>

@@ -73,28 +73,45 @@ imagePathList.forEach(path => {
     imageLoadedMap[path] = imgPreload
   })
 })
-const audioStat = {jump: 0, doubleJump: 1, breath: 2, win: 3}
-const audioPathList = [
+const voiceStat = {jump: 0, doubleJump: 1, breath: 2, win: 3}
+const voicePathList = [
   'audio/Misaki/V2001.wav',
   'audio/Misaki/V2002.wav',
   'audio/Misaki/V2005.wav',
   'audio/Misaki/V2024.wav'
 ]
-let audioLoadedList = []
-let audioLoadedMap = []
-audioPathList.forEach(path => {
-  const audioPreload = new Audio()
-  audioPreload.src = path
-  audioPreload.volume = .1
-  audioPreload.addEventListener('canplaythrough', () => {
-    audioLoadedList.push(path)
-    audioLoadedMap[path] = audioPreload
+let voiceLoadedList = []
+let voiceLoadedMap = []
+voicePathList.forEach(path => {
+  const voicePreload = new Audio()
+  voicePreload.src = path
+  voicePreload.volume = .1
+  voicePreload.addEventListener('canplaythrough', () => {
+    voiceLoadedList.push(path)
+    voiceLoadedMap[path] = voicePreload
+  })
+})
+const musicStat = {music: 0}
+const musicPathList = [
+  'audio/music/nc109026.wav'
+]
+let musicLoadedList = []
+let musicLoadedMap = []
+musicPathList.forEach(path => {
+  const musicPreload = new Audio()
+  musicPreload.src = path
+  musicPreload.volume = .02
+  musicPreload.loop = true
+  musicPreload.addEventListener('canplaythrough', () => {
+    musicLoadedList.push(path)
+    musicLoadedMap[path] = musicPreload
   })
 })
 const timerId = setInterval(() => { // loading monitoring
   if (
     imageLoadedList.length === imagePathList.length &&
-    audioLoadedList.length === audioPathList.length
+    voiceLoadedList.length === voicePathList.length &&
+    musicLoadedList.length === musicPathList.length
     ) { // untrustworthy length in assosiative
     clearInterval(timerId)
     main()
@@ -110,8 +127,8 @@ const drawImage = (arg, x, y) => {
   context.restore()
 }
 const playAudio = (value, startTime = 0) => {
-  audioLoadedMap[audioPathList[value]].currentTime = startTime
-  audioLoadedMap[audioPathList[value]].play()
+  voiceLoadedMap[voicePathList[value]].currentTime = startTime
+  voiceLoadedMap[voicePathList[value]].play()
 }
 const size = 16
 let stage = {width: size * 240, height: size * 80}
@@ -168,10 +185,11 @@ setGround(15, 22, 1, 7)
 setGround(37, 14, 2, 9)
 setGround(37, 11, 8, 1)
 setGround(50, 47, 1, 9)
-setGround(55, 40, 1, 11)
+setGround(55, 40, 1, 10)
 setGround(56, 40, 7, 1)
 setGround(63, 30, 1, 11)
 for (let i = 0; i < 40; i++) setGround(150 + i * 2, 78, 1, 1)
+for (let i = 0; i < 40; i++) setGround(64 + i * 2, 50, 1, 1)
 let interval = 150
 for (let i = 12 ; 0 < i; i--) {
   setGround(interval, 50, 1, 25)
@@ -186,6 +204,8 @@ setGround(29, 57, 6, 6)
 setGround(41, 53, 1, 14)
 setGround(50, 65, 10, 1)
 setGround(50, 76, 6, 1)
+setGround(55, 56, 1, 5)
+setGround(60, 53, 1, 10)
 const walkSpeed = .7 // dx := 1.4
 const dashSpeed = 2.8 // dx := 3.5
 const brakeConstant = .94
@@ -337,9 +357,13 @@ Object.values(action).forEach(act => {
 })
 let mode = {wallkick: false, DECO: false, debug: false, hitbox: false, map: false}
 const inputDOM = document.getElementsByTagName`input`
-inputDOM[0].addEventListener('input', e => {
-  audioPathList.forEach(path => audioLoadedMap[path].volume = e.target.value)
-  document.getElementsByTagName`output`[0].value = e.target.value
+document.getElementById`voiceInput`.addEventListener('input', e => {
+  voicePathList.forEach(path => voiceLoadedMap[path].volume = e.target.value)
+  document.getElementById`voiceOutput`.value = e.target.value
+})
+document.getElementById`musicInput`.addEventListener('input', e => {
+  musicPathList.forEach(path => musicLoadedMap[path].volume = e.target.value)
+  document.getElementById`musicOutput`.value = e.target.value
 })
 const wallkick = document.getElementsByTagName`form`[0]
 const changeWallkick = () => {
@@ -434,7 +458,7 @@ const input = () => {
       if (!jump.double && jump.time === 0 && !player.wallFlag) {
         player.dy = -jumpConstant
         jump.double = true
-        playAudio(audioStat.doubleJump)
+        playAudio(voiceStat.doubleJump)
         if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
         jump.time = 0
       }
@@ -444,10 +468,10 @@ const input = () => {
       jump.flag = true
       if (player.state === 'aerial' && !player.wallFlag) {
         jump.double = true
-        playAudio(audioStat.doubleJump)
+        playAudio(voiceStat.doubleJump)
       } else {
         if (player.dx < -3.5 || 3.5 < player.dx) player.dx *= .7
-        playAudio(audioStat.jump)
+        playAudio(voiceStat.jump)
       }
       if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       player.state = 'aerial'
@@ -657,9 +681,9 @@ const viewUpdate = () => {
         i.breathInterval += 1
         if (i.breathInterval < 25) {
           const num = Math.random()
-          const list = num < .9 ? {value: audioStat.breath, startTime: .3}
-          : num < .95 ? {value: audioStat.jump, startTime: .3}
-          : {value: audioStat.doubleJump, startTime: .33}
+          const list = num < .9 ? {value: voiceStat.breath, startTime: .3}
+          : num < .95 ? {value: voiceStat.jump, startTime: .3}
+          : {value: voiceStat.doubleJump, startTime: .33}
           playAudio(list.value, list.startTime)
         }
       }
@@ -781,6 +805,13 @@ const draw = () => {
   }
   if (mode.map) displayMap()
 }
+let playFlag = false
+const musicProcess = () => {
+  if (!playFlag && Object.values(key).some(value => {return value === true})) {
+    playFlag = true
+    musicLoadedMap[musicPathList[0]].play()
+  }
+}
 const main = () => {
   time += 1
   // internal process
@@ -790,5 +821,6 @@ const main = () => {
   viewUpdate()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
+  musicProcess()
   window.requestAnimationFrame(main)
 }

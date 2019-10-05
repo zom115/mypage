@@ -16,6 +16,7 @@ canvas {
   background: #999999;
   display: block;
   margin: 0 auto;
+  touch-action: manipulation;
   user-select: none; }
 
 h1, h2 {
@@ -34,6 +35,12 @@ td {
 
 .prettyprint ul.limenums > li {
   list-style-type: decimal; }
+
+.container {
+  display: flex;
+  justify-content: space-around; }
+  .container table {
+    min-width: 250px; }
 
 body {
   background: #666666;
