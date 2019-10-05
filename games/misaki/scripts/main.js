@@ -493,11 +493,15 @@ const input = () => {
     if (key[action.dash]) player.dy *= .5
     let flag = false
     if (mode.wallkick) {
-      if (key[action.jump] === 1 && key[action.dash] && player.direction === 'right') {
+      if (
+        (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'right'
+      ) {
         player.dx -= 4
         player.direction = 'left'
         flag = true
-      } else if (key[action.jump] === 1 && key[action.dash] && player.direction === 'left') {
+      } else if (
+        (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'left'
+      ) {
         player.dx += 4
         player.direction = 'right'
         flag = true
