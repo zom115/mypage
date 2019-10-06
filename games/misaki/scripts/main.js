@@ -425,7 +425,10 @@ const input = () => {
       cooltime.step = cooltime.stepLimit
     }
   } else if (player.action !== 'jump') cooltime.step -= 1
-  if (key[action.dash] === 1 && player.landFlag && player.action !== 'slide') { // punch
+  if (
+    key[action.dash] === 1 && !key[action.left] && !key[action.right] &&
+    player.landFlag && player.action !== 'slide'
+  ) { // punch
     player.action = 'punch'
   }
   if (cooltime.slide === 0) { // slide
