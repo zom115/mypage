@@ -1,3 +1,4 @@
+{
 'use strict'
 const imageCanvas = document.getElementById`drawCanvas`
 const imageContext = imageCanvas.getContext`2d`
@@ -63,23 +64,27 @@ const drawImage = () => {
 }
 const drawTP = () => {
   const frameSector = [10, 30, 45]
-  let img = new Image()
-  img.src = 'images/TP2F.png'
-  const imgOffset = [(cnv.offsetWidth - img.width) * 3 / 4, (cnv.offsetHeight - img.height) / 2]
-  if (tFrame < frameSector[1]) img.src = 'images/TP2R.png'
+  let img = 'images/TP2F.png'
+  const imgOffset = [
+    (cnv.offsetWidth - loadedMap[img].width) * 3 / 4,
+    (cnv.offsetHeight - loadedMap[img].height) / 2
+  ]
+  if (tFrame < frameSector[1]) img = 'images/TP2R.png'
   if (frameSector[0] <= tFrame && tFrame <= frameSector[2]) {
-    ctx.drawImage(img, imgOffset[0], imgOffset[1] - 1)
-  } else ctx.drawImage(img, imgOffset[0], imgOffset[1])
+    ctx.drawImage(loadedMap[img], imgOffset[0], imgOffset[1] - 1)
+  } else ctx.drawImage(loadedMap[img], imgOffset[0], imgOffset[1])
 }
 const drawTapioca = () => {
   const frameSector = [25, 8, 36, 53]
-  let img = new Image()
-  img.src = 'images/TP2F.png'
-  const imgOffset = [(cnv.offsetWidth - img.width) / 4, (cnv.offsetHeight - img.height) / 2]
-  if (frameSector[1] <= tFrame && tFrame <= frameSector[3]) img.src = 'images/TP2R.png'
+  let img = 'images/TP2F.png'
+  const imgOffset = [
+    (cnv.offsetWidth - loadedMap[img].width) / 4,
+    (cnv.offsetHeight - loadedMap[img].height) / 2
+  ]
+  if (frameSector[1] <= tFrame && tFrame <= frameSector[3]) img = 'images/TP2R.png'
   if (frameSector[0] <= tFrame && tFrame <= frameSector[2]) {
-    ctx.drawImage(img, imgOffset[0], imgOffset[1] - 1)
-  } else ctx.drawImage(img, imgOffset[0], imgOffset[1])
+    ctx.drawImage(loadedMap[img], imgOffset[0], imgOffset[1] - 1)
+  } else ctx.drawImage(loadedMap[img], imgOffset[0], imgOffset[1])
 }
 const drawIndicator = () => {
   ctx.fillRect(frame - 1, ~~(((frame - 30) ** 2) / 15 + (cnv.offsetHeight - 1) - 60), 1, 1)
@@ -117,4 +122,6 @@ const imageLoop = x => {
   }
   if (tLimit <= tFrame) tFrame = 0
   requestAnimationFrame(imageLoop)
+}
+
 }
