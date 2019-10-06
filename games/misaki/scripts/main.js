@@ -2,22 +2,24 @@
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41]
+const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41, 42]
 const imageStat = {
   idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
-    time: 0, maxInterval: 30, frame: 5,
-    blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
-  }, walk: {start: imageChangeList[1], length: 6, condition: imageChangeList[1],
-    time: 0, maxInterval: 0, frame: 10
-  }, turn: {start: imageChangeList[2], length: 2, condition: imageChangeList[2],
-    time: 0, maxInterval: 0, frame: 7
-  }, run: {start: imageChangeList[3], length: 8, condition: imageChangeList[3],
-    time: 1, maxInterval: 0, frame: 7
-  }, crouch: {start: imageChangeList[4], length: 3, condition: imageChangeList[4],
-    time: 1, maxInterval: 0, frame: 7
-  }, jump: {start: imageChangeList[5], length: 9
-  }, slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]
-  }, push: {start: imageChangeList[7], length: 1, condition: imageChangeList[7]
+  time: 0, maxInterval: 30, frame: 5,
+  blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
+}, walk: {start: imageChangeList[1], length: 6, condition: imageChangeList[1],
+  time: 0, maxInterval: 0, frame: 10
+}, turn: {start: imageChangeList[2], length: 2, condition: imageChangeList[2],
+  time: 0, maxInterval: 0, frame: 7
+}, run: {start: imageChangeList[3], length: 8, condition: imageChangeList[3],
+  time: 1, maxInterval: 0, frame: 7
+}, crouch: {start: imageChangeList[4], length: 3, condition: imageChangeList[4],
+  time: 1, maxInterval: 0, frame: 7
+}, jump: {start: imageChangeList[5], length: 9
+}, slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]
+}, push: {start: imageChangeList[7], length: 1, condition: imageChangeList[7]
+}, punch: {start: imageChangeList[8], length: 2, condition: imageChangeList[8],
+  time: 0, frame: 7
 }}
 const imagePathList = [
   'images/Misaki/Misaki_Idle_1.png', // 0
@@ -61,7 +63,9 @@ const imagePathList = [
   'images/Misaki/Misaki_Jump_Fall_2.png',
   'images/Misaki/Misaki_Jump_Fall_3.png',
   'images/Misaki/Misaki_Slide_1.png',
-  'images/Misaki/Misaki_Push_1.png'
+  'images/Misaki/Misaki_Push_1.png',
+  'images/Misaki/Misaki_Punch_1.png',
+  'images/Misaki/Misaki_Punch_2.png'
 ]
 let imageLoadedList = []
 let imageLoadedMap = []
@@ -134,6 +138,11 @@ const size = 16
 let stage = {width: size * 240, height: size * 80}
 let player = {
   x: stage.width * 1 / 8, y: stage.height * 7 / 8,
+  // action: { // TODO: bit operand
+  //   idle: true, turn: false, crouch: false, push: false, run: false,
+  //   jump: false, step: false, slide: false
+  // },
+  // direction: {left: false, right: true}
   dx: 0, dy: 0, action: 'idle', direction: 'right', landFlag: false, wallFlag: false
 }
 let hitbox = {
@@ -416,6 +425,9 @@ const input = () => {
       cooltime.step = cooltime.stepLimit
     }
   } else if (player.action !== 'jump') cooltime.step -= 1
+  if (key[action.dash] === 1 && player.landFlag && player.action !== 'slide') { // punch
+    player.action = 'punch'
+  }
   if (cooltime.slide === 0) { // slide
     if (key[action.down] && player.landFlag && !player.wallFlag) {
       const slideSpeed = slideConstant < player.dx ? boostConstant
@@ -437,6 +449,7 @@ const input = () => {
     if (jump.flag) {
       if (!jump.double && jump.time === 0 && !player.wallFlag) {
         player.dy = -jumpConstant
+        player.action = 'jump'
         jump.double = true
         playAudio(voiceStat.doubleJump)
         if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
@@ -592,6 +605,7 @@ const modelUpdate = () => {
     if (0 < jump.cooltime) jump.cooltime -= 1
     jump.double = false
     if (
+      player.action !== 'punch' &&
       player.action !== 'run' &&
       player.action !== 'crouch' &&
       player.action !== 'walk' &&
@@ -599,10 +613,9 @@ const modelUpdate = () => {
       player.action !== 'slide'
     ) player.action = 'idle'
   } else {
-    // jump.flag = true
-    // jump.cooltime = 10
-    player.action = 'jump'
-    // if (player.action !== 'slide') player.action = 'jump'
+    jump.flag = true
+    jump.cooltime = 10
+    if (player.action !== 'slide') player.action = 'jump'
   }
   Object.values(action).forEach(act => {
     if (key[act]) {
@@ -634,6 +647,7 @@ const viewUpdate = () => {
     player.action = (player.action === 'turn') ? 'turn'
     : (player.action === 'slide' && (player.dx < -3.5 || 3.5 < player.dx)) ? 'slide'
     : (player.action === 'push') ? 'push'
+    : (player.action === 'punch') ? 'punch'
     : (-.2 < player.dx && player.dx < .2) ? 'idle'
     : (-1.4 < player.dx && player.dx < 1.4) ? 'walk'
     : 'run'
@@ -705,22 +719,21 @@ const viewUpdate = () => {
   } else if (player.action === 'crouch') {
     const i = imageStat.crouch
     if (time % i.frame === 0) i.time += 1
-    if (player.action !== 'crouch') i.time = 0
     if (i.time === 0) i.condition = 9
+  } else if (player.action === 'punch') {
+    const i = imageStat.punch
+    i.time += 1
+    if (i.time % i.frame === 0) i.condition += 1
+    console.log(time,i.time,i.time % i.frame, i.condition, i.start + i.length < i.condition)
+    if (i.start + i.length - 1 < i.condition) {
+      i.time = 0
+      i.condition = i.start
+      player.action = 'idle'
+    }
   }
 }
-let max = 0
 const draw = () => {
-  if (max < player.dx) {
-    max = player.dx
-    console.log(max, max ** .5)
-  }
-  // walk 1.3 1.4
-  // run 3.92 4
-  // step 5.6 6
-  // slide 9.58 10
-  // combo 15?
-
+  console.log(player.action)
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0
@@ -754,6 +767,7 @@ const draw = () => {
   else if (player.action === 'turn') i = imageStat.turn.condition
   else if (player.action === 'run') i = imageStat.run.condition
   else if (player.action === 'crouch') i = imageStat.crouch.condition
+  else if (player.action === 'punch') i = imageStat.punch.condition
   const x = (player.x - imageOffset.x - stageOffset.x)|0
   drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
   const displayHitbox = () => {
