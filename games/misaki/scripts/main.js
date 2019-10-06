@@ -19,9 +19,9 @@ const imageStat = {
 }, slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]
 }, push: {start: imageChangeList[7], length: 1, condition: imageChangeList[7]
 }, punch: {start: imageChangeList[8], length: 2, condition: imageChangeList[8],
-  time: 0, frame: 7
+  time: 0, frame: 7, playAudio: imageChangeList[8] + 1
 }, kick: {start: imageChangeList[9], length: 6, condition: imageChangeList[9],
-  time: 0, frame: 7
+  time: 0, frame: 7, playAudio: imageChangeList[9] + 3
 }}
 const imagePathList = [
   'images/Misaki/Misaki_Idle_1.png', // 0
@@ -85,11 +85,12 @@ imagePathList.forEach(path => {
     imageLoadedMap[path] = imgPreload
   })
 })
-const voiceStat = {jump: 0, doubleJump: 1, breath: 2, win: 3}
+const voiceStat = {jump: 0, doubleJump: 1, punch: 2, kick: 3, win: 4}
 const voicePathList = [
   'audio/Misaki/V2001.wav',
   'audio/Misaki/V2002.wav',
   'audio/Misaki/V2005.wav',
+  'audio/Misaki/V2006.wav',
   'audio/Misaki/V2024.wav'
 ]
 let voiceLoadedList = []
@@ -435,12 +436,14 @@ const input = () => {
   } else if (player.action !== 'jump') cooltime.step -= 1
   if ( // punch & kick
     key[action.dash] === 1 && !key[action.left] && !key[action.right] &&
-    player.landFlag && player.action !== 'slide'
+    player.landFlag && player.action !== 'slide' && player.action !== 'punch' && player.action !== 'kick'
   ) {
     player.action = 'punch'
+    imageStat.punch.time = 0
   }
   if (player.action === 'punch' && key[action.dash] === imageStat.punch.frame) {
     player.action = 'kick'
+    imageStat.kick.time = 0
   }
   if (cooltime.slide === 0) { // slide
     if (key[action.down] && player.landFlag && !player.wallFlag) {
@@ -690,7 +693,7 @@ const viewUpdate = () => {
         i.breathInterval += 1
         if (i.breathInterval < 25) {
           const num = Math.random()
-          const list = num < .9 ? {value: voiceStat.breath, startTime: .3}
+          const list = num < .9 ? {value: voiceStat.punch, startTime: .3}
           : num < .95 ? {value: voiceStat.jump, startTime: .3}
           : {value: voiceStat.doubleJump, startTime: .33}
           playAudio(list.value, list.startTime)
@@ -739,7 +742,10 @@ const viewUpdate = () => {
   } else if (player.action === 'punch') {
     const i = imageStat.punch
     i.time += 1
-    if (i.time % i.frame === 0) i.condition += 1
+    if (i.time % i.frame === 0) {
+      i.condition += 1
+      if (i.condition === i.playAudio) playAudio(voiceStat.punch)
+    }
     if (i.start + i.length - 1 < i.condition) {
       i.time = 0
       i.condition = i.start
@@ -749,7 +755,10 @@ const viewUpdate = () => {
     if (0 < imageStat.punch.time) imageStat.punch.time = 0
     const i = imageStat.kick
     i.time += 1
-    if (i.time % i.frame === 0) i.condition += 1
+    if (i.time % i.frame === 0) {
+      i.condition += 1
+      if (i.condition === i.playAudio) playAudio(voiceStat.kick)
+    }
     if (i.start + i.length - 1 < i.condition) {
       i.time = 0
       i.condition = i.start
