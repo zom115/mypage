@@ -1,5 +1,6 @@
 # 更新履歴
 
+- Punchを追加
 - Slideを追加
 - Jump_Fallにポニテを付与
 - Jump_MidAir_3の欠けを補完
