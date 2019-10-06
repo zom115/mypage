@@ -1,5 +1,5 @@
 {'use strict'
-const version = 'v.0.8.3'
+const version = 'v.0.8.4'
 const canvas = document.getElementById`canvas`
 const DOM = {
   operation: document.getElementById`operation`,
