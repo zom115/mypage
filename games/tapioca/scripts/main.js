@@ -238,7 +238,6 @@ const flashTimeLimit = 5
 let ownPosition = {}
 let clonePosition = []
 let cloneFlag = false
-let cloneDashFlag = false
 let clonePower = .8
 let reviveFlag = false
 let moreAwayCount = 0
@@ -283,7 +282,6 @@ let cartridgeInfo = {
 }
 let enemies
 const enemyImageAmount = 3
-let ammoLimit, ammoLog
 let ammo
 let firearm = {
   chamberFlag: false,
@@ -661,13 +659,6 @@ const speedAdjust = () => {
 const moving = () => {
   let {dx, dy} = (ownSpeed.max < ownSpeed.current) ? directionCalc(currentDirection)
   : directionCalc(direction)
-  if (reload.time !== 0 && ownSpeed.current <= ownSpeed.max) dx = dx / 2, dy = dy / 2
-  else if (ammoLimit < ammo) {
-    dx = (ammo - ammoLimit <= ammoLimit * 2)
-    ? dx * (.5 + .25 * (1 - (ammo - ammoLimit) / ammoLimit)) : dx / 2
-    dy = (ammo - ammoLimit <= ammoLimit * 2)
-    ? dy * (.5 + .25 * (1 - (ammo - ammoLimit) / ammoLimit)) : dy / 2
-  }
   differenceAddition(ownPosition, dx * ownSpeed.current, dy * ownSpeed.current)
   if (cloneFlag) {
     if (0 < key[action.slow]) {
@@ -790,14 +781,6 @@ const drawMyself = () => {
     context.beginPath()
     context.arc(
       pos.x, pos.y, size / 2, 0, Math.PI * 2, false
-    )
-    context.fill()
-  }
-  if (ammoLimit < ammo) {
-    context.fillStyle = `hsla(240, 100%, ${50 - 25 * ((ammo - ammoLimit) / ammoLimit)}%, .5)`
-    context.beginPath()
-    context.arc(
-      pos.x, pos.y, size * 5 / 12, 0, Math.PI * 2, false
     )
     context.fill()
   }
@@ -1474,14 +1457,8 @@ const drawIndicator = () => {
   context.save()
   const inChamber = (firearm.chamberFlag) ? 1 : 0
   context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - size * 3)
-  context.fillStyle = (ammo < ammoLimit * .1) ? 'hsla(0, 100%, 60%, .7)'
-  : (ammo < ammoLimit * .3) ? 'hsla(60, 100%, 70%, .7)'
-  : (ammoLog <= ammo) ? 'hsl(100, 50%, 50%)' : 'hsla(210, 100%, 50%, .7)'
-  context.fillText(`${ammo}`, c.x - size * .5, c.y - size * 1.5)
-  context.fillStyle = (ammoLimit * 2 < ammo) ? 'hsla(240, 100%, 25%, .7)'
-  : (ammoLimit < ammo) ? `hsla(240, 100%, ${50 - 25 * ((ammo - ammoLimit) / ammoLimit)}%, .7)`
-  : 'hsla(210, 100%, 50%, .7)'
-  context.fillText(`/ ${ammoLimit}`, c.x, c.y)
+  context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
+  context.fillText(ammo, c.x, c.y)
   context.restore()
   const cartridgeSize = 1 / (inventory[0].magazineSize + 1)
   const yOffset = canvas.offsetHeight - size
@@ -2043,15 +2020,6 @@ const upgradeOne = () => {
     0 < afterglow.offensivePower
   ) afterglow.offensivePower = (afterglow.offensivePower-1)|0
 }
-const upgradeTwo = () => {
-  if (key[action.lookLeft] === holdTimeLimit && ammoLog <= ammo) {
-    ammo = (ammo-ammoLog)|0
-    ammoLimit = (ammoLimit+ammoLog)|0
-    ammoLog = (ammoLimit-ammoLog)|0
-    inventory[0].ammoIndex = (inventory[0].ammoIndex+1)|0
-    afterglow.ammo = holdTimeLimit
-  } else if (0 < afterglow.ammo) afterglow.ammo = (afterglow.ammo-1)|0
-}
 const upgradeDash =() => {
   if (key[action.lookUp] === holdTimeLimit && cost.dashDamage <= ammo) {
     cost.dashDamageIndex = (cost.dashDamageIndex+1)|0
@@ -2159,7 +2127,6 @@ const storeProcess = () => {
       if (index === 0) {
         upgradeOne()
       } else if (index === 1) {
-        upgradeTwo()
       } else if (index === 2) {
         upgradeDash()
       } else if (index === 3) {
@@ -2389,7 +2356,6 @@ const drawStore = () => {
         topColumn(afterglow.magazine, inventory[0].magazine, point, 'images/CUP_SIZEv1.png')
         rightColumn(afterglow.magAmount, inventory[0].magAmount, point, 'images/CUP_AMOUNTv1.png')
         downColumn(afterglow.loading, inventory[0].loading, point, 'images/COOKING_TIMEv1.png')
-        leftColumn(afterglow.ammo, ammoLog, ammo, 'images/TAPIOCA_CAPACITYv1.png')
       } else if (index === 2) {
         topColumn(afterglow.dashDamage, cost.dashDamage, ammo, 'images/JK34F.png')
         context.fillText(
@@ -2609,8 +2575,6 @@ const reset = () => {
   objects = []
   bullets = []
   enemies = []
-  ammoLimit = 80
-  ammoLog = 40
   cost = {
     dashDistance: 1000,
     dashDistanceIndex: 0,
@@ -2780,7 +2744,6 @@ const titleProcess = () => {
       inventory[0].magazines = [99, inventory[0].magazineSize]
       point = 999999
       ammo = 99999
-      ammoLimit = 99999
     }
     state = 'main'
   }
