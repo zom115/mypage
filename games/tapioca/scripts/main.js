@@ -1557,7 +1557,7 @@ const drawIndicator = () => {
 }
 const drawInventory = () => {
   context.save()
-  context.strokeStyle = 'hsla(120, 100%, 25%, .4)'
+  // context.strokeStyle = 'hsla(120, 100%, 25%, .4)'
   const c = {
     x: canvas.offsetWidth * 3 / 4,
     y: canvas.offsetHeight / 2
@@ -1570,7 +1570,7 @@ const drawInventory = () => {
     {x: 0, y: (rectSize + size * .5)},
     {x: -(rectSize + size * .5), y: 0}
   ]
-  context.fillStyle = 'hsla(150, 100%, 50%, .3)'
+  context.fillStyle = 'hsla(180, 100%, 50%, .2)'
   context.fillRect(size, size, canvas.offsetWidth/2 - size * 2, canvas.offsetHeight - size * 2)
   viewPosition.forEach((value, index) => {
     if (index === 0) return
@@ -1599,28 +1599,29 @@ const drawInventory = () => {
       w
     )
   })
-  const columnHeight = [
-    size * 3,
-    size * 5,
-    size * 7,
-    size * 9,
-    size * 11,
-    size * 13,
-    size * 15,
-    size * 17,
-    size * 19
+  const columnHeight = []
+  for (let i = 0; i < 8; i++) columnHeight.push(size * 12 + size * i)
+  const columnName = [
+    'NAME', 'DAMAGE', 'RANGE', 'FIRE RATE', 'P.P.',
+    'RELOAD SPEED', 'MAG. SIZE', 'LOADING SPEED'
   ]
-  c.x = size * 2
-  context.font = `${size / 2}px sans-serif`
-  context.textAlign = 'left'
-  context.fillText('NAME', c.x, columnHeight[0] - size, w)
-  context.fillText('DAMAGE', c.x, columnHeight[1] - size, w)
-  context.fillText('RANGE', c.x, columnHeight[2] - size, w)
-  context.fillText('FIRE RATE', c.x, columnHeight[4] - size, w)
-  context.fillText('PENETRATION FORCE' ,c.x, columnHeight[3] - size, w)
-  context.fillText('RELOAD SPEED', c.x, columnHeight[5] - size, w)
-  context.fillText('MAGAZINE SIZE', c.x, columnHeight[6] - size, w)
-  context.fillText('LOADING SPEED', c.x, columnHeight[7] - size, w)
+  const equipedList = [
+    inventory[0].name,
+    inventory[0].damage.toFixed(0),
+    `${inventory[0].bulletLife.toFixed(0)}*${inventory[0].bulletSpeed.toFixed(2)}`,
+    inventory[0].slideSpeed.toFixed(2),
+    inventory[0].penetrationForce.toFixed(2),
+    inventory[0].reloadSpeed.toFixed(2),
+    `${inventory[0].magazineSize}*${inventory[0].magazines.length}`,
+    inventory[0].loadingSpeed.toFixed(2)
+  ]
+  columnName.forEach((value,index) => {
+    context.font = `${size*.75}px sans-serif`
+    context.textAlign = 'left'
+    context.fillText(value, size, columnHeight[index], w)
+    context.textAlign = 'right'
+    context.fillText(equipedList[index], size * 8, columnHeight[index], w)
+  })
   const drawStatus = i => {
     context.fillText(inventory[i].name, c.x, columnHeight[0], w)
     context.fillText(inventory[i].damage.toFixed(0), c.x, columnHeight[1], w)
@@ -1637,42 +1638,30 @@ const drawInventory = () => {
     )
     context.fillText(inventory[i].loadingSpeed.toFixed(2), c.x, columnHeight[7], w)
   }
+  const drawArrow = arg => context.drawImage(
+    loadedMap['images/arrowUp.png'], size * 12, columnHeight[arg] - size * .85
+  )
   const compare = () => {
-    if (1) {
-      context.drawImage(loadedMap['img/arrowRight.png'], c.x, columnHeight[0] - size * .85)
-    }
+    context.drawImage(loadedMap['images/arrowRight.png'], size * 12, columnHeight[0] - size * .85)
     if (inventory[0].damage < inventory[1].damage) {
-      context.drawImage(loadedMap['img/arrowUp.png'], c.x, columnHeight[selectedIndex] - size * .85)
+      context.drawImage(loadedMap['images/arrowUp.png'], size * 12, columnHeight[selectedIndex] - size * .85)
     }
     if (
-      inventory[0].bulletLife * inventory[0].bulletSpeed
-      < inventory[selectedIndex].bulletLife * inventory[selectedIndex].bulletSpeed
-    ) {
-      context.drawImage(loadedMap['img/arrowUp.png'], c.x, columnHeight[2] - size * .85)
-    }
-    if (inventory[0].penetrationForce < inventory[selectedIndex].penetrationForce) {
-      context.drawImage(loadedMap['img/arrowUp.png'], c.x, columnHeight[3] - size * .85)
-    }
-    if (inventory[selectedIndex].slideSpeed < inventory[0].slideSpeed) {
-      context.drawImage(loadedMap['img/arrowUp.png'], c.x, columnHeight[4] - size * .85)
-    }
-    if (inventory[selectedIndex].reloadSpeed < inventory[0].reloadSpeed) {
-      context.drawImage(loadedMap['img/arrowUp.png'], c.x, columnHeight[5] - size * .85)
-    }
+      inventory[0].bulletLife * inventory[0].bulletSpeed <
+      inventory[selectedIndex].bulletLife * inventory[selectedIndex].bulletSpeed
+    ) drawArrow(2)
+    if (inventory[0].penetrationForce < inventory[selectedIndex].penetrationForce) drawArrow(3)
+    if (inventory[selectedIndex].slideSpeed < inventory[0].slideSpeed) drawArrow(4)
+    if (inventory[selectedIndex].reloadSpeed < inventory[0].reloadSpeed) drawArrow(5)
     if (
-      inventory[0].magazineSize * inventory[0].magazines.length
-      < inventory[selectedIndex].magazineSize * inventory[selectedIndex].magazines.length
-    ) {
-      context.drawImage(loadedMap['img/arrowUp.png'], c.x, columnHeight[6] - size * .85)
-    }
-    if (inventory[selectedIndex].loadingSpeed < inventory[0].loadingSpeed) {
-      context.drawImage(loadedMap['img/arrowUp.png'], c.x, columnHeight[7] - size * .85)
-    }
+      inventory[0].magazineSize * inventory[0].magazines.length <
+      inventory[selectedIndex].magazineSize * inventory[selectedIndex].magazines.length
+    ) drawArrow(6)
+    if (inventory[selectedIndex].loadingSpeed < inventory[0].loadingSpeed) drawArrow(7)
   }
   context.font = `${size}px sans-serif`
   context.textAlign = 'right'
   c.x = size * 6
-  drawStatus(0)
   if (selectedIndex + 1 <= inventory.length && 0 < selectedIndex) {
     c.x = size * 12
     drawStatus(selectedIndex)
