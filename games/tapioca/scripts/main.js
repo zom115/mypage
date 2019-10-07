@@ -1,5 +1,5 @@
 {'use strict'
-const version = 'v.0.8.4'
+const version = 'v.0.8.5'
 const canvas = document.getElementById`canvas`
 const DOM = {
   operation: document.getElementById`operation`,
@@ -87,7 +87,6 @@ document.addEventListener('keydown', e => {
   if (e.keyCode === 89) key.yFlag = true
   if (e.keyCode === 90) key.zFlag = true
 }, false)
-
 document.addEventListener('keyup', e => {
   if (e.keyCode === 16) key.shiftFlag = false, key.shift = 0
   if (e.keyCode === 32) key.spaceFlag = false, key.space = 0
@@ -815,15 +814,6 @@ const drawMyself = () => {
   context.drawImage(loadedMap[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
   context.restore()
   if (ownStepLimit <= ownStep) ownStep = 0
-  if (0 < key[action.slow] || 0 < afterglow.slow) {
-    afterglow.slow = (key[action.slow] <= 0) ? (afterglow.slow -1)|0
-    : (key[action.slow] < holdTimeLimit) ? key[action.slow] : holdTimeLimit
-    const r = (.5 + .5 * (afterglow.slow / holdTimeLimit)) * collectRadius
-    context.beginPath()
-    context.strokeStyle = 'hsla(210, 100%, 50%, .3)'
-    context.arc(pos.x, pos.y, r, 0, Math.PI * 2, false)
-    context.stroke()
-  }
 }
 const drawDirection = () => {
   const pos = { // recoil effect
@@ -1299,14 +1289,10 @@ const dropItemProcess = () => {
     const width = ownPosition.x - item.x
     const height = ownPosition.y - item.y
     const distance = Math.sqrt(width ** 2 + height ** 2)
-    let multiple = ((
+    let multiple = (
       item.type === 'weapon' || item.type === 'droppedWeapon') &&
       inventorySize <= inventory.length
-    ) ? 0
-    : (afterglow.slow === 0 && distance <= .5 * collectRadius) ? 80 / (distance)
-    : (distance <= (.5 + .5 * (afterglow.slow / holdTimeLimit)) * collectRadius)
-    ? .5+160/(distance)
-    : size / 512
+    ? 0 : .5 + 160 / (distance) // : size / 512
     if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
     else {
       item.x = item.x + width / distance * multiple
