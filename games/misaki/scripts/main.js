@@ -247,13 +247,19 @@ const setGround = (x, y, w, h) => {
   setGround(56, 40, 7, 1)
   setGround(63, 30, 1, 11)
   for (let i = 0; i < 40; i++) setGround(150 + i * 2, 78, 1, 1)
-  for (let i = 0; i < 40; i++) setGround(64 + i * 2, 50, 1, 1)
   let interval = 150
   for (let i = 12 ; 0 < i; i--) {
     setGround(interval, 50, 1, 25)
     interval += i
   }
-  for (let i = 3; i < 10; i++) setGround(100 + i * 5, 69 - i, 1, 10)
+  for (let i = 0; i < 10; i++) setGround(95 + i * 5, 57 + i, 1, 10)
+  setGround(80, 65, 1, 10)
+  setGround(80, 55, 2, 10)
+  setGround(80, 45, 4, 10)
+  setGround(80, 35, 7, 10)
+  setGround(80, 25, 11, 10)
+  setGround(80, 15, 16, 10)
+  setGround(80,  5, 22, 10)
   setGround(11, 48, 39, 1)
   setGround(16, 49, 1, 23)
   setGround(23, 56, 1, 20)
