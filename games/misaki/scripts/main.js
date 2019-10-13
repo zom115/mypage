@@ -287,6 +287,9 @@ let action = {
   up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', slide: 'j',
   map: 'm', status: 'g', hitbox: 'h'
 }
+let toggle = {
+  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
+}
 let key = {
   shiftFlag: false, shift: 0,
   spaceFlag: false, space: 0,
@@ -551,22 +554,12 @@ const input = () => {
   if (key[action.up] === 1) {
     changeWallkick()
   }
-  if (key.e === 1) {
-    settings.type.DECO = !settings.type.DECO
-    inputDOM.DECO.checked = !inputDOM.DECO.checked
-  }
-  if (key[action.status] === 1) {
-    settings.type.status = !settings.type.status
-    inputDOM.status.checked = !inputDOM.status.checked
-  }
-  if (key[action.hitbox] === 1) {
-    settings.type.hitbox = !settings.type.hitbox
-    inputDOM.hitbox.checked = !inputDOM.hitbox.checked
-  }
-  if (key[action.map] === 1) {
-    settings.type.map = !settings.type.map
-    inputDOM.map.checked = !inputDOM.map.checked
-  }
+  Object.keys(toggle).forEach(v => {
+    if (key[toggle[v]] === 1) {
+      settings.type[v] = setStorage(v, !settings.type[v])
+      inputDOM[v].checked = !inputDOM[v].checked
+    }
+  })
 }
 const modelUpdate = () => {
   if (player.action === 'slide') { // collision detect
@@ -667,8 +660,8 @@ const modelUpdate = () => {
 }
 const viewUpdate = () => {
   if (player.action !== 'jump') {
-    if (key[action.right] && player.dx < walkConstant * brakeConstant) player.action = 'turn'
-    if (key[action.left] && -walkConstant * brakeConstant < player.dx) player.action = 'turn'
+    if (key[action.right] && player.dx < dashConstant * brakeConstant) player.action = 'turn'
+    if (key[action.left] && -dashConstant * brakeConstant < player.dx) player.action = 'turn'
     if (player.wallFlag && player.landFlag && player.action !== 'slide') player.action = 'push'
     if (key[action.left] && key[action.right]) player.action = 'idle'
   }
@@ -691,14 +684,14 @@ const viewUpdate = () => {
   if (player.action === 'idle') {
     const i = imageStat.idle
     i.time += 1
-    if ( // breath
-      (i.start <= i.condition && i.condition < i.start + i.length / 4 &&
-      i.time % ~~(i.breathInterval) === 0) ||
-      (i.start + i.length / 4 <= i.condition && i.condition < i.start + i.length *.5 &&
-      i.time % ~~(i.breathInterval*.5) === 0) ||
-      (i.start + i.length * .5 <= i.condition && i.condition < i.start + i.length * 3 / 4 &&
-      i.time % ~~(i.breathInterval*2) === 0) ||
-      (i.start + i.length * 3 / 4 <= i.condition && i.condition < i.start + i.length &&
+    if (( // breath
+      i.start <= i.condition && i.condition < i.start + i.length / 4 &&
+      i.time % ~~(i.breathInterval) === 0) || (
+      i.start + i.length / 4 <= i.condition && i.condition < i.start + i.length *.5 &&
+      i.time % ~~(i.breathInterval*.5) === 0) || (
+      i.start + i.length * .5 <= i.condition && i.condition < i.start + i.length * 3 / 4 &&
+      i.time % ~~(i.breathInterval*2) === 0) || (
+      i.start + i.length * 3 / 4 <= i.condition && i.condition < i.start + i.length &&
       i.time % ~~(i.breathInterval*.5) === 0)
     ) {
       i.condition += 3
