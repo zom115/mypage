@@ -73,12 +73,22 @@
             </table>
             <table>
               <tr>
+                <td>master</td>
+                <td>:</td>
+                <td>
+                  <input id="masterInput" type="range" value=".5" min="0" max="1" step=".01">
+                </td>
+                <td class="fix">
+                  <output id="masterOutput">.5</output>
+                </td>
+              </tr>
+              <tr>
                 <td>voice</td>
                 <td>:</td>
                 <td>
                   <input id="voiceInput" type="range" value=".1" min="0" max="1" step=".01">
                 </td>
-                <td>
+                <td class="fix">
                   <output id="voiceOutput">.1</output>
                 </td>
               </tr>
@@ -88,7 +98,7 @@
                 <td>
                   <input id="musicInput" type="range" value=".02" min="0" max="1" step=".01">
                 </td>
-                <td>
+                <td class="fix">
                   <output id="musicOutput">.02</output>
                 </td>
               </tr>

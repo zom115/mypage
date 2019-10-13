@@ -2,6 +2,52 @@
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
+const storage = localStorage
+const setStorage = (key, value, firstFlag = false) => {
+  const exists = storage.getItem(key)
+  if (firstFlag && exists) return JSON.parse(exists)
+  storage.setItem(key, value)
+  return value
+}
+let settings = { // initial value
+  volume: {
+    master: setStorage('master', .5, true),
+    voice: setStorage('voice', .1, true),
+    music: setStorage('music', .02, true)
+  }
+}
+document.getElementById`masterInput`.value = settings.volume.master
+document.getElementById`masterOutput`.value = settings.volume.master * 100|0
+document.getElementById`voiceInput`.value = settings.volume.voice
+document.getElementById`voiceOutput`.value = settings.volume.voice * 100|0
+document.getElementById`musicInput`.value = settings.volume.music
+document.getElementById`musicOutput`.value = settings.volume.music * 100|0
+document.getElementById`masterInput`.addEventListener('input', e => {
+  voicePathList.forEach(path => {
+    voiceLoadedMap[path].volume = e.target.value * settings.volume.voice
+  })
+  musicPathList.forEach(path => {
+    musicLoadedMap[path].volume = e.target.value * settings.volume.music
+  })
+  document.getElementById`masterOutput`.value = e.target.value * 100|0
+  settings.volume.master = setStorage('master', e.target.value, false)
+})
+document.getElementById`voiceInput`.addEventListener('input', e => {
+  voicePathList.forEach(path => {
+    voiceLoadedMap[path].volume = settings.volume.master * e.target.value
+  })
+  document.getElementById`voiceOutput`.value = e.target.value * 100|0
+  settings.volume.voice = setStorage('voice', e.target.value, false)
+})
+document.getElementById`musicInput`.addEventListener('input', e => {
+  musicPathList.forEach(path => {
+    musicLoadedMap[path].volume = settings.volume.master * e.target.value
+  })
+  document.getElementById`musicOutput`.value = e.target.value * 100|0
+  settings.volume.music = setStorage('music', e.target.value, false)
+})
+// setStorage(volume.master)
+// let operationMode = setStorage('operation', 'WASD', true)
 const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41, 42, 44]
 const imageStat = {
   idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
@@ -98,7 +144,7 @@ let voiceLoadedMap = []
 voicePathList.forEach(path => {
   const voicePreload = new Audio()
   voicePreload.src = path
-  voicePreload.volume = .1
+  voicePreload.volume = settings.volume.master * settings.volume.voice
   voicePreload.addEventListener('canplaythrough', () => {
     voiceLoadedList.push(path)
     voiceLoadedMap[path] = voicePreload
@@ -113,7 +159,7 @@ let musicLoadedMap = []
 musicPathList.forEach(path => {
   const musicPreload = new Audio()
   musicPreload.src = path
-  musicPreload.volume = .02
+  musicPreload.volume = settings.volume.master * settings.volume.music
   musicPreload.loop = true
   musicPreload.addEventListener('canplaythrough', () => {
     musicLoadedList.push(path)
@@ -377,15 +423,6 @@ Object.values(action).forEach(act => {
   keyHistory.released[act] = 0
 })
 let mode = {wallkick: false, DECO: false, debug: false, hitbox: false, map: false}
-const inputDOM = document.getElementsByTagName`input`
-document.getElementById`voiceInput`.addEventListener('input', e => {
-  voicePathList.forEach(path => voiceLoadedMap[path].volume = e.target.value)
-  document.getElementById`voiceOutput`.value = e.target.value
-})
-document.getElementById`musicInput`.addEventListener('input', e => {
-  musicPathList.forEach(path => musicLoadedMap[path].volume = e.target.value)
-  document.getElementById`musicOutput`.value = e.target.value
-})
 const wallkick = document.getElementsByTagName`form`[0]
 const changeWallkick = () => {
   let buffer
@@ -401,6 +438,7 @@ const changeWallkick = () => {
   mode.wallkick = JSON.parse(wallkick.wallkick.value)
 }
 wallkick.addEventListener('change', e => mode.wallkick = JSON.parse(e.target.value), false)
+const inputDOM = document.getElementsByTagName`input`
 inputDOM.DECO.addEventListener('change', () => mode.DECO = !mode.DECO, false)
 inputDOM.debug.addEventListener('change', () => mode.debug = !mode.debug, false)
 inputDOM.hitbox.addEventListener('change', () => mode.hitbox = !mode.hitbox, false)
@@ -764,7 +802,6 @@ const viewUpdate = () => {
       i.condition = i.start
       player.action = 'idle'
     }
-    console.log(i.condition)
   }
 }
 const draw = () => {

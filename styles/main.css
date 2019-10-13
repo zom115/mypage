@@ -42,6 +42,8 @@ td {
   justify-content: space-around; }
   .container table {
     min-width: 250px; }
+    .container table tr td.fix {
+      min-width: 2rem; }
 
 body {
   background: #666666;
