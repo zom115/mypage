@@ -279,6 +279,7 @@ let time = 0
 let jump = {flag: false, double: false, time: 0, cooltime: 0, chargeTime: 0}
 let cooltime = {
   step: 0, stepLimit: 15, stepDeferment: 15,
+  aerialStep: 0, aerialStepLimit: 10,
   slide: 2, slideLimit: 45
 }
 let action = {
@@ -427,8 +428,7 @@ const input = () => {
   //   audioLoadedMap[audioPathList[audioStat.win]].play()
   // }
   if (!(key[action.left] && key[action.right])) { // walk
-    // let speed = (key[action.dash]) ? dashConstant : walkConstant
-    let speed = dashConstant
+    let speed = dashConstant // let speed = (key[action.dash]) ? dashConstant : walkConstant
     speed = key[action.left] && -speed < player.dx ? -speed
     : key[action.left] && -dashThreshold < player.dx ? -speed / 4
     : key[action.right] && player.dx < speed ? speed
@@ -448,10 +448,14 @@ const input = () => {
     ? stepConstant : 0
     if (stepSpeed !== 0) {
       player.dx += stepSpeed
-      if (0 < player.dy) player.dy *= .7
       cooltime.step = cooltime.stepLimit
+      cooltime.aerialStep = cooltime.aerialStepLimit
     }
   } else if (player.action !== 'jump') cooltime.step -= 1
+  if (0 < cooltime.aerialStep) {
+    player.dy = 0
+    cooltime.aerialStep -= 1
+  }
   if ( // punch & kick
     key[action.slide] === 1 && !key[action.left] && !key[action.right] &&
     player.landFlag && player.action !== 'slide' && player.action !== 'punch' && player.action !== 'kick'
@@ -486,6 +490,7 @@ const input = () => {
         player.dy = -jumpConstant
         player.action = 'jump'
         jump.double = true
+        cooltime.aerialStep = 0
         playAudio(voiceStat.doubleJump)
         if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
         jump.time = 0
@@ -496,6 +501,7 @@ const input = () => {
       jump.flag = true
       if (!player.landFlag && !player.grapFlag) {
         jump.double = true
+        cooltime.aerialStep = 0
         playAudio(voiceStat.doubleJump)
       } else {
         player.dx *= .7
