@@ -266,11 +266,13 @@ const setGround = (x, y, w, h) => {
   setGround(60, 53, 1, 10)
 }
 const walkConstant = .7 // dx := 1.4
-const dashConstant = 2.1 // dx := 3.5
+const dashConstant = 2.1
+const dashThreshold = 3.5
 const stepConstant = 4
 const slideConstant = 2
 const boostConstant = 6
-const brakeConstant = .94
+const brakeConstant = .75
+const slideBrakeConstant = .95
 const gravityConstant = .272
 const jumpConstant = 5
 let time = 0
@@ -425,9 +427,13 @@ const input = () => {
   //   audioLoadedMap[audioPathList[audioStat.win]].play()
   // }
   if (!(key[action.left] && key[action.right])) { // walk
-    let speed = (key[action.dash]) ? dashConstant : walkConstant
+    // let speed = (key[action.dash]) ? dashConstant : walkConstant
+    let speed = dashConstant
     speed = key[action.left] && -speed < player.dx ? -speed
-    : key[action.right] && player.dx < speed ? speed : 0
+    : key[action.left] && -dashThreshold < player.dx ? -speed / 4
+    : key[action.right] && player.dx < speed ? speed
+    : key[action.right] && player.dx < dashThreshold ? speed / 4
+    : 0
     speed = player.landFlag ? speed : speed / 3 // aerial brake
     player.dx += speed
   }
@@ -618,7 +624,9 @@ const modelUpdate = () => {
   player.dy += gravityConstant
   if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
   if (player.landFlag) {
-    player.dx *= brakeConstant
+    if (player.action === 'slide') {
+      player.dx *= slideBrakeConstant
+    } else player.dx *= brakeConstant
     if (jump.flag) {
       if (0 < player.dy) jump.flag = false
     } else player.dy = 0
