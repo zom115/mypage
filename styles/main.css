@@ -21,12 +21,17 @@ canvas {
   -webkit-touch-callout: none; }
 
 h1, h2 {
-  color: #99cc33;
-  border-bottom: 1px solid #666666; }
+  color: #99cc33; }
 
 h1 {
-  font-size: 32px;
-  margin: 0 0 24px 0; }
+  font-size: 2rem;
+  margin: 0 0 1rem 0; }
+
+h2 {
+  border-bottom: 1px solid #666666; }
+
+h3 {
+  margin: .5rem 0; }
 
 p, ul, li {
   margin: 0; }
@@ -50,7 +55,7 @@ body {
   background: #666666;
   color: white;
   display: grid;
-  grid-template-rows: 64px 1fr 64px;
+  grid-template-rows: 4rem 1fr 4rem;
   margin: 0;
   min-height: 100vh; }
 
@@ -58,16 +63,16 @@ header, article, footer {
   background: #333333; }
 
 header {
-  padding: 16px; }
+  padding: 1rem; }
   header a {
     float: left;
-    font-size: 32px; }
+    font-size: 2rem; }
     header a:link, header a:visited {
       color: #00d5ff; }
   header details {
     float: right; }
     header details a {
-      font-size: 16px;
+      font-size: 1rem;
       float: right; }
     header details ul {
       list-style-type: none;
@@ -77,8 +82,8 @@ header {
       position: absolute;
       right: 0;
       left: auto;
-      margin: 0 16px;
-      padding: 16px; }
+      margin: 0 1rem;
+      padding: 1rem; }
     header details summary {
       outline: none; }
       header details summary:hover {
@@ -90,23 +95,23 @@ main {
   max-width: 1370px;
   width: 100%; }
   main nav {
-    padding: 16px; }
+    padding: 1rem; }
 
 article {
-  padding: 16px; }
+  padding: 1rem; }
 
 .wrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 256px);
+  grid-template-columns: repeat(auto-fill, 16rem);
   grid-auto-rows: minmax(100px, auto); }
   .wrapper div {
     border: 1px solid #666666;
-    margin: 16px 0;
+    margin: 1rem 0;
     justify-self: center;
-    width: 240px;
+    width: 15rem;
     text-align: center; }
     .wrapper div p {
       text-align: left; }
 
 footer {
-  margin-top: 16px; }
+  margin-top: 1rem; }

@@ -192,7 +192,8 @@ let player = {
   //   jump: false, step: false, slide: false
   // },
   // direction: {left: false, right: true}
-  dx: 0, dy: 0, action: 'idle', direction: 'right', landFlag: false, wallFlag: false
+  dx: 0, dy: 0, action: 'idle', direction: 'right', landFlag: false, wallFlag: false,
+
 }
 let hitbox = {
   x: player.x - size / 2,
@@ -690,14 +691,14 @@ const viewUpdate = () => {
       i.condition -= i.length
       if (i.breathInterval < i.maxBreath) {
         i.breathInterval += 1
-        if (i.breathInterval < 25) {
-          const num = Math.random()
-          const list = num < .9 ? {value: voiceStat.punch, startTime: .3}
-          : num < .95 ? {value: voiceStat.jump, startTime: .3}
-          : {value: voiceStat.doubleJump, startTime: .33}
-          playAudio(list.value, list.startTime)
-        }
       }
+    }
+    if (i.start + 2 < i.condition && i.condition < i.start + 6 && i.breathInterval < 25) {
+      const num = Math.random()
+      const list = num < .9 ? {value: voiceStat.punch, startTime: .3}
+      : num < .95 ? {value: voiceStat.jump, startTime: .3}
+      : {value: voiceStat.doubleJump, startTime: .33}
+      playAudio(list.value, list.startTime)
     }
     if (time % i.frame === 0) { // eye blink
       i.blinkTime += 1
@@ -809,19 +810,19 @@ const draw = () => {
     context.fillRect(hitbox.x+hitbox.w*.2 - stageOffset.x, hitbox.y+hitbox.h*.8 - stageOffset.y, hitbox.w*.6, hitbox.h*.2)
   }
     if (settings.type.hitbox) displayHitbox()
-  const displayDebug = () => {
-    context.fillStyle = 'hsl(120, 100%, 50%)'
+  const displayStatus = () => {
+    context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
     context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
-    context.fillText('cooltime', size * 10, size )
-    context.fillText(`jump : ${jump.cooltime}`, size * 16, size)
-    context.fillText(`step : ${cooltime.step}`, size * 16, size * 3)
-    context.fillText(`slide: ${cooltime.slide}`, size * 16, size * 5)
-    context.fillText('double jump :', size * 24, size)
-    if (jump.double) context.fillText('unenable', size * 31, size)
-    else context.fillText('enable', size * 31, size)
+    context.fillText('cooltime', size * 2, size * 3)
+    context.fillText(`jump : ${jump.cooltime}`, size * 10, size * 3)
+    context.fillText(`step : ${cooltime.step}`, size * 10, size * 5)
+    context.fillText(`slide: ${cooltime.slide}`, size * 10, size * 7)
+    context.fillText('double jump :', size * 2, size * 9)
+    if (jump.double) context.fillText('unenable', size * 10, size * 9)
+    else context.fillText('enable', size * 10, size * 9)
   }
-  if (settings.type.status) displayDebug()
+  if (settings.type.status) displayStatus()
   const displayMap = () => {
     const multiple = 2
     const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.width / size, y: size}
