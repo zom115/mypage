@@ -193,7 +193,7 @@ let player = {
   // },
   // direction: {left: false, right: true}
   dx: 0, dy: 0, action: 'idle', direction: 'right', landFlag: false, wallFlag: false,
-
+  grapFlag: false
 }
 let hitbox = {
   x: player.x - size / 2,
@@ -476,7 +476,7 @@ const input = () => {
   }
   if (key[action.jump] || key[action.space]) { // jump
     if (jump.flag) {
-      if (!jump.double && jump.time === 0 && !player.wallFlag) {
+      if (!jump.double && jump.time === 0 && !player.grapFlag) {
         player.dy = -jumpConstant
         player.action = 'jump'
         jump.double = true
@@ -488,7 +488,7 @@ const input = () => {
       player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
       player.action = 'jump'
       jump.flag = true
-      if (!player.landFlag && !player.wallFlag) {
+      if (!player.landFlag && !player.grapFlag) {
         jump.double = true
         playAudio(voiceStat.doubleJump)
       } else {
@@ -511,7 +511,10 @@ const input = () => {
     }
   }
   if (player.wallFlag && 0 < player.dy) { // wall kick
-    if (key[action.dash]) player.dy *= .5
+    if (key[action.dash]) {
+      player.dy *= .5
+      player.grapFlag = true
+    } else player.grapFlag = false
     let flag = false
     if (
       (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'right'
@@ -532,7 +535,7 @@ const input = () => {
       jump.flag = true
       player.action = 'jump'
     }
-  }
+  } else player.grapFlag = false
   if (key[action.up] === 1) {
     changeWallkick()
   }
