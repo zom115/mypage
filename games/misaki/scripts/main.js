@@ -283,7 +283,7 @@ let cooltime = {
 }
 let action = {
   space: 'space',
-  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j',
+  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', slide: 'j',
   map: 'm', status: 'g', hitbox: 'h'
 }
 let key = {
@@ -453,18 +453,18 @@ const input = () => {
     }
   } else if (player.action !== 'jump') cooltime.step -= 1
   if ( // punch & kick
-    key[action.dash] === 1 && !key[action.left] && !key[action.right] &&
+    key[action.slide] === 1 && !key[action.left] && !key[action.right] &&
     player.landFlag && player.action !== 'slide' && player.action !== 'punch' && player.action !== 'kick'
   ) {
     player.action = 'punch'
     imageStat.punch.time = 0
   }
-  if (player.action === 'punch' && key[action.dash] === imageStat.punch.frame) {
+  if (player.action === 'punch' && key[action.slide] === imageStat.punch.frame) {
     player.action = 'kick'
     imageStat.kick.time = 0
   }
   if (cooltime.slide === 0) { // slide
-    if (key[action.down] && player.landFlag && !player.wallFlag) {
+    if (key[action.slide] && player.landFlag && !player.wallFlag) {
       const slideSpeed = slideConstant < player.dx ? boostConstant
       : player.dx < -slideConstant ? -boostConstant : 0
       if (slideSpeed !== 0) {
@@ -517,19 +517,19 @@ const input = () => {
     }
   }
   if (player.wallFlag && 0 < player.dy) { // wall kick
-    if (key[action.dash]) {
+    if (key[action.slide]) {
       player.dy *= .5
       player.grapFlag = true
     } else player.grapFlag = false
     let flag = false
     if (
-      (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'right'
+      (key[action.jump] === 1 || key[action.space] === 1) && key[action.slide] && player.direction === 'right'
     ) {
       player.dx = -4
       player.direction = 'left'
       flag = true
     } else if (
-      (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'left'
+      (key[action.jump] === 1 || key[action.space] === 1) && key[action.slide] && player.direction === 'left'
     ) {
       player.dx = 4
       player.direction = 'right'
