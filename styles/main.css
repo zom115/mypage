@@ -43,7 +43,8 @@ td {
   .container table {
     min-width: 250px; }
     .container table tr td.fix {
-      min-width: 2rem; }
+      min-width: 2rem;
+      text-align: right; }
 
 body {
   background: #666666;

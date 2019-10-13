@@ -2,11 +2,10 @@
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const storage = localStorage
 const setStorage = (key, value, firstFlag = false) => {
-  const exists = storage.getItem(key)
+  const exists = localStorage.getItem(key)
   if (firstFlag && exists) return JSON.parse(exists)
-  storage.setItem(key, value)
+  localStorage.setItem(key, value)
   return value
 }
 let settings = { // initial value
@@ -14,40 +13,35 @@ let settings = { // initial value
     master: setStorage('master', .5, true),
     voice: setStorage('voice', .1, true),
     music: setStorage('music', .02, true)
+  },
+  type: {
+    DECO: setStorage('DECO', false, true),
+    status: setStorage('status', false, true),
+    hitbox: setStorage('hitbox', false, true),
+    map: setStorage('map', false, true),
   }
 }
-document.getElementById`masterInput`.value = settings.volume.master
-document.getElementById`masterOutput`.value = settings.volume.master * 100|0
-document.getElementById`voiceInput`.value = settings.volume.voice
-document.getElementById`voiceOutput`.value = settings.volume.voice * 100|0
-document.getElementById`musicInput`.value = settings.volume.music
-document.getElementById`musicOutput`.value = settings.volume.music * 100|0
-document.getElementById`masterInput`.addEventListener('input', e => {
-  voicePathList.forEach(path => {
-    voiceLoadedMap[path].volume = e.target.value * settings.volume.voice
+Object.keys(settings.volume).forEach(v => {
+  document.getElementById(`${v}Input`).value = settings.volume[v]
+  document.getElementById(`${v}Output`).value = settings.volume[v] * 100|0
+  document.getElementById(`${v}Input`).addEventListener('input', e => {
+    document.getElementById(`${v}Output`).value = e.target.value * 100|0
+    settings.volume[v] = setStorage(v, e.target.value, false)
+    if (v === 'master' || v === 'voice') voicePathList.forEach(path => {
+      voiceLoadedMap[path].volume = settings.volume.master * settings.volume.voice
+    })
+    if (v === 'master' || v === 'music') musicPathList.forEach(path => {
+      musicLoadedMap[path].volume = settings.volume.master * settings.volume.music
+    })
   })
-  musicPathList.forEach(path => {
-    musicLoadedMap[path].volume = e.target.value * settings.volume.music
-  })
-  document.getElementById`masterOutput`.value = e.target.value * 100|0
-  settings.volume.master = setStorage('master', e.target.value, false)
 })
-document.getElementById`voiceInput`.addEventListener('input', e => {
-  voicePathList.forEach(path => {
-    voiceLoadedMap[path].volume = settings.volume.master * e.target.value
-  })
-  document.getElementById`voiceOutput`.value = e.target.value * 100|0
-  settings.volume.voice = setStorage('voice', e.target.value, false)
+const inputDOM = document.getElementsByTagName`input`
+Object.keys(settings.type).forEach(v => {
+  inputDOM[v].checked = settings.type[v]
+  inputDOM[v].addEventListener('change', () => {
+    settings.type[v] = setStorage(v, inputDOM[v].checked, false)
+  }, false)
 })
-document.getElementById`musicInput`.addEventListener('input', e => {
-  musicPathList.forEach(path => {
-    musicLoadedMap[path].volume = settings.volume.master * e.target.value
-  })
-  document.getElementById`musicOutput`.value = e.target.value * 100|0
-  settings.volume.music = setStorage('music', e.target.value, false)
-})
-// setStorage(volume.master)
-// let operationMode = setStorage('operation', 'WASD', true)
 const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41, 42, 44]
 const imageStat = {
   idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
@@ -171,7 +165,7 @@ const timerId = setInterval(() => { // loading monitoring
     imageLoadedList.length === imagePathList.length &&
     voiceLoadedList.length === voicePathList.length &&
     musicLoadedList.length === musicPathList.length
-    ) { // untrustworthy length in assosiative
+  ) { // untrustworthy length in assosiative
     clearInterval(timerId)
     main()
   }
@@ -287,7 +281,7 @@ let cooltime = {
 let action = {
   space: 'space',
   up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', dash: 'j',
-  map: 'm', debug: 'g', hitbox: 'h'
+  map: 'm', status: 'g', hitbox: 'h'
 }
 let key = {
   shiftFlag: false, shift: 0,
@@ -422,27 +416,6 @@ Object.values(action).forEach(act => {
   keyHistory.pressed[act] = -1
   keyHistory.released[act] = 0
 })
-let mode = {wallkick: false, DECO: false, debug: false, hitbox: false, map: false}
-const wallkick = document.getElementsByTagName`form`[0]
-const changeWallkick = () => {
-  let buffer
-  wallkick.wallkick.forEach(e => {
-    if (e.checked) {
-      buffer = e.value
-      e.checked = false
-    }
-  })
-  wallkick.wallkick.forEach(e => {
-    if (buffer !== e.value) e.checked = true
-  })
-  mode.wallkick = JSON.parse(wallkick.wallkick.value)
-}
-wallkick.addEventListener('change', e => mode.wallkick = JSON.parse(e.target.value), false)
-const inputDOM = document.getElementsByTagName`input`
-inputDOM.DECO.addEventListener('change', () => mode.DECO = !mode.DECO, false)
-inputDOM.debug.addEventListener('change', () => mode.debug = !mode.debug, false)
-inputDOM.hitbox.addEventListener('change', () => mode.hitbox = !mode.hitbox, false)
-inputDOM.map.addEventListener('change', () => mode.map = !mode.map, false)
 const input = () => {
   inputProcess()
   // if (size * 53 < player.x) { // warp
@@ -528,7 +501,7 @@ const input = () => {
     }
     jump.time += 1
   } else {
-    if (mode.DECO) jump.time = 0
+    if (settings.type.DECO) jump.time = 0
     else {
       if (5 < jump.time) {
         if (player.dy < 0) player.dy = 0
@@ -539,30 +512,18 @@ const input = () => {
   if (player.wallFlag && 0 < player.dy) { // wall kick
     if (key[action.dash]) player.dy *= .5
     let flag = false
-    if (mode.wallkick) {
-      if (
-        (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'right'
-      ) {
-        player.dx = -4
-        player.direction = 'left'
-        flag = true
-      } else if (
-        (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'left'
-      ) {
-        player.dx = 4
-        player.direction = 'right'
-        flag = true
-      }
-    } else {
-      if (key[action.left] && key[action.dash] && player.direction === 'right') {
-        player.dx = -4
-        player.direction = 'left'
-        flag = true
-      } else if (key[action.right] && key[action.dash] && player.direction === 'left') {
-        player.dx = 4
-        player.direction = 'right'
-        flag = true
-      }
+    if (
+      (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'right'
+    ) {
+      player.dx = -4
+      player.direction = 'left'
+      flag = true
+    } else if (
+      (key[action.jump] === 1 || key[action.space] === 1) && key[action.dash] && player.direction === 'left'
+    ) {
+      player.dx = 4
+      player.direction = 'right'
+      flag = true
     }
     if (flag) {
       player.dy = -jumpConstant
@@ -575,19 +536,19 @@ const input = () => {
     changeWallkick()
   }
   if (key.e === 1) {
-    mode.DECO = !mode.DECO
+    settings.type.DECO = !settings.type.DECO
     inputDOM.DECO.checked = !inputDOM.DECO.checked
   }
-  if (key[action.debug] === 1) {
-    mode.debug = !mode.debug
-    inputDOM.debug.checked = !inputDOM.debug.checked
+  if (key[action.status] === 1) {
+    settings.type.status = !settings.type.status
+    inputDOM.status.checked = !inputDOM.status.checked
   }
   if (key[action.hitbox] === 1) {
-    mode.hitbox = !mode.hitbox
+    settings.type.hitbox = !settings.type.hitbox
     inputDOM.hitbox.checked = !inputDOM.hitbox.checked
   }
   if (key[action.map] === 1) {
-    mode.map = !mode.map
+    settings.type.map = !settings.type.map
     inputDOM.map.checked = !inputDOM.map.checked
   }
 }
@@ -847,7 +808,7 @@ const draw = () => {
     context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
     context.fillRect(hitbox.x+hitbox.w*.2 - stageOffset.x, hitbox.y+hitbox.h*.8 - stageOffset.y, hitbox.w*.6, hitbox.h*.2)
   }
-    if (mode.hitbox) displayHitbox()
+    if (settings.type.hitbox) displayHitbox()
   const displayDebug = () => {
     context.fillStyle = 'hsl(120, 100%, 50%)'
     context.font = `${size}px sans-serif`
@@ -860,7 +821,7 @@ const draw = () => {
     if (jump.double) context.fillText('unenable', size * 31, size)
     else context.fillText('enable', size * 31, size)
   }
-  if (mode.debug) displayDebug()
+  if (settings.type.status) displayDebug()
   const displayMap = () => {
     const multiple = 2
     const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.width / size, y: size}
@@ -881,7 +842,7 @@ const draw = () => {
       multiple * obj.w/size|0, multiple * obj.h/size|0)
     )
   }
-  if (mode.map) displayMap()
+  if (settings.type.map) displayMap()
 }
 let playFlag = false
 const musicProcess = () => {
