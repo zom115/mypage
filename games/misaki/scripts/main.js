@@ -276,7 +276,7 @@ const slideBrakeConstant = .95
 const gravityConstant = .272
 const jumpConstant = 5
 let time = 0
-let jump = {flag: false, double: false, time: 0, cooltime: 0, chargeTime: 0}
+let jump = {flag: false, double: false, step: false, time: 0, cooltime: 0, chargeTime: 0}
 let cooltime = {
   step: 0, stepLimit: 15, stepDeferment: 15,
   aerialStep: 0, aerialStepLimit: 10,
@@ -440,7 +440,7 @@ const input = () => {
     speed = player.landFlag ? speed : speed / 3 // aerial brake
     player.dx += speed
   }
-  if (cooltime.step === 0) { // step
+  if (!jump.step) { // step
     const stepSpeed = key[action.left] &&
       time - keyHistory.pressed[action.left] < cooltime.stepDeferment &&
       0 < keyHistory.released[action.left] - keyHistory.pressed[action.left]
@@ -451,10 +451,10 @@ const input = () => {
     ? stepConstant : 0
     if (stepSpeed !== 0) {
       player.dx += stepSpeed
-      cooltime.step = cooltime.stepLimit
+      jump.step = true
       cooltime.aerialStep = cooltime.aerialStepLimit
     }
-  } else if (player.action !== 'jump') cooltime.step -= 1
+  } else if (player.action !== 'jump') jump.step = false
   if (0 < cooltime.aerialStep) {
     player.dy = 0
     cooltime.aerialStep -= 1
@@ -526,19 +526,19 @@ const input = () => {
     }
   }
   if (player.wallFlag && 0 < player.dy) { // wall kick
-    if (key[action.slide]) {
+    if (key[action.up]) {
       player.dy *= .5
       player.grapFlag = true
     } else player.grapFlag = false
     let flag = false
     if (
-      (key[action.jump] === 1 || key[action.space] === 1) && key[action.slide] && player.direction === 'right'
+      (key[action.jump] === 1 || key[action.space] === 1) && player.grapFlag && player.direction === 'right'
     ) {
       player.dx = -4
       player.direction = 'left'
       flag = true
     } else if (
-      (key[action.jump] === 1 || key[action.space] === 1) && key[action.slide] && player.direction === 'left'
+      (key[action.jump] === 1 || key[action.space] === 1) && player.grapFlag && player.direction === 'left'
     ) {
       player.dx = 4
       player.direction = 'right'
@@ -551,9 +551,6 @@ const input = () => {
       player.action = 'jump'
     }
   } else player.grapFlag = false
-  if (key[action.up] === 1) {
-    changeWallkick()
-  }
   Object.keys(toggle).forEach(v => {
     if (key[toggle[v]] === 1) {
       settings.type[v] = setStorage(v, !settings.type[v])
@@ -826,8 +823,10 @@ const draw = () => {
     context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
     context.fillText('cooltime', size * 2, size * 3)
     context.fillText(`jump : ${jump.cooltime}`, size * 10, size * 3)
-    context.fillText(`step : ${cooltime.step}`, size * 10, size * 5)
-    context.fillText(`slide: ${cooltime.slide}`, size * 10, size * 7)
+    context.fillText(`slide: ${cooltime.slide}`, size * 10, size * 5)
+    context.fillText('aerial step :', size * 2, size * 7)
+    if (jump.step) context.fillText('unenable', size * 10, size * 7)
+    else context.fillText('enable', size * 10, size * 7)
     context.fillText('double jump :', size * 2, size * 9)
     if (jump.double) context.fillText('unenable', size * 10, size * 9)
     else context.fillText('enable', size * 10, size * 9)
