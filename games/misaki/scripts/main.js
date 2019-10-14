@@ -44,25 +44,39 @@ Object.keys(settings.type).forEach(v => {
 })
 const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41, 42, 44]
 const imageStat = {
-  idle: {start: imageChangeList[0], length: 12, condition: imageChangeList[0],
-  time: 0, maxInterval: 30, frame: 5,
-  blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
-}, walk: {start: imageChangeList[1], length: 6, condition: imageChangeList[1],
-  time: 0, maxInterval: 0, frame: 10
-}, turn: {start: imageChangeList[2], length: 2, condition: imageChangeList[2],
-  time: 0, maxInterval: 0, frame: 7
-}, run: {start: imageChangeList[3], length: 8, condition: imageChangeList[3],
-  time: 1, maxInterval: 0, frame: 7
-}, crouch: {start: imageChangeList[4], length: 3, condition: imageChangeList[4],
-  time: 1, maxInterval: 0, frame: 7
-}, jump: {start: imageChangeList[5], length: 9
-}, slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]
-}, push: {start: imageChangeList[7], length: 1, condition: imageChangeList[7]
-}, punch: {start: imageChangeList[8], length: 2, condition: imageChangeList[8],
-  time: 0, frame: 7, playAudio: imageChangeList[8] + 1
-}, kick: {start: imageChangeList[9], length: 6, condition: imageChangeList[9],
-  time: 0, frame: 7, playAudio: imageChangeList[9] + 3
-}}
+  idle: {
+    start: imageChangeList[0], length: 12, condition: imageChangeList[0],
+    time: 0, maxInterval: 30, frame: 5,
+    blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
+  }, walk: {
+    start: imageChangeList[1], length: 6, condition: imageChangeList[1],
+    time: 0, maxInterval: 0, frame: 10
+  }, turn: {
+    start: imageChangeList[2], length: 2, condition: imageChangeList[2],
+    time: 0, maxInterval: 0, frame: 7
+  }, run: {
+    start: imageChangeList[3], length: 8, condition: imageChangeList[3],
+    time: 1, maxInterval: 0, frame: 7
+  }, crouch: {
+    start: imageChangeList[4], length: 3, condition: imageChangeList[4],
+    time: 1, maxInterval: 0, frame: 7
+  }, jump: {start: imageChangeList[5], length: 9},
+  slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]},
+  push: {start: imageChangeList[7], length: 1, condition: imageChangeList[7]},
+  punch: {
+    start: imageChangeList[8], length: 2, condition: imageChangeList[8],
+    time: 0, frame: 7, playAudio: imageChangeList[8] + 1
+  }, kick: {
+    start: imageChangeList[9], length: 6, condition: imageChangeList[9],
+    time: 0, frame: 7, playAudio: imageChangeList[9] + 3
+  }
+}
+const unityChanList = [50, 54, 60]
+const unityChanStat = {
+  idle: {start: unityChanList[0], length: 4},
+  walk: {start: unityChanList[1], length: 6, frame: 10},
+  damage: {start: unityChanList[2], length: 18, frame: 5}
+}
 const imagePathList = [
   'images/Misaki/Misaki_Idle_1.png', // 0
   'images/Misaki/Misaki_Idle_1_Blink_1.png',
@@ -104,16 +118,45 @@ const imagePathList = [
   'images/Misaki/Misaki_Jump_Fall_1.png',
   'images/Misaki/Misaki_Jump_Fall_2.png',
   'images/Misaki/Misaki_Jump_Fall_3.png',
-  'images/Misaki/Misaki_Slide_1.png',
-  'images/Misaki/Misaki_Push_1.png',
-  'images/Misaki/Misaki_Punch_1.png',
+  'images/Misaki/Misaki_Slide_1.png', // 40
+  'images/Misaki/Misaki_Push_1.png', // 41
+  'images/Misaki/Misaki_Punch_1.png', // 42
   'images/Misaki/Misaki_Punch_2.png',
-  'images/Misaki/Misaki_Kick_1.png',
+  'images/Misaki/Misaki_Kick_1.png', // 44
   'images/Misaki/Misaki_Kick_2.png',
   'images/Misaki/Misaki_Kick_3.png',
   'images/Misaki/Misaki_Kick_4.png',
   'images/Misaki/Misaki_Kick_5.png',
-  'images/Misaki/Misaki_Kick_6.png'
+  'images/Misaki/Misaki_Kick_6.png',
+  'images/Unitychan/BasicActions/Unitychan_Idle_1.png', // 50
+  'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
+  'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+  'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
+  'images/Unitychan/BasicActions/Unitychan_Walk_1.png', // 54
+  'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
+  'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
+  'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
+  'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
+  'images/Unitychan/BasicActions/Unitychan_Walk_6.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_2.png', // 60
+  'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_15.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
+  'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
+  // 78
 ]
 let imageLoadedList = []
 let imageLoadedMap = []
@@ -179,6 +222,15 @@ const drawImage = (arg, x, y) => {
   } else context.drawImage(img, x, y)
   context.restore()
 }
+const drawEnemy = (v, x, y) => {
+  const img = imageLoadedMap[imagePathList[v.image]]
+  context.save()
+  if (v.direction === 'left') {
+    context.scale(-1, 1)
+    context.drawImage(img, -x - img.width|0, y|0)
+  } else context.drawImage(img, x|0, y|0)
+  context.restore()
+}
 const playAudio = (value, startTime = 0) => {
   voiceLoadedMap[voicePathList[value]].currentTime = startTime
   voiceLoadedMap[voicePathList[value]].play()
@@ -186,7 +238,7 @@ const playAudio = (value, startTime = 0) => {
 const size = 16
 let stage = {width: size * 240, height: size * 80}
 let player = {
-  x: stage.width * 1 / 8, y: stage.height * 7 / 8,
+  x: stage.width * 1 / 8, y: stage.height * 15 / 16,
   // action: { // TODO: bit operand
   //   idle: true, turn: false, crouch: false, push: false, run: false,
   //   jump: false, step: false, slide: false
@@ -195,12 +247,9 @@ let player = {
   dx: 0, dy: 0, action: 'idle', direction: 'right', landFlag: false, wallFlag: false,
   grapFlag: false
 }
-let hitbox = {
-  x: player.x - size / 2,
-  y: player.y - size * 3,
-  w: size,
-  h: size * 3
-}
+let hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
+let attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
+let enemies = []
 let field = []
 const setGround = (x, y, w, h) => {
   field.push({x: x * size, y: y * size, w: w * size, h: h * size})
@@ -660,6 +709,78 @@ const modelUpdate = () => {
       }
     }
   })
+  if (player.action === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
+    attackBox = player.direction === 'left' ? {
+      x: player.x - size,
+      y: player.y - size * 2,
+      w: size / 2,
+      h: size
+    } : {
+      x: player.x + size / 2,
+      y: player.y - size * 2,
+      w: size / 2,
+      h: size
+    }
+  } else if (
+    player.action === 'kick' &&
+    imageStat.kick.frame * 3 < imageStat.kick.time &&
+    imageStat.kick.time < imageStat.kick.frame * 5
+  ) {
+    attackBox = player.direction === 'left' ? {
+      x: player.x - size * 2,
+      y: player.y - size * 2,
+      w: size * 1.5,
+      h: size
+    } : {
+      x: player.x + size / 2,
+      y: player.y - size * 2,
+      w: size * 1.5,
+      h: size
+    }
+  } else attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
+  const enemyUpdate = () => {
+    if (enemies.length < 1) {
+      enemies.push({
+        x: stage.width * 1 / 4, y: stage.height * 15 / 16,
+        minXRange: stage.width * 1 / 4, maxXRange: stage.width * 3 / 8,
+        direction: 'left', image: unityChanStat.walk.start, imageTimer: 0,
+        state: 'walk', life: 3, invincibleTimer: 0
+      })
+    }
+    enemies.forEach((v, i) => {
+      let flag = false
+      const eHitbox = {x: v.x - size * .5, y: v.y - size * 2.75, w: size, h: size * 2.75}
+      field.forEach(obj => {
+        if (
+          eHitbox.x <= obj.x + obj.w && obj.x <= eHitbox.x + eHitbox.w &&
+          eHitbox.y <= obj.y + obj.h && obj.y <= eHitbox.y + eHitbox.h
+        ) flag = true
+      })
+      if (!flag) v.y += 1
+      const moveConstant = .7
+      if (v.state === 'walk') {
+        if (v.direction === 'left') {
+          v.x -= moveConstant
+          if (v.x < v.minXRange) v.direction = 'right'
+        } else if (v.direction === 'right') {
+          v.x += moveConstant
+          if (v.maxXRange < v.x) v.direction = 'left'
+        }
+      }
+      if (0 < v.invincibleTimer) v.invincibleTimer -= 1
+      if (
+        v.invincibleTimer === 0 &&
+        eHitbox.x < attackBox.x + attackBox.w && attackBox.x < eHitbox.x + eHitbox.w &&
+        eHitbox.y <= attackBox.y + attackBox.h && attackBox.y <= eHitbox.y + eHitbox.h
+      ) {
+        v.life -= 1
+        v.invincibleTimer = 30
+        v.state = 'damage'
+      }
+      if (v.life <= 0) enemies.splice(i, 1)
+    })
+  }
+  enemyUpdate()
 }
 const viewUpdate = () => {
   if (player.action !== 'jump') {
@@ -778,6 +899,27 @@ const viewUpdate = () => {
       player.action = 'idle'
     }
   }
+  enemies.forEach(v => {
+    v.imageTimer += 1
+    if (v.state === 'walk') {
+      const u = unityChanStat.walk
+      if (v.imageTimer % u.frame === 0) {
+        if (u.start + u.length - 1 < v.image + 1) v.image = u.start
+        else v.image += 1
+        v.imageTimer = 0
+      }
+    } else if (v.state === 'damage') {
+      const u = unityChanStat.damage
+      if (v.invincibleTimer === 30) v.image = u.start
+      if (v.imageTimer % u.frame === 0) {
+        if (u.start + u.length - 1 < v.image + 1) {
+          v.image = unityChanStat.walk.start
+          v.state = 'walk'
+        } else v.image += 1
+        v.imageTimer = 0
+      }
+    }
+  })
 }
 const draw = () => {
   const stageOffset = {x: 0, y: 0}
@@ -794,6 +936,11 @@ const draw = () => {
   }
   drawGround()
   const imageOffset = {x: 64, y: 125}
+  enemies.forEach(v => {
+    const ex = v.x - imageOffset.x - stageOffset.x
+    const ey = v.y - imageOffset.y - stageOffset.y
+    drawEnemy(v, ex, ey)
+  })
   let i
   if (player.action === 'slide') i = imageStat.slide.condition
   if (player.action === 'push') i = imageStat.push.condition
@@ -821,8 +968,16 @@ const draw = () => {
     context.fillStyle = 'hsl(300, 100%, 50%)'
     context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
     context.fillRect(hitbox.x+hitbox.w*.2 - stageOffset.x, hitbox.y+hitbox.h*.8 - stageOffset.y, hitbox.w*.6, hitbox.h*.2)
+    context.fillRect(
+      attackBox.x - stageOffset.x, attackBox.y - stageOffset.y, attackBox.w, attackBox.h
+    )
+    enemies.forEach(v => {
+      context.fillRect(
+        v.x - size * .5 - stageOffset.x, v.y - size * 2.75 - stageOffset.y, size, size * 2.75
+      )
+    })
   }
-    if (settings.type.hitbox) displayHitbox()
+  if (settings.type.hitbox) displayHitbox()
   const displayStatus = () => {
     context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
