@@ -30,26 +30,31 @@
             <li><a href="#dom">DOM先読み</a></li>
             <li><a href="#object">オブジェエクトリテラル</a></li>
             <li><a href="#savnac">canvas画像反転</a></li>
-            <li><a href="#storage">localstorage</a></li>
+            <li><a href="#storage">localStorage</a></li>
             <li><a href="#test">実行速度検証</a></li>
+            <li><a href="#test2">実行速度検証 その2</a></li>
           </ul>
+        </section>
+        <section>
           <h2 id="dom">DOM先読み</h2>
           <p>書き方忘れそうだから書いておく。</p>
-          <pre class="prettyprint lang-js linenums">\ndocument.addEventListener('DOMContentLoaded', () => {}) // が便利
+          <pre class="prettyprint lang-js linenums">document.addEventListener('DOMContentLoaded', () => {}) // が便利
 window.onload () => {} // も同じく</pre>
           <p>ただし，on～系は最後の記述のみ処理されるから同じ命令を複数使う場合は使用不可</p>
           <h2 id="object">オブジェクトリテラル</h2>
           <p>Object.values()はES2017で追加。便利だなあ。</p>
-          <pre class="prettyprint lang-js linenums">\nconst someObject = {
+          <pre class="prettyprint lang-js linenums">const someObject = {
   keyA: 'someA',
   keyB: 'someB'
 }
 console.log(Object.keys(someObject)) // ['keyA', 'keyB']
 console.log(Object.values(someObject)) // ['someA', 'someB']</pre>
+        </section>
+        <section>
           <h2 id="savnac">canvas画像反転</h2>
           <p>後から書いててロクにテストしてないからそのままじゃ動かないかも。</p><br>
           <p>scale(x, y)で変形したら，座標も(x, y)倍されるみたい。</p>
-          <pre class="prettyprint lang-js linenums">\nconst canvas = document.getElementById`myCanvas`
+          <pre class="prettyprint lang-js linenums">const canvas = document.getElementById`myCanvas`
 const context = canvas.getContext`2d`
 let img = new Image()
 img.src = './img/js.png' // 任意の画像を読み込み
@@ -58,9 +63,11 @@ context.scale(-1, 1) // 左右反転
 const coordinate = {x: 100, y: 100} // 任意の座標
 context.drawImage(-coordinate.x - img.width, coordinate.y) // でやっと思い通りの位置に表示できる
 context.restore() // さっきのセーブ内容を戻す</pre>
-          <h2 id="storage">localstorage</h2>
+        </section>
+        <section>
+          <h2 id="storage">localStorage</h2>
           <p>文字列しか保存できないから気をつけよう。</p>
-          <pre class="prettyprint lang-js linenums">\nconst storage = sessionStorage
+          <pre class="prettyprint lang-js linenums">const storage = sessionStorage
 storage.setItem('test', false)
 const reverse = (key) { // こんなふうに書くと，文字列'false'は存在するからtrueを返す
   if (storage.getItem(key)) storage.setItem(key, !storage.getItem(key))
@@ -74,8 +81,10 @@ const reverse = (key) {
 } // めんどくさいね
 reverse('test') // 'YES'
 reverse('test') // 'NO'</pre>
-          <h2 id="test">JSぺたぺたJSてすと</h2>
-          <pre class="prettyprint lang-js linenums">\n!(x = () => { 'use strict'
+        </section>
+        <section>
+          <h2 id="test">実行速度検証</h2>
+          <pre class="prettyprint lang-js linenums">'use strict'
 let counterA = 0
 const trialA = () => counterA = (counterA+1)|0
 let counterB = [0]
@@ -119,8 +128,7 @@ for (let i = 0; i< 4; i=(i+1)|0) {
   measure('a', spaceA)
   measure('b', spaceB)
   measure('c', spaceC)
-}
-})()</pre>
+}</pre>
           <p>各自こぴぺ汁</p><br>
           <p>const f = x => {}みたいな書き方して1文字稼いでたけど，</p>
           <p>やっぱり，引数取る分だけ実行時間に差が出るみたいだから控えよう。</p>
@@ -131,6 +139,62 @@ for (let i = 0; i< 4; i=(i+1)|0) {
           <p>読み込み時にはperformance.now()って動けないのかな？</p><br>
           <p>コレで夜も安心。</p>
           <p>new演算子とかも気になってきた。多用するようなら調べよう。</p>
+        </section>
+        <section>
+          <h2 id="test2">実行速度検証 その2</h2>
+          <pre class="prettyprint lang-js linenums">'use strict'
+console.log('hello')
+
+const measure = (name, func) => {
+  const start = performance.now()
+  func()
+  const end = performance.now()
+
+  const elapsed = (end - start)
+  const elapsedStr = elapsed.toPrecision(3)
+  console.log(`${name}: ${elapsedStr}`)
+  return elapsed
+}
+
+let sum = 0
+
+let vbl = 1
+const addVbl = () => {
+  sum = 0
+  for(let i=0; i < 1e8; i++) sum += vbl
+}
+let arr = Array(100).fill(1)
+const addArr = () => {
+  sum = 0
+  for(let i=0; i < 1e8; i++) sum += arr[50]
+}
+let obj = {}
+for (let i = 0; i < 100; i++) {
+  obj['n' + i] = 1
+}
+const addObj = () => {
+  sum = 0
+  for(let i=0; i < 1e8; i++) sum += obj.n50
+}
+
+measure('vbl', addVbl)
+measure('arr', addArr)
+measure('obj', addObj)
+
+let ave = {vbl: 0, arr: 0, obj: 0}
+const interval = 10
+for (let i=0; i < interval; i++) {
+  ave.vbl += measure('vbl', addVbl)
+  ave.arr += measure('arr', addArr)
+  ave.obj += measure('obj', addObj)
+}
+
+console.log(
+  ave.vbl / 10, // 226ms
+  ave.arr / 10, // 223ms
+  ave.obj / 10  // 1505ms
+)</pre>
+          <p>オブジェクトリテラルおっそーい</p>
         </section>
       </article>
     </main>

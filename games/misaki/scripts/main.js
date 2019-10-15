@@ -236,9 +236,115 @@ const playAudio = (value, startTime = 0) => {
   voiceLoadedMap[voicePathList[value]].play()
 }
 const size = 16
-let stage = {width: size * 240, height: size * 80}
+let stage = {}
+let field = []
+let gate = []
+let stageName
+const aftergrowLimit = {
+  gate: 240
+}
+let aftergrow = {
+  gate: 0
+}
+const setStage = arg => {
+  const stageList = {
+    Opening: {w: size * 240, h: size * 80},
+    DynamicTest: {w: size * 160, h: size * 90}
+  }
+  stage = stageList[arg]
+  field = []
+  const setGround = (x, y, w, h) => {
+    field.push({x: x * size, y: y * size, w: w * size, h: h * size})
+  }
+  setGround(0, stage.h / size - 1, stage.w / size, 1) // frame
+  setGround(1, 0, stage.w / size - 1, 1)
+  setGround(0, 0, 1, stage.h / size - 1)
+  setGround(stage.w / size - 1, 1, 1, stage.h / size - 2)
+  if (arg === 'Opening') {
+    setGround(7, 16, 9, 1) // object
+    setGround(5, 19, 4, 1)
+    setGround(8, 25, 6, 1)
+    setGround(3, 31, 9, 1)
+    setGround(4, 37, 6, 1)
+    setGround(5, 43, 4, 1)
+    setGround(20, 41, 5, 1)
+    setGround(33, 35, 1, 3)
+    setGround(32, 41, 3, 1)
+    setGround(37, 36, 1, 3)
+    setGround(37, 42, 1, 1)
+    setGround(40, 37, 1, 3)
+    setGround(40, 43, 1, 1)
+    setGround(43, 37, 1, 3)
+    setGround(43, 43, 1, 1)
+    setGround(47, 37, 1, 3)
+    setGround(47, 43, 1, 1)
+    setGround(24, 34, 5, 2)
+    setGround(41, 32, 2, 1)
+    setGround(44, 32, 1, 2)
+    setGround(47, 32, 2, 1)
+    setGround(50, 32, 1, 2)
+    setGround(54, 32, 2, 2)
+    setGround(18, 25, 12, 1)
+    setGround(30, 18, 5, 1)
+    setGround(51, 20, 3, 4)
+    setGround(58, 18, 3, 3)
+    setGround(52, 26, 3, 3)
+    setGround(14, 18, 1, 2)
+    setGround(15, 22, 1, 7)
+    setGround(37, 14, 2, 9)
+    setGround(37, 11, 8, 1)
+    setGround(50, 47, 1, 9)
+    setGround(55, 40, 1, 9)
+    setGround(56, 40, 7, 1)
+    setGround(63, 30, 1, 11)
+    for (let i = 0; i < 40; i++) setGround(150 + i * 2, 78, 1, 1)
+    let interval = 150
+    for (let i = 12 ; 0 < i; i--) {
+      setGround(interval, 50, 1, 25)
+      interval += i
+    }
+    for (let i = 0; i < 10; i++) setGround(95 + i * 5, 57 + i, 1, 10)
+    setGround(80, 65, 1, 10)
+    setGround(80, 55, 2, 10)
+    setGround(80, 45, 4, 10)
+    setGround(80, 35, 7, 10)
+    setGround(80, 25, 11, 10)
+    setGround(80, 15, 16, 10)
+    setGround(80,  5, 22, 10)
+    setGround(11, 48, 39, 1)
+    setGround(16, 49, 1, 23)
+    setGround(23, 56, 1, 20)
+    setGround(29, 49, 1, 14)
+    setGround(30, 57, 5, 6)
+    setGround(41, 53, 1, 14)
+    setGround(50, 65, 10, 1)
+    setGround(50, 76, 6, 1)
+    setGround(55, 56, 1, 5)
+    setGround(60, 53, 1, 10)
+  }
+  gate = []
+  const setGate = (x, y, w, h, stage, X, Y) => {
+    gate.push({
+      x: x * size, y: y * size, w: w * size, h: h * size,
+      stage: stage, address: {x: X * size, y: Y * size}
+    })
+  }
+  if (arg === 'Opening') {
+    setGate(5, 74, 4, 5, 'DynamicTest', 15, 89)
+  } else if (arg === 'DynamicTest') {
+    setGate(5, 84, 4, 5, 'Opening', 15, 79)
+  }
+  stageName = arg
+  aftergrow.gate = aftergrowLimit.gate
+}
+setStage('Opening')
+const enterGate = (stage, x, y) => {
+  setStage(stage)
+  player.x = x
+  player.y = y
+}
 let player = {
-  x: stage.width * 1 / 8, y: stage.height * 15 / 16,
+  x: stage.w * 1 / 8, y: stage.h * 15 / 16,
   // action: { // TODO: bit operand
   //   idle: true, turn: false, crouch: false, push: false, run: false,
   //   jump: false, step: false, slide: false
@@ -250,76 +356,6 @@ let player = {
 let hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 let attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
 let enemies = []
-let field = []
-const setGround = (x, y, w, h) => {
-  field.push({x: x * size, y: y * size, w: w * size, h: h * size})
-}
-{
-  setGround(0, stage.height / size - 1, stage.width / size, 1) // frame
-  setGround(1, 0, stage.width / size - 1, 1)
-  setGround(0, 0, 1, stage.height / size - 1)
-  setGround(stage.width / size - 1, 1, 1, stage.height / size - 2)
-  setGround(7, 16, 9, 1) // object
-  setGround(5, 19, 4, 1)
-  setGround(8, 25, 6, 1)
-  setGround(3, 31, 9, 1)
-  setGround(4, 37, 6, 1)
-  setGround(5, 43, 4, 1)
-  setGround(20, 41, 5, 1)
-  setGround(33, 35, 1, 3)
-  setGround(32, 41, 3, 1)
-  setGround(37, 36, 1, 3)
-  setGround(37, 42, 1, 1)
-  setGround(40, 37, 1, 3)
-  setGround(40, 43, 1, 1)
-  setGround(43, 37, 1, 3)
-  setGround(43, 43, 1, 1)
-  setGround(47, 37, 1, 3)
-  setGround(47, 43, 1, 1)
-  setGround(24, 34, 5, 2)
-  setGround(41, 32, 2, 1)
-  setGround(44, 32, 1, 2)
-  setGround(47, 32, 2, 1)
-  setGround(50, 32, 1, 2)
-  setGround(54, 32, 2, 2)
-  setGround(18, 25, 12, 1)
-  setGround(30, 18, 5, 1)
-  setGround(51, 20, 3, 4)
-  setGround(58, 18, 3, 3)
-  setGround(52, 26, 3, 3)
-  setGround(14, 18, 1, 2)
-  setGround(15, 22, 1, 7)
-  setGround(37, 14, 2, 9)
-  setGround(37, 11, 8, 1)
-  setGround(50, 47, 1, 9)
-  setGround(55, 40, 1, 9)
-  setGround(56, 40, 7, 1)
-  setGround(63, 30, 1, 11)
-  for (let i = 0; i < 40; i++) setGround(150 + i * 2, 78, 1, 1)
-  let interval = 150
-  for (let i = 12 ; 0 < i; i--) {
-    setGround(interval, 50, 1, 25)
-    interval += i
-  }
-  for (let i = 0; i < 10; i++) setGround(95 + i * 5, 57 + i, 1, 10)
-  setGround(80, 65, 1, 10)
-  setGround(80, 55, 2, 10)
-  setGround(80, 45, 4, 10)
-  setGround(80, 35, 7, 10)
-  setGround(80, 25, 11, 10)
-  setGround(80, 15, 16, 10)
-  setGround(80,  5, 22, 10)
-  setGround(11, 48, 39, 1)
-  setGround(16, 49, 1, 23)
-  setGround(23, 56, 1, 20)
-  setGround(29, 49, 1, 14)
-  setGround(30, 57, 5, 6)
-  setGround(41, 53, 1, 14)
-  setGround(50, 65, 10, 1)
-  setGround(50, 76, 6, 1)
-  setGround(55, 56, 1, 5)
-  setGround(60, 53, 1, 10)
-}
 const walkConstant = .7 // dx := 1.4
 const dashConstant = 2.1
 const dashThreshold = 3.5
@@ -741,8 +777,8 @@ const modelUpdate = () => {
   const enemyUpdate = () => {
     if (enemies.length < 1) {
       enemies.push({
-        x: stage.width * 1 / 4, y: stage.height * 15 / 16,
-        minXRange: stage.width * 1 / 4, maxXRange: stage.width * 3 / 8,
+        x: stage.w * 1 / 4, y: stage.h * 15 / 16,
+        minXRange: stage.w * 1 / 4, maxXRange: stage.w * 3 / 8,
         direction: 'left', image: unityChanStat.walk.start, imageTimer: 0,
         state: 'walk', life: 3, invincibleTimer: 0
       })
@@ -781,6 +817,19 @@ const modelUpdate = () => {
     })
   }
   enemyUpdate()
+  const gateProcess = () => {
+    gate.forEach(v => {
+      if (
+        hitbox.x <= v.x + v.w && v.x <= hitbox.x + hitbox.w &&
+        hitbox.y <= v.y + v.h && v.y <= hitbox.y + hitbox.h
+      ) {
+        if (key[action.up]) {
+          enterGate(v.stage, v.address.x, v.address.y)
+        }
+      }
+    })
+  }
+  gateProcess()
 }
 const viewUpdate = () => {
   if (player.action !== 'jump') {
@@ -925,22 +974,48 @@ const draw = () => {
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0
-  : stage.width - ratio.x < player.x ? stage.width - canvas.offsetWidth
-  : ((player.x - ratio.x) / (stage.width - ratio.x * 2)) * (stage.width - canvas.offsetWidth)
+  : stage.w - ratio.x < player.x ? stage.w - canvas.offsetWidth
+  : ((player.x - ratio.x) / (stage.w - ratio.x * 2)) * (stage.w - canvas.offsetWidth)
   stageOffset.y = player.y < ratio.y ? 0
-  : stage.height - ratio.y < player.y ? stage.height - canvas.offsetHeight
-  : ((player.y - ratio.y) / (stage.height - ratio.y * 2)) * (stage.height - canvas.offsetHeight)
+  : stage.h - ratio.y < player.y ? stage.h - canvas.offsetHeight
+  : ((player.y - ratio.y) / (stage.h - ratio.y * 2)) * (stage.h - canvas.offsetHeight)
   const drawGround = () => {
     context.fillStyle = 'hsl(180, 100%, 50%)'
-    field.forEach(obj => context.fillRect((obj.x - stageOffset.x)|0, (obj.y - stageOffset.y)|0, obj.w|0, obj.h|0))
+    field.forEach(obj => {
+      context.fillRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
+    })
   }
   drawGround()
+  const drawGate = () => {
+    context.fillStyle = 'hsl(0, 0%, 25%)'
+    gate.forEach(obj => {
+      context.fillRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
+    })
+    context.strokeStyle = 'hsl(270, 100%, 50%)'
+    gate.forEach(obj => {
+      context.strokeRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
+    })
+  }
+  drawGate()
   const imageOffset = {x: 64, y: 125}
   enemies.forEach(v => {
     const ex = v.x - imageOffset.x - stageOffset.x
     const ey = v.y - imageOffset.y - stageOffset.y
     drawEnemy(v, ex, ey)
   })
+  if (0 < aftergrow.gate) {
+    context.save()
+    context.font = `italic ${size * 2}px sans-serif`
+    const start = 60
+    const alpha = aftergrow.gate < start ? aftergrow.gate / start : 1
+    context.fillStyle = `hsla(0, 0%, 100%, ${alpha})`
+    context.textAlign = 'center'
+    context.fillText(stageName, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
+    context.strokeStyle = `hsla(0, 0%, 50%, ${alpha})`
+    context.strokeText(stageName, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
+    context.restore()
+    aftergrow.gate -= 1
+  }
   let i
   if (player.action === 'slide') i = imageStat.slide.condition
   if (player.action === 'push') i = imageStat.push.condition
@@ -995,11 +1070,11 @@ const draw = () => {
   if (settings.type.status) displayStatus()
   const displayMap = () => {
     const multiple = 2
-    const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.width / size, y: size}
+    const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.w / size, y: size}
     context.fillStyle = 'hsla(0, 0%, 0%, .25)'
     context.fillRect(
       mapOffset.x|0, mapOffset.y|0,
-      multiple * stage.width / size|0, multiple * stage.height / size|0)
+      multiple * stage.w / size|0, multiple * stage.h / size|0)
     context.fillStyle = 'hsla(10, 100%, 50%, .5)'
     const playerSize = {x: 1, y: 2}
     context.fillRect(
