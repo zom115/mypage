@@ -2,6 +2,7 @@
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
+const evlt = (obj) => {return Function('return (' + obj + ')')()}
 const setStorage = (key, value, firstFlag = false) => {
   const exists = localStorage.getItem(key)
   if (firstFlag && exists) return JSON.parse(exists)
@@ -238,6 +239,8 @@ const playAudio = (value, startTime = 0) => {
 const size = 16
 let stage = {}
 let field = []
+let stageTime
+let dynamicObject = []
 let gate = []
 let stageName
 const aftergrowLimit = {
@@ -321,7 +324,72 @@ const setStage = arg => {
     setGround(50, 76, 6, 1)
     setGround(55, 56, 1, 5)
     setGround(60, 53, 1, 10)
+  } else if (arg === 'DynamicTest') {
+    setGround(17, 85, 4, 4)
+    setGround(25, 70, 134, 1)
+    field.push({x: 30 * size, y: 69 * size + 15, w: size, h: 1})
+    field.push({x: 31 * size, y: 69 * size + 14, w: size, h: 2})
+    field.push({x: 32 * size, y: 69 * size + 13, w: size, h: 3})
+    field.push({x: 33 * size, y: 69 * size + 12, w: size, h: 4})
+    field.push({x: 34 * size, y: 69 * size + 11, w: size, h: 5})
+    field.push({x: 35 * size, y: 69 * size + 10, w: size, h: 6})
+    field.push({x: 36 * size, y: 69 * size +  9, w: size, h: 7})
+    field.push({x: 37 * size, y: 69 * size +  8, w: size, h: 8})
+    field.push({x: 38 * size, y: 69 * size +  7, w: size, h: 9})
+    field.push({x: 39 * size, y: 69 * size +  6, w: size, h: 10})
+    field.push({x: 40 * size, y: 69 * size +  5, w: size, h: 11})
+    field.push({x: 41 * size, y: 69 * size +  4, w: size, h: 12})
+    field.push({x: 42 * size, y: 69 * size +  3, w: size, h: 13})
+    field.push({x: 43 * size, y: 69 * size +  2, w: size, h: 14})
+    field.push({x: 44 * size, y: 69 * size +  1, w: size, h: 15})
+    field.push({x: 45 * size, y: 69 * size + 15, w: size + 15, h: 1})
+    field.push({x: 45 * size, y: 69 * size + 14, w: size + 14, h: 1})
+    field.push({x: 45 * size, y: 69 * size + 13, w: size + 13, h: 1})
+    field.push({x: 45 * size, y: 69 * size + 12, w: size + 12, h: 1})
+    field.push({x: 45 * size, y: 69 * size + 11, w: size + 11, h: 1})
+    field.push({x: 45 * size, y: 69 * size + 10, w: size + 10, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  9, w: size +  9, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  8, w: size +  8, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  7, w: size +  7, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  6, w: size +  6, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  5, w: size +  5, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  4, w: size +  4, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  3, w: size +  3, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  2, w: size +  2, h: 1})
+    field.push({x: 45 * size, y: 69 * size +  1, w: size +  1, h: 1})
+    field.push({x: 50 * size, y: 69 * size +  8, w: size, h: 8})
+    field.push({x: 51 * size, y: 69 * size, w: size, h: 8})
+    field.push({x: 52 * size, y: 68 * size +  8, w: size, h: 8})
+    field.push({x: 53 * size, y: 68 * size, w: size, h: 8})
+    field.push({x: 54 * size, y: 67 * size + 8, w: size, h: 8})
+    field.push({x: 60 * size               , y: 69 * size + 8, w: 8, h: 8})
+    field.push({x: 60 * size + size     / 2, y: 69 * size    , w: 8, h: 8})
+    field.push({x: 60 * size + size        , y: 68 * size + 8, w: 8, h: 8})
+    field.push({x: 60 * size + size * 3 / 2, y: 68 * size    , w: 8, h: 8})
+    field.push({x: 60 * size + size * 2    , y: 67 * size + 8, w: 8, h: 8})
+    field.push({x: 60 * size + size * 5 / 2, y: 67 * size    , w: 8, h: 8})
+    field.push({x: 60 * size               , y: 69 * size + 8, w: 8, h: 8})
+    field.push({x: 70 * size     , y: 69 * size + 8, w: 8, h: 8})
+    field.push({x: 70 * size +  1, y: 69 * size    , w: 8, h: 8})
+    field.push({x: 70 * size +  2, y: 68 * size + 8, w: 8, h: 8})
+    field.push({x: 70 * size +  3, y: 68 * size    , w: 8, h: 8})
+    field.push({x: 70 * size +  4, y: 67 * size + 8, w: 8, h: 8})
+    field.push({x: 70 * size +  5, y: 67 * size    , w: 8, h: 8})
+    field.push({x: 70 * size +  6, y: 66 * size + 8, w: 8, h: 8})
+    field.push({x: 70 * size +  7, y: 66 * size    , w: 8, h: 8})
+    field.push({x: 70 * size +  8, y: 65 * size + 8, w: 8, h: 8})
+    field.push({x: 70 * size +  9, y: 65 * size    , w: 8, h: 8})
+    field.push({x: 70 * size + 10, y: 64 * size + 8, w: 8, h: 8})
+    field.push({x: 70 * size + 11, y: 64 * size    , w: 8, h: 8})
   }
+  stageTime = 0
+  if (arg === 'DynamicTest') {
+    dynamicObject = [
+      {x: 21 * size, y: '78 * size - 7 * size * Math.sin(stageTime / 100)', w: 4 * size, h: size},
+      {x: '1 * size + stageTime % 1000', y: 85 * size, w: size, h: size * 4},
+    ]
+  }
+  dynamicObject.forEach(v => field.push({x: evlt(v.x), y: evlt(v.y), w: v.w, h: v.h}))
   gate = []
   const setGate = (x, y, w, h, stage, X, Y) => {
     gate.push({
@@ -330,9 +398,9 @@ const setStage = arg => {
     })
   }
   if (arg === 'Opening') {
-    setGate(5, 74, 4, 5, 'DynamicTest', 15, 89)
+    setGate(5, 74, 4, 5, 'DynamicTest', 12, 89)
   } else if (arg === 'DynamicTest') {
-    setGate(5, 84, 4, 5, 'Opening', 15, 79)
+    setGate(5, 84, 4, 5, 'Opening', 12, 79)
   }
   stageName = arg
   aftergrow.gate = aftergrowLimit.gate
@@ -650,6 +718,14 @@ const input = () => {
   })
 }
 const modelUpdate = () => {
+  const stageUpdate = () => {
+    for (let i = 0; i < dynamicObject.length; i++) field.pop()
+    stageTime += 1
+    dynamicObject.forEach(v => {
+      field.push({x: evlt(v.x), y: evlt(v.y), w: v.w, h: v.h})
+    })
+  }
+  stageUpdate()
   if (player.action === 'slide') { // collision detect
     hitbox.x = player.x - size * 1.5
     hitbox.y = player.y - size
