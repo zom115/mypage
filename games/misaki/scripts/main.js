@@ -219,8 +219,8 @@ const drawImage = (arg, x, y) => {
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
-    context.drawImage(img, -x - img.width, y)
-  } else context.drawImage(img, x, y)
+    context.drawImage(img, -x - img.width|0, y|0)
+  } else context.drawImage(img, x|0, y|0)
   context.restore()
 }
 const drawEnemy = (v, x, y) => {
@@ -256,6 +256,7 @@ const setStage = arg => {
   }
   stage = stageList[arg]
   field = []
+  dynamicObject = []
   const setGround = (x, y, w, h) => {
     field.push({x: x * size, y: y * size, w: w * size, h: h * size})
   }
@@ -384,12 +385,21 @@ const setStage = arg => {
   }
   stageTime = 0
   if (arg === 'DynamicTest') {
-    dynamicObject = [
-      {x: 21 * size, y: '78 * size - 7 * size * Math.sin(stageTime / 100)', w: 4 * size, h: size},
-      {x: '1 * size + stageTime % 1000', y: 85 * size, w: size, h: size * 4},
-    ]
+    dynamicObject = [{
+      x: 21 * size, y: 78 * size, w: 4 * size, h: size,
+      dx: 0, dy: '-7 * size * Math.sin(stageTime / 100)'
+    }, {
+      x: 10 * size, y: 70 * size,
+      w: 4 * size, h: size,
+      dx: '-7 * size * Math.sin(stageTime / 100)', dy: 0
+    }, {
+      x: size, y: 85 * size, w: size, h: size * 4,
+      dx: 'stageTime % 1000', dy: 0
+    }]
   }
-  dynamicObject.forEach(v => field.push({x: evlt(v.x), y: evlt(v.y), w: v.w, h: v.h}))
+  dynamicObject.forEach(v => field.push({
+    x: v.x + evlt(v.dx), y: v.y + evlt(v.dy), w: v.w, h: v.h
+  }))
   gate = []
   const setGate = (x, y, w, h, stage, X, Y) => {
     gate.push({
@@ -398,9 +408,9 @@ const setStage = arg => {
     })
   }
   if (arg === 'Opening') {
-    setGate(5, 74, 4, 5, 'DynamicTest', 12, 89)
+    setGate(5, 74, 4, 5, 'DynamicTest', 12, 88.5)
   } else if (arg === 'DynamicTest') {
-    setGate(5, 84, 4, 5, 'Opening', 12, 79)
+    setGate(5, 84, 4, 5, 'Opening', 12, 78.5)
   }
   stageName = arg
   aftergrow.gate = aftergrowLimit.gate
@@ -684,9 +694,10 @@ const input = () => {
       } else if (jump.time !== 0) jump.time += 1
     }
   }
-  if (player.wallFlag && 0 < player.dy) { // wall kick
+  if ((player.wallFlag || player.grapFlag) && 0 < player.dy) { // wall kick
     if (key[action.up]) {
       player.dy *= .5
+      player.dx = 0
       player.grapFlag = true
     } else player.grapFlag = false
     let flag = false
@@ -722,67 +733,148 @@ const modelUpdate = () => {
     for (let i = 0; i < dynamicObject.length; i++) field.pop()
     stageTime += 1
     dynamicObject.forEach(v => {
-      field.push({x: evlt(v.x), y: evlt(v.y), w: v.w, h: v.h})
+      field.push({x: v.x + evlt(v.dx), y: v.y + evlt(v.dy), w: v.w, h: v.h})
     })
   }
   stageUpdate()
   if (player.action === 'slide') { // collision detect
-    hitbox.x = player.x - size * 1.5
+    hitbox.x = player.x - size * 1.375
     hitbox.y = player.y - size
-    hitbox.w = size * 3
+    hitbox.w = size * 2.75
     hitbox.h = size
   } else {
     hitbox.x = player.x - size / 2
-    hitbox.y = player.y - size * 3
+    hitbox.y = player.y - size * 2.75
     hitbox.w = size
-    hitbox.h = size * 3
+    hitbox.h = size * 2.75
   }
-  if (player.landFlag) player.landFlag = false
-  if (player.wallFlag) player.wallFlag = false
-  let headFlag = false
-  field.forEach(obj => {
-    if (
-      hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
-      hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
-    ) {
-      if (
-        hitbox.x + hitbox.w * .2 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .8
-      ) {
-        if ( // head
-          hitbox.y + hitbox.h * .1 <= obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .5
-        ) {
-          headFlag = true
-        } else if (hitbox.y + hitbox.h * .5 < obj.y + obj.h && obj.y <= hitbox.y + hitbox.h) { // foot
-          player.y = obj.y
+  if (player.dx !== 0) player.wallFlag = false
+  field.forEach((obj, i) => {
+    if (0 < player.dy) { // floor
+      const ax = obj.x - hitbox.w / 2
+      const ay = obj.y
+      const bx = obj.x + obj.w + hitbox.w / 2
+      const by = obj.y
+      const abx = bx - ax
+      const aby = by - ay
+      let nx = -aby
+      let ny = abx
+      let length = (nx ** 2 + ny ** 2) ** .5
+      if (0 < length) length = 1 / length
+      nx *= length
+      ny *= length
+      const d = -(ax * nx + ay * ny)
+      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+      if (0 < t && t <= 1) {
+        const cx = player.x + player.dx * t
+        const cy = player.y + player.dy * t
+        const acx = cx - ax
+        const acy = cy - ay
+        const bcx = cx - bx
+        const bcy = cy - by
+        const doc = acx * bcx + acy * bcy
+        if (doc < 0) {
+          player.y = obj.y - gravityConstant + 1e-12
+          player.dy = 0
           player.landFlag = true
         }
       }
-      if (
-        hitbox.y + hitbox.h * .2 < obj.y + obj.h && obj.y < hitbox.y + hitbox.h * .8
-      ) {
-        if (hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w * .2) { // left
-          player.wallFlag = true
-          if (0 < player.dx) player.x += player.dx
-        }
-        if (hitbox.x + hitbox.w * .8 <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w) { // right
-          player.wallFlag = true
-          if (player.dx < 0) player.x += player.dx
+    } else if (player.dy !== 0) { // ceiling
+      const ax = obj.x - hitbox.w / 2
+      const ay = obj.y + obj.h + hitbox.h
+      const bx = obj.x + obj.w + hitbox.w / 2
+      const by = obj.y + obj.h + hitbox.h
+      const abx = bx - ax
+      const aby = by - ay
+      let nx = -aby
+      let ny = abx
+      let length = (nx ** 2 + ny ** 2) ** .5
+      if (0 < length) length = 1 / length
+      nx *= length
+      ny *= length
+      const d = -(ax * nx + ay * ny)
+      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+      if (0 < t && t <= 1) {
+        const cx = player.x + player.dx * t
+        const cy = player.y + player.dy * t
+        const acx = cx - ax
+        const acy = cy - ay
+        const bcx = cx - bx
+        const bcy = cy - by
+        const doc = acx * bcx + acy * bcy
+        if (doc < 0) {
+          player.y = obj.y + obj.h + hitbox.h
+          player.dy = 0
         }
       }
     }
+    if (0 < player.dx) { // left wall
+      const ax = obj.x - hitbox.w / 2
+      const ay = obj.y
+      const bx = obj.x - hitbox.w / 2
+      const by = obj.y + obj.h + hitbox.h
+      const abx = bx - ax
+      const aby = by - ay
+      let nx = -aby
+      let ny = abx
+      let length = (nx ** 2 + ny ** 2) ** .5
+      if (0 < length) length = 1 / length
+      nx *= length
+      ny *= length
+      const d = -(ax * nx + ay * ny)
+      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+      if (0 < t && t <= 1) {
+        const cx = player.x + player.dx * t
+        const cy = player.y + player.dy * t
+        const acx = cx - ax
+        const acy = cy - ay
+        const bcx = cx - bx
+        const bcy = cy - by
+        const doc = acx * bcx + acy * bcy
+        if (doc < 0) {
+          player.x = obj.x - hitbox.w / 2 - 1
+          player.dx = 0
+          player.wallFlag = true
+        }
+      }
+    } else if (player.dx !== 0) { // right wall
+      const ax = obj.x + obj.w + hitbox.w / 2
+      const ay = obj.y
+      const bx = obj.x + obj.w + hitbox.w / 2
+      const by = obj.y + obj.h + hitbox.h
+      const abx = bx - ax
+      const aby = by - ay
+      let nx = -aby
+      let ny = abx
+      let length = (nx ** 2 + ny ** 2) ** .5
+      if (0 < length) length = 1 / length
+      nx *= length
+      ny *= length
+      const d = -(ax * nx + ay * ny)
+      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+      if (0 < t && t <= 1) {
+        const cx = player.x + player.dx * t
+        const cy = player.y + player.dy * t
+        const acx = cx - ax
+        const acy = cy - ay
+        const bcx = cx - bx
+        const bcy = cy - by
+        const doc = acx * bcx + acy * bcy
+        if (doc < 0) {
+          player.x = obj.x + obj.w + hitbox.w / 2 + 1
+          player.dx = 0
+          player.wallFlag = true
+        }
+      }
+    }
+    if (
+      hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
+      hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
+    ) if (player.state = 'slide') player.dx = 0
   })
-  if (player.wallFlag) {
-    if (player.action !== 'slide') {
-      if (0 <= player.dy) player.dx = 0
-    }
-  } else {
-    player.x += player.dx
-    if (-.01 < player.dx && player.dx < .01) player.dx = 0
-    if (headFlag) {
-      player.y += hitbox.h * .1
-      player.dy = 0
-    }
-  }
+  if (player.dy !== 0) player.landFlag = false
+  player.x += player.dx
+  if (-.01 < player.dx && player.dx < .01) player.dx = 0
   player.y += player.dy
   player.dy += gravityConstant
   if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
@@ -790,9 +882,7 @@ const modelUpdate = () => {
     if (player.action === 'slide') {
       player.dx *= slideBrakeConstant
     } else player.dx *= brakeConstant
-    if (jump.flag) {
-      if (0 < player.dy) jump.flag = false
-    } else player.dy = 0
+    jump.flag = false
     if (0 < jump.cooltime) jump.cooltime -= 1
     jump.double = false
     if (
@@ -1047,6 +1137,7 @@ const viewUpdate = () => {
   })
 }
 const draw = () => {
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0
@@ -1073,7 +1164,7 @@ const draw = () => {
     })
   }
   drawGate()
-  const imageOffset = {x: 64, y: 125}
+  const imageOffset = {x: 64, y: 124}
   enemies.forEach(v => {
     const ex = v.x - imageOffset.x - stageOffset.x
     const ey = v.y - imageOffset.y - stageOffset.y
@@ -1113,12 +1204,23 @@ const draw = () => {
   else if (player.action === 'crouch') i = imageStat.crouch.condition
   else if (player.action === 'punch') i = imageStat.punch.condition
   else if (player.action === 'kick') i = imageStat.kick.condition
-  const x = (player.x - imageOffset.x - stageOffset.x)|0
-  drawImage(i, x, (player.y - imageOffset.y - stageOffset.y)|0)
-  const displayHitbox = () => {
+  const x = (player.x - imageOffset.x - stageOffset.x)
+  drawImage(i, x, (player.y - imageOffset.y - stageOffset.y))
+  if (settings.type.hitbox) { // displayHitbox
     context.fillStyle = 'hsl(300, 100%, 50%)'
-    context.fillRect(hitbox.x - stageOffset.x, hitbox.y+hitbox.h*.1 - stageOffset.y, hitbox.w, hitbox.h*.7)
-    context.fillRect(hitbox.x+hitbox.w*.2 - stageOffset.x, hitbox.y+hitbox.h*.8 - stageOffset.y, hitbox.w*.6, hitbox.h*.2)
+    context.fillRect(
+      hitbox.x - stageOffset.x|0, hitbox.y - stageOffset.y|0, hitbox.w|0, 1
+    )
+    context.fillRect(
+      hitbox.x - 1 - stageOffset.x|0, hitbox.y - stageOffset.y|0, 1, hitbox.h + 1|0
+    )
+    context.fillRect(
+      hitbox.x + hitbox.w - stageOffset.x|0, hitbox.y - stageOffset.y|0, 1, hitbox.h + 1|0
+    )
+    context.fillRect(
+      hitbox.x - stageOffset.x|0, hitbox.y + hitbox.h - stageOffset.y|0, hitbox.w|0, 1
+    )
+    // context.fillRect(hitbox.x+hitbox.w*.2 - stageOffset.x, hitbox.y+hitbox.h*.8 - stageOffset.y, hitbox.w*.6, hitbox.h*.2)
     context.fillRect(
       attackBox.x - stageOffset.x, attackBox.y - stageOffset.y, attackBox.w, attackBox.h
     )
@@ -1128,8 +1230,7 @@ const draw = () => {
       )
     })
   }
-  if (settings.type.hitbox) displayHitbox()
-  const displayStatus = () => {
+  if (settings.type.status) { // displayStatus
     context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
     context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
@@ -1143,8 +1244,7 @@ const draw = () => {
     if (jump.double) context.fillText('unenable', size * 10, size * 9)
     else context.fillText('enable', size * 10, size * 9)
   }
-  if (settings.type.status) displayStatus()
-  const displayMap = () => {
+  if (settings.type.map) { // displayMap
     const multiple = 2
     const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.w / size, y: size}
     context.fillStyle = 'hsla(0, 0%, 0%, .25)'
@@ -1164,7 +1264,6 @@ const draw = () => {
       multiple * obj.w/size|0, multiple * obj.h/size|0)
     )
   }
-  if (settings.type.map) displayMap()
 }
 let playFlag = false
 const musicProcess = () => {
@@ -1178,7 +1277,6 @@ const main = () => {
   input()
   modelUpdate()
   viewUpdate()
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
   musicProcess()
   window.requestAnimationFrame(main)
