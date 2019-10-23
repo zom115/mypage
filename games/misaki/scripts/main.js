@@ -694,21 +694,23 @@ const input = () => {
       } else if (jump.time !== 0) jump.time += 1
     }
   }
-  if ((player.wallFlag || player.grapFlag) && 0 < player.dy) { // wall kick
-    if (key[action.up]) {
-      player.dy *= .5
-      player.dx = 0
-      player.grapFlag = true
-    } else player.grapFlag = false
+  if (player.wallFlag && 0 < player.dy && key[action.up]) { // wall grap
+    player.dy *= .5
+    player.dx = player.direction === 'left' ? -dashConstant : dashConstant
+    player.grapFlag = true
+  } else player.grapFlag = false
+  if (player.grapFlag) { // wall kick
     let flag = false
-    if (
-      (key[action.jump] === 1 || key[action.space] === 1) && player.grapFlag && player.direction === 'right'
+    if ((
+      key[action.jump] === 1 || key[action.space] === 1
+      ) && player.grapFlag && player.direction === 'right'
     ) {
       player.dx = -4
       player.direction = 'left'
       flag = true
-    } else if (
-      (key[action.jump] === 1 || key[action.space] === 1) && player.grapFlag && player.direction === 'left'
+    } else if ((
+      key[action.jump] === 1 || key[action.space] === 1
+      ) && player.grapFlag && player.direction === 'left'
     ) {
       player.dx = 4
       player.direction = 'right'
@@ -717,10 +719,11 @@ const input = () => {
     if (flag) {
       player.dy = -jumpConstant
       player.wallFlag = false
+      player.grapFlag = false
       jump.flag = true
       player.action = 'jump'
     }
-  } else player.grapFlag = false
+  }
   Object.keys(toggle).forEach(v => {
     if (key[toggle[v]] === 1) {
       settings.type[v] = setStorage(v, !settings.type[v])
@@ -749,7 +752,7 @@ const modelUpdate = () => {
     hitbox.h = size * 2.75
   }
   if (player.dx !== 0) player.wallFlag = false
-  field.forEach((obj, i) => {
+  field.forEach(obj => {
     if (0 < player.dy) { // floor
       const ax = obj.x - hitbox.w / 2
       const ay = obj.y
@@ -873,6 +876,7 @@ const modelUpdate = () => {
     ) if (player.state = 'slide') player.dx = 0
   })
   if (player.dy !== 0) player.landFlag = false
+  if (player.grapFlag) player.dx = 0
   player.x += player.dx
   if (-.01 < player.dx && player.dx < .01) player.dx = 0
   player.y += player.dy
