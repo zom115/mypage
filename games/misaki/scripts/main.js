@@ -240,7 +240,6 @@ const size = 16
 let stage = {}
 let field = []
 let stageTime
-let dynamicObject = []
 let gate = []
 let stageName
 const aftergrowLimit = {
@@ -249,6 +248,7 @@ const aftergrowLimit = {
 let aftergrow = {
   gate: 0
 }
+let enemies = []
 const setStage = arg => {
   const stageList = {
     Opening: {w: size * 240, h: size * 80},
@@ -256,7 +256,7 @@ const setStage = arg => {
   }
   stage = stageList[arg]
   field = []
-  dynamicObject = []
+  enemies = []
   const setGround = (x, y, w, h) => {
     field.push({x: x * size, y: y * size, w: w * size, h: h * size})
   }
@@ -328,78 +328,70 @@ const setStage = arg => {
   } else if (arg === 'DynamicTest') {
     setGround(17, 85, 4, 4)
     setGround(25, 70, 134, 1)
-    field.push({x: 30 * size, y: 69 * size + 15, w: size, h: 1})
-    field.push({x: 31 * size, y: 69 * size + 14, w: size, h: 2})
-    field.push({x: 32 * size, y: 69 * size + 13, w: size, h: 3})
-    field.push({x: 33 * size, y: 69 * size + 12, w: size, h: 4})
-    field.push({x: 34 * size, y: 69 * size + 11, w: size, h: 5})
-    field.push({x: 35 * size, y: 69 * size + 10, w: size, h: 6})
-    field.push({x: 36 * size, y: 69 * size +  9, w: size, h: 7})
-    field.push({x: 37 * size, y: 69 * size +  8, w: size, h: 8})
-    field.push({x: 38 * size, y: 69 * size +  7, w: size, h: 9})
-    field.push({x: 39 * size, y: 69 * size +  6, w: size, h: 10})
-    field.push({x: 40 * size, y: 69 * size +  5, w: size, h: 11})
-    field.push({x: 41 * size, y: 69 * size +  4, w: size, h: 12})
-    field.push({x: 42 * size, y: 69 * size +  3, w: size, h: 13})
-    field.push({x: 43 * size, y: 69 * size +  2, w: size, h: 14})
-    field.push({x: 44 * size, y: 69 * size +  1, w: size, h: 15})
-    field.push({x: 45 * size, y: 69 * size + 15, w: size + 15, h: 1})
-    field.push({x: 45 * size, y: 69 * size + 14, w: size + 14, h: 1})
-    field.push({x: 45 * size, y: 69 * size + 13, w: size + 13, h: 1})
-    field.push({x: 45 * size, y: 69 * size + 12, w: size + 12, h: 1})
-    field.push({x: 45 * size, y: 69 * size + 11, w: size + 11, h: 1})
-    field.push({x: 45 * size, y: 69 * size + 10, w: size + 10, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  9, w: size +  9, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  8, w: size +  8, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  7, w: size +  7, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  6, w: size +  6, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  5, w: size +  5, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  4, w: size +  4, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  3, w: size +  3, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  2, w: size +  2, h: 1})
-    field.push({x: 45 * size, y: 69 * size +  1, w: size +  1, h: 1})
-    field.push({x: 50 * size, y: 69 * size +  8, w: size, h: 8})
-    field.push({x: 51 * size, y: 69 * size, w: size, h: 8})
-    field.push({x: 52 * size, y: 68 * size +  8, w: size, h: 8})
-    field.push({x: 53 * size, y: 68 * size, w: size, h: 8})
-    field.push({x: 54 * size, y: 67 * size + 8, w: size, h: 8})
-    field.push({x: 60 * size               , y: 69 * size + 8, w: 8, h: 8})
-    field.push({x: 60 * size + size     / 2, y: 69 * size    , w: 8, h: 8})
-    field.push({x: 60 * size + size        , y: 68 * size + 8, w: 8, h: 8})
-    field.push({x: 60 * size + size * 3 / 2, y: 68 * size    , w: 8, h: 8})
-    field.push({x: 60 * size + size * 2    , y: 67 * size + 8, w: 8, h: 8})
-    field.push({x: 60 * size + size * 5 / 2, y: 67 * size    , w: 8, h: 8})
-    field.push({x: 60 * size               , y: 69 * size + 8, w: 8, h: 8})
-    field.push({x: 70 * size     , y: 69 * size + 8, w: 8, h: 8})
-    field.push({x: 70 * size +  1, y: 69 * size    , w: 8, h: 8})
-    field.push({x: 70 * size +  2, y: 68 * size + 8, w: 8, h: 8})
-    field.push({x: 70 * size +  3, y: 68 * size    , w: 8, h: 8})
-    field.push({x: 70 * size +  4, y: 67 * size + 8, w: 8, h: 8})
-    field.push({x: 70 * size +  5, y: 67 * size    , w: 8, h: 8})
-    field.push({x: 70 * size +  6, y: 66 * size + 8, w: 8, h: 8})
-    field.push({x: 70 * size +  7, y: 66 * size    , w: 8, h: 8})
-    field.push({x: 70 * size +  8, y: 65 * size + 8, w: 8, h: 8})
-    field.push({x: 70 * size +  9, y: 65 * size    , w: 8, h: 8})
-    field.push({x: 70 * size + 10, y: 64 * size + 8, w: 8, h: 8})
-    field.push({x: 70 * size + 11, y: 64 * size    , w: 8, h: 8})
+    setGround(30, 69 + 15 / 16, 1,  1 / 16)
+    setGround(31, 69 + 14 / 16, 1,  2 / 16)
+    setGround(32, 69 + 13 / 16, 1,  3 / 16)
+    setGround(33, 69 + 12 / 16, 1,  4 / 16)
+    setGround(34, 69 + 11 / 16, 1,  5 / 16)
+    setGround(35, 69 + 10 / 16, 1,  6 / 16)
+    setGround(36, 69 +  9 / 16, 1,  7 / 16)
+    setGround(37, 69 +  8 / 16, 1,  8 / 16)
+    setGround(38, 69 +  7 / 16, 1,  9 / 16)
+    setGround(39, 69 +  6 / 16, 1, 10 / 16)
+    setGround(40, 69 +  5 / 16, 1, 11 / 16)
+    setGround(41, 69 +  4 / 16, 1, 12 / 16)
+    setGround(42, 69 +  3 / 16, 1, 13 / 16)
+    setGround(43, 69 +  2 / 16, 1, 14 / 16)
+    setGround(44, 69 +  1 / 16, 1, 15 / 16)
+    setGround(45, 69 + 15 / 16, 1 + 15 / 16, 1)
+    setGround(45, 69 + 14 / 16, 1 + 14 / 16, 1)
+    setGround(45, 69 + 13 / 16, 1 + 13 / 16, 1)
+    setGround(45, 69 + 12 / 16, 1 + 12 / 16, 1)
+    setGround(45, 69 + 11 / 16, 1 + 11 / 16, 1)
+    setGround(45, 69 + 10 / 16, 1 + 10 / 16, 1)
+    setGround(45, 69 +  9 / 16, 1 +  9 / 16, 1)
+    setGround(45, 69 +  8 / 16, 1 +  8 / 16, 1)
+    setGround(45, 69 +  7 / 16, 1 +  7 / 16, 1)
+    setGround(45, 69 +  6 / 16, 1 +  6 / 16, 1)
+    setGround(45, 69 +  5 / 16, 1 +  5 / 16, 1)
+    setGround(45, 69 +  4 / 16, 1 +  4 / 16, 1)
+    setGround(45, 69 +  3 / 16, 1 +  3 / 16, 1)
+    setGround(45, 69 +  2 / 16, 1 +  2 / 16, 1)
+    setGround(45, 69 +  1 / 16, 1 +  1 / 16, 1)
+    setGround(50, 69 +  8 / 16, 1, 1 / 2)
+    setGround(51, 69          , 1, 1 / 2)
+    setGround(52, 68 +  8 / 16, 1, 1 / 2)
+    setGround(53, 68          , 1, 1 / 2)
+    setGround(54, 67 +  8 / 16, 1, 1 / 2)
+    setGround(60             , 69 * 1 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(60 +      1 / 2, 69 * 1         , 1 / 2, 1 / 2)
+    setGround(60 +          1, 68 * 1 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(60 +  1 * 3 / 2, 68 * 1         , 1 / 2, 1 / 2)
+    setGround(60 +  1 * 2    , 67 * 1 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(60 +  1 * 5 / 2, 67 * 1         , 1 / 2, 1 / 2)
+    setGround(60             , 69 * 1 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(70     , 69 + 8 / 16, 8, 8)
+    setGround(70 +  1 / 16, 69         , 1 / 2, 1 / 2)
+    setGround(70 +  2 / 16, 68 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(70 +  3 / 16, 68         , 1 / 2, 1 / 2)
+    setGround(70 +  4 / 16, 67 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(70 +  5 / 16, 67         , 1 / 2, 1 / 2)
+    setGround(70 +  6 / 16, 66 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(70 +  7 / 16, 66         , 1 / 2, 1 / 2)
+    setGround(70 +  8 / 16, 65 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(70 +  9 / 16, 65         , 1 / 2, 1 / 2)
+    setGround(70 + 10 / 16, 64 + 8 / 16, 1 / 2, 1 / 2)
+    setGround(70 + 11 / 16, 64         , 1 / 2, 1 / 2)
+    const setObject = (x, y, w, h, dx, dy) => {
+      enemies.push({
+        type: 'object', x: x * size, y: y * size, w: w * size, h: h * size, dx: dx, dy: dy
+      })
+    }
+    setObject(21, 78, 4, 1, 0, '-7 * size * Math.sin(stageTime / 100)')
+    setObject(10, 70, 4, 1, '-7 * size * Math.sin(stageTime / 100)', 0)
+    setObject(1, 85, 1, 4, 'stageTime % 1000', 0)
   }
   stageTime = 0
-  if (arg === 'DynamicTest') {
-    dynamicObject = [{
-      x: 21 * size, y: 78 * size, w: 4 * size, h: size,
-      dx: 0, dy: '-7 * size * Math.sin(stageTime / 100)'
-    }, {
-      x: 10 * size, y: 70 * size,
-      w: 4 * size, h: size,
-      dx: '-7 * size * Math.sin(stageTime / 100)', dy: 0
-    }, {
-      x: size, y: 85 * size, w: size, h: size * 4,
-      dx: 'stageTime % 1000', dy: 0
-    }]
-  }
-  dynamicObject.forEach(v => field.push({
-    x: v.x + evlt(v.dx), y: v.y + evlt(v.dy), w: v.w, h: v.h
-  }))
   gate = []
   const setGate = (x, y, w, h, stage, X, Y) => {
     gate.push({
@@ -433,7 +425,6 @@ let player = {
 }
 let hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 let attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
-let enemies = []
 const walkConstant = .7 // dx := 1.4
 const dashConstant = 2.1
 const dashThreshold = 3.5
@@ -732,14 +723,6 @@ const input = () => {
   })
 }
 const modelUpdate = () => {
-  const stageUpdate = () => {
-    for (let i = 0; i < dynamicObject.length; i++) field.pop()
-    stageTime += 1
-    dynamicObject.forEach(v => {
-      field.push({x: v.x + evlt(v.dx), y: v.y + evlt(v.dy), w: v.w, h: v.h})
-    })
-  }
-  stageUpdate()
   if (player.action === 'slide') { // collision detect
     hitbox.x = player.x - size * 1.375
     hitbox.y = player.y - size
@@ -751,6 +734,7 @@ const modelUpdate = () => {
     hitbox.w = size
     hitbox.h = size * 2.75
   }
+  let aerialFlag = true
   if (player.dx !== 0) player.wallFlag = false
   field.forEach(obj => {
     if (0 < player.dy) { // floor
@@ -779,7 +763,7 @@ const modelUpdate = () => {
         if (doc < 0) {
           player.y = obj.y - gravityConstant + 1e-12
           player.dy = 0
-          player.landFlag = true
+          aerialFlag = false
         }
       }
     } else if (player.dy !== 0) { // ceiling
@@ -875,7 +859,180 @@ const modelUpdate = () => {
       hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h
     ) if (player.state = 'slide') player.dx = 0
   })
-  if (player.dy !== 0) player.landFlag = false
+  const enemyUpdate = () => {
+    stageTime += 1
+    if (enemies.length < 1) {
+      enemies.push({
+        type: 'enemy',
+        x: stage.w * 1 / 4, y: stage.h * 15 / 16,
+        minXRange: stage.w * 1 / 4, maxXRange: stage.w * 3 / 8,
+        direction: 'left', image: unityChanStat.walk.start, imageTimer: 0,
+        state: 'walk', life: 3, invincibleTimer: 0
+      })
+    }
+    enemies.forEach((v, i) => {
+      if (v.type === 'object') {
+        const aftdx = evlt(v.dx)
+        const aftdy = evlt(v.dy)
+        stageTime -= 1
+        const dx = aftdx - evlt(v.dx)
+        const dy = aftdy - evlt(v.dy)
+        const X = player.dx - dx
+        const Y = player.dy - dy
+        const axFloor = v.x + evlt(v.dx) - hitbox.w / 2 // y coordinate
+        const ayFloor = v.y + evlt(v.dy)
+        const bxFloor = v.x + v.w + evlt(v.dx) + hitbox.w / 2
+        const byFloor = v.y + evlt(v.dy)
+        const abxFloor = bxFloor - axFloor
+        const abyFloor = byFloor - ayFloor
+        let nxFloor = -abyFloor
+        let nyFloor = abxFloor
+        let lengthFloor = (nxFloor ** 2 + nyFloor ** 2) ** .5
+        if (0 < lengthFloor) lengthFloor = 1 / lengthFloor
+        nxFloor *= lengthFloor
+        nyFloor *= lengthFloor
+        const dFloor = -(axFloor * nxFloor + ayFloor * nyFloor)
+        const tFloor = -(
+          nxFloor * player.x + nyFloor * player.y + dFloor) / (
+          nxFloor * X + nyFloor * Y
+        )
+        const cxFloor = player.x + X * tFloor
+        const cyFloor = player.y + Y * tFloor
+        const acxFloor = cxFloor - axFloor
+        const acyFloor = cyFloor - ayFloor
+        const bcxFloor = cxFloor - bxFloor
+        const bcyFloor = cyFloor - byFloor
+        const docFloor = acxFloor * bcxFloor + acyFloor * bcyFloor
+        const axCeiling = v.x + evlt(v.dx) - hitbox.w / 2
+        const ayCeiling = v.y + v.h + evlt(v.dy) + hitbox.h
+        const bxCeiling = v.x + v.w + evlt(v.dx) + hitbox.w / 2
+        const byCeiling = v.y + v.h + evlt(v.dy) + hitbox.h
+        const abxCeiling = bxCeiling - axCeiling
+        const abyCeiling = byCeiling - ayCeiling
+        let nxCeiling = -abyCeiling
+        let nyCeiling = abxCeiling
+        let lengthCeiling = (nxCeiling ** 2 + nyCeiling ** 2) ** .5
+        if (0 < lengthCeiling) lengthCeiling = 1 / lengthCeiling
+        nxCeiling *= lengthCeiling
+        nyCeiling *= lengthCeiling
+        const dCeiling = -(axCeiling * nxCeiling + ayCeiling * nyCeiling)
+        const tCeiling = -(nxCeiling * player.x + nyCeiling * player.y + dCeiling) / (
+          nxCeiling * X + nyCeiling * Y
+        )
+        const cxCeiling = player.x + X * tCeiling
+        const cyCeiling = player.y + Y * tCeiling
+        const acxCeiling = cxCeiling - axCeiling
+        const acyCeiling = cyCeiling - ayCeiling
+        const bcxCeiling = cxCeiling - bxCeiling
+        const bcyCeiling = cyCeiling - byCeiling
+        const docCeiling = acxCeiling * bcxCeiling + acyCeiling * bcyCeiling
+        if (docFloor < 0 && 0 < tFloor && tFloor <= 1 && tFloor < tCeiling) {
+          player.y = v.y + evlt(v.dy) - gravityConstant / 2 + 1e-12
+          player.dy = dy
+          player.x += dx
+          aerialFlag = false
+        } else if (docCeiling < 0 && 0 < tCeiling && tCeiling <= 1) {
+          player.y = v.y + v.h + evlt(v.dy) + hitbox.h
+          player.dy = 0 < dy ? dy : 0
+        }
+        if (0 < X) { // left wall
+          const axLeft = v.x + evlt(v.dx) - hitbox.w / 2
+          const ayLeft = v.y + evlt(v.dy)
+          const bxLeft = v.x + evlt(v.dx) - hitbox.w / 2
+          const byLeft = v.y + v.h + evlt(v.dy) + hitbox.h
+          const abxLeft = bxLeft - axLeft
+          const abyLeft = byLeft - ayLeft
+          let nxLeft = -abyLeft
+          let nyLeft = abxLeft
+          let lengthLeft = (nxLeft ** 2 + nyLeft ** 2) ** .5
+          if (0 < lengthLeft) lengthLeft = 1 / lengthLeft
+          nxLeft *= lengthLeft
+          nyLeft *= lengthLeft
+          const dLeft = -(axLeft * nxLeft + ayLeft * nyLeft)
+          const tLeft = -(nxLeft * player.x + nyLeft * player.y + dLeft) / (nxLeft * X + nyLeft * Y)
+          if (0 < tLeft && tLeft <= 1) {
+            const cxLeft = player.x + player.dx * tLeft
+            const cyLeft = player.y + player.dy * tLeft
+            const acxLeft = cxLeft - axLeft
+            const acyLeft = cyLeft - ayLeft
+            const bcxLeft = cxLeft - bxLeft
+            const bcyLeft = cyLeft - byLeft
+            const docLeft = acxLeft * bcxLeft + acyLeft * bcyLeft
+            if (docLeft < 0) {
+              console.log(i, 'left wall')
+              player.x = v.x + evlt(v.dx) + dx - hitbox.w / 2 - 1
+              player.dx = 0
+              player.wallFlag = true
+            }
+          }
+        } else if (X !== 0) { // right wall
+          const ax = v.x + v.w + evlt(v.dx) + hitbox.w / 2
+          const ay = v.y + evlt(v.dy)
+          const bx = v.x + v.w + evlt(v.dx) + hitbox.w / 2
+          const by = v.y + v.h + evlt(v.dy) + hitbox.h
+          const abx = bx - ax
+          const aby = by - ay
+          let nx = -aby
+          let ny = abx
+          let length = (nx ** 2 + ny ** 2) ** .5
+          if (0 < length) length = 1 / length
+          nx *= length
+          ny *= length
+          const d = -(ax * nx + ay * ny)
+          const t = -(nx * player.x + ny * player.y + d) / (nx * X + ny * Y)
+          if (0 < t && t <= 1) {
+            const cx = player.x + player.dx * t
+            const cy = player.y + player.dy * t
+            const acx = cx - ax
+            const acy = cy - ay
+            const bcx = cx - bx
+            const bcy = cy - by
+            const doc = acx * bcx + acy * bcy
+            if (doc < 0) {
+              player.x = v.x + v.w + evlt(v.dx) + dx + hitbox.w / 2 + 1
+              player.dx = 0
+              player.wallFlag = true
+            }
+          }
+        }
+        stageTime += 1
+      } else if (v.type === 'enemy') {
+        let flag = false
+        const eHitbox = {x: v.x - size * .5, y: v.y - size * 2.75, w: size, h: size * 2.75}
+        field.forEach(obj => {
+          if (
+            eHitbox.x <= obj.x + obj.w && obj.x <= eHitbox.x + eHitbox.w &&
+            eHitbox.y <= obj.y + obj.h && obj.y <= eHitbox.y + eHitbox.h
+          ) flag = true
+        })
+        if (!flag) v.y += 1
+        const moveConstant = .7
+        if (v.state === 'walk') {
+          if (v.direction === 'left') {
+            v.x -= moveConstant
+            if (v.x < v.minXRange) v.direction = 'right'
+          } else if (v.direction === 'right') {
+            v.x += moveConstant
+            if (v.maxXRange < v.x) v.direction = 'left'
+          }
+        }
+        if (0 < v.invincibleTimer) v.invincibleTimer -= 1
+        if (
+          v.invincibleTimer === 0 &&
+          eHitbox.x < attackBox.x + attackBox.w && attackBox.x < eHitbox.x + eHitbox.w &&
+          eHitbox.y <= attackBox.y + attackBox.h && attackBox.y <= eHitbox.y + eHitbox.h
+        ) {
+          v.life -= 1
+          v.invincibleTimer = 30
+          v.state = 'damage'
+        }
+        if (v.life <= 0) enemies.splice(i, 1)
+      }
+    })
+  }
+  enemyUpdate()
+  player.landFlag = aerialFlag ? false : true
+  // if (player.dy !== 0) player.landFlag = false
   if (player.grapFlag) player.dx = 0
   player.x += player.dx
   if (-.01 < player.dx && player.dx < .01) player.dx = 0
@@ -944,49 +1101,6 @@ const modelUpdate = () => {
       h: size
     }
   } else attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
-  const enemyUpdate = () => {
-    if (enemies.length < 1) {
-      enemies.push({
-        x: stage.w * 1 / 4, y: stage.h * 15 / 16,
-        minXRange: stage.w * 1 / 4, maxXRange: stage.w * 3 / 8,
-        direction: 'left', image: unityChanStat.walk.start, imageTimer: 0,
-        state: 'walk', life: 3, invincibleTimer: 0
-      })
-    }
-    enemies.forEach((v, i) => {
-      let flag = false
-      const eHitbox = {x: v.x - size * .5, y: v.y - size * 2.75, w: size, h: size * 2.75}
-      field.forEach(obj => {
-        if (
-          eHitbox.x <= obj.x + obj.w && obj.x <= eHitbox.x + eHitbox.w &&
-          eHitbox.y <= obj.y + obj.h && obj.y <= eHitbox.y + eHitbox.h
-        ) flag = true
-      })
-      if (!flag) v.y += 1
-      const moveConstant = .7
-      if (v.state === 'walk') {
-        if (v.direction === 'left') {
-          v.x -= moveConstant
-          if (v.x < v.minXRange) v.direction = 'right'
-        } else if (v.direction === 'right') {
-          v.x += moveConstant
-          if (v.maxXRange < v.x) v.direction = 'left'
-        }
-      }
-      if (0 < v.invincibleTimer) v.invincibleTimer -= 1
-      if (
-        v.invincibleTimer === 0 &&
-        eHitbox.x < attackBox.x + attackBox.w && attackBox.x < eHitbox.x + eHitbox.w &&
-        eHitbox.y <= attackBox.y + attackBox.h && attackBox.y <= eHitbox.y + eHitbox.h
-      ) {
-        v.life -= 1
-        v.invincibleTimer = 30
-        v.state = 'damage'
-      }
-      if (v.life <= 0) enemies.splice(i, 1)
-    })
-  }
-  enemyUpdate()
   const gateProcess = () => {
     gate.forEach(v => {
       if (
@@ -1119,23 +1233,25 @@ const viewUpdate = () => {
     }
   }
   enemies.forEach(v => {
-    v.imageTimer += 1
-    if (v.state === 'walk') {
-      const u = unityChanStat.walk
-      if (v.imageTimer % u.frame === 0) {
-        if (u.start + u.length - 1 < v.image + 1) v.image = u.start
-        else v.image += 1
-        v.imageTimer = 0
-      }
-    } else if (v.state === 'damage') {
-      const u = unityChanStat.damage
-      if (v.invincibleTimer === 30) v.image = u.start
-      if (v.imageTimer % u.frame === 0) {
-        if (u.start + u.length - 1 < v.image + 1) {
-          v.image = unityChanStat.walk.start
-          v.state = 'walk'
-        } else v.image += 1
-        v.imageTimer = 0
+    if (v.type === 'enemy') {
+      v.imageTimer += 1
+      if (v.state === 'walk') {
+        const u = unityChanStat.walk
+        if (v.imageTimer % u.frame === 0) {
+          if (u.start + u.length - 1 < v.image + 1) v.image = u.start
+          else v.image += 1
+          v.imageTimer = 0
+        }
+      } else if (v.state === 'damage') {
+        const u = unityChanStat.damage
+        if (v.invincibleTimer === 30) v.image = u.start
+        if (v.imageTimer % u.frame === 0) {
+          if (u.start + u.length - 1 < v.image + 1) {
+            v.image = unityChanStat.walk.start
+            v.state = 'walk'
+          } else v.image += 1
+          v.imageTimer = 0
+        }
       }
     }
   })
@@ -1169,10 +1285,18 @@ const draw = () => {
   }
   drawGate()
   const imageOffset = {x: 64, y: 124}
+  context.fillStyle = 'hsl(150, 100%, 50%)'
   enemies.forEach(v => {
-    const ex = v.x - imageOffset.x - stageOffset.x
-    const ey = v.y - imageOffset.y - stageOffset.y
-    drawEnemy(v, ex, ey)
+    if (v.type === 'object') {
+      context.fillRect(
+        v.x + evlt(v.dx) - stageOffset.x|0, v.y + evlt(v.dy) - stageOffset.y|0, v.w|0, v.h|0
+      )
+    }
+    if (v.type === 'enemy') {
+      const ex = v.x - imageOffset.x - stageOffset.x
+      const ey = v.y - imageOffset.y - stageOffset.y
+      drawEnemy(v, ex, ey)
+    }
   })
   if (0 < aftergrow.gate) {
     context.save()
@@ -1229,9 +1353,11 @@ const draw = () => {
       attackBox.x - stageOffset.x, attackBox.y - stageOffset.y, attackBox.w, attackBox.h
     )
     enemies.forEach(v => {
-      context.fillRect(
-        v.x - size * .5 - stageOffset.x, v.y - size * 2.75 - stageOffset.y, size, size * 2.75
-      )
+      if (v.type === 'enemy') {
+        context.fillRect(
+          v.x - size * .5 - stageOffset.x, v.y - size * 2.75 - stageOffset.y, size, size * 2.75
+        )
+      }
     })
   }
   if (settings.type.status) { // displayStatus
