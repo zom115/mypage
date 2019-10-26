@@ -685,7 +685,7 @@ const input = () => {
       } else if (jump.time !== 0) jump.time += 1
     }
   }
-  if (player.wallFlag && 0 < player.dy && key[action.up]) { // wall grap
+  if (player.wallFlag && !player.landFlag && 0 < player.dy && key[action.up]) { // wall grap
     player.dy *= .5
     player.dx = player.direction === 'left' ? -dashConstant : dashConstant
     player.grapFlag = true
