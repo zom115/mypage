@@ -159,6 +159,7 @@ const imagePathList = [
   'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
   'images/MagicCliffsArtwork/tileset.png', // 78
   'images/MagicCliffsArtwork/far-grounds.png',
+  'images/MagicCliffsArtwork/clouds.png'
 ]
 let imageLoadedList = []
 let imageLoadedMap = []
@@ -1525,6 +1526,21 @@ const viewUpdate = () => {
 }
 const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  context.drawImage(
+    imageLoadedMap[imagePathList[80]],
+    -stageTime / 60 % imageLoadedMap[imagePathList[80]].width,
+    canvas.offsetHeight - imageLoadedMap[imagePathList[80]].height
+  )
+  context.drawImage(
+    imageLoadedMap[imagePathList[80]],
+    imageLoadedMap[imagePathList[80]].width - stageTime / 60 % imageLoadedMap[imagePathList[80]].width,
+    canvas.offsetHeight - imageLoadedMap[imagePathList[80]].height
+  )
+  context.drawImage(
+    imageLoadedMap[imagePathList[80]],
+    imageLoadedMap[imagePathList[80]].width * 2 - stageTime / 60 % imageLoadedMap[imagePathList[80]].width,
+    canvas.offsetHeight - imageLoadedMap[imagePathList[80]].height
+  )
   const bgOffset = (player.x / stage.w) * (canvas.offsetWidth - imageLoadedMap[imagePathList[79]].width)
   context.drawImage(
     imageLoadedMap[imagePathList[79]],
