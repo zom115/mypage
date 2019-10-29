@@ -715,7 +715,7 @@ const slideBrakeConstant = .95
 const gravityConstant = .272
 const jumpConstant = 5
 let time = 0
-let jump = {flag: false, double: false, step: false, time: 0, cooltime: 0, chargeTime: 0}
+let jump = {flag: false, double: false, step: false, time: 0}
 let cooltime = {
   step: 0, stepLimit: 15, stepDeferment: 15,
   aerialStep: 0, aerialStepLimit: 10,
@@ -937,7 +937,7 @@ const input = () => {
         if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
         jump.time = 0
       }
-    } else if (jump.cooltime === 0) {
+    } else if (jump.time === 0) {
       player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
       player.action = 'jump'
       jump.flag = true
@@ -951,8 +951,6 @@ const input = () => {
       }
       if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       player.landFlag = false
-      jump.cooltime = 10
-      jump.time = 0
     }
     jump.time += 1
   } else {
@@ -1322,7 +1320,6 @@ const modelUpdate = () => {
       player.dx *= slideBrakeConstant
     } else player.dx *= brakeConstant
     jump.flag = false
-    if (0 < jump.cooltime) jump.cooltime -= 1
     jump.double = false
     if (
       player.action !== 'punch' &&
@@ -1335,7 +1332,6 @@ const modelUpdate = () => {
     ) player.action = 'idle'
   } else {
     jump.flag = true
-    jump.cooltime = 10
     if (player.action !== 'slide') player.action = 'jump'
   }
   Object.values(action).forEach(act => {
@@ -1672,9 +1668,8 @@ const draw = () => {
   if (settings.type.status) { // displayStatus
     context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
-    context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size)
-    context.fillText('cooltime', size * 2, size * 3)
-    context.fillText(`jump : ${jump.cooltime}`, size * 10, size * 3)
+    context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size * 3)
+    context.fillText('cooltime', size * 2, size * 5)
     context.fillText(`slide: ${cooltime.slide}`, size * 10, size * 5)
     context.fillText('aerial step :', size * 2, size * 7)
     if (jump.step) context.fillText('unenable', size * 10, size * 7)
