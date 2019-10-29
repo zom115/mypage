@@ -716,6 +716,7 @@ const gravityConstant = .272
 const jumpConstant = 5
 let time = 0
 let jump = {flag: false, double: false, step: false, time: 0}
+let slide = {flag: false}
 let cooltime = {
   step: 0, stepLimit: 15, stepDeferment: 15,
   aerialStep: 0, aerialStepLimit: 10,
@@ -723,7 +724,7 @@ let cooltime = {
 }
 let action = {
   space: 'space',
-  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', slide: 'j',
+  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', attack: 'j',
   map: 'm', status: 'g', hitbox: 'h'
 }
 let toggle = {
@@ -857,10 +858,10 @@ const inputProcess = () => {
   if (key.yFlag) key.y = (key.y+1)|0
   if (key.zFlag) key.z = (key.z+1)|0
 }
-let keyHistory = {pressed: {}, released: {}}
+let keyTimestamp = {pressed: {}, released: {}}
 Object.values(action).forEach(act => {
-  keyHistory.pressed[act] = -1
-  keyHistory.released[act] = 0
+  keyTimestamp.pressed[act] = -1
+  keyTimestamp.released[act] = 0
 })
 const input = () => {
   inputProcess()
@@ -881,12 +882,12 @@ const input = () => {
   }
   if (!jump.step) { // step
     const stepSpeed = key[action.left] &&
-      time - keyHistory.pressed[action.left] < cooltime.stepDeferment &&
-      0 < keyHistory.released[action.left] - keyHistory.pressed[action.left]
+      time - keyTimestamp.pressed[action.left] < cooltime.stepDeferment &&
+      0 < keyTimestamp.released[action.left] - keyTimestamp.pressed[action.left]
     ? -stepConstant
     : key[action.right] &&
-      time - keyHistory.pressed[action.right] < cooltime.stepDeferment &&
-      0 < keyHistory.released[action.right] - keyHistory.pressed[action.right]
+      time - keyTimestamp.pressed[action.right] < cooltime.stepDeferment &&
+      0 < keyTimestamp.released[action.right] - keyTimestamp.pressed[action.right]
     ? stepConstant : 0
     if (stepSpeed !== 0) {
       player.dx += stepSpeed
@@ -899,18 +900,18 @@ const input = () => {
     cooltime.aerialStep -= 1
   }
   if ( // punch & kick
-    key[action.slide] === 1 && !key[action.left] && !key[action.right] &&
+    key[action.attack] === 1 && !key[action.left] && !key[action.right] &&
     player.landFlag && player.action !== 'slide' && player.action !== 'punch' && player.action !== 'kick'
   ) {
     player.action = 'punch'
     imageStat.punch.time = 0
   }
-  if (player.action === 'punch' && key[action.slide] === imageStat.punch.frame) {
+  if (player.action === 'punch' && key[action.attack] === imageStat.punch.frame) {
     player.action = 'kick'
     imageStat.kick.time = 0
   }
   if (cooltime.slide === 0) { // slide
-    if (key[action.slide] && player.landFlag && !player.wallFlag) {
+    if (key[action.down] && player.landFlag && !player.wallFlag && !slide.flag) {
       const slideSpeed = slideConstant < player.dx ? boostConstant
       : player.dx < -slideConstant ? -boostConstant : 0
       if (slideSpeed !== 0) {
@@ -919,6 +920,7 @@ const input = () => {
         cooltime.slide = cooltime.slideLimit
         if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
       }
+      slide.flag = true
     }
   } else {
     if (player.action !== 'slide') {
@@ -926,6 +928,7 @@ const input = () => {
       else cooltime.slide -= 1
     }
   }
+  if (!key[action.down]) slide.flag = false
   if (key[action.jump] || key[action.space]) { // jump
     if (jump.flag) {
       if (!jump.double && jump.time === 0 && !player.grapFlag) {
@@ -1336,13 +1339,13 @@ const modelUpdate = () => {
   }
   Object.values(action).forEach(act => {
     if (key[act]) {
-      if (keyHistory.pressed[act] < keyHistory.released[act]) {
-        keyHistory.pressed[act] = time
+      if (keyTimestamp.pressed[act] < keyTimestamp.released[act]) {
+        keyTimestamp.pressed[act] = time
       }
     }
     else {
-      if (keyHistory.released[act] < keyHistory.pressed[act]) {
-        keyHistory.released[act] = time
+      if (keyTimestamp.released[act] < keyTimestamp.pressed[act]) {
+        keyTimestamp.released[act] = time
       }
     }
   })
