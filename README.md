@@ -1,4 +1,4 @@
 # mypage
 
 Portfolio? Is it a something illness name?
-[Page link](https://github.com/zom115/mypage/)
+[Page link](https://zom115.github.io/mypage/)
