@@ -6,3 +6,4 @@ details.addEventListener('mouseenter', () => {flag = true})
 document.addEventListener('mousedown', () => {
   if (!flag) details.removeAttribute('open')
 })
+// corsorて。cursorでしょ
