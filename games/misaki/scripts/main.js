@@ -1712,28 +1712,24 @@ const draw = () => {
   const x = (player.x - imageOffset.x - stageOffset.x)
   drawImage(i, x, (player.y - imageOffset.y - stageOffset.y))
   if (settings.type.hitbox) { // displayHitbox
-    context.fillStyle = 'hsl(300, 100%, 50%)'
+    context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     context.fillRect(
-      hitbox.x - stageOffset.x|0, hitbox.y - stageOffset.y|0, hitbox.w|0, 1
-    )
-    context.fillRect(
-      hitbox.x - 1 - stageOffset.x|0, hitbox.y - stageOffset.y|0, 1, hitbox.h + 1|0
-    )
-    context.fillRect(
-      hitbox.x + hitbox.w - stageOffset.x|0, hitbox.y - stageOffset.y|0, 1, hitbox.h + 1|0
-    )
-    context.fillRect(
-      hitbox.x - stageOffset.x|0, hitbox.y + hitbox.h - stageOffset.y|0, hitbox.w|0, 1
+      hitbox.x - stageOffset.x|0, hitbox.y - stageOffset.y|0, hitbox.w|0, hitbox.h|0
     )
     context.fillRect(
       attackBox.x - stageOffset.x, attackBox.y - stageOffset.y, attackBox.w, attackBox.h
     )
+    context.fillStyle = 'hsla(0, 100%, 50%, .5)'
     enemies.forEach(v => {
       if (v.type === 'enemy') {
         context.fillRect(
           v.x - size * .5 - stageOffset.x, v.y - size * 2.75 - stageOffset.y, size, size * 2.75
         )
       }
+    })
+    context.fillStyle = 'hsla(180, 100%, 50%, .5)'
+    field.forEach(v => {
+      context.fillRect(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.w|0, v.h|0)
     })
   }
   if (settings.type.status) { // displayStatus
