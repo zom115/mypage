@@ -3,13 +3,6 @@ document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
-context.save()
-context.font = `${size * 2}px sans-serif`
-context.textAlign = 'right'
-context.fillText(
-  'Now loading...', canvas.offsetWidth - size * 2, canvas.offsetHeight - size * 2
-)
-context.restore()
 const evlt = (obj) => {return Function('return (' + obj + ')')()}
 const setStorage = (key, value, firstFlag = false) => {
   const exists = localStorage.getItem(key)
@@ -55,8 +48,7 @@ const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41, 42, 44]
 const imageStat = {
   idle: {
     start: imageChangeList[0], length: 12, condition: imageChangeList[0],
-    time: 0, maxInterval: 30, frame: 5,
-    blinkTime: 3, breathInterval: 45, minBreath: 15, midBreath: 45 ,maxBreath: 75
+    time: 0, maxInterval: 30, frame: 5, blinkTime: 3
   }, walk: {
     start: imageChangeList[1], length: 6, condition: imageChangeList[1],
     time: 0, maxInterval: 0, frame: 10
@@ -232,6 +224,14 @@ const timerId = setInterval(() => { // loading monitoring
   ) { // untrustworthy length in assosiative
     clearInterval(timerId)
     main()
+  } else {
+    context.save()
+    context.font = `${size * 2}px sans-serif`
+    context.textAlign = 'right'
+    context.fillText(
+      'Now loading...', canvas.offsetWidth - size * 2, canvas.offsetHeight - size * 2
+    )
+    context.restore()
   }
 }, 100)
 let playFlag = false
@@ -738,15 +738,12 @@ const enterGate = (stage, x, y) => {
   player.x = x
   player.y = y
 }
+const playerData = {minBreath: 15, midBreath: 45 ,maxBreath: 75}
 let player = {
   x: stage.w * 1 / 8, y: stage.h * 15 / 16,
-  // action: { // TODO: bit operand
-  //   idle: true, turn: false, crouch: false, push: false, run: false,
-  //   jump: false, step: false, slide: false
-  // },
-  // direction: {left: false, right: true}
-  dx: 0, dy: 0, action: 'idle', direction: 'right', landFlag: false, wallFlag: false,
-  grapFlag: false
+  dx: 0, dy: 0, action: 'idle', direction: 'right',
+  landFlag: false, wallFlag: false, grapFlag: false,
+  breathInterval: playerData.midBreath
 }
 let hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 let attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
@@ -964,7 +961,7 @@ const input = () => {
         player.dx += slideSpeed
         player.action = 'slide'
         cooltime.slide = cooltime.slideLimit
-        if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
+        if (10 < player.breathInterval) player.breathInterval -= 1
       }
       slide.flag = true
     }
@@ -983,7 +980,7 @@ const input = () => {
         jump.double = true
         cooltime.aerialStep = 0
         playAudio(voiceStat.doubleJump)
-        if (5 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
+        if (5 < player.breathInterval) player.breathInterval -= 1
         jump.time = 0
       }
     } else if (jump.time === 0) {
@@ -998,7 +995,7 @@ const input = () => {
         player.dx *= .7
         playAudio(voiceStat.jump)
       }
-      if (10 < imageStat.idle.breathInterval) imageStat.idle.breathInterval -= 1
+      if (10 < player.breathInterval) player.breathInterval -= 1
       player.landFlag = false
     }
     jump.time += 1
@@ -1470,24 +1467,24 @@ const viewUpdate = () => {
     i.time += 1
     if (( // breath
       i.start <= i.condition && i.condition < i.start + i.length / 4 &&
-      i.time % ~~(i.breathInterval) === 0) || (
+      i.time % ~~(player.breathInterval) === 0) || (
       i.start + i.length / 4 <= i.condition && i.condition < i.start + i.length *.5 &&
-      i.time % ~~(i.breathInterval*.5) === 0) || (
+      i.time % ~~(player.breathInterval*.5) === 0) || (
       i.start + i.length * .5 <= i.condition && i.condition < i.start + i.length * 3 / 4 &&
-      i.time % ~~(i.breathInterval*2) === 0) || (
+      i.time % ~~(player.breathInterval*2) === 0) || (
       i.start + i.length * 3 / 4 <= i.condition && i.condition < i.start + i.length &&
-      i.time % ~~(i.breathInterval*.5) === 0)
+      i.time % ~~(player.breathInterval*.5) === 0)
     ) {
       i.condition += 3
       i.time = 0
     }
     if (i.length <= i.condition && i.condition <= i.length + 3) {
       i.condition -= i.length
-      if (i.breathInterval < i.maxBreath) {
-        i.breathInterval += 1
+      if (player.breathInterval < playerData.maxBreath) {
+        player.breathInterval += 1
       }
     }
-    if (i.start + 2 < i.condition && i.condition < i.start + 6 && i.breathInterval < 25) {
+    if (i.start + 2 < i.condition && i.condition < i.start + 6 && player.breathInterval < 25) {
       const num = Math.random()
       const list = num < .9 ? {value: voiceStat.punch, startTime: .3}
       : num < .95 ? {value: voiceStat.jump, startTime: .3}
@@ -1507,9 +1504,9 @@ const viewUpdate = () => {
     if (i.condition === i.start + i.length) {
       i.condition -= i.length
       i.time = 0
-      const b = imageStat.idle
-      if (b.midBreath < b.breathInterval) b.breathInterval -= 1
-      else if (b.breathInterval < b.midBreath)b.breathInterval += 1
+      const b = player
+      if (b.midBreath < player.breathInterval) player.breathInterval -= 1
+      else if (player.breathInterval < b.midBreath) player.breathInterval += 1
     }
   } else if (player.action === 'turn') {
     const i = imageStat.turn
@@ -1525,9 +1522,9 @@ const viewUpdate = () => {
     if (time % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
       i.condition = i.start
-      const b = imageStat.idle
-      if (b.minBreath < b.breathInterval) b.breathInterval -= 1
-      else if (b.breathInterval < b.minBreath) b.breathInterval += 1
+      const b = player
+      if (playerData.minBreath < player.breathInterval) player.breathInterval -= 1
+      else if (player.breathInterval < playerData.minBreath) player.breathInterval += 1
     }
   } else if (player.action === 'crouch') {
     const i = imageStat.crouch
@@ -1585,36 +1582,36 @@ const viewUpdate = () => {
 }
 const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  const cloudsWidth = imageLoadedMap[imageLoadedList[bgStat['clouds']]].width
-  const cloudsHeight = imageLoadedMap[imageLoadedList[bgStat['clouds']]].height
-  const skyWidth = imageLoadedMap[imageLoadedList[bgStat['sky']]].width
-  const seaWidth = imageLoadedMap[imageLoadedList[bgStat['sea']]].width
-  const seaHeight = imageLoadedMap[imageLoadedList[bgStat['sea']]].height
+  const cloudsWidth = imageLoadedMap[imagePathList[bgStat['clouds']]].width
+  const cloudsHeight = imageLoadedMap[imagePathList[bgStat['clouds']]].height
+  const skyWidth = imageLoadedMap[imagePathList[bgStat['sky']]].width
+  const seaWidth = imageLoadedMap[imagePathList[bgStat['sea']]].width
+  const seaHeight = imageLoadedMap[imagePathList[bgStat['sea']]].height
   for (let i = 0; i < Math.ceil(canvas.offsetWidth / skyWidth) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imageLoadedList[bgStat['sky']]],
+      imageLoadedMap[imagePathList[bgStat['sky']]],
       skyWidth * i - stage.time / 120 % skyWidth, 0
     )
   }
   for (let i = 0; i < Math.ceil(canvas.offsetWidth / cloudsWidth) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imageLoadedList[bgStat['clouds']]],
+      imageLoadedMap[imagePathList[bgStat['clouds']]],
       cloudsWidth * i - stage.time / 60 % cloudsWidth,
       canvas.offsetHeight - cloudsHeight - seaHeight
     )
   }
   for (let i = 0; i < Math.ceil(canvas.offsetWidth / seaWidth) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imageLoadedList[bgStat['sea']]],
+      imageLoadedMap[imagePathList[bgStat['sea']]],
       seaWidth * i - stage.time / 30 % seaWidth,
       canvas.offsetHeight - seaHeight
     )
   }
-  const bgOffset = (player.x / stage.w) * (canvas.offsetWidth - imageLoadedMap[imageLoadedList[bgStat['farGrounds']]].width)
+  const bgOffset = (player.x / stage.w) * (canvas.offsetWidth - imageLoadedMap[imagePathList[bgStat['farGrounds']]].width)
   context.drawImage(
-    imageLoadedMap[imageLoadedList[bgStat['farGrounds']]],
+    imageLoadedMap[imagePathList[bgStat['farGrounds']]],
     bgOffset,
-    canvas.offsetHeight - imageLoadedMap[imageLoadedList[bgStat['farGrounds']]].height
+    canvas.offsetHeight - imageLoadedMap[imagePathList[bgStat['farGrounds']]].height
   )
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
@@ -1644,14 +1641,14 @@ const draw = () => {
           fieldArray[obj.y / size - 1][obj.x / size] === '1'
         ) {
           context.drawImage(
-            imageLoadedMap[imageLoadedList[bgStat['tileset']]], size * (1+obj.id),
+            imageLoadedMap[imagePathList[bgStat['tileset']]], size * (1+obj.id),
             size * 10, size, size,
             obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
             size, size
           )
         } else {
           context.drawImage(
-            imageLoadedMap[imageLoadedList[bgStat['tileset']]], size * (1+obj.id),
+            imageLoadedMap[imagePathList[bgStat['tileset']]], size * (1+obj.id),
             size * 9 - size, size, size * 2,
             obj.x - stageOffset.x|0, obj.y - stageOffset.y - size|0,
             size, size * 2
@@ -1659,7 +1656,7 @@ const draw = () => {
         }
       } else {
         context.drawImage(
-          imageLoadedMap[imageLoadedList[bgStat['tileset']]], size * 33, size * 7, size, size,
+          imageLoadedMap[imagePathList[bgStat['tileset']]], size * 33, size * 7, size, size,
           obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
           obj.w|0, obj.h|0
         )
@@ -1745,7 +1742,7 @@ const draw = () => {
   if (settings.type.status) { // displayStatus
     context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
-    context.fillText(`stamina: ${imageStat.idle.breathInterval}`, size * 2, size * 3)
+    context.fillText(`stamina: ${player.breathInterval}`, size * 2, size * 3)
     context.fillText('cooltime', size * 2, size * 5)
     context.fillText(`slide: ${cooltime.slide}`, size * 10, size * 5)
     context.fillText('aerial step :', size * 2, size * 7)
