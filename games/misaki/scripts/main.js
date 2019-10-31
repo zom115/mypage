@@ -225,13 +225,8 @@ const timerId = setInterval(() => { // loading monitoring
     clearInterval(timerId)
     main()
   } else {
-    context.save()
-    context.font = `${size * 2}px sans-serif`
-    context.textAlign = 'right'
-    context.fillText(
-      'Now loading...', canvas.offsetWidth - size * 2, canvas.offsetHeight - size * 2
-    )
-    context.restore()
+    aftergrow.loading = aftergrowLimit.loading
+    drawLoadingScreen()
   }
 }, 100)
 let playFlag = false
@@ -263,10 +258,12 @@ let field = []
 let fieldArray = []
 let gate = []
 const aftergrowLimit = {
-  gate: 240
+  gate: 240,
+  loading: 90
 }
 let aftergrow = {
-  gate: 0
+  gate: 0,
+  loading: 0
 }
 let enemies = []
 const setStage = arg => {
@@ -1740,15 +1737,16 @@ const draw = () => {
     })
   }
   if (settings.type.status) { // displayStatus
+    const columnOffset = size * 2
     context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
-    context.fillText(`stamina: ${player.breathInterval}`, size * 2, size * 3)
-    context.fillText('cooltime', size * 2, size * 5)
+    context.fillText(`stamina: ${player.breathInterval}`, columnOffset, size * 3)
+    context.fillText('cooltime', columnOffset, size * 5)
     context.fillText(`slide: ${cooltime.slide}`, size * 10, size * 5)
-    context.fillText('aerial step :', size * 2, size * 7)
+    context.fillText('aerial step :', columnOffset, size * 7)
     if (jump.step) context.fillText('unenable', size * 10, size * 7)
     else context.fillText('enable', size * 10, size * 7)
-    context.fillText('double jump :', size * 2, size * 9)
+    context.fillText('double jump :', columnOffset, size * 9)
     if (jump.double) context.fillText('unenable', size * 10, size * 9)
     else context.fillText('enable', size * 10, size * 9)
   }
@@ -1772,6 +1770,31 @@ const draw = () => {
       multiple * obj.w/size|0, multiple * obj.h/size|0)
     )
   }
+  if (0 < aftergrow.loading) drawLoadingScreen()
+}
+const drawLoadingScreen = () => {
+  aftergrow.loading -= 1
+  context.save()
+  context.fillStyle = `hsla(0, 0%, 40%, ${aftergrow.loading / aftergrowLimit.loading})`
+  context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  context.fillStyle = `hsla(0, 0%, 0%, ${aftergrow.loading / aftergrowLimit.loading})`
+  const ratio = (
+    imageLoadedList.length + voiceLoadedList.length + musicLoadedList.length) / (
+    imagePathList.length + voicePathList.length + musicPathList.length
+  )
+  context.fillRect(
+    canvas.offsetWidth / 4, canvas.offsetHeight / 2, (canvas.offsetWidth / 2) * ratio, size
+  )
+  context.font = `${size * 2}px sans-serif`
+  context.textAlign = 'center'
+  context.fillText(
+    `${ratio * 100|0}%`, canvas.offsetWidth / 2, canvas.offsetHeight / 2 + size * 4
+  )
+  context.textAlign = 'right'
+  context.fillText(
+    'Now loading...', canvas.offsetWidth - size * 2, canvas.offsetHeight - size * 2
+  )
+  context.restore()
 }
 const musicProcess = () => {
   const setMusic = () => {
