@@ -1793,6 +1793,20 @@ const draw = () => {
         )
       }
     })
+    gate.forEach(v => {
+      const X = multiple * (v.x - player.x) / size + 1
+      const Y = multiple * (v.y - player.y) / size
+      if (
+        -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
+        -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
+      ) {
+        context.fillStyle = 'hsla(0, 0%, 0%, .4)'
+        context.fillRect(
+          mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
+          multiple * v.w / size|0, multiple * v.h / size|0
+        )
+      }
+    })
   }
   if (0 < aftergrow.loading) drawLoadingScreen()
 }
