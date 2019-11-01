@@ -13,14 +13,13 @@ const setStorage = (key, value, firstFlag = false) => {
 let settings = { // initial value
   volume: {
     master: setStorage('master', .5, true),
-    voice: setStorage('voice', .1, true),
-    music: setStorage('music', .02, true)
-  },
-  type: {
-    DECO: setStorage('DECO', false, true),
+    voice : setStorage('voice', .1, true),
+    music : setStorage('music', .02, true)
+  }, type: {
+    DECO  : setStorage('DECO', false, true),
     status: setStorage('status', false, true),
     hitbox: setStorage('hitbox', false, true),
-    map: setStorage('map', false, true),
+    map   : setStorage('map', false, true)
   }
 }
 Object.keys(settings.volume).forEach(v => {
@@ -46,7 +45,7 @@ Object.keys(settings.type).forEach(v => {
 })
 const imageListObject = {
   misaki: {
-    idle: [
+    idle : [
       'images/Misaki/Misaki_Idle_1.png',
       'images/Misaki/Misaki_Idle_1_Blink_1.png',
       'images/Misaki/Misaki_Idle_1_Blink_2.png',
@@ -59,17 +58,17 @@ const imageListObject = {
       'images/Misaki/Misaki_Idle_4.png',
       'images/Misaki/Misaki_Idle_4_Blink_1.png',
       'images/Misaki/Misaki_Idle_4_Blink_2.png'
-    ], walk: [
+    ], walk  : [
       'images/Misaki/Misaki_Walk_1.png',
       'images/Misaki/Misaki_Walk_2.png',
       'images/Misaki/Misaki_Walk_3.png',
       'images/Misaki/Misaki_Walk_4.png',
       'images/Misaki/Misaki_Walk_5.png',
       'images/Misaki/Misaki_Walk_6.png'
-    ], turn: [
+    ], turn  : [
       'images/Misaki/Misaki_Turn_3.png',
       'images/Misaki/Misaki_Turn_2.png'
-    ], run: [
+    ], run   : [
       'images/Misaki/Misaki_Run_1.png',
       'images/Misaki/Misaki_Run_2.png',
       'images/Misaki/Misaki_Run_3.png',
@@ -82,7 +81,7 @@ const imageListObject = {
       'images/Misaki/Misaki_Crouch_1.png',
       'images/Misaki/Misaki_Crouch_2.png',
       'images/Misaki/Misaki_Crouch_3.png'
-    ], jump: [
+    ], jump  : [
       'images/Misaki/Misaki_Jump_up_1.png',
       'images/Misaki/Misaki_Jump_up_2.png',
       'images/Misaki/Misaki_Jump_up_3.png',
@@ -92,12 +91,12 @@ const imageListObject = {
       'images/Misaki/Misaki_Jump_Fall_1.png',
       'images/Misaki/Misaki_Jump_Fall_2.png',
       'images/Misaki/Misaki_Jump_Fall_3.png'
-    ], slide: ['images/Misaki/Misaki_Slide_1.png'],
-    push: ['images/Misaki/Misaki_Push_1.png'],
+    ], slide : ['images/Misaki/Misaki_Slide_1.png'],
+    push : ['images/Misaki/Misaki_Push_1.png'],
     punch: [
       'images/Misaki/Misaki_Punch_1.png',
       'images/Misaki/Misaki_Punch_2.png'
-    ], kick: [
+    ], kick  : [
       'images/Misaki/Misaki_Kick_1.png',
       'images/Misaki/Misaki_Kick_2.png',
       'images/Misaki/Misaki_Kick_3.png',
@@ -111,7 +110,7 @@ const imageListObject = {
       'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
       'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
       'images/Unitychan/BasicActions/Unitychan_Idle_4.png'
-    ], walk: [
+    ], walk  : [
       'images/Unitychan/BasicActions/Unitychan_Walk_1.png',
       'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
       'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
@@ -138,116 +137,35 @@ const imageListObject = {
       'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
       'images/Unitychan/BasicActions/Unitychan_Damage_19.png'
     ]
-  }, bg: {
-    tileset: ['images/MagicCliffsArtwork/tileset.png'],
+  }, bg    : {
+    tileset   : ['images/MagicCliffsArtwork/tileset.png'],
     farGrounds: ['images/MagicCliffsArtwork/far-grounds.png'],
-    clouds: ['images/MagicCliffsArtwork/clouds.png'],
-    sea: ['images/MagicCliffsArtwork/sea.png'],
-    sky: ['images/MagicCliffsArtwork/sky.png']
+    clouds    : ['images/MagicCliffsArtwork/clouds.png'],
+    sea       : ['images/MagicCliffsArtwork/sea.png'],
+    sky       : ['images/MagicCliffsArtwork/sky.png']
   }
 }
 let imageStat = {
-  idle:   {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
-  walk:   {condition: 0, time: 0, frame: 10},
-  turn:   {condition: 0, time: 0, frame: 7},
-  run:    {condition: 0, time: 1, frame: 7},
+  idle  : {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
+  walk  : {condition: 0, time: 0, frame: 10},
+  turn  : {condition: 0, time: 0, frame: 7},
+  run   : {condition: 0, time: 1, frame: 7},
   crouch: {condition: 0, time: 1, frame: 7},
-  jump:   {condition: 0},
-  slide:  {condition: 0},
-  push:   {condition: 0},
-  punch:  {condition: 0, time: 0, frame: 7, playAudio: 1},
-  kick:   {condition: 0, time: 0, frame: 7, playAudio: 3}
+  jump  : {condition: 0},
+  slide : {condition: 0},
+  push  : {condition: 0},
+  punch : {condition: 0, time: 0, frame: 7, audioTrigger: 1},
+  kick  : {condition: 0, time: 0, frame: 7, audioTrigger: 3}
 }
 const unityChanStat = {
-  idle:   {frame: 0},
-  walk:   {frame: 10},
+  idle  : {frame: 0},
+  walk  : {frame: 10},
   damage: {frame: 5}
 }
-const imagePathList = [
-  'images/Misaki/Misaki_Idle_1.png', // 0
-  'images/Misaki/Misaki_Idle_1_Blink_1.png',
-  'images/Misaki/Misaki_Idle_1_Blink_2.png',
-  'images/Misaki/Misaki_Idle_2.png',
-  'images/Misaki/Misaki_Idle_2_Blink_1.png',
-  'images/Misaki/Misaki_Idle_2_Blink_2.png',
-  'images/Misaki/Misaki_Idle_3.png',
-  'images/Misaki/Misaki_Idle_3_Blink_1.png',
-  'images/Misaki/Misaki_Idle_3_Blink_2.png',
-  'images/Misaki/Misaki_Idle_4.png',
-  'images/Misaki/Misaki_Idle_4_Blink_1.png',
-  'images/Misaki/Misaki_Idle_4_Blink_2.png',
-  'images/Misaki/Misaki_Walk_1.png', // 12
-  'images/Misaki/Misaki_Walk_2.png',
-  'images/Misaki/Misaki_Walk_3.png',
-  'images/Misaki/Misaki_Walk_4.png',
-  'images/Misaki/Misaki_Walk_5.png',
-  'images/Misaki/Misaki_Walk_6.png',
-  'images/Misaki/Misaki_Turn_3.png', // 18
-  'images/Misaki/Misaki_Turn_2.png',
-  'images/Misaki/Misaki_Run_1.png', // 20
-  'images/Misaki/Misaki_Run_2.png',
-  'images/Misaki/Misaki_Run_3.png',
-  'images/Misaki/Misaki_Run_4.png',
-  'images/Misaki/Misaki_Run_5.png',
-  'images/Misaki/Misaki_Run_6.png',
-  'images/Misaki/Misaki_Run_7.png',
-  'images/Misaki/Misaki_Run_8.png',
-  'images/Misaki/Misaki_Crouch_1.png', // 28
-  'images/Misaki/Misaki_Crouch_2.png',
-  'images/Misaki/Misaki_Crouch_3.png',
-  'images/Misaki/Misaki_Jump_up_1.png', // 31
-  'images/Misaki/Misaki_Jump_up_2.png',
-  'images/Misaki/Misaki_Jump_up_3.png',
-  'images/Misaki/Misaki_Jump_MidAir_1.png',
-  'images/Misaki/Misaki_Jump_MidAir_2.png',
-  'images/Misaki/Misaki_Jump_MidAir_3.png',
-  'images/Misaki/Misaki_Jump_Fall_1.png',
-  'images/Misaki/Misaki_Jump_Fall_2.png',
-  'images/Misaki/Misaki_Jump_Fall_3.png',
-  'images/Misaki/Misaki_Slide_1.png', // 40
-  'images/Misaki/Misaki_Push_1.png', // 41
-  'images/Misaki/Misaki_Punch_1.png', // 42
-  'images/Misaki/Misaki_Punch_2.png',
-  'images/Misaki/Misaki_Kick_1.png', // 44
-  'images/Misaki/Misaki_Kick_2.png',
-  'images/Misaki/Misaki_Kick_3.png',
-  'images/Misaki/Misaki_Kick_4.png',
-  'images/Misaki/Misaki_Kick_5.png',
-  'images/Misaki/Misaki_Kick_6.png',
-  'images/Unitychan/BasicActions/Unitychan_Idle_1.png', // 50
-  'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
-  'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
-  'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
-  'images/Unitychan/BasicActions/Unitychan_Walk_1.png', // 54
-  'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
-  'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
-  'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
-  'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
-  'images/Unitychan/BasicActions/Unitychan_Walk_6.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_2.png', // 60
-  'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_15.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
-  'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
-  'images/MagicCliffsArtwork/tileset.png', // 78
-  'images/MagicCliffsArtwork/far-grounds.png',
-  'images/MagicCliffsArtwork/clouds.png',
-  'images/MagicCliffsArtwork/sea.png',
-  'images/MagicCliffsArtwork/sky.png'
-]
+let imagePathList = []
+Object.keys(imageListObject).forEach(v => {
+  Object.values(imageListObject[v]).forEach(vv => imagePathList.push(...vv))
+})
 let imageLoadedList = []
 let imageLoadedMap = []
 imagePathList.forEach(path => {
@@ -258,14 +176,15 @@ imagePathList.forEach(path => {
     imageLoadedMap[path] = imgPreload
   })
 })
-const voiceStat = {jump: 0, doubleJump: 1, punch: 2, kick: 3, win: 4}
-const voicePathList = [
-  'audio/Misaki/V2001.wav',
-  'audio/Misaki/V2002.wav',
-  'audio/Misaki/V2005.wav',
-  'audio/Misaki/V2006.wav',
-  'audio/Misaki/V2024.wav'
-]
+const voiceStat = {
+  jump      : 'audio/Misaki/V2001.wav',
+  doubleJump: 'audio/Misaki/V2002.wav',
+  punch     : 'audio/Misaki/V2005.wav',
+  kick      : 'audio/Misaki/V2006.wav',
+  win       : 'audio/Misaki/V2024.wav'
+}
+let voicePathList = []
+Object.values(voiceStat).forEach(v => voicePathList.push(v))
 let voiceLoadedList = []
 let voiceLoadedMap = []
 voicePathList.forEach(path => {
@@ -277,11 +196,12 @@ voicePathList.forEach(path => {
     voiceLoadedMap[path] = voicePreload
   })
 })
-const musicStat = {'テレフォン・ダンス': 0, 'アオイセカイ': 1}
-const musicPathList = [
-  'audio/music/nc109026.wav',
-  'audio/music/nc110060.mp3'
-]
+const musicStat = {
+  'テレフォン・ダンス': 'audio/music/nc109026.wav',
+  'アオイセカイ': 'audio/music/nc110060.mp3'
+}
+let musicPathList = []
+Object.values(musicStat).forEach(v => musicPathList.push(v))
 let musicLoadedList = []
 let musicLoadedMap = []
 musicPathList.forEach(path => {
@@ -293,6 +213,8 @@ musicPathList.forEach(path => {
     musicLoadedMap[path] = musicPreload
   })
 })
+let retryCount = 0
+let progress = 0
 const timerId = setInterval(() => { // loading monitoring
   if (
     imageLoadedList.length === imagePathList.length &&
@@ -302,15 +224,32 @@ const timerId = setInterval(() => { // loading monitoring
     clearInterval(timerId)
     main()
   } else {
+    { // for debug
+      retryCount += 0
+      if (
+        retryCount === 1000 ||
+        imagePathList.length + voicePathList.length + musicPathList.length < progress
+      ) {
+        console.log(
+          imageLoadedList.length, imagePathList.length,
+          voiceLoadedList.length, voicePathList.length,
+          musicLoadedList.length, musicPathList.length,
+          imageLoadedList, imagePathList,
+          voiceLoadedList, voicePathList,
+          musicLoadedList, musicPathList,
+        )
+      }
+      progress = imagePathList.length + voicePathList.length + musicPathList.length
+    }
     aftergrow.loading = aftergrowLimit.loading
     drawLoadingScreen()
   }
 }, 100)
 let playFlag = false
 let currentPlay = musicStat['アオイセカイ']
-const playAudio = (value, startTime = 0) => {
-  voiceLoadedMap[voicePathList[value]].currentTime = startTime
-  voiceLoadedMap[voicePathList[value]].play()
+const playAudio = (path, startTime = 0) => {
+  voiceLoadedMap[path].currentTime = startTime
+  voiceLoadedMap[path].play()
 }
 let stage = {name: '', time: 0, w: 0, h: 0, checkPoint: {x: 0, y: 0}}
 let field = []
@@ -360,7 +299,7 @@ const setStage = arg => {
       '100000000000000000000000000000000000000000000000000000000001',
       '100000000000000000000000000000000000000000000000000000000001',
       '111111111111111111111111111111111111111111111111111111111111'
-    ], DebugRoom: [
+    ], DebugRoom     : [
       '11111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -434,7 +373,7 @@ const setStage = arg => {
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111',
-    ], DynamicTest: [
+    ], DynamicTest   : [
       '11111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -606,7 +545,7 @@ const setStage = arg => {
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111'
-    ], SMB: [
+    ], SMB           : [
       '1111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       '1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -966,11 +905,6 @@ Object.values(action).forEach(act => {
 })
 const input = () => {
   inputProcess()
-  // if (size * 53 < player.x) { // warp
-  //   player.x = 50
-  //   audioLoadedMap[audioPathList[audioStat.win]].currentTime = 0
-  //   audioLoadedMap[audioPathList[audioStat.win]].play()
-  // }
   if (!(key[action.left] && key[action.right])) { // walk
     let speed = dashConstant // let speed = (key[action.dash]) ? dashConstant : walkConstant
     speed = key[action.left] && -speed < player.dx ? -speed
@@ -1522,13 +1456,13 @@ const viewUpdate = () => {
   }
   if (player.action === 'jump') {
     imageStat.jump.condition = 6 < player.dy ? 7
-    :   4 < player.dy ? 6
-    :   2 < player.dy ? 5
-    :   0 < player.dy ? 4
-    :  -1 < player.dy ? 3
-    :  -2 < player.dy ? 2
-    :  -4 < player.dy ? 1
-    :  -6 < player.dy ? 0 : 8
+    :  4 < player.dy ? 6
+    :  2 < player.dy ? 5
+    :  0 < player.dy ? 4
+    : -1 < player.dy ? 3
+    : -2 < player.dy ? 2
+    : -4 < player.dy ? 1
+    : -6 < player.dy ? 0 : 8
   } else if (player.action === 'idle') {
     const i = imageStat[player.action]
     const l = imageListObject.misaki[player.action].length
@@ -1604,7 +1538,7 @@ const viewUpdate = () => {
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.playAudio) playAudio(voiceStat[player.action])
+      if (i.condition === i.audioTrigger) playAudio(voiceStat[player.action])
     }
     if (i.condition === imageListObject.misaki[player.action].length) {
       i.time = 0
@@ -1617,7 +1551,7 @@ const viewUpdate = () => {
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.playAudio) playAudio(voiceStat[player.action])
+      if (i.condition === i.audioTrigger) playAudio(voiceStat[player.action])
     }
     if (i.condition === imageListObject.misaki[player.action].length) {
       i.time = 0
@@ -1914,17 +1848,17 @@ const musicProcess = () => {
     musicPathList.forEach(v => musicLoadedMap[v].pause())
     if (!playFlag) playFlag = true
     currentPlay = setMusic()
-    musicLoadedMap[musicPathList[currentPlay]].currentTime = 0
-    musicLoadedMap[musicPathList[currentPlay]].play()
+    musicLoadedMap[currentPlay].currentTime = 0
+    musicLoadedMap[currentPlay].play()
   }
   if (
     currentPlay === musicStat['テレフォン・ダンス'] &&
-    32.74 < musicLoadedMap[musicPathList[currentPlay]].currentTime
-  ) musicLoadedMap[musicPathList[currentPlay]].currentTime = 7.14 + 4 / 60 // 4 frame delay?
+    32.74 < musicLoadedMap[currentPlay].currentTime
+  ) musicLoadedMap[currentPlay].currentTime = 7.14 + 4 / 60 // 4 frame delay?
   else if (
     currentPlay === musicStat['アオイセカイ'] &&
-    60 + 13 < musicLoadedMap[musicPathList[currentPlay]].currentTime
-  ) musicLoadedMap[musicPathList[currentPlay]].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
+    60 + 13 < musicLoadedMap[currentPlay].currentTime
+  ) musicLoadedMap[currentPlay].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
 const main = () => {
   frame += 1
