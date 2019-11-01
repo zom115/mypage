@@ -754,7 +754,7 @@ const brakeConstant = .75
 const slideBrakeConstant = .95
 const gravityConstant = .272
 const jumpConstant = 5
-let time = 0
+let frame = 0
 let jump = {flag: false, double: false, step: false, time: 0}
 let slide = {flag: false}
 let cooltime = {
@@ -922,11 +922,11 @@ const input = () => {
   }
   if (!jump.step) { // step
     const stepSpeed = key[action.left] &&
-      time - keyTimestamp.pressed[action.left] < cooltime.stepDeferment &&
+      frame - keyTimestamp.pressed[action.left] < cooltime.stepDeferment &&
       0 < keyTimestamp.released[action.left] - keyTimestamp.pressed[action.left]
     ? -stepConstant
     : key[action.right] &&
-      time - keyTimestamp.pressed[action.right] < cooltime.stepDeferment &&
+      frame - keyTimestamp.pressed[action.right] < cooltime.stepDeferment &&
       0 < keyTimestamp.released[action.right] - keyTimestamp.pressed[action.right]
     ? stepConstant : 0
     if (stepSpeed !== 0) {
@@ -1384,12 +1384,12 @@ const modelUpdate = () => {
   Object.values(action).forEach(act => {
     if (key[act]) {
       if (keyTimestamp.pressed[act] < keyTimestamp.released[act]) {
-        keyTimestamp.pressed[act] = time
+        keyTimestamp.pressed[act] = frame
       }
     }
     else {
       if (keyTimestamp.released[act] < keyTimestamp.pressed[act]) {
-        keyTimestamp.released[act] = time
+        keyTimestamp.released[act] = frame
       }
     }
   })
@@ -1488,7 +1488,7 @@ const viewUpdate = () => {
       : {value: voiceStat.doubleJump, startTime: .33}
       playAudio(list.value, list.startTime)
     }
-    if (time % i.frame === 0) { // eye blink
+    if (frame % i.frame === 0) { // eye blink
       i.blinkTime += 1
       if (i.blinkTime === 4) i.blinkTime = -(Math.random() * i.maxInterval)|0
       if (i.blinkTime === 0 || i.blinkTime === 1) i.condition += 1
@@ -1516,7 +1516,7 @@ const viewUpdate = () => {
     }
   } else if (player.action === 'run') {
     const i = imageStat.run
-    if (time % i.frame === 0) i.condition += 1
+    if (frame % i.frame === 0) i.condition += 1
     if (i.condition === i.start + i.length) {
       i.condition = i.start
       const b = player
@@ -1525,7 +1525,7 @@ const viewUpdate = () => {
     }
   } else if (player.action === 'crouch') {
     const i = imageStat.crouch
-    if (time % i.frame === 0) i.time += 1
+    if (frame % i.frame === 0) i.time += 1
     if (i.time === 0) i.condition = 9
   } else if (player.action === 'punch') {
     const i = imageStat.punch
@@ -1845,7 +1845,7 @@ const musicProcess = () => {
   ) musicLoadedMap[musicPathList[currentPlay]].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
 const main = () => {
-  time += 1
+  frame += 1
   input()
   modelUpdate()
   viewUpdate()
