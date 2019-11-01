@@ -44,47 +44,124 @@ Object.keys(settings.type).forEach(v => {
     settings.type[v] = setStorage(v, inputDOM[v].checked, false)
   }, false)
 })
-const imageChangeList = [0, 12, 18, 20, 28, 31, 40, 41, 42, 44]
-const imageStat = {
-  idle: {
-    start: imageChangeList[0], length: 12, condition: imageChangeList[0],
-    time: 0, maxInterval: 30, frame: 5, blinkTime: 3
-  }, walk: {
-    start: imageChangeList[1], length: 6, condition: imageChangeList[1],
-    time: 0, maxInterval: 0, frame: 10
-  }, turn: {
-    start: imageChangeList[2], length: 2, condition: imageChangeList[2],
-    time: 0, maxInterval: 0, frame: 7
-  }, run: {
-    start: imageChangeList[3], length: 8, condition: imageChangeList[3],
-    time: 1, maxInterval: 0, frame: 7
-  }, crouch: {
-    start: imageChangeList[4], length: 3, condition: imageChangeList[4],
-    time: 1, maxInterval: 0, frame: 7
-  }, jump: {start: imageChangeList[5], length: 9},
-  slide: {start: imageChangeList[6], length: 1, condition: imageChangeList[6]},
-  push: {start: imageChangeList[7], length: 1, condition: imageChangeList[7]},
-  punch: {
-    start: imageChangeList[8], length: 2, condition: imageChangeList[8],
-    time: 0, frame: 7, playAudio: imageChangeList[8] + 1
-  }, kick: {
-    start: imageChangeList[9], length: 6, condition: imageChangeList[9],
-    time: 0, frame: 7, playAudio: imageChangeList[9] + 3
+const imageListObject = {
+  misaki: {
+    idle: [
+      'images/Misaki/Misaki_Idle_1.png',
+      'images/Misaki/Misaki_Idle_1_Blink_1.png',
+      'images/Misaki/Misaki_Idle_1_Blink_2.png',
+      'images/Misaki/Misaki_Idle_2.png',
+      'images/Misaki/Misaki_Idle_2_Blink_1.png',
+      'images/Misaki/Misaki_Idle_2_Blink_2.png',
+      'images/Misaki/Misaki_Idle_3.png',
+      'images/Misaki/Misaki_Idle_3_Blink_1.png',
+      'images/Misaki/Misaki_Idle_3_Blink_2.png',
+      'images/Misaki/Misaki_Idle_4.png',
+      'images/Misaki/Misaki_Idle_4_Blink_1.png',
+      'images/Misaki/Misaki_Idle_4_Blink_2.png'
+    ], walk: [
+      'images/Misaki/Misaki_Walk_1.png',
+      'images/Misaki/Misaki_Walk_2.png',
+      'images/Misaki/Misaki_Walk_3.png',
+      'images/Misaki/Misaki_Walk_4.png',
+      'images/Misaki/Misaki_Walk_5.png',
+      'images/Misaki/Misaki_Walk_6.png'
+    ], turn: [
+      'images/Misaki/Misaki_Turn_3.png',
+      'images/Misaki/Misaki_Turn_2.png'
+    ], run: [
+      'images/Misaki/Misaki_Run_1.png',
+      'images/Misaki/Misaki_Run_2.png',
+      'images/Misaki/Misaki_Run_3.png',
+      'images/Misaki/Misaki_Run_4.png',
+      'images/Misaki/Misaki_Run_5.png',
+      'images/Misaki/Misaki_Run_6.png',
+      'images/Misaki/Misaki_Run_7.png',
+      'images/Misaki/Misaki_Run_8.png'
+    ], crouch: [
+      'images/Misaki/Misaki_Crouch_1.png',
+      'images/Misaki/Misaki_Crouch_2.png',
+      'images/Misaki/Misaki_Crouch_3.png'
+    ], jump: [
+      'images/Misaki/Misaki_Jump_up_1.png',
+      'images/Misaki/Misaki_Jump_up_2.png',
+      'images/Misaki/Misaki_Jump_up_3.png',
+      'images/Misaki/Misaki_Jump_MidAir_1.png',
+      'images/Misaki/Misaki_Jump_MidAir_2.png',
+      'images/Misaki/Misaki_Jump_MidAir_3.png',
+      'images/Misaki/Misaki_Jump_Fall_1.png',
+      'images/Misaki/Misaki_Jump_Fall_2.png',
+      'images/Misaki/Misaki_Jump_Fall_3.png'
+    ], slide: ['images/Misaki/Misaki_Slide_1.png'],
+    push: ['images/Misaki/Misaki_Push_1.png'],
+    punch: [
+      'images/Misaki/Misaki_Punch_1.png',
+      'images/Misaki/Misaki_Punch_2.png'
+    ], kick: [
+      'images/Misaki/Misaki_Kick_1.png',
+      'images/Misaki/Misaki_Kick_2.png',
+      'images/Misaki/Misaki_Kick_3.png',
+      'images/Misaki/Misaki_Kick_4.png',
+      'images/Misaki/Misaki_Kick_5.png',
+      'images/Misaki/Misaki_Kick_6.png'
+    ]
+  }, kohaku: {
+    idle: [
+      'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+      'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
+      'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+      'images/Unitychan/BasicActions/Unitychan_Idle_4.png'
+    ], walk: [
+      'images/Unitychan/BasicActions/Unitychan_Walk_1.png',
+      'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
+      'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
+      'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
+      'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
+      'images/Unitychan/BasicActions/Unitychan_Walk_6.png'
+    ], damage: [
+      'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_15.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
+      'images/Unitychan/BasicActions/Unitychan_Damage_19.png'
+    ]
+  }, bg: {
+    tileset: ['images/MagicCliffsArtwork/tileset.png'],
+    farGrounds: ['images/MagicCliffsArtwork/far-grounds.png'],
+    clouds: ['images/MagicCliffsArtwork/clouds.png'],
+    sea: ['images/MagicCliffsArtwork/sea.png'],
+    sky: ['images/MagicCliffsArtwork/sky.png']
   }
 }
-const unityChanList = [50, 54, 60]
-const unityChanStat = {
-  idle: {start: unityChanList[0], length: 4},
-  walk: {start: unityChanList[1], length: 6, frame: 10},
-  damage: {start: unityChanList[2], length: 18, frame: 5}
+let imageStat = {
+  idle:   {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
+  walk:   {condition: 0, time: 0, frame: 10},
+  turn:   {condition: 0, time: 0, frame: 7},
+  run:    {condition: 0, time: 1, frame: 7},
+  crouch: {condition: 0, time: 1, frame: 7},
+  jump:   {condition: 0},
+  slide:  {condition: 0},
+  push:   {condition: 0},
+  punch:  {condition: 0, time: 0, frame: 7, playAudio: 1},
+  kick:   {condition: 0, time: 0, frame: 7, playAudio: 3}
 }
-const bgList = [78, 79, 80, 81, 82]
-const bgStat = {
-  tileset: bgList[0],
-  farGrounds: bgList[1],
-  clouds: bgList[2],
-  sea: bgList[3],
-  sky: bgList[4],
+const unityChanStat = {
+  idle:   {frame: 0},
+  walk:   {frame: 10},
+  damage: {frame: 5}
 }
 const imagePathList = [
   'images/Misaki/Misaki_Idle_1.png', // 0
@@ -231,24 +308,6 @@ const timerId = setInterval(() => { // loading monitoring
 }, 100)
 let playFlag = false
 let currentPlay = musicStat['アオイセカイ']
-const drawImage = (arg, x, y) => {
-  const img = imageLoadedMap[imagePathList[arg]]
-  context.save()
-  if (player.direction === 'left') {
-    context.scale(-1, 1)
-    context.drawImage(img, -x - img.width|0, y|0)
-  } else context.drawImage(img, x|0, y|0)
-  context.restore()
-}
-const drawEnemy = (v, x, y) => {
-  const img = imageLoadedMap[imagePathList[v.image]]
-  context.save()
-  if (v.direction === 'left') {
-    context.scale(-1, 1)
-    context.drawImage(img, -x - img.width|0, y|0)
-  } else context.drawImage(img, x|0, y|0)
-  context.restore()
-}
 const playAudio = (value, startTime = 0) => {
   voiceLoadedMap[voicePathList[value]].currentTime = startTime
   voiceLoadedMap[voicePathList[value]].play()
@@ -1189,7 +1248,7 @@ const modelUpdate = () => {
         type: 'enemy',
         x: stage.w * 1 / 4, y: stage.h * 15 / 16,
         minXRange: stage.w * 1 / 4, maxXRange: stage.w * 3 / 8,
-        direction: 'left', image: unityChanStat.walk.start, imageTimer: 0,
+        direction: 'left', image: 0, imageTimer: 0,
         state: 'walk', life: 3, invincibleTimer: 0
       })
     }
@@ -1461,29 +1520,37 @@ const viewUpdate = () => {
     : (-1.4 < player.dx && player.dx < 1.4) ? 'walk'
     : 'run'
   }
-  if (player.action === 'idle') {
-    const i = imageStat.idle
+  if (player.action === 'jump') {
+    imageStat.jump.condition = 6 < player.dy ? 7
+    :   4 < player.dy ? 6
+    :   2 < player.dy ? 5
+    :   0 < player.dy ? 4
+    :  -1 < player.dy ? 3
+    :  -2 < player.dy ? 2
+    :  -4 < player.dy ? 1
+    :  -6 < player.dy ? 0 : 8
+  } else if (player.action === 'idle') {
+    const i = imageStat[player.action]
+    const l = imageListObject.misaki[player.action].length
     i.time += 1
     if (( // breath
-      i.start <= i.condition && i.condition < i.start + i.length / 4 &&
+      0 <= i.condition && i.condition < 0 + l / 4 &&
       i.time % ~~(player.breathInterval) === 0) || (
-      i.start + i.length / 4 <= i.condition && i.condition < i.start + i.length *.5 &&
+      0 + l / 4 <= i.condition && i.condition < 0 + l *.5 &&
       i.time % ~~(player.breathInterval*.5) === 0) || (
-      i.start + i.length * .5 <= i.condition && i.condition < i.start + i.length * 3 / 4 &&
+      0 + l * .5 <= i.condition && i.condition < 0 + l * 3 / 4 &&
       i.time % ~~(player.breathInterval*2) === 0) || (
-      i.start + i.length * 3 / 4 <= i.condition && i.condition < i.start + i.length &&
+      0 + l * 3 / 4 <= i.condition && i.condition < 0 + l &&
       i.time % ~~(player.breathInterval*.5) === 0)
     ) {
       i.condition += 3
       i.time = 0
     }
-    if (i.length <= i.condition && i.condition <= i.length + 3) {
-      i.condition -= i.length
-      if (player.breathInterval < playerData.maxBreath) {
-        player.breathInterval += 1
-      }
+    if (l <= i.condition && i.condition <= l + 3) {
+      i.condition -= l
+      if (player.breathInterval < playerData.maxBreath) player.breathInterval += 1
     }
-    if (i.start + 2 < i.condition && i.condition < i.start + 6 && player.breathInterval < 25) {
+    if (2 < i.condition && i.condition < 6 && player.breathInterval < 25) {
       const num = Math.random()
       const list = num < .9 ? {value: voiceStat.punch, startTime: .3}
       : num < .95 ? {value: voiceStat.jump, startTime: .3}
@@ -1497,61 +1564,64 @@ const viewUpdate = () => {
       else if (i.blinkTime === 2 || i.blinkTime === 3)  i.condition -= 1
     }
   } else if (player.action === 'walk') {
-    const i = imageStat.walk
+    const i = imageStat[player.action]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === i.start + i.length) {
-      i.condition -= i.length
+    if (i.condition === imageListObject.misaki[player.action].length) {
+      i.condition -= imageListObject.misaki[player.action].length
       i.time = 0
-      const b = player
-      if (b.midBreath < player.breathInterval) player.breathInterval -= 1
-      else if (player.breathInterval < b.midBreath) player.breathInterval += 1
+      if (player.midBreath < player.breathInterval) player.breathInterval -= 1
+      else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
   } else if (player.action === 'turn') {
-    const i = imageStat.turn
+    const i = imageStat[player.action]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === i.start + i.length) {
-      i.condition -= i.length
+    if (i.condition === imageListObject.misaki[player.action].length) {
+      i.condition -= imageListObject.misaki[player.action].length
       i.time = 0
       if (!(player.wallFlag && key[action.left] && key[action.right])) player.action = 'walk'
     }
   } else if (player.action === 'run') {
-    const i = imageStat.run
-    if (frame % i.frame === 0) i.condition += 1
-    if (i.condition === i.start + i.length) {
-      i.condition = i.start
-      const b = player
+    const i = imageStat[player.action]
+    i.time += 1
+    if (i.time % i.frame === 0) i.condition += 1
+    if (i.condition === imageListObject.misaki[player.action].length) {
+      i.condition -= imageListObject.misaki[player.action].length
       if (playerData.minBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < playerData.minBreath) player.breathInterval += 1
     }
   } else if (player.action === 'crouch') {
-    const i = imageStat.crouch
-    if (frame % i.frame === 0) i.time += 1
-    if (i.time === 0) i.condition = 9
+    const i = imageStat[player.action]
+    i.time += 1
+    if (i.time % i.frame === 0) i.condition += 1
+    if (i.condition === imageListObject.misaki[player.action].length) {
+      i.condition -= imageListObject.misaki[player.action].length
+      i.time = 0
+    }
   } else if (player.action === 'punch') {
-    const i = imageStat.punch
+    const i = imageStat[player.action]
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.playAudio) playAudio(voiceStat.punch)
+      if (i.condition === i.playAudio) playAudio(voiceStat[player.action])
     }
-    if (i.start + i.length - 1 < i.condition) {
+    if (i.condition === imageListObject.misaki[player.action].length) {
       i.time = 0
-      i.condition = i.start
+      i.condition -= imageListObject.misaki[player.action].length
       player.action = 'idle'
     }
   } else if (player.action === 'kick') {
     if (0 < imageStat.punch.time) imageStat.punch.time = 0
-    const i = imageStat.kick
+    const i = imageStat[player.action]
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.playAudio) playAudio(voiceStat.kick)
+      if (i.condition === i.playAudio) playAudio(voiceStat[player.action])
     }
-    if (i.start + i.length - 1 < i.condition) {
+    if (i.condition === imageListObject.misaki[player.action].length) {
       i.time = 0
-      i.condition = i.start
+      i.condition -= imageListObject.misaki[player.action].length
       player.action = 'idle'
     }
   }
@@ -1559,20 +1629,21 @@ const viewUpdate = () => {
     if (v.type === 'enemy') {
       v.imageTimer += 1
       if (v.state === 'walk') {
-        const u = unityChanStat.walk
-        if (v.imageTimer % u.frame === 0) {
-          if (u.start + u.length - 1 < v.image + 1) v.image = u.start
-          else v.image += 1
+        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
+          v.image += 1
+          if (v.image === imageListObject.kohaku[v.state].length) {
+            v.image -= imageListObject.kohaku[v.state].length
+          }
           v.imageTimer = 0
         }
       } else if (v.state === 'damage') {
-        const u = unityChanStat.damage
-        if (v.invincibleTimer === 30) v.image = u.start
-        if (v.imageTimer % u.frame === 0) {
-          if (u.start + u.length - 1 < v.image + 1) {
-            v.image = unityChanStat.walk.start
+        if (v.invincibleTimer === 30) v.image = 0
+        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
+          v.image += 1
+          if (v.image === imageListObject.kohaku[v.state].length) {
+            v.image -= imageListObject.kohaku[v.state].length
             v.state = 'walk'
-          } else v.image += 1
+          }
           v.imageTimer = 0
         }
       }
@@ -1581,36 +1652,36 @@ const viewUpdate = () => {
 }
 const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  const cloudsWidth = imageLoadedMap[imagePathList[bgStat['clouds']]].width
-  const cloudsHeight = imageLoadedMap[imagePathList[bgStat['clouds']]].height
-  const skyWidth = imageLoadedMap[imagePathList[bgStat['sky']]].width
-  const seaWidth = imageLoadedMap[imagePathList[bgStat['sea']]].width
-  const seaHeight = imageLoadedMap[imagePathList[bgStat['sea']]].height
+  const cloudsWidth = imageLoadedMap[imageListObject.bg['clouds'][0]].width
+  const cloudsHeight = imageLoadedMap[imageListObject.bg['clouds'][0]].height
+  const skyWidth = imageLoadedMap[imageListObject.bg['sky'][0]].width
+  const seaWidth = imageLoadedMap[imageListObject.bg['sea'][0]].width
+  const seaHeight = imageLoadedMap[imageListObject.bg['sea'][0]].height
   for (let i = 0; i < Math.ceil(canvas.offsetWidth / skyWidth) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imagePathList[bgStat['sky']]],
+      imageLoadedMap[imageListObject.bg['sky'][0]],
       skyWidth * i - stage.time / 120 % skyWidth, 0
     )
   }
   for (let i = 0; i < Math.ceil(canvas.offsetWidth / cloudsWidth) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imagePathList[bgStat['clouds']]],
+      imageLoadedMap[imageListObject.bg['clouds'][0]],
       cloudsWidth * i - stage.time / 60 % cloudsWidth,
       canvas.offsetHeight - cloudsHeight - seaHeight
     )
   }
   for (let i = 0; i < Math.ceil(canvas.offsetWidth / seaWidth) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imagePathList[bgStat['sea']]],
+      imageLoadedMap[imageListObject.bg['sea'][0]],
       seaWidth * i - stage.time / 30 % seaWidth,
       canvas.offsetHeight - seaHeight
     )
   }
-  const bgOffset = (player.x / stage.w) * (canvas.offsetWidth - imageLoadedMap[imagePathList[bgStat['farGrounds']]].width)
+  const bgOffset = (player.x / stage.w) * (canvas.offsetWidth - imageLoadedMap[imageListObject.bg['farGrounds'][0]].width)
   context.drawImage(
-    imageLoadedMap[imagePathList[bgStat['farGrounds']]],
+    imageLoadedMap[imageListObject.bg['farGrounds'][0]],
     bgOffset,
-    canvas.offsetHeight - imageLoadedMap[imagePathList[bgStat['farGrounds']]].height
+    canvas.offsetHeight - imageLoadedMap[imageListObject.bg['farGrounds'][0]].height
   )
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
@@ -1640,14 +1711,14 @@ const draw = () => {
           fieldArray[obj.y / size - 1][obj.x / size] === '1'
         ) {
           context.drawImage(
-            imageLoadedMap[imagePathList[bgStat['tileset']]], size * (1+obj.id),
+            imageLoadedMap[imageListObject.bg['tileset'][0]], size * (1+obj.id),
             size * 10, size, size,
             obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
             size, size
           )
         } else {
           context.drawImage(
-            imageLoadedMap[imagePathList[bgStat['tileset']]], size * (1+obj.id),
+            imageLoadedMap[imageListObject.bg['tileset'][0]], size * (1+obj.id),
             size * 9 - size, size, size * 2,
             obj.x - stageOffset.x|0, obj.y - stageOffset.y - size|0,
             size, size * 2
@@ -1655,7 +1726,7 @@ const draw = () => {
         }
       } else {
         context.drawImage(
-          imageLoadedMap[imagePathList[bgStat['tileset']]], size * 33, size * 7, size, size,
+          imageLoadedMap[imageListObject.bg['tileset'][0]], size * 33, size * 7, size, size,
           obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
           obj.w|0, obj.h|0
         )
@@ -1672,9 +1743,16 @@ const draw = () => {
       )
     }
     if (v.type === 'enemy') {
-      const ex = v.x - imageOffset.x - stageOffset.x
+      let ex = v.x - imageOffset.x - stageOffset.x
       const ey = v.y - imageOffset.y - stageOffset.y
-      drawEnemy(v, ex, ey)
+      const img = imageLoadedMap[imageListObject.kohaku[v.state][v.image]]
+      context.save()
+      if (v.direction === 'left') {
+        context.scale(-1, 1)
+        ex = -ex - img.width
+      }
+      context.drawImage(img, ex|0, ey|0)
+      context.restore()
     }
   })
   if (0 < aftergrow.gate) {
@@ -1690,29 +1768,17 @@ const draw = () => {
     context.restore()
     aftergrow.gate -= 1
   }
-  let i
-  if (player.action === 'slide') i = imageStat.slide.condition
-  if (player.action === 'push') i = imageStat.push.condition
-  else if (player.action === 'jump') {
-    const ij = imageStat.jump
-    i = (6 < player.dy) ? ij.start + 7
-    : (4 < player.dy) ? ij.start + 6
-    : (2 < player.dy) ? ij.start + 5
-    : (0 < player.dy) ? ij.start + 4
-    : (-1 < player.dy) ? ij.start + 3
-    : (-2 < player.dy) ? ij.start + 2
-    : (-4 < player.dy) ? ij.start + 1
-    : (-6 < player.dy) ? ij.start
-    : ij.start + 8
-  } else if (player.action === 'idle') i = imageStat.idle.condition // is nessessary?
-  else if (player.action === 'walk') i = imageStat.walk.condition
-  else if (player.action === 'turn') i = imageStat.turn.condition
-  else if (player.action === 'run') i = imageStat.run.condition
-  else if (player.action === 'crouch') i = imageStat.crouch.condition
-  else if (player.action === 'punch') i = imageStat.punch.condition
-  else if (player.action === 'kick') i = imageStat.kick.condition
-  const x = (player.x - imageOffset.x - stageOffset.x)
-  drawImage(i, x, (player.y - imageOffset.y - stageOffset.y))
+  let x = player.x - imageOffset.x - stageOffset.x
+  const img = imageLoadedMap[
+    imageListObject.misaki[player.action][imageStat[player.action].condition]
+  ]
+  context.save()
+  if (player.direction === 'left') {
+    context.scale(-1, 1)
+    x = -x - img.width
+  }
+  context.drawImage(img, x|0, player.y - imageOffset.y - stageOffset.y|0)
+  context.restore()
   if (settings.type.hitbox) {
     context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     context.fillRect(
