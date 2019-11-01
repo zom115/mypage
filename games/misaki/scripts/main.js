@@ -1711,7 +1711,7 @@ const draw = () => {
   else if (player.action === 'kick') i = imageStat.kick.condition
   const x = (player.x - imageOffset.x - stageOffset.x)
   drawImage(i, x, (player.y - imageOffset.y - stageOffset.y))
-  if (settings.type.hitbox) { // displayHitbox
+  if (settings.type.hitbox) {
     context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     context.fillRect(
       hitbox.x - stageOffset.x|0, hitbox.y - stageOffset.y|0, hitbox.w|0, hitbox.h|0
@@ -1723,7 +1723,8 @@ const draw = () => {
     enemies.forEach(v => {
       if (v.type === 'enemy') {
         context.fillRect(
-          v.x - size * .5 - stageOffset.x, v.y - size * 2.75 - stageOffset.y, size, size * 2.75
+          v.x - size * .5 - stageOffset.x|0, v.y - size * 2.75 - stageOffset.y|0,
+          size, size * 2.75
         )
       }
     })
@@ -1732,7 +1733,7 @@ const draw = () => {
       context.fillRect(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.w|0, v.h|0)
     })
   }
-  if (settings.type.status) { // displayStatus
+  if (settings.type.status) {
     const columnOffset = size * 2
     context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
@@ -1746,25 +1747,52 @@ const draw = () => {
     if (jump.double) context.fillText('unenable', size * 10, size * 9)
     else context.fillText('enable', size * 10, size * 9)
   }
-  if (settings.type.map) { // displayMap
+  if (settings.type.map) {
     const multiple = 2
-    const mapOffset = {x: canvas.offsetWidth - size - multiple * stage.w / size, y: size}
-    context.fillStyle = 'hsla(0, 0%, 0%, .25)'
+    const mapSize = {x: canvas.offsetWidth / 5, y: canvas.offsetHeight / 5}
+    const mapOffset = {x: canvas.offsetWidth - mapSize.x - size, y: size}
+    context.fillStyle = 'hsla(0, 0%, 0%, .1)'
+    context.fillRect(mapOffset.x|0, mapOffset.y|0, mapSize.x|0, mapSize.y|0)
+    context.fillStyle = 'hsla(10, 100%, 50%, .4)'
+    const playerSize = {x: 1, y: 3}
     context.fillRect(
-      mapOffset.x|0, mapOffset.y|0,
-      multiple * stage.w / size|0, multiple * stage.h / size|0)
-    context.fillStyle = 'hsla(10, 100%, 50%, .5)'
-    const playerSize = {x: 1, y: 2}
-    context.fillRect(
-      mapOffset.x + multiple * player.x / size|0,
-      mapOffset.y + multiple * (player.y / size - playerSize.y)|0,
+      mapOffset.x + mapSize.x / 2|0, mapOffset.y + mapSize.y / 2 - multiple * playerSize.y|0,
       multiple * playerSize.x|0, multiple * playerSize.y|0
     )
-    context.fillStyle = 'hsla(90, 100%, 50%, .5)'
-    field.forEach(obj => context.fillRect(
-      mapOffset.x + multiple * obj.x/size|0, mapOffset.y + multiple * obj.y/size|0,
-      multiple * obj.w/size|0, multiple * obj.h/size|0)
-    )
+    context.fillStyle = 'hsla(240, 100%, 50%, .4)'
+    field.forEach(obj => {
+      const X = multiple * (obj.x - player.x) / size
+      const Y = multiple * (obj.y - player.y) / size
+      if (
+        -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
+        -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
+      ) {
+        context.fillRect(
+          mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
+          multiple * obj.w / size|0, multiple * obj.h / size|0
+        )
+      }
+    })
+    enemies.forEach(v => {
+      const X = v.type === 'enemy' ? multiple * (v.x - player.x) / size + 1
+      : multiple * (v.x + evlt(v.dx) - player.x) / size + 1
+      const Y = v.type === 'enemy'
+      ? multiple * (v.y - player.y) / size - playerSize.y * multiple
+      : multiple * (v.y + evlt(v.dy) - player.y) / size
+      if (
+        -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
+        -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
+      ) {
+        context.fillStyle = v.type === 'enemy' ? 'hsla(0, 100%, 50%, .4)'
+        : 'hsla(30, 100%, 50%, .4)'
+        const W = v.type === 'enemy' ? size * playerSize.x : v.w
+        const H = v.type === 'enemy' ? size * playerSize.y : v.h
+        context.fillRect(
+          mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
+          multiple * W / size|0, multiple * H / size|0
+        )
+      }
+    })
   }
   if (0 < aftergrow.loading) drawLoadingScreen()
 }
