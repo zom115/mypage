@@ -764,7 +764,7 @@ let cooltime = {
 }
 let action = {
   space: 'space',
-  up: 'w', right: 'd', down: 's', left: 'a', jump: 'k', attack: 'j',
+  up: 'w', right: 'd', down: 's', left: 'a', jump: 'i', attack: 'k', accel: 'j',
   map: 'm', status: 'g', hitbox: 'h'
 }
 let toggle = {
@@ -958,7 +958,7 @@ const input = () => {
   }
   { // slide
     if (cooltime.slide === 0) {
-      if (key[action.down] && player.landFlag && !player.wallFlag && !slide.flag) {
+      if (key[action.accel] && player.landFlag && !player.wallFlag && !slide.flag) {
         const slideSpeed = slideConstant < player.dx ? boostConstant
         : player.dx < -slideConstant ? -boostConstant : 0
         if (slideSpeed !== 0) {
@@ -974,7 +974,7 @@ const input = () => {
       if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
       else cooltime.slide -= 1
     }
-    if (!key[action.down]) slide.flag = false
+    if (!key[action.accel]) slide.flag = false
   }
   { // jump
     if (key[action.jump] || key[action.space]) {
