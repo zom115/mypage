@@ -1001,9 +1001,14 @@ const input = () => {
     }
   }
   if (player.wallFlag && !player.landFlag && 0 < player.dy && key[action.up]) { // wall grap
-    player.dy *= .5
-    player.dx = player.direction === 'left' ? -dashConstant : dashConstant
-    player.grapFlag = true
+    if (
+      (player.wallFlag === 'left' && player.direction === 'right') ||
+      (player.wallFlag === 'right' && player.direction === 'left')
+    ) {
+      player.dy *= .5
+      player.dx = player.direction === 'left' ? -dashConstant : dashConstant
+      player.grapFlag = true
+    }
   } else player.grapFlag = false
   if (player.grapFlag) { // wall kick
     let flag = false
@@ -1136,7 +1141,7 @@ const modelUpdate = () => {
         if (doc < 0) {
           player.x = obj.x - hitbox.w / 2 - 1
           player.dx = 0
-          player.wallFlag = true
+          player.wallFlag = 'left'
         }
       }
     } else if (player.dx !== 0) { // right wall
@@ -1165,7 +1170,7 @@ const modelUpdate = () => {
         if (doc < 0) {
           player.x = obj.x + obj.w + hitbox.w / 2 + 1
           player.dx = 0
-          player.wallFlag = true
+          player.wallFlag = 'right'
         }
       }
     }
@@ -1277,7 +1282,7 @@ const modelUpdate = () => {
             if (docLeft < 0) {
               player.x = v.x + evlt(v.dx) + dx - hitbox.w / 2 - 1
               player.dx = 0
-              player.wallFlag = true
+              player.wallFlag = 'left'
             }
           }
         } else if (X !== 0) { // right wall
@@ -1306,7 +1311,7 @@ const modelUpdate = () => {
             if (doc < 0) {
               player.x = v.x + v.w + evlt(v.dx) + dx + hitbox.w / 2 + 1
               player.dx = 0
-              player.wallFlag = true
+              player.wallFlag = 'right'
             }
           }
         }
