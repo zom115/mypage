@@ -775,36 +775,16 @@ let action = {
 let toggle = {
   DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
 }
-let key = {
-  shiftFlag: false, shift: 0,
-  spaceFlag: false, space: 0,
-  aFlag: false, a: 0,
-  bFlag: false, b: 0,
-  cFlag: false, c: 0,
-  dFlag: false, d: 0,
-  eFlag: false, e: 0,
-  fFlag: false, f: 0,
-  gFlag: false, g: 0,
-  hFlag: false, h: 0,
-  iFlag: false, i: 0,
-  jFlag: false, j: 0,
-  kFlag: false, k: 0,
-  lFlag: false, l: 0,
-  mFlag: false, m: 0,
-  nFlag: false, n: 0,
-  oFlag: false, o: 0,
-  pFlag: false, p: 0,
-  qFlag: false, q: 0,
-  rFlag: false, r: 0,
-  sFlag: false, s: 0,
-  tFlag: false, t: 0,
-  uFlag: false, u: 0,
-  vFlag: false, v: 0,
-  wFlag: false, w: 0,
-  xFlag: false, x: 0,
-  yFlag: false, y: 0,
-  zFlag: false, z: 0
-}
+const keyList = [
+  'shift', 'space',
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+]
+let key = {}
+keyList.forEach(v => {
+  key[v + 'Flag'] = false
+  key[v] = 0
+})
 let keyTimestamp = {pressed: {}, released: {}}
 Object.values(action).forEach(act => {
   keyTimestamp.pressed[act] = -1
