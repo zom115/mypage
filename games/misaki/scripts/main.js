@@ -769,9 +769,8 @@ let cooltime = {
   slide: 2, slideLimit: 45
 }
 let action = {
-  space: 'space',
-  up: 'w', right: 'd', down: 's', left: 'a', jump: 'i', attack: 'k', accel: 'j',
-  map: 'm', status: 'g', hitbox: 'h'
+  up: 'w', right: 'd', down: 's', left: 'a', jump: ['i', 'l', 'space'],
+  attack: 'k', accel: 'j', map: 'm', status: 'g', hitbox: 'h'
 }
 let toggle = {
   DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
@@ -931,7 +930,7 @@ const input = () => {
     player.dx += speed
   }
   { // jump
-    if (key[action.jump] || key[action.space]) {
+    if (action.jump.some(v => key[v] === 1)) {
       if (jump.flag) {
         if (!jump.double && jump.time === 0 && !player.grapFlag) {
           player.dy = -jumpConstant
@@ -960,7 +959,7 @@ const input = () => {
       }
       jump.time += 1
     }
-    if(!(key[action.jump] || key[action.space])) {
+    if(!action.jump.some(v => key[v])) {
       if (settings.type.DECO) jump.time = 0
       else {
         if (5 < jump.time) {
@@ -987,16 +986,14 @@ const input = () => {
   }
   if (player.grapFlag) { // wall kick
     let flag = false
-    if ((
-      key[action.jump] === 1 || key[action.space] === 1
-      ) && player.grapFlag && player.direction === 'right'
+    if (
+      action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'right'
     ) {
       player.dx = -4
       player.direction = 'left'
       flag = true
-    } else if ((
-      key[action.jump] === 1 || key[action.space] === 1
-      ) && player.grapFlag && player.direction === 'left'
+    } else if (
+      action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'left'
     ) {
       player.dx = 4
       player.direction = 'right'
