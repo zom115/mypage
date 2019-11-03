@@ -213,8 +213,6 @@ musicPathList.forEach(path => {
     musicLoadedMap[path] = musicPreload
   })
 })
-let retryCount = 0
-let progress = 0
 const timerId = setInterval(() => { // loading monitoring
   if (
     imageLoadedList.length === imagePathList.length &&
@@ -224,23 +222,6 @@ const timerId = setInterval(() => { // loading monitoring
     clearInterval(timerId)
     main()
   } else {
-    { // for debug
-      retryCount += 0
-      if (
-        retryCount === 1000 ||
-        imagePathList.length + voicePathList.length + musicPathList.length < progress
-      ) {
-        console.log(
-          imageLoadedList.length, imagePathList.length,
-          voiceLoadedList.length, voicePathList.length,
-          musicLoadedList.length, musicPathList.length,
-          imageLoadedList, imagePathList,
-          voiceLoadedList, voicePathList,
-          musicLoadedList, musicPathList,
-        )
-      }
-      progress = imagePathList.length + voicePathList.length + musicPathList.length
-    }
     aftergrow.loading = aftergrowLimit.loading
     drawLoadingScreen()
   }
@@ -772,121 +753,77 @@ let action = {
   up: 'w', right: 'd', down: 's', left: 'a', jump: ['i', 'l', 'space'],
   attack: 'k', accel: 'j', map: 'm', status: 'g', hitbox: 'h'
 }
-let toggle = {
-  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
-}
-const keyList = [
-  'shift', 'space',
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
-]
-let key = {}
-keyList.forEach(v => {
-  key[v + 'Flag'] = false
-  key[v] = 0
-})
 let keyTimestamp = {pressed: {}, released: {}}
 Object.values(action).forEach(act => {
   keyTimestamp.pressed[act] = -1
   keyTimestamp.released[act] = 0
 })
+let toggle = {
+  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
+}
+const keyObjects = {
+  shift: 16,
+  space: 32,
+  a: 65,
+  b: 66,
+  c: 67,
+  d: 68,
+  e: 69,
+  f: 70,
+  g: 71,
+  h: 72,
+  i: 73,
+  j: 74,
+  k: 75,
+  l: 76,
+  m: 77,
+  n: 78,
+  o: 79,
+  p: 80,
+  q: 81,
+  r: 82,
+  s: 83,
+  t: 84,
+  u: 85,
+  v: 86,
+  w: 87,
+  x: 88,
+  y: 89,
+  z: 90
+}
+let key = {}
+Object.keys(keyObjects).forEach(v => {
+  key[v + 'Flag'] = false
+  key[v] = 0
+})
 document.addEventListener('keydown', e => {
-  if (e.keyCode === 16) key.shiftFlag = true
-  if (key.shiftFlag) key.shift = (key.shift+1)|0
-  if (e.keyCode === 32) {
-    key.spaceFlag = true
-    if (e.preventDefault) e.preventDefault()
-    else {
-      e.keyCode = 0
-      return false
+  Object.entries(keyObjects).forEach(([k, v]) => {
+    if (k === 'space') {
+      if (e.keyCode === v) {
+        key[k + 'Flag'] = true
+        if (e.preventDefault) e.preventDefault()
+        else {
+          e.keyCode = 0
+          return false
+        }
+      }
+    } else {
+      if (e.keyCode === v) key[k + 'Flag'] = true
     }
-  }
-  if (e.keyCode === 65) key.aFlag = true
-  if (e.keyCode === 66) key.bFlag = true
-  if (e.keyCode === 67) key.cFlag = true
-  if (e.keyCode === 68) key.dFlag = true
-  if (e.keyCode === 69) key.eFlag = true
-  if (e.keyCode === 70) key.fFlag = true
-  if (e.keyCode === 71) key.gFlag = true
-  if (e.keyCode === 72) key.hFlag = true
-  if (e.keyCode === 73) key.iFlag = true
-  if (e.keyCode === 74) key.jFlag = true
-  if (e.keyCode === 75) key.kFlag = true
-  if (e.keyCode === 76) key.lFlag = true
-  if (e.keyCode === 77) key.mFlag = true
-  if (e.keyCode === 78) key.nFlag = true
-  if (e.keyCode === 79) key.oFlag = true
-  if (e.keyCode === 80) key.pFlag = true
-  if (e.keyCode === 81) key.qFlag = true
-  if (e.keyCode === 82) key.rFlag = true
-  if (e.keyCode === 83) key.sFlag = true
-  if (e.keyCode === 84) key.tFlag = true
-  if (e.keyCode === 85) key.uFlag = true
-  if (e.keyCode === 86) key.vFlag = true
-  if (e.keyCode === 87) key.wFlag = true
-  if (e.keyCode === 88) key.xFlag = true
-  if (e.keyCode === 89) key.yFlag = true
-  if (e.keyCode === 90) key.zFlag = true
+  })
 }, false)
 document.addEventListener('keyup', e => {
-  if (e.keyCode === 16) key.shiftFlag = false, key.shift = 0
-  if (e.keyCode === 32) key.spaceFlag = false, key.space = 0
-  if (e.keyCode === 65) key.aFlag = false, key.a = 0
-  if (e.keyCode === 66) key.bFlag = false, key.b = 0
-  if (e.keyCode === 67) key.cFlag = false, key.c = 0
-  if (e.keyCode === 68) key.dFlag = false, key.d = 0
-  if (e.keyCode === 69) key.eFlag = false, key.e = 0
-  if (e.keyCode === 70) key.fFlag = false, key.f = 0
-  if (e.keyCode === 71) key.gFlag = false, key.g = 0
-  if (e.keyCode === 72) key.hFlag = false, key.h = 0
-  if (e.keyCode === 73) key.iFlag = false, key.i = 0
-  if (e.keyCode === 74) key.jFlag = false, key.j = 0
-  if (e.keyCode === 75) key.kFlag = false, key.k = 0
-  if (e.keyCode === 76) key.lFlag = false, key.l = 0
-  if (e.keyCode === 77) key.mFlag = false, key.m = 0
-  if (e.keyCode === 78) key.nFlag = false, key.n = 0
-  if (e.keyCode === 79) key.oFlag = false, key.o = 0
-  if (e.keyCode === 80) key.pFlag = false, key.p = 0
-  if (e.keyCode === 81) key.qFlag = false, key.q = 0
-  if (e.keyCode === 82) key.rFlag = false, key.r = 0
-  if (e.keyCode === 83) key.sFlag = false, key.s = 0
-  if (e.keyCode === 84) key.tFlag = false, key.t = 0
-  if (e.keyCode === 85) key.uFlag = false, key.u = 0
-  if (e.keyCode === 86) key.vFlag = false, key.v = 0
-  if (e.keyCode === 87) key.wFlag = false, key.w = 0
-  if (e.keyCode === 88) key.xFlag = false, key.x = 0
-  if (e.keyCode === 89) key.yFlag = false, key.y = 0
-  if (e.keyCode === 90) key.zFlag = false, key.z = 0
+  Object.entries(keyObjects).forEach(([k, v]) => {
+    if (e.keyCode === v) {
+      key[k + 'Flag'] = false
+      key[k] = 0
+    }
+  })
 }, false)
 const input = () => {
-  if (key.shiftFlag) key.shift = (key.shift+1)|0
-  if (key.spaceFlag) key.space = (key.space+1)|0
-  if (key.aFlag) key.a = (key.a+1)|0
-  if (key.bFlag) key.b = (key.b+1)|0
-  if (key.cFlag) key.c = (key.c+1)|0
-  if (key.dFlag) key.d = (key.d+1)|0
-  if (key.eFlag) key.e = (key.e+1)|0
-  if (key.fFlag) key.f = (key.f+1)|0
-  if (key.gFlag) key.g = (key.g+1)|0
-  if (key.hFlag) key.h = (key.h+1)|0
-  if (key.iFlag) key.i = (key.i+1)|0
-  if (key.jFlag) key.j = (key.j+1)|0
-  if (key.kFlag) key.k = (key.k+1)|0
-  if (key.lFlag) key.l = (key.l+1)|0
-  if (key.mFlag) key.m = (key.m+1)|0
-  if (key.nFlag) key.n = (key.n+1)|0
-  if (key.oFlag) key.o = (key.o+1)|0
-  if (key.pFlag) key.p = (key.p+1)|0
-  if (key.qFlag) key.q = (key.q+1)|0
-  if (key.rFlag) key.r = (key.r+1)|0
-  if (key.sFlag) key.s = (key.s+1)|0
-  if (key.tFlag) key.t = (key.t+1)|0
-  if (key.uFlag) key.u = (key.u+1)|0
-  if (key.vFlag) key.v = (key.v+1)|0
-  if (key.wFlag) key.w = (key.w+1)|0
-  if (key.xFlag) key.x = (key.x+1)|0
-  if (key.yFlag) key.y = (key.y+1)|0
-  if (key.zFlag) key.z = (key.z+1)|0
+  Object.keys(keyObjects).forEach(v => {
+    if (key[v + 'Flag']) key[v] += 1
+  })
 }
 const modelUpdate = () => {
   if (player.action === 'crouch') player.action = 'idle'
