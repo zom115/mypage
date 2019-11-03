@@ -739,6 +739,12 @@ const playerData = {minBreath: 15, midBreath: 45 ,maxBreath: 75}
 let player = {
   x: stage.w * 1 / 8, y: stage.h * 15 / 16,
   dx: 0, dy: 0, action: 'idle', direction: 'right',
+  timeStamp: {
+    crouch: 0,
+    jump: 0,
+    accel: 0,
+    attack: 0,
+  },
   landFlag: false, wallFlag: false, grapFlag: false,
   breathInterval: playerData.midBreath
 }
@@ -906,8 +912,15 @@ Object.values(action).forEach(act => {
 const input = () => {
   inputProcess()
   if (player.action === 'crouch') player.action = 'idle'
-  if (key[action.down] && player.landFlag && !player.grapFlag) player.action = 'crouch'
-  if (player.action !== 'crouch' && !(key[action.left] && key[action.right])) { // walk
+  if (key[action.down] && player.landFlag && !player.grapFlag) {
+    if (key[action.down] === 1) player.timeStamp.crouch = frame
+    player.action = 'crouch'
+  }
+  const walkProhibitionList = ['crouch', 'punch', 'kick']
+  if ( // walk
+    !walkProhibitionList.some(v => v === player.action) &&
+    !(key[action.left] && key[action.right])
+  ) {
     let speed = dashConstant
     speed = key[action.left] && -speed < player.dx ? -speed
     : key[action.left] && -dashThreshold < player.dx ? -speed / 4
@@ -916,65 +929,6 @@ const input = () => {
     : 0
     speed = player.landFlag ? speed : speed / 3 // aerial brake
     player.dx += speed
-  }
-  if (player.action !== 'crouch' && !jump.step) { // step
-    const stepSpeed = key[action.left] &&
-      frame - keyTimestamp.pressed[action.left] < cooltime.stepDeferment &&
-      0 < keyTimestamp.released[action.left] - keyTimestamp.pressed[action.left]
-    ? -stepConstant
-    : key[action.right] &&
-      frame - keyTimestamp.pressed[action.right] < cooltime.stepDeferment &&
-      0 < keyTimestamp.released[action.right] - keyTimestamp.pressed[action.right]
-    ? stepConstant : 0
-    if (stepSpeed !== 0) {
-      player.dx += stepSpeed
-      jump.step = true
-      cooltime.aerialStep = cooltime.aerialStepLimit
-    }
-  }
-  if (player.action !== 'jump' && jump.step) jump.step = false
-  if (0 < cooltime.aerialStep) {
-    player.dy = 0
-    cooltime.aerialStep -= 1
-  }
-  { // punch & kick
-    if (
-      key[action.attack] === 1 &&
-      !key[action.left] &&
-      !key[action.right] &&
-      player.landFlag &&
-      player.action !== 'crouch' &&
-      player.action !== 'slide' &&
-      player.action !== 'punch' &&
-      player.action !== 'kick'
-    ) {
-      player.action = 'punch'
-      imageStat.punch.time = 0
-    }
-    if (player.action === 'punch' && key[action.attack] === imageStat.punch.frame) {
-      player.action = 'kick'
-      imageStat.kick.time = 0
-    }
-  }
-  { // slide
-    if (cooltime.slide === 0) {
-      if (key[action.accel] && player.landFlag && !player.wallFlag && !slide.flag) {
-        const slideSpeed = slideConstant < player.dx ? boostConstant
-        : player.dx < -slideConstant ? -boostConstant : 0
-        if (slideSpeed !== 0) {
-          player.dx += slideSpeed
-          player.action = 'slide'
-          cooltime.slide = cooltime.slideLimit
-          if (10 < player.breathInterval) player.breathInterval -= 1
-        }
-        slide.flag = true
-      }
-    }
-    if (player.action !== 'slide' && cooltime.slide !== 0) {
-      if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
-      else cooltime.slide -= 1
-    }
-    if (!key[action.accel]) slide.flag = false
   }
   { // jump
     if (key[action.jump] || key[action.space]) {
@@ -989,6 +943,7 @@ const input = () => {
           jump.time = 0
         }
       } else if (jump.time === 0) {
+        player.timeStamp.jump = frame
         player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
         player.action = 'jump'
         jump.flag = true
@@ -1048,12 +1003,83 @@ const input = () => {
       flag = true
     }
     if (flag) {
+      player.timeStamp.jump = frame
       player.dy = -jumpConstant
       player.wallFlag = false
       player.grapFlag = false
       jump.flag = true
       player.action = 'jump'
     }
+  }
+  { // attack
+    const actionList = ['crouch', 'slide', 'punch', 'kick']
+    if ( // punch
+      key[action.attack] &&
+      !key[action.left] &&
+      !key[action.right] &&
+      player.landFlag &&
+      !actionList.some(v => v === player.action) &&
+      player.timeStamp.attack <= keyTimestamp.released[action.attack]
+    ) {
+      player.timeStamp.attack = frame
+      player.action = 'punch'
+      imageStat.punch.time = 0
+    }
+    if ( // kick
+      key[action.attack]&&
+      player.landFlag &&
+      !actionList.some(v => v === player.action) && (
+      frame - 6 <= keyTimestamp.pressed[action.left] ||
+      frame - 6 <= keyTimestamp.pressed[action.right]) &&
+      player.timeStamp.attack <= keyTimestamp.released[action.attack]
+    ) {
+      player.timeStamp.attack = frame
+      player.action = 'kick'
+      imageStat.kick.time = 0
+    }
+    if (cooltime.slide === 0) {
+      if ( // slide
+        key[action.attack] && (
+        key[action.left] || key[action.right]) &&
+        !actionList.some(v => v === player.action) &&
+        player.landFlag &&
+        !player.wallFlag &&
+        !slide.flag &&
+        player.timeStamp.attack <= keyTimestamp.released[action.attack]
+      ) {
+        const slideSpeed = slideConstant < player.dx ? boostConstant
+        : player.dx < -slideConstant ? -boostConstant : 0
+        if (slideSpeed !== 0) {
+          player.timeStamp.attack = frame
+          player.dx += slideSpeed
+          player.action = 'slide'
+          cooltime.slide = cooltime.slideLimit
+          if (10 < player.breathInterval) player.breathInterval -= 1
+        }
+        slide.flag = true
+      }
+    }
+    if (player.action !== 'slide' && cooltime.slide !== 0) {
+      if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
+      else cooltime.slide -= 1
+    }
+    if (!key[action.accel]) slide.flag = false
+    // if ( // accel
+    //   player.action !== 'crouch' && !jump.step
+    // ) {
+    //   const stepSpeed = key[action.left] && key[action.accel] ? -stepConstant
+    //   : key[action.right] && key[action.accel] ? stepConstant : 0
+    //   if (stepSpeed !== 0) {
+    //     player.dx += stepSpeed
+    //     jump.step = true
+    //     cooltime.aerialStep = cooltime.aerialStepLimit
+    //   }
+    // }
+    // if (player.action !== 'jump' && jump.step) jump.step = false
+    // if (0 < cooltime.aerialStep) {
+    //   player.dy = 0
+    //   cooltime.aerialStep -= 1
+    // }
   }
   Object.keys(toggle).forEach(v => {
     if (key[toggle[v]] === 1) {
@@ -1455,14 +1481,15 @@ const modelUpdate = () => {
     })
   }
   gateProcess()
+  const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick']
   player.direction = ((
     key[action.left] && key[action.right]) || !player.landFlag ||
-    player.action === 'crouch'
+    turnProhibitionList.some(v => v === player.action)
   ) ? player.direction
   : (key[action.left]) ? 'left'
   : (key[action.right]) ? 'right'
   : player.direction
-  if (player.action !== 'jump' && player.action !== 'crouch') {
+  if (!turnProhibitionList.some(v => v === player.action)) {
     if (key[action.right] && player.dx < dashConstant * brakeConstant) player.action = 'turn'
     if (key[action.left] && -dashConstant * brakeConstant < player.dx) player.action = 'turn'
     if (player.wallFlag && player.landFlag && player.action !== 'slide') player.action = 'push'
