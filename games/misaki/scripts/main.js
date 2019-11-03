@@ -158,7 +158,7 @@ let imageStat = {
   kick  : {condition: 0, time: 0, frame: 7, audioTrigger: 3}
 }
 const unityChanStat = {
-  idle  : {frame: 0},
+  idle  : {frame: 55},
   walk  : {frame: 10},
   damage: {frame: 5}
 }
@@ -557,6 +557,37 @@ const setStage = arg => {
       '1000000000000000000000000000000000000000000000000000000001111000000000000000011110000000000001111000000000000000000111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111100001111111100000000111111111100001111111100000000111100000000000000000000000000001111111111111111111111000000000000000011000000111100111100000000000000000000',
       '1000000000000000000000000000000000000000000000000000000001111000000000000000011110000000000001111000000000000000000111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111100001111111100000000111111111100001111111100000000111100000000000000000000000000001111111111111111111111000000000000000011000000111100111100000000000000000000',
       '1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000011111111111111111111111111111100000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111'
+    ], BattleField: [
+      '111111111111111111111111111111111111111111111111111111',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '100000000000000000000000000000000000000000000000000001',
+      '111111111111111111111111111111111111111111111111111111'
     ]
   }
   fieldArray = mapData[arg]
@@ -698,6 +729,9 @@ const setStage = arg => {
     )
     setGate(
       9, stage.h / size - 5 - 6, 3, 4, 'AthleticCourse', 8, mapData.AthleticCourse.length - 2
+    )
+    setGate(
+      9, stage.h / size - 5, 3, 4, 'BattleField', 8, mapData.BattleField.length - 2
     )
   } else if (arg === 'SMB') {
     setGate(3, stage.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 26)
@@ -1137,15 +1171,24 @@ const modelUpdate = () => {
       player.state === 'slide'
     ) player.dx = 0
   })
-  const enemyUpdate = () => {
+  { // enemy update
     stage.time += 1
-    if (enemies.length < 1) {
+    if (enemies.length < 1 && stage.name === 'BattleField') {
+      const x = stage.w * 3 / 4
+      const y = stage.h * 15 / 16
       enemies.push({
         type: 'enemy',
-        x: stage.w * 1 / 4, y: stage.h * 15 / 16,
-        minXRange: stage.w * 1 / 4, maxXRange: stage.w * 3 / 8,
-        direction: 'left', image: 0, imageTimer: 0,
-        state: 'walk', life: 3, invincibleTimer: 0
+        x: x,
+        y: y,
+        minXRange: stage.w * 1 / 4,
+        maxXRange: stage.w * 3 / 8,
+        direction: 'left',
+        image: 0,
+        imageTimer: 0,
+        state: 'walk',
+        hitbox: {x: x - size * .5, y: y - size * 2.75, w: size, h: size * 2.75},
+        life: 3,
+        invincibleTimer: 0
       })
     }
     enemies.forEach((v, i) => {
@@ -1275,29 +1318,44 @@ const modelUpdate = () => {
         stage.time += 1
       } else if (v.type === 'enemy') {
         let flag = false
-        const eHitbox = {x: v.x - size * .5, y: v.y - size * 2.75, w: size, h: size * 2.75}
+        v.hitbox = v.state === 'damage'
+        ? {x: v.x - size * 1, y: v.y - size, w: size * 2, h: size}
+        : {x: v.x - size * .5, y: v.y - size * 2.75, w: size, h: size * 2.75}
         field.forEach(obj => {
           if (
-            eHitbox.x <= obj.x + obj.w && obj.x <= eHitbox.x + eHitbox.w &&
-            eHitbox.y <= obj.y + obj.h && obj.y <= eHitbox.y + eHitbox.h
+            v.hitbox.x <= obj.x + obj.w && obj.x <= v.hitbox.x + v.hitbox.w &&
+            v.hitbox.y <= obj.y + obj.h && obj.y <= v.hitbox.y + v.hitbox.h
           ) flag = true
         })
         if (!flag) v.y += 1
         const moveConstant = .7
-        if (v.state === 'walk') {
-          if (v.direction === 'left') {
+        const gap = size * 2
+        if (v.state === 'walk' || v.state === 'idle') {
+          if (player.x + gap < v.x) {
             v.x -= moveConstant
-            if (v.x < v.minXRange) v.direction = 'right'
-          } else if (v.direction === 'right') {
+            v.state = 'walk'
+          } else if (v.x + gap < player.x) {
             v.x += moveConstant
-            if (v.maxXRange < v.x) v.direction = 'left'
+            v.state = 'walk'
+          } else {
+            if (v.state === 'walk') v.image = 0
+            v.state = 'idle'
           }
+          if (player.x < v.x) v.direction = 'left'
+          else v.direction = 'right'
+          // if (v.direction === 'left') {
+          //   v.x -= moveConstant
+          //   if (v.x < v.minXRange) v.direction = 'right'
+          // } else if (v.direction === 'right') {
+          //   v.x += moveConstant
+          //   if (v.maxXRange < v.x) v.direction = 'left'
+          // }
         }
         if (0 < v.invincibleTimer) v.invincibleTimer -= 1
         if (
           v.invincibleTimer === 0 &&
-          eHitbox.x < attackBox.x + attackBox.w && attackBox.x < eHitbox.x + eHitbox.w &&
-          eHitbox.y <= attackBox.y + attackBox.h && attackBox.y <= eHitbox.y + eHitbox.h
+          v.hitbox.x < attackBox.x + attackBox.w && attackBox.x < v.hitbox.x + v.hitbox.w &&
+          v.hitbox.y <= attackBox.y + attackBox.h && attackBox.y <= v.hitbox.y + v.hitbox.h
         ) {
           v.life -= 1
           v.invincibleTimer = 30
@@ -1307,7 +1365,6 @@ const modelUpdate = () => {
       }
     })
   }
-  enemyUpdate()
   player.landFlag = aerialFlag ? false : true
   if (player.grapFlag) player.dx = 0
   player.x += player.dx
@@ -1545,6 +1602,14 @@ const viewUpdate = () => {
           }
           v.imageTimer = 0
         }
+      } else if (v.state === 'idle') {
+        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
+          v.image += 1
+          if (v.image === imageListObject.kohaku[v.state].length) {
+            v.image -= imageListObject.kohaku[v.state].length
+          }
+          v.imageTimer = 0
+        }
       }
     }
   })
@@ -1643,6 +1708,10 @@ const draw = () => {
       let ex = v.x - imageOffset.x - stageOffset.x
       const ey = v.y - imageOffset.y - stageOffset.y
       const img = imageLoadedMap[imageListObject.kohaku[v.state][v.image]]
+      console.log(img,
+        imageListObject.kohaku[v.state][v.image],
+        v.state,
+        v.image,imageListObject.kohaku[v.state].length)
       context.save()
       if (v.direction === 'left') {
         context.scale(-1, 1)
@@ -1687,10 +1756,12 @@ const draw = () => {
     context.fillStyle = 'hsla(0, 100%, 50%, .5)'
     enemies.forEach(v => {
       if (v.type === 'enemy') {
-        context.fillRect(
-          v.x - size * .5 - stageOffset.x|0, v.y - size * 2.75 - stageOffset.y|0,
-          size, size * 2.75
-        )
+        if (v.invincibleTimer === 0) {
+          context.fillRect(
+            v.hitbox.x - stageOffset.x|0, v.hitbox.y - stageOffset.y|0,
+            v.hitbox.w, v.hitbox.h
+          )
+        }
       }
     })
     context.fillStyle = 'hsla(180, 100%, 50%, .5)'
