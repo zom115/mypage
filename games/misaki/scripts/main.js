@@ -805,6 +805,11 @@ let key = {
   yFlag: false, y: 0,
   zFlag: false, z: 0
 }
+let keyTimestamp = {pressed: {}, released: {}}
+Object.values(action).forEach(act => {
+  keyTimestamp.pressed[act] = -1
+  keyTimestamp.released[act] = 0
+})
 document.addEventListener('keydown', e => {
   if (e.keyCode === 16) key.shiftFlag = true
   if (key.shiftFlag) key.shift = (key.shift+1)|0
@@ -873,7 +878,7 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 89) key.yFlag = false, key.y = 0
   if (e.keyCode === 90) key.zFlag = false, key.z = 0
 }, false)
-const inputProcess = () => {
+const input = () => {
   if (key.shiftFlag) key.shift = (key.shift+1)|0
   if (key.spaceFlag) key.space = (key.space+1)|0
   if (key.aFlag) key.a = (key.a+1)|0
@@ -903,13 +908,7 @@ const inputProcess = () => {
   if (key.yFlag) key.y = (key.y+1)|0
   if (key.zFlag) key.z = (key.z+1)|0
 }
-let keyTimestamp = {pressed: {}, released: {}}
-Object.values(action).forEach(act => {
-  keyTimestamp.pressed[act] = -1
-  keyTimestamp.released[act] = 0
-})
-const input = () => {
-  inputProcess()
+const modelUpdate = () => {
   if (player.action === 'crouch') player.action = 'idle'
   if (key[action.down] && player.landFlag && !player.grapFlag) {
     if (key[action.down] === 1) player.timeStamp.crouch = frame
@@ -1084,8 +1083,6 @@ const input = () => {
       inputDOM[v].checked = !inputDOM[v].checked
     }
   })
-}
-const modelUpdate = () => {
   if (player.action === 'slide') { // collision detect
     hitbox.x = player.x - size * 1.375
     hitbox.y = player.y - size
