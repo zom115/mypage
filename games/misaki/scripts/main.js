@@ -1708,10 +1708,6 @@ const draw = () => {
       let ex = v.x - imageOffset.x - stageOffset.x
       const ey = v.y - imageOffset.y - stageOffset.y
       const img = imageLoadedMap[imageListObject.kohaku[v.state][v.image]]
-      console.log(img,
-        imageListObject.kohaku[v.state][v.image],
-        v.state,
-        v.image,imageListObject.kohaku[v.state].length)
       context.save()
       if (v.direction === 'left') {
         context.scale(-1, 1)
@@ -1770,18 +1766,16 @@ const draw = () => {
     })
   }
   if (settings.type.status) {
-    const columnOffset = size * 2
+    const columnOffset = canvas.offsetWidth * .75
+    const rowOffset = size * 8
     context.fillStyle = 'hsl(240, 100%, 50%)'
     context.font = `${size}px sans-serif`
-    context.fillText(`stamina: ${player.breathInterval}`, columnOffset, size * 3)
-    context.fillText('cooltime', columnOffset, size * 5)
-    context.fillText(`slide: ${cooltime.slide}`, size * 10, size * 5)
-    context.fillText('aerial step :', columnOffset, size * 7)
-    if (jump.step) context.fillText('unenable', size * 10, size * 7)
-    else context.fillText('enable', size * 10, size * 7)
-    context.fillText('double jump :', columnOffset, size * 9)
-    if (jump.double) context.fillText('unenable', size * 10, size * 9)
-    else context.fillText('enable', size * 10, size * 9)
+    context.fillText(`stamina: ${player.breathInterval}`, columnOffset, rowOffset + size)
+    context.fillText('cooltime', columnOffset, rowOffset + size * 3)
+    context.fillText(`slide: ${cooltime.slide}`, columnOffset + size * 8, rowOffset + size * 3)
+    context.fillText('double jump :', columnOffset, rowOffset + size * 5)
+    if (jump.double) context.fillText('unenable', columnOffset + size * 8, rowOffset + size * 5)
+    else context.fillText('enable', columnOffset + size * 8, rowOffset + size * 5)
   }
   if (settings.type.map) {
     const multiple = 2
