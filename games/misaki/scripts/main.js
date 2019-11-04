@@ -168,7 +168,10 @@ const unityChanStat = {
   idle  : {frame: 55},
   walk  : {frame: 10},
   damage: {frame: 5},
-  sword : {frame: 7}
+  sword : {
+    frame: 7,
+    startUp: 7, startUpLength: 3, active: 7, activeLength: 1, recovery: 5, recoveryLength: 2
+  }
 }
 let imagePathList = []
 Object.keys(imageListObject).forEach(v => {
@@ -1196,6 +1199,7 @@ const modelUpdate = () => {
         imageTimer: 0,
         state: 'walk',
         hitbox: {x: x - size * .5, y: y - size * 2.75, w: size, h: size * 2.75},
+        attackBox: {x: 0, y: 0, w: 0, h: 0},
         life: 3,
         invincibleTimer: 0
       })
@@ -1363,6 +1367,16 @@ const modelUpdate = () => {
           v.life -= 1
           v.invincibleTimer = 30
           v.state = 'damage'
+        }
+        if (v.state !== 'sword') v.attackBox = {x: 0, y: 0, w: 0, h: 0}
+        else {
+          v.attackBox = {
+            y: v.y - size * 1.5,
+            w: size * 1.5,
+            h: size
+          }
+          const l = size * .5
+          v.attackBox.x = v.direction === 'left' ? v.x - (v.attackBox.w + l) : v.x + l
         }
         if (v.life <= 0) enemies.splice(i, 1)
       }
@@ -1623,7 +1637,6 @@ const viewUpdate = () => {
           v.imageTimer = 0
         }
       }
-      console.log(v.state)
     }
   })
 }
@@ -1679,7 +1692,7 @@ const draw = () => {
     })
   }
   { // draw ground
-    field.forEach((obj, i) => {
+    field.forEach(obj => {
       if (obj.w === size && obj.h === size) {
         if (
             0 <= obj.y / size - 1 &&
@@ -1764,15 +1777,20 @@ const draw = () => {
       player.attackBox.x - stageOffset.x, player.attackBox.y - stageOffset.y,
       player.attackBox.w, player.attackBox.h
     )
-    context.fillStyle = 'hsla(0, 100%, 50%, .5)'
     enemies.forEach(v => {
       if (v.type === 'enemy') {
         if (v.invincibleTimer === 0) {
+          context.fillStyle = 'hsla(30, 100%, 50%, .5)'
           context.fillRect(
             v.hitbox.x - stageOffset.x|0, v.hitbox.y - stageOffset.y|0,
             v.hitbox.w, v.hitbox.h
           )
         }
+        context.fillStyle = 'hsla(0, 100%, 50%, .5)'
+        context.fillRect(
+          v.attackBox.x - stageOffset.x|0, v.attackBox.y - stageOffset.y|0,
+          v.attackBox.w, v.attackBox.h
+        )
       }
     })
     context.fillStyle = 'hsla(180, 100%, 50%, .5)'
