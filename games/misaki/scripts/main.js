@@ -136,6 +136,13 @@ const imageListObject = {
       'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
       'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
       'images/Unitychan/BasicActions/Unitychan_Damage_19.png'
+    ], sword: [
+      'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
+      'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
+      'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
+      'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
+      'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
+      'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
     ]
   }, bg    : {
     tileset   : ['images/MagicCliffsArtwork/tileset.png'],
@@ -154,13 +161,14 @@ let imageStat = {
   jump  : {condition: 0},
   slide : {condition: 0},
   push  : {condition: 0},
-  punch : {condition: 0, time: 0, frame: 7, audioTrigger: 1},
+  punch : {condition: 0, time: 0, frame: 3, audioTrigger: 1},
   kick  : {condition: 0, time: 0, frame: 7, audioTrigger: 3}
 }
 const unityChanStat = {
   idle  : {frame: 55},
   walk  : {frame: 10},
-  damage: {frame: 5}
+  damage: {frame: 5},
+  sword : {frame: 7}
 }
 let imagePathList = []
 Object.keys(imageListObject).forEach(v => {
@@ -1339,17 +1347,9 @@ const modelUpdate = () => {
             v.state = 'walk'
           } else {
             if (v.state === 'walk') v.image = 0
-            v.state = 'idle'
+            if (v.state !== 'idle') v.state = 'sword'
           }
-          if (player.x < v.x) v.direction = 'left'
-          else v.direction = 'right'
-          // if (v.direction === 'left') {
-          //   v.x -= moveConstant
-          //   if (v.x < v.minXRange) v.direction = 'right'
-          // } else if (v.direction === 'right') {
-          //   v.x += moveConstant
-          //   if (v.maxXRange < v.x) v.direction = 'left'
-          // }
+          v.direction = player.x < v.x ? 'left' : 'right'
         }
         if (0 < v.invincibleTimer) v.invincibleTimer -= 1
         if (
@@ -1602,6 +1602,15 @@ const viewUpdate = () => {
           }
           v.imageTimer = 0
         }
+      } else if (v.state === 'sword') {
+        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
+          v.image += 1
+          if (v.image === imageListObject.kohaku[v.state].length) {
+            v.image -= imageListObject.kohaku[v.state].length
+            v.state = 'idle'
+          }
+          v.imageTimer = 0
+        }
       } else if (v.state === 'idle') {
         if (v.imageTimer % unityChanStat[v.state].frame === 0) {
           v.image += 1
@@ -1611,6 +1620,7 @@ const viewUpdate = () => {
           v.imageTimer = 0
         }
       }
+      console.log(v.state)
     }
   })
 }
