@@ -156,8 +156,8 @@ let imageStat = {
   idle  : {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
   walk  : {condition: 0, time: 0, frame: 10},
   turn  : {condition: 0, time: 0, frame: 5},
-  run   : {condition: 0, time: 1, frame: 7},
-  crouch: {condition: 0, time: 1, frame: 7},
+  run   : {condition: 0, time: 0, frame: 7},
+  crouch: {condition: 0, time: 0, frame: 7},
   jump  : {condition: 0},
   slide : {condition: 0},
   push  : {condition: 0},
@@ -768,11 +768,12 @@ let player = {
     accel: 0,
     attack: 0,
   },
+  hitbox: {x: 0, y: 0, w: 0, h: 0},
+  attackBox: {x: 0, y: 0, w: 0, h: 0},
   landFlag: false, wallFlag: false, grapFlag: false,
   breathInterval: playerData.midBreath
 }
-let hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
-let attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
+player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const walkConstant = .7 // dx := 1.4
 const dashConstant = 2.1
 const dashThreshold = 3.5
@@ -1043,23 +1044,23 @@ const modelUpdate = () => {
     }
   })
   if (player.action === 'slide') { // collision detect
-    hitbox.x = player.x - size * 1.375
-    hitbox.y = player.y - size
-    hitbox.w = size * 2.75
-    hitbox.h = size
+    player.hitbox.x = player.x - size * 1.375
+    player.hitbox.y = player.y - size
+    player.hitbox.w = size * 2.75
+    player.hitbox.h = size
   } else {
-    hitbox.x = player.x - size / 2
-    hitbox.y = player.y - size * 2.75
-    hitbox.w = size
-    hitbox.h = size * 2.75
+    player.hitbox.x = player.x - size / 2
+    player.hitbox.y = player.y - size * 2.75
+    player.hitbox.w = size
+    player.hitbox.h = size * 2.75
   }
   let aerialFlag = true
   if (player.dx !== 0) player.wallFlag = false
   field.forEach(obj => {
     if (0 < player.dy) { // floor
-      const ax = obj.x - hitbox.w / 2
+      const ax = obj.x - player.hitbox.w / 2
       const ay = obj.y
-      const bx = obj.x + obj.w + hitbox.w / 2
+      const bx = obj.x + obj.w + player.hitbox.w / 2
       const by = obj.y
       const abx = bx - ax
       const aby = by - ay
@@ -1086,10 +1087,10 @@ const modelUpdate = () => {
         }
       }
     } else if (player.dy !== 0) { // ceiling
-      const ax = obj.x - hitbox.w / 2
-      const ay = obj.y + obj.h + hitbox.h
-      const bx = obj.x + obj.w + hitbox.w / 2
-      const by = obj.y + obj.h + hitbox.h
+      const ax = obj.x - player.hitbox.w / 2
+      const ay = obj.y + obj.h + player.hitbox.h
+      const bx = obj.x + obj.w + player.hitbox.w / 2
+      const by = obj.y + obj.h + player.hitbox.h
       const abx = bx - ax
       const aby = by - ay
       let nx = -aby
@@ -1109,16 +1110,16 @@ const modelUpdate = () => {
         const bcy = cy - by
         const doc = acx * bcx + acy * bcy
         if (doc < 0) {
-          player.y = obj.y + obj.h + hitbox.h
+          player.y = obj.y + obj.h + player.hitbox.h
           player.dy = 0
         }
       }
     }
     if (0 < player.dx) { // left wall
-      const ax = obj.x - hitbox.w / 2
+      const ax = obj.x - player.hitbox.w / 2
       const ay = obj.y
-      const bx = obj.x - hitbox.w / 2
-      const by = obj.y + obj.h + hitbox.h
+      const bx = obj.x - player.hitbox.w / 2
+      const by = obj.y + obj.h + player.hitbox.h
       const abx = bx - ax
       const aby = by - ay
       let nx = -aby
@@ -1138,16 +1139,16 @@ const modelUpdate = () => {
         const bcy = cy - by
         const doc = acx * bcx + acy * bcy
         if (doc < 0) {
-          player.x = obj.x - hitbox.w / 2 - 1
+          player.x = obj.x - player.hitbox.w / 2 - 1
           player.dx = 0
           player.wallFlag = 'left'
         }
       }
     } else if (player.dx !== 0) { // right wall
-      const ax = obj.x + obj.w + hitbox.w / 2
+      const ax = obj.x + obj.w + player.hitbox.w / 2
       const ay = obj.y
-      const bx = obj.x + obj.w + hitbox.w / 2
-      const by = obj.y + obj.h + hitbox.h
+      const bx = obj.x + obj.w + player.hitbox.w / 2
+      const by = obj.y + obj.h + player.hitbox.h
       const abx = bx - ax
       const aby = by - ay
       let nx = -aby
@@ -1167,15 +1168,15 @@ const modelUpdate = () => {
         const bcy = cy - by
         const doc = acx * bcx + acy * bcy
         if (doc < 0) {
-          player.x = obj.x + obj.w + hitbox.w / 2 + 1
+          player.x = obj.x + obj.w + player.hitbox.w / 2 + 1
           player.dx = 0
           player.wallFlag = 'right'
         }
       }
     }
     if (
-      hitbox.x <= obj.x + obj.w && obj.x <= hitbox.x + hitbox.w &&
-      hitbox.y <= obj.y + obj.h && obj.y <= hitbox.y + hitbox.h &&
+      player.hitbox.x <= obj.x + obj.w && obj.x <= player.hitbox.x + player.hitbox.w &&
+      player.hitbox.y <= obj.y + obj.h && obj.y <= player.hitbox.y + player.hitbox.h &&
       player.state === 'slide'
     ) player.dx = 0
   })
@@ -1208,9 +1209,9 @@ const modelUpdate = () => {
         const dy = aftdy - evlt(v.dy)
         const X = player.dx - dx
         const Y = player.dy - dy
-        const axFloor = v.x + evlt(v.dx) - hitbox.w / 2 // y coordinate
+        const axFloor = v.x + evlt(v.dx) - player.hitbox.w / 2 // y coordinate
         const ayFloor = v.y + evlt(v.dy)
-        const bxFloor = v.x + v.w + evlt(v.dx) + hitbox.w / 2
+        const bxFloor = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
         const byFloor = v.y + evlt(v.dy)
         const abxFloor = bxFloor - axFloor
         const abyFloor = byFloor - ayFloor
@@ -1232,10 +1233,10 @@ const modelUpdate = () => {
         const bcxFloor = cxFloor - bxFloor
         const bcyFloor = cyFloor - byFloor
         const docFloor = acxFloor * bcxFloor + acyFloor * bcyFloor
-        const axCeiling = v.x + evlt(v.dx) - hitbox.w / 2
-        const ayCeiling = v.y + v.h + evlt(v.dy) + hitbox.h
-        const bxCeiling = v.x + v.w + evlt(v.dx) + hitbox.w / 2
-        const byCeiling = v.y + v.h + evlt(v.dy) + hitbox.h
+        const axCeiling = v.x + evlt(v.dx) - player.hitbox.w / 2
+        const ayCeiling = v.y + v.h + evlt(v.dy) + player.hitbox.h
+        const bxCeiling = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
+        const byCeiling = v.y + v.h + evlt(v.dy) + player.hitbox.h
         const abxCeiling = bxCeiling - axCeiling
         const abyCeiling = byCeiling - ayCeiling
         let nxCeiling = -abyCeiling
@@ -1261,14 +1262,14 @@ const modelUpdate = () => {
           player.x += dx
           aerialFlag = false
         } else if (docCeiling < 0 && 0 < tCeiling && tCeiling <= 1) {
-          player.y = v.y + v.h + evlt(v.dy) + hitbox.h
+          player.y = v.y + v.h + evlt(v.dy) + player.hitbox.h
           player.dy = 0 < dy ? dy : 0
         }
         if (0 < X) { // left wall
-          const axLeft = v.x + evlt(v.dx) - hitbox.w / 2
+          const axLeft = v.x + evlt(v.dx) - player.hitbox.w / 2
           const ayLeft = v.y + evlt(v.dy)
-          const bxLeft = v.x + evlt(v.dx) - hitbox.w / 2
-          const byLeft = v.y + v.h + evlt(v.dy) + hitbox.h
+          const bxLeft = v.x + evlt(v.dx) - player.hitbox.w / 2
+          const byLeft = v.y + v.h + evlt(v.dy) + player.hitbox.h
           const abxLeft = bxLeft - axLeft
           const abyLeft = byLeft - ayLeft
           let nxLeft = -abyLeft
@@ -1288,16 +1289,16 @@ const modelUpdate = () => {
             const bcyLeft = cyLeft - byLeft
             const docLeft = acxLeft * bcxLeft + acyLeft * bcyLeft
             if (docLeft < 0) {
-              player.x = v.x + evlt(v.dx) + dx - hitbox.w / 2 - 1
+              player.x = v.x + evlt(v.dx) + dx - player.hitbox.w / 2 - 1
               player.dx = 0
               player.wallFlag = 'left'
             }
           }
         } else if (X !== 0) { // right wall
-          const ax = v.x + v.w + evlt(v.dx) + hitbox.w / 2
+          const ax = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
           const ay = v.y + evlt(v.dy)
-          const bx = v.x + v.w + evlt(v.dx) + hitbox.w / 2
-          const by = v.y + v.h + evlt(v.dy) + hitbox.h
+          const bx = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
+          const by = v.y + v.h + evlt(v.dy) + player.hitbox.h
           const abx = bx - ax
           const aby = by - ay
           let nx = -aby
@@ -1317,7 +1318,7 @@ const modelUpdate = () => {
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
             if (doc < 0) {
-              player.x = v.x + v.w + evlt(v.dx) + dx + hitbox.w / 2 + 1
+              player.x = v.x + v.w + evlt(v.dx) + dx + player.hitbox.w / 2 + 1
               player.dx = 0
               player.wallFlag = 'right'
             }
@@ -1354,8 +1355,10 @@ const modelUpdate = () => {
         if (0 < v.invincibleTimer) v.invincibleTimer -= 1
         if (
           v.invincibleTimer === 0 &&
-          v.hitbox.x < attackBox.x + attackBox.w && attackBox.x < v.hitbox.x + v.hitbox.w &&
-          v.hitbox.y <= attackBox.y + attackBox.h && attackBox.y <= v.hitbox.y + v.hitbox.h
+          v.hitbox.x < player.attackBox.x + player.attackBox.w &&
+          player.attackBox.x < v.hitbox.x + v.hitbox.w &&
+          v.hitbox.y <= player.attackBox.y + player.attackBox.h &&
+          player.attackBox.y <= v.hitbox.y + v.hitbox.h
         ) {
           v.life -= 1
           v.invincibleTimer = 30
@@ -1408,7 +1411,7 @@ const modelUpdate = () => {
     }
   })
   if (player.action === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
-    attackBox = player.direction === 'left' ? {
+    player.attackBox = player.direction === 'left' ? {
       x: player.x - size,
       y: player.y - size * 2,
       w: size / 2,
@@ -1424,7 +1427,7 @@ const modelUpdate = () => {
     imageStat.kick.frame * 3 < imageStat.kick.time &&
     imageStat.kick.time < imageStat.kick.frame * 5
   ) {
-    attackBox = player.direction === 'left' ? {
+    player.attackBox = player.direction === 'left' ? {
       x: player.x - size * 2,
       y: player.y - size * 2,
       w: size * 1.5,
@@ -1435,12 +1438,12 @@ const modelUpdate = () => {
       w: size * 1.5,
       h: size
     }
-  } else attackBox = {x: NaN, y: NaN, w: NaN, h: NaN}
+  } else player.attackBox = {x: 0, y: 0, w: 0, h: 0}
   const gateProcess = () => {
     gate.forEach(v => {
       if (
-        hitbox.x <= v.x + v.w && v.x <= hitbox.x + hitbox.w &&
-        hitbox.y <= v.y + v.h && v.y <= hitbox.y + hitbox.h
+        player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
+        player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
       ) {
         if (key[action.up]) {
           enterGate(v.stage, v.address.x, v.address.y)
@@ -1754,10 +1757,12 @@ const draw = () => {
   if (settings.type.hitbox) {
     context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     context.fillRect(
-      hitbox.x - stageOffset.x|0, hitbox.y - stageOffset.y|0, hitbox.w|0, hitbox.h|0
+      player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
+      player.hitbox.w|0, player.hitbox.h|0
     )
     context.fillRect(
-      attackBox.x - stageOffset.x, attackBox.y - stageOffset.y, attackBox.w, attackBox.h
+      player.attackBox.x - stageOffset.x, player.attackBox.y - stageOffset.y,
+      player.attackBox.w, player.attackBox.h
     )
     context.fillStyle = 'hsla(0, 100%, 50%, .5)'
     enemies.forEach(v => {
@@ -1856,7 +1861,7 @@ const drawLoadingScreen = () => {
   context.fillStyle = `hsla(0, 0%, 40%, ${aftergrow.loading / aftergrowLimit.loading})`
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = `hsla(0, 0%, 0%, ${aftergrow.loading / aftergrowLimit.loading})`
-  const ratio = (
+  const ratio = Math.ceil(
     imageLoadedList.length + voiceLoadedList.length + musicLoadedList.length) / (
     imagePathList.length + voicePathList.length + musicPathList.length
   )
