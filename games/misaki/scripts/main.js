@@ -1368,8 +1368,11 @@ const modelUpdate = () => {
           v.invincibleTimer = 30
           v.state = 'damage'
         }
-        if (v.state !== 'sword') v.attackBox = {x: 0, y: 0, w: 0, h: 0}
-        else {
+        if (
+          v.state === 'sword' &&
+          v.image <=  unityChanStat[v.state].startUpLength &&
+          unityChanStat[v.state].activeLength < v.image
+        ) {
           v.attackBox = {
             y: v.y - size * 1.5,
             w: size * 1.5,
@@ -1377,7 +1380,7 @@ const modelUpdate = () => {
           }
           const l = size * .5
           v.attackBox.x = v.direction === 'left' ? v.x - (v.attackBox.w + l) : v.x + l
-        }
+        } else v.attackBox = {x: 0, y: 0, w: 0, h: 0}
         if (v.life <= 0) enemies.splice(i, 1)
       }
     })
@@ -1620,7 +1623,17 @@ const viewUpdate = () => {
           v.imageTimer = 0
         }
       } else if (v.state === 'sword') {
-        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
+        const u = unityChanStat[v.state]
+        if (
+          (
+            v.imageTimer <= u.startUp * u.startUpLength &&
+            v.imageTimer % u.startUp === 0) || (
+            v.imageTimer <= u.startUp * u.startUpLength + u.active * u.activeLength &&
+            v.imageTimer % u.active === 0) || (
+            v.imageTimer <= u.startUp * u.startUpLength + u.active * u.activeLength + u.recovery * u.recoveryLength &&
+            v.imageTimer % u.recovery === 0
+          )
+        ) {
           v.image += 1
           if (v.image === imageListObject.kohaku[v.state].length) {
             v.image -= imageListObject.kohaku[v.state].length
