@@ -812,17 +812,17 @@ let cooltime = {
   slide: 2, slideLimit: 45
 }
 let action = {
-  up: 'w', right: 'd', down: 's', left: 'a', jump: ['i', 'l', 'space'],
-  attack: 'k', accel: 'j', map: 'm', status: 'g', hitbox: 'h'
+  up: ['w'], right: ['d'], down: ['s'], left: ['a'], jump: ['i', 'l', 'space'],
+  attack: ['k'], accel: ['j']
+}
+let toggle = {
+  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
 }
 let keyTimestamp = {pressed: {}, released: {}}
 Object.values(action).forEach(act => {
   keyTimestamp.pressed[act] = -1
   keyTimestamp.released[act] = 0
 })
-let toggle = {
-  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
-}
 const keyObjects = {
   shift: 16,
   space: 32,
@@ -888,22 +888,21 @@ const input = () => {
   })
 }
 const modelUpdate = () => {
-  console.log(player.state)
   if (player.state === 'crouch') player.state = 'idle'
-  if (key[action.down] && player.landFlag && !player.grapFlag) {
-    if (key[action.down] === 1) player.timeStamp.crouch = frame
+  if (action.down.some(v => key[v]) && player.landFlag && !player.grapFlag) {
+    if (action.down.some(v => key[v] === 1)) player.timeStamp.crouch = frame
     player.state = 'crouch'
   }
   const walkProhibitionList = ['crouch', 'punch', 'kick', 'damage']
   if ( // walk
     !walkProhibitionList.some(v => v === player.state) &&
-    !(key[action.left] && key[action.right])
+    !(action.left.some(v => key[v]) && action.right.some(v => key[v]))
   ) {
     let speed = dashConstant
-    speed = key[action.left] && -speed < player.dx ? -speed
+    speed = action.left.some(v => key[v]) && -speed < player.dx ? -speed
     : key[action.left] && -dashThreshold < player.dx ? -speed / 4
-    : key[action.right] && player.dx < speed ? speed
-    : key[action.right] && player.dx < dashThreshold ? speed / 4
+    : action.right.some(v => key[v]) && player.dx < speed ? speed
+    : action.right.some(v => key[v]) && player.dx < dashThreshold ? speed / 4
     : 0
     speed = player.landFlag ? speed : speed / 3 // aerial brake
     player.dx += speed
@@ -949,7 +948,7 @@ const modelUpdate = () => {
     }
   }
   { // wall grap
-    if (player.wallFlag && !player.landFlag && 0 < player.dy && key[action.up]) {
+    if (player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v])) {
       if (
         (player.wallFlag === 'left' && player.direction === 'right') ||
         (player.wallFlag === 'right' && player.direction === 'left')
@@ -959,7 +958,7 @@ const modelUpdate = () => {
         player.grapFlag = true
       }
     }
-    if (!(player.wallFlag && !player.landFlag && 0 < player.dy && key[action.up])) {
+    if (!(player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v]))) {
       player.grapFlag = false
     }
   }
@@ -990,24 +989,24 @@ const modelUpdate = () => {
   { // attack
     const actionList = ['crouch', 'slide', 'punch', 'kick']
     if ( // punch
-      key[action.attack] &&
-      !key[action.left] &&
-      !key[action.right] &&
+      action.attack.some(v => key[v]) &&
+      !action.left.some(v => key[v]) &&
+      !action.right.some(v => key[v]) &&
       player.landFlag &&
       !actionList.some(v => v === player.state) &&
-      player.timeStamp.attack <= keyTimestamp.released[action.attack]
+      action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
     ) {
       player.timeStamp.attack = frame
       player.state = 'punch'
       imageStat.punch.time = 0
     }
     if ( // kick
-      key[action.attack]&&
+      action.attack.some(v => key[v]) &&
       player.landFlag &&
       !actionList.some(v => v === player.state) && (
-      frame - 6 <= keyTimestamp.pressed[action.left] ||
-      frame - 6 <= keyTimestamp.pressed[action.right]) &&
-      player.timeStamp.attack <= keyTimestamp.released[action.attack]
+      action.left.some(v => frame - 6 <= keyTimestamp.pressed[v]) ||
+      action.right.some(v => frame - 6 <= keyTimestamp.pressed[v])) &&
+      action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
     ) {
       player.timeStamp.attack = frame
       player.state = 'kick'
@@ -1015,13 +1014,13 @@ const modelUpdate = () => {
     }
     if (cooltime.slide === 0) {
       if ( // slide
-        key[action.attack] && (
-        key[action.left] || key[action.right]) &&
+        action.attack.some(v => key[v]) &&
+        (action.left.some(v => key[v]) || action.right.some(v => key[v])) &&
         !actionList.some(v => v === player.state) &&
         player.landFlag &&
         !player.wallFlag &&
         !slide.flag &&
-        player.timeStamp.attack <= keyTimestamp.released[action.attack]
+        action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
       ) {
         const slideSpeed = slideConstant < player.dx ? boostConstant
         : player.dx < -slideConstant ? -boostConstant : 0
@@ -1039,7 +1038,7 @@ const modelUpdate = () => {
       if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
       else cooltime.slide -= 1
     }
-    if (!key[action.accel]) slide.flag = false
+    if (!action.accel.some(v => key[v])) slide.flag = false
     // if ( // accel
     //   player.action !== 'crouch' && !jump.step
     // ) {
@@ -1483,7 +1482,7 @@ const modelUpdate = () => {
         player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
         player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
       ) {
-        if (key[action.up]) {
+        if (action.up.some(v => key[v])) {
           enterGate(v.stage, v.address.x, v.address.y)
         }
       }
@@ -1491,17 +1490,17 @@ const modelUpdate = () => {
   }
   const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
   player.direction = ((
-    key[action.left] && key[action.right]) || !player.landFlag ||
+    action.left.some(v => key[v]) && action.right.some(v => key[v])) || !player.landFlag ||
     turnProhibitionList.some(v => v === player.state)
   ) ? player.direction
-  : (key[action.left]) ? 'left'
-  : (key[action.right]) ? 'right'
+  : action.left.some(v => key[v]) ? 'left'
+  : action.right.some(v => key[v]) ? 'right'
   : player.direction
   if (!turnProhibitionList.some(v => v === player.state)) {
-    if (key[action.right] && player.dx < dashConstant * brakeConstant) player.state = 'turn'
-    if (key[action.left] && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
+    if (action.right.some(v => key[v]) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
+    if (action.left.some(v => key[v]) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
     if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-    if (key[action.left] && key[action.right]) player.state = 'idle'
+    if (action.left.some(v => key[v]) && action.right.some(v => key[v])) player.state = 'idle'
   }
   const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
   if (!stateList.some(v => v === player.state)) {
@@ -1582,7 +1581,7 @@ const viewUpdate = () => {
     if (i.condition === imageListObject.misaki[player.state].length) {
       i.condition -= imageListObject.misaki[player.state].length
       i.time = 0
-      if (!(player.wallFlag && key[action.left] && key[action.right])) player.state = 'walk'
+      if (!(player.wallFlag && action.left.some(v => key[v]) && action.right.some(v => key[v]))) player.state = 'walk'
     }
   } else if (player.state === 'run') {
     const i = imageStat[player.state]
