@@ -889,7 +889,11 @@ const input = () => {
 }
 const modelUpdate = () => {
   if (player.state === 'crouch') player.state = 'idle'
-  if (action.down.some(v => key[v]) && player.landFlag && !player.grapFlag) {
+  const crouchProhibitionList = ['run']
+  if (
+    action.down.some(v => key[v]) && player.landFlag && !player.grapFlag &&
+    !crouchProhibitionList.some(v => v === player.state)
+    ) {
     if (action.down.some(v => key[v] === 1)) player.timeStamp.crouch = frame
     player.state = 'crouch'
   }
