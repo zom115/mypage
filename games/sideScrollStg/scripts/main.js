@@ -140,6 +140,18 @@ const itemProcess = () => {
     if (v.x < 0) itemList.splice(i, 1)
   })
 }
+const collisionDetect = () => {
+  const itemLangeObject = {x: size * (3 / 4), y: size / 2}
+  itemList.forEach(v => {
+    if (v.x - itemLangeObject.x <= ownPositionObject.x &&
+      ownPositionObject.x <= v.x + itemLangeObject.x &&
+      v.y - itemLangeObject.y <= ownPositionObject.y &&
+      ownPositionObject.y <= v.y + itemLangeObject.y
+      ) {
+      console.log('detect!!!!')
+    }
+  })
+}
 const drawBackground = () => {
   context.fillStyle = 'black'
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -225,6 +237,7 @@ const main = () => {
   ownMoveProcess()
   ownShotProcess()
   itemProcess()
+  collisionDetect()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   drawBackground()
