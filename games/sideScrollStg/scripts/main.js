@@ -104,7 +104,7 @@ const ownMoveProcess = () => {
 const ownShotProcess = () => {
   const restrictValue = 3
   const distance = size / 2
-  if (key.k === 1 && ownShotList.length <= restrictValue) {
+  if (key.k === 1 && ownShotList.length + 1 <= restrictValue) {
     ownShotList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
   }
   ownShotList.forEach((v, i) => {
