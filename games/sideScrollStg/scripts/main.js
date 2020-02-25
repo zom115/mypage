@@ -4,6 +4,7 @@ const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 const ownShotList = []
+const itemList = [{x: canvas.offsetWidth / 4, y: canvas.offsetHeight / 2}]
 const starList = []
 const starDensity = 1 / 10
 const makeStar = () => {
@@ -132,6 +133,12 @@ const ownShotProcess = () => {
     if (canvas.offsetWidth <= v.x) {ownShotList.splice(i, 1)}
   })
 }
+const itemProcess = () => {
+  const distance = size / 16
+  itemList.forEach(v => {
+    // v.x -= distance
+  })
+}
 const drawBackground = () => {
   context.fillStyle = 'black'
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -139,6 +146,34 @@ const drawBackground = () => {
   makeStar()
   context.fillStyle = 'white'
   starList.forEach((v, i) => context.fillRect(canvas.offsetWidth - i, v, 1, 1))
+}
+const drawItem = () => {
+  itemList.forEach(v => {
+    context.fillStyle = 'white'
+    context.beginPath()
+    context.moveTo(v.x - size * (3 / 4), v.y - size / 2)
+    context.lineTo(v.x - size * (1 / 4), v.y - size / 3)
+    context.lineTo(v.x + size * (1 / 4), v.y - size / 3)
+    context.lineTo(v.x + size * (3 / 4), v.y - size / 2)
+    context.lineTo(v.x + size * (1 / 2), v.y - size * (1 / 6))
+    context.lineTo(v.x + size * (3 / 4), v.y)
+    context.lineTo(v.x + size * (1 / 2), v.y + size * (1 / 6))
+    context.lineTo(v.x + size * (3 / 4), v.y + size / 2)
+    context.lineTo(v.x + size * (1 / 4), v.y + size / 3)
+    context.lineTo(v.x - size * (1 / 4), v.y + size / 3)
+    context.lineTo(v.x - size * (3 / 4), v.y + size / 2)
+    context.lineTo(v.x - size * (1 / 2), v.y + size * (1 / 6))
+    context.lineTo(v.x - size * (3 / 4), v.y)
+    context.lineTo(v.x - size * (1 / 2), v.y - size * (1 / 6))
+    context.fill()
+    context.fillStyle = 'orangered'
+    context.beginPath()
+    context.moveTo(v.x - size * (1 / 3), v.y - size * (1 / 5))
+    context.lineTo(v.x + size * (1 / 3), v.y - size * (1 / 5))
+    context.lineTo(v.x + size * (1 / 3), v.y + size * (1 / 5))
+    context.lineTo(v.x - size * (1 / 3), v.y + size * (1 / 5))
+    context.fill()
+  })
 }
 const drawOwn = () => {
   context.fillStyle = 'white'
@@ -159,16 +194,16 @@ const drawOwn = () => {
   context.fill()
   context.beginPath()
   context.arc(ownPositionObject.x, ownPositionObject.y, size / 8, 0, Math.PI * 2, false)
-  context.fillStyle = context.strokeStyle = 'red'
+  context.fillStyle = 'red'
   context.fill()
 }
 const drawShot = () => {
   ownShotList.forEach(v => {
-    context.fillStyle = context.strokeStyle = 'white'
+    context.fillStyle = 'white'
     context.beginPath()
     context.moveTo(v.x, v.y)
-    context.lineTo(v.x-size / 2, v.y)
-    context.lineTo(v.x-size / 2, v.y - size / 8)
+    context.lineTo(v.x - size / 2, v.y)
+    context.lineTo(v.x - size / 2, v.y - size / 8)
     context.lineTo(v.x, v.y - size / 8)
     context.fill()
   })
@@ -188,11 +223,13 @@ const main = () => {
   input()
   ownMoveProcess()
   ownShotProcess()
+  itemProcess()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   drawBackground()
-  drawOwn()
+  drawItem()
   drawShot()
+  drawOwn()
   showFps()
   window.requestAnimationFrame(main)
 }
