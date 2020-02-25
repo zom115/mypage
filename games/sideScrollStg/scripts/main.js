@@ -4,6 +4,7 @@ const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 const ownShotList = []
+const itemStock = 0
 const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2}]
 const starList = []
 const starDensity = 1 / 10
@@ -147,8 +148,9 @@ const collisionDetect = () => {
       ownPositionObject.x <= v.x + itemLangeObject.x &&
       v.y - itemLangeObject.y <= ownPositionObject.y &&
       ownPositionObject.y <= v.y + itemLangeObject.y
-      ) {
-      console.log('detect!!!!')
+    ) {
+      if (itemStock < 7) itemStock += 1
+      else itemStock = 0
     }
   })
 }
@@ -221,6 +223,27 @@ const drawShot = () => {
     context.fill()
   })
 }
+const drawHUD = () => {
+  // context.fillStyle = 'gray'
+  // context.fillRect(0, canvas.offsetHeight * (15 / 16), canvas.offsetWidth, canvas.offsetHeight * (1 / 16))
+  context.save()
+  context.fillStyle = 'royalblue'
+  context.strokeStyle = 'black'
+  context.globalAlpha = .5
+  for (let i = 0; i < 6; i++) {
+    context.fillRect(
+      size * 6 + i * size * 7,
+      canvas.offsetHeight * (15 / 16),
+      size * 7,
+      canvas.offsetHeight * (1 / 24))
+    context.strokeRect(
+      size * 6 + i * size * 7,
+      canvas.offsetHeight * (15 / 16),
+      size * 7,
+      canvas.offsetHeight * (1 / 24))
+  }
+  context.restore()
+}
 const showFps = () => {
   timestampList.push(Date.now())
   timestampList.forEach((v, i) => {
@@ -244,6 +267,7 @@ const main = () => {
   drawItem()
   drawShot()
   drawOwn()
+  drawHUD()
   showFps()
   window.requestAnimationFrame(main)
 }
