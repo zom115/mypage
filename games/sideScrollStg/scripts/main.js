@@ -3,7 +3,8 @@ const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
-const ownShotList = [{x: canvas.offsetWidth / 4, y: canvas.offsetHeight / 4.5}]
+const ownShotList = []
+const timestampList = [] // for calc. fps
 const keyObjects = {
   shift: 16,
   space: 32,
@@ -144,6 +145,17 @@ const drawShot = () => {
     context.fill()
   })
 }
+const showFps = () => {
+  timestampList.push(Date.now())
+  timestampList.forEach((v, i) => {
+    if (v < Date.now() - 1e3) timestampList.splice(i, 1)
+  })
+  context.font = `${size}px sans-serif`
+  context.fillStyle = 'white'
+  context.textAlign = 'right'
+  context.fillText(
+    `${timestampList.length - 1} fps`, canvas.offsetWidth - size, size * 1.5)
+}
 const main = () => {
   input()
   ownMoveProcess()
@@ -152,6 +164,7 @@ const main = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   drawOwn(ownPositionObject)
   drawShot()
+  showFps()
   window.requestAnimationFrame(main)
 }
 main()
