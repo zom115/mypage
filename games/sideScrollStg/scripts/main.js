@@ -141,6 +141,15 @@ const itemProcess = () => {
     if (v.x < 0) itemList.splice(i, 1)
   })
 }
+const itemUseProcess = () => {
+  const speedUp = () => {
+    ownMovedistance += ownMovedistance
+  }
+  if (key.j === 1) {
+    if (itemStock === 1) speedUp()
+    itemStock = 0
+  }
+}
 const collisionDetect = () => {
   const itemLangeObject = {x: size * (3 / 4), y: size / 2}
   itemList.forEach((v, i) => {
@@ -262,6 +271,7 @@ const main = () => {
   ownMoveProcess()
   ownShotProcess()
   itemProcess()
+  itemUseProcess()
   collisionDetect()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
