@@ -3,6 +3,7 @@ const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
+let ownMovedistance = size / 16
 const ownShotList = []
 let itemStock = 0
 const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2}]
@@ -77,7 +78,6 @@ const input = () => {
   })
 }
 const ownMoveProcess = () => {
-  const distance = size / 16
   const keyList = ['w', 'd', 's', 'a']
   let crossKeyState = 0
   keyList.forEach((v, i) => {
@@ -93,25 +93,25 @@ const ownMoveProcess = () => {
   //    12 | 4 ,14 |  6
   // 納得いかん。w, a押下時に追加でd押下すると左上に進むのが自然でしょ
   if (crossKeyState === 1 || crossKeyState === 11) {
-    ownPositionObject.y -= distance
+    ownPositionObject.y -= ownMovedistance
   } else if (crossKeyState === 2 || crossKeyState === 7) {
-    ownPositionObject.x += distance
+    ownPositionObject.x += ownMovedistance
   } else if (crossKeyState === 4 || crossKeyState === 14) {
-    ownPositionObject.y += distance
+    ownPositionObject.y += ownMovedistance
   } else if (crossKeyState === 8 || crossKeyState === 13) {
-    ownPositionObject.x -= distance
+    ownPositionObject.x -= ownMovedistance
   } else if (crossKeyState === 3) {
-    ownPositionObject.x += distance / Math.SQRT2
-    ownPositionObject.y -= distance / Math.SQRT2
+    ownPositionObject.x += ownMovedistance / Math.SQRT2
+    ownPositionObject.y -= ownMovedistance / Math.SQRT2
   } else if (crossKeyState === 6) {
-    ownPositionObject.x += distance / Math.SQRT2
-    ownPositionObject.y += distance / Math.SQRT2
+    ownPositionObject.x += ownMovedistance / Math.SQRT2
+    ownPositionObject.y += ownMovedistance / Math.SQRT2
   } else if (crossKeyState === 9) {
-    ownPositionObject.x -= distance / Math.SQRT2
-    ownPositionObject.y -= distance / Math.SQRT2
+    ownPositionObject.x -= ownMovedistance / Math.SQRT2
+    ownPositionObject.y -= ownMovedistance / Math.SQRT2
   } else if (crossKeyState === 12) {
-    ownPositionObject.x -= distance / Math.SQRT2
-    ownPositionObject.y += distance / Math.SQRT2
+    ownPositionObject.x -= ownMovedistance / Math.SQRT2
+    ownPositionObject.y += ownMovedistance / Math.SQRT2
   }
   screenMarginObject = {x: size, y: size / 4}
   if (ownPositionObject.x < screenMarginObject.x) ownPositionObject.x = screenMarginObject.x
