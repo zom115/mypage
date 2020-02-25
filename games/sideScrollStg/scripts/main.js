@@ -5,7 +5,7 @@ const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 const ownShotList = []
 const timestampList = [] // for calc. fps
-const keyObjects = {
+const keyObject = {
   shift: 16,
   space: 32,
   a: 65,
@@ -36,14 +36,14 @@ const keyObjects = {
   z: 90
 }
 const key = {}
-Object.keys(keyObjects).forEach(v => {
+Object.keys(keyObject).forEach(v => {
   key[`${v}Flag`] = false
   key[v] = 0
 })
 document.addEventListener('keydown', e => {
-  Object.entries(keyObjects).forEach(([k, v]) => {
+  Object.entries(keyObject).forEach(([k, v]) => {
     if (e.keyCode === v) key[k + 'Flag'] = true
-    if (e.keyCode === keyObjects.space) {
+    if (e.keyCode === keyObject.space) {
       key[`${k}Flag`] = true
       if (e.preventDefault) e.preventDefault()
       else e.keyCode = 0
@@ -51,7 +51,7 @@ document.addEventListener('keydown', e => {
   })
 }, false)
 document.addEventListener('keyup', e => {
-  Object.entries(keyObjects).forEach(([k, v]) => {
+  Object.entries(keyObject).forEach(([k, v]) => {
     if (e.keyCode === v) {
       key[`${k}Flag`] = false
       key[k] = 0
@@ -59,7 +59,7 @@ document.addEventListener('keyup', e => {
   })
 }, false)
 const input = () => {
-  Object.keys(keyObjects).forEach(v => {
+  Object.keys(keyObject).forEach(v => {
     if (key[`${v}Flag`]) key[v] += 1
   })
 }
