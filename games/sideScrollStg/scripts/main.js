@@ -100,6 +100,15 @@ const ownMoveProcess = () => {
     ownPositionObject.x -= distance / Math.SQRT2
     ownPositionObject.y += distance / Math.SQRT2
   }
+  screenMarginObject = {x: size, y: size / 4}
+  if (ownPositionObject.x < screenMarginObject.x) ownPositionObject.x = screenMarginObject.x
+  if (canvas.offsetWidth - screenMarginObject.x < ownPositionObject.x) {
+    ownPositionObject.x = canvas.offsetWidth - screenMarginObject.x
+  }
+  if (ownPositionObject.y < screenMarginObject.y) ownPositionObject.y = screenMarginObject.y
+  if (canvas.offsetHeight - screenMarginObject.y < ownPositionObject.y) {
+    ownPositionObject.y = canvas.offsetHeight - screenMarginObject.y
+  }
 }
 const ownShotProcess = () => {
   const restrictValue = 3
