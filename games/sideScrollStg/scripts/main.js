@@ -5,6 +5,8 @@ const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 let ownMovedistance = size / 16
 const ownShotList = []
+const enemyNameList = ['small']
+const enemyList = [{name: 'small', x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}]
 let itemStock = 0
 const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2}]
 const starList = []
@@ -200,6 +202,16 @@ const drawItem = () => {
     context.fill()
   })
 }
+const drawEnemy = () => {
+  enemyList.forEach(v => {
+    if (v.name === enemyNameList[0]) {
+      context.fillStyle = 'blue'
+      context.beginPath()
+      context.arc(v.x, v.y, size / 2, 0, Math.PI * 2, false)
+      context.fill()
+    }
+  })
+}
 const drawOwn = () => {
   context.fillStyle = 'white'
   const offset = {x: ownPositionObject.x - size, y: ownPositionObject.y - size / 2}
@@ -234,8 +246,6 @@ const drawShot = () => {
   })
 }
 const drawHUD = () => {
-  // context.fillStyle = 'gray'
-  // context.fillRect(0, canvas.offsetHeight * (15 / 16), canvas.offsetWidth, canvas.offsetHeight * (1 / 16))
   context.save()
   context.fillStyle = 'royalblue'
   context.lineWidth = size / 8
@@ -277,6 +287,7 @@ const main = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   drawBackground()
   drawItem()
+  drawEnemy()
   drawShot()
   drawOwn()
   drawHUD()
