@@ -5,9 +5,16 @@ const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 const ownShotList = []
 const starList = []
-for (let i = 0; i < canvas.offsetWidth; i++) {
-  starList.push(Math.random() * canvas.offsetHeight)
+const starDensity = 1 / 10
+const makeStar = () => {
+  const falseNum = -1
+  if (starList.length < 1 / starDensity || starList[1 / starDensity] === falseNum) {
+    starList.unshift(falseNum)
+  } else if (starList.length === starDensity || starList[1 / starDensity] !== falseNum) {
+    starList.unshift(Math.random() * canvas.offsetHeight)
+  }
 }
+for (let i = 0; i < canvas.offsetWidth; i++) makeStar(i)
 const timestampList = [] // for calc. fps
 const keyObject = {
   shift: 16,
@@ -128,13 +135,10 @@ const ownShotProcess = () => {
 const drawBackground = () => {
   context.fillStyle = 'black'
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  starList.push(Math.random() * canvas.offsetHeight)
-  if (canvas.offsetWidth < starList.length) starList.shift()
+  starList.pop()
+  makeStar()
   context.fillStyle = 'white'
-  starList.forEach((v, i) => {
-    context.fillRect(i, v, 1, 1)
-
-  })
+  starList.forEach((v, i) => context.fillRect(canvas.offsetWidth - i, v, 1, 1))
 }
 const drawOwn = () => {
   context.fillStyle = 'white'
