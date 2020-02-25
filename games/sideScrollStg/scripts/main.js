@@ -112,9 +112,9 @@ const ownShotProcess = () => {
     if (canvas.offsetWidth <= v.x) {ownShotList.splice(i, 1)}
   })
 }
-const drawOwn = (position) => {
+const drawOwn = () => {
   context.fillStyle = 'white'
-  const offset = {x: position.x - size, y: position.y - size / 2}
+  const offset = {x: ownPositionObject.x - size, y: ownPositionObject.y - size / 2}
   context.beginPath()
   context.moveTo(offset.x, offset.y)
   context.lineTo(offset.x + size / 5, offset.y)
@@ -130,7 +130,7 @@ const drawOwn = (position) => {
   context.lineTo(offset.x + size * (1 / 3), offset.y + size * (1 / 3))
   context.fill()
   context.beginPath()
-  context.arc(position.x, position.y, size / 8, 0, Math.PI * 2, false)
+  context.arc(ownPositionObject.x, ownPositionObject.y, size / 8, 0, Math.PI * 2, false)
   context.fillStyle = context.strokeStyle = 'red'
   context.fill()
 }
@@ -162,7 +162,7 @@ const main = () => {
   ownShotProcess()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  drawOwn(ownPositionObject)
+  drawOwn()
   drawShot()
   showFps()
   window.requestAnimationFrame(main)
