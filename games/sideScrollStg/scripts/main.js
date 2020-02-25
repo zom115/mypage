@@ -3,6 +3,7 @@ const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
+const ownShotList = [{x: canvas.offsetWidth / 4, y: canvas.offsetHeight / 4.5}]
 const keyObjects = {
   shift: 16,
   space: 32,
@@ -61,7 +62,7 @@ const input = () => {
     if (key[`${v}Flag`]) key[v] += 1
   })
 }
-const ownProcess = () => {
+const ownMoveProcess = () => {
   const distance = size / 16
   const keyList = ['w', 'd', 's', 'a']
   let crossKeyState = 0
@@ -99,8 +100,19 @@ const ownProcess = () => {
     ownPositionObject.y += distance / Math.SQRT2
   }
 }
+const ownShotProcess = () => {
+  const restrictValue = 3
+  const distance = size / 2
+  if (key.k === 1 && ownShotList.length <= restrictValue) {
+    ownShotList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
+  }
+  ownShotList.forEach((v, i) => {
+    v.x += distance
+    if (canvas.offsetWidth <= v.x) {ownShotList.splice(i, 1)}
+  })
+}
 const drawOwn = (position) => {
-  context.fillStyle = context.strokeStyle = 'white'
+  context.fillStyle = 'white'
   const offset = {x: position.x - size, y: position.y - size / 2}
   context.beginPath()
   context.moveTo(offset.x, offset.y)
@@ -121,12 +133,25 @@ const drawOwn = (position) => {
   context.fillStyle = context.strokeStyle = 'red'
   context.fill()
 }
+const drawShot = () => {
+  ownShotList.forEach(v => {
+    context.fillStyle = context.strokeStyle = 'white'
+    context.beginPath()
+    context.moveTo(v.x, v.y)
+    context.lineTo(v.x-size / 2, v.y)
+    context.lineTo(v.x-size / 2, v.y - size / 8)
+    context.lineTo(v.x, v.y - size / 8)
+    context.fill()
+  })
+}
 const main = () => {
   input()
-  ownProcess()
+  ownMoveProcess()
+  ownShotProcess()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   drawOwn(ownPositionObject)
+  drawShot()
   window.requestAnimationFrame(main)
 }
 main()
