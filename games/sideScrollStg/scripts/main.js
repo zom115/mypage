@@ -4,7 +4,7 @@ const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 const ownShotList = []
-const itemList = [{x: canvas.offsetWidth / 4, y: canvas.offsetHeight / 2}]
+const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2}]
 const starList = []
 const starDensity = 1 / 10
 const makeStar = () => {
@@ -135,8 +135,9 @@ const ownShotProcess = () => {
 }
 const itemProcess = () => {
   const distance = size / 16
-  itemList.forEach(v => {
-    // v.x -= distance
+  itemList.forEach((v, i) => {
+    v.x -= distance
+    if (v.x < 0) itemList.splice(i, 1)
   })
 }
 const drawBackground = () => {
