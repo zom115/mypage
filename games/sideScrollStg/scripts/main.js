@@ -4,6 +4,10 @@ const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
 const ownShotList = []
+const starList = []
+for (let i = 0; i < canvas.offsetWidth; i++) {
+  starList.push(Math.random() * canvas.offsetHeight)
+}
 const timestampList = [] // for calc. fps
 const keyObject = {
   shift: 16,
@@ -121,6 +125,17 @@ const ownShotProcess = () => {
     if (canvas.offsetWidth <= v.x) {ownShotList.splice(i, 1)}
   })
 }
+const drawBackground = () => {
+  context.fillStyle = 'black'
+  context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  starList.push(Math.random() * canvas.offsetHeight)
+  if (canvas.offsetWidth < starList.length) starList.shift()
+  context.fillStyle = 'white'
+  starList.forEach((v, i) => {
+    context.fillRect(i, v, 1, 1)
+
+  })
+}
 const drawOwn = () => {
   context.fillStyle = 'white'
   const offset = {x: ownPositionObject.x - size, y: ownPositionObject.y - size / 2}
@@ -171,6 +186,7 @@ const main = () => {
   ownShotProcess()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  drawBackground()
   drawOwn()
   drawShot()
   showFps()
