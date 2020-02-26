@@ -4,6 +4,7 @@ const context = canvas.getContext`2d`
 let startTime = Date.now()
 const size = 16
 const ownStateObject = {
+  distance: size / 16,
   shotList: [],
   missileList: [],
   doubleList: [],
@@ -13,7 +14,6 @@ const ownStateObject = {
 }
 const optionList = []
 let crossKeyState = 0
-let ownMoveDistance = size / 16
 const speedUpRate = size / 16
 const ownShotSizeObject = {x: size / 2, y: size / 8}
 const missileRadius = size / 4
@@ -130,40 +130,40 @@ const input = () => {
     if (key[`${v}Flag`]) key[v] += 1
   })
 }
-const moveProcess = (positionObject, state) => {
+const moveProcess = (object, state, distance) => {
   //     9 | 1 ,11 |  3
   // 8, 13 |       |  2 ,7
   //    12 | 4 ,14 |  6
   // 納得いかん。w, a押下時に追加でd押下すると左上に進むのが自然でしょ
   if (state === 1 || state === 11) {
-    positionObject.y -= ownMoveDistance
+    object.y -= distance
   } else if (state === 2 || state === 7) {
-    positionObject.x += ownMoveDistance
+    object.x += distance
   } else if (state === 4 || state === 14) {
-    positionObject.y += ownMoveDistance
+    object.y += distance
   } else if (state === 8 || state === 13) {
-    positionObject.x -= ownMoveDistance
+    object.x -= distance
   } else if (state === 3) {
-    positionObject.x += ownMoveDistance / Math.SQRT2
-    positionObject.y -= ownMoveDistance / Math.SQRT2
+    object.x += distance / Math.SQRT2
+    object.y -= distance / Math.SQRT2
   } else if (state === 6) {
-    positionObject.x += ownMoveDistance / Math.SQRT2
-    positionObject.y += ownMoveDistance / Math.SQRT2
+    object.x += distance / Math.SQRT2
+    object.y += distance / Math.SQRT2
   } else if (state === 9) {
-    positionObject.x -= ownMoveDistance / Math.SQRT2
-    positionObject.y -= ownMoveDistance / Math.SQRT2
+    object.x -= distance / Math.SQRT2
+    object.y -= distance / Math.SQRT2
   } else if (state === 12) {
-    positionObject.x -= ownMoveDistance / Math.SQRT2
-    positionObject.y += ownMoveDistance / Math.SQRT2
+    object.x -= distance / Math.SQRT2
+    object.y += distance / Math.SQRT2
   }
   const screenMarginObject = {x: size, y: size / 4}
-  if (positionObject.x < screenMarginObject.x) positionObject.x = screenMarginObject.x
-  if (canvas.offsetWidth - screenMarginObject.x < positionObject.x) {
-    positionObject.x = canvas.offsetWidth - screenMarginObject.x
+  if (object.x < screenMarginObject.x) object.x = screenMarginObject.x
+  if (canvas.offsetWidth - screenMarginObject.x < object.x) {
+    object.x = canvas.offsetWidth - screenMarginObject.x
   }
-  if (positionObject.y < screenMarginObject.y) positionObject.y = screenMarginObject.y
-  if (canvas.offsetHeight - screenMarginObject.y < positionObject.y) {
-    positionObject.y = canvas.offsetHeight - screenMarginObject.y
+  if (object.y < screenMarginObject.y) object.y = screenMarginObject.y
+  if (canvas.offsetHeight - screenMarginObject.y < object.y) {
+    object.y = canvas.offsetHeight - screenMarginObject.y
   }
 }
 const ownMoveProcess = () => {
@@ -177,7 +177,7 @@ const ownMoveProcess = () => {
       i === 3 ? crossKeyState += 8 : false
     }
   })
-  moveProcess(ownStateObject, crossKeyState)
+  moveProcess(ownStateObject, crossKeyState, ownStateObject.distance)
 }
 const enemyProcess = () => {
   if (startTime + formationFlagList[0] < Date.now()) {
@@ -237,7 +237,7 @@ const itemUseProcess = () => {
       itemStock === 3 && doubleFlag) || (
       itemStock === 4 && 1 < laserCount) ||
       (itemStock === 5 && 3 < optionList.length)) return
-    if (itemStock === 1) ownMoveDistance += speedUpRate
+    if (itemStock === 1) ownStateObject.distance += speedUpRate
     else if (itemStock === 2) missileFlag = true
     else if (itemStock === 3) {
       doubleFlag = true
@@ -253,6 +253,7 @@ const itemUseProcess = () => {
         doubleList: [],
         laserList: [],
         log: [],
+        distance: [],
         x: ownStateObject.x,
         y: ownStateObject.y})
     }
@@ -334,10 +335,12 @@ const optionProcess = () => {
     laserProcess(v)
     if (0 < crossKeyState) {
       v.log.push(crossKeyState)
+      v.distance.push(ownStateObject.distance)
       v.count = v.count === null || interval * (1 + i) < v.count ? null : v.count += 1
       if (v.count === null) {
-        moveProcess(v, v.log[0])
+        moveProcess(v, v.log[0], v.distance[0])
         v.log.shift()
+        v.distance.shift()
       }
     }
   })
