@@ -138,20 +138,6 @@ const titleProcess = () => {
     if (titleState === screenList[1]) startTimestamp = Date.now()
   }
 }
-const pauseAcceptor = () => {
-  const pauseProcess = () => {
-    screenState = screenList[2]
-    pauseTimestamp = Date.now()
-  }
-  const resumeProcess = () => {
-    screenState = screenList[1]
-    startTimestamp += Date.now() - pauseTimestamp
-  }
-  if (key.p === 1) {
-    screenState === screenList[1] ? pauseProcess() :
-    resumeProcess()
-  }
-}
 const moveProcess = (object, state, distance) => {
   //     9 | 1 ,11 |  3
   // 8, 13 |       |  2 ,7
@@ -466,6 +452,32 @@ const collisionDetect = () => {
       ownLange + enemySizeList[0]) console.log('detect!!')
   })
 }
+const pauseAcceptor = () => {
+  const pauseProcess = () => {
+    screenState = screenList[2]
+    pauseTimestamp = Date.now()
+  }
+  const resumeProcess = () => {
+    screenState = screenList[1]
+    startTimestamp += Date.now() - pauseTimestamp
+  }
+  if (key.p === 1) {
+    screenState === screenList[1] ? pauseProcess() :
+    resumeProcess()
+  }
+}
+const settingProcess = () => {
+  const currentIndex = Object.keys(settingObject).findIndex(v => v === settingState)
+  if (key.w === 1) {
+    settingState = currentIndex === 0 ?
+    Object.keys(settingObject)[Object.keys(settingObject).length - 1] :
+    Object.keys(settingObject)[currentIndex - 1]
+  } else if (key.s === 1) {
+    settingState = currentIndex === Object.keys(settingObject).length - 1 ?
+    Object.keys(settingObject)[0] :
+    Object.keys(settingObject)[currentIndex + 1]
+  }
+}
 const drawBackground = () => {
   context.fillStyle = 'black'
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -732,6 +744,7 @@ const pause = () => {
   drawPause()
 }
 const setting = () => {
+  settingProcess()
   drawSetting()
 }
 const loop = () => {
