@@ -239,7 +239,7 @@ const collisionDetect = () => {
     }
   })
   enemyList.forEach((e, iE) => {
-    // shot
+    // enemy * shot
     // -- normal shot description --
     // hit judgement is bullet top or bottom only
     ownShotList.forEach((s, iS) => {
@@ -257,7 +257,19 @@ const collisionDetect = () => {
         ownShotList.splice(iS, 1)
       }
     })
-    // enemy
+    // enemy * missile
+    ownMissileList.forEach((m, iM) => {
+      if (
+        Math.sqrt((m.x - e.x) ** 2 + (m.y - e.y) ** 2) < missileRadius + enemySizeList[0]
+      ) {
+        const platoon = e.platoon
+        enemyList.splice(iE, 1)
+        if (enemyList.every(v => v.platoon !== platoon)) itemList.push({x: e.x, y: e.y})
+        ownMissileList.splice(iM, 1)
+      }
+
+    })
+    // enemy * own
     const ownLange = size / 8
     if (
       Math.sqrt((ownPositionObject.x - e.x) ** 2 + (ownPositionObject.y - e.y) ** 2) <
