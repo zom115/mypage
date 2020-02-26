@@ -325,16 +325,29 @@ const drawShot = () => {
 }
 const drawHUD = () => {
   context.save()
-  context.fillStyle = 'royalblue'
+  context.textAlign = 'center'
   context.lineWidth = size / 8
   context.globalAlpha = .5
   for (let i = 0; i < 6; i++) {
-    context.strokeStyle = i + 1 === itemStock ? 'yellow' : 'black'
+    context.fillStyle = 'royalblue'
     context.fillRect(
       size * 6 + i * size * 7,
       canvas.offsetHeight * (15 / 16),
       size * 7,
       canvas.offsetHeight * (1 / 24))
+    context.fillStyle = 'white'
+    const text = i === 0 ? 'SPEED UP' :
+    i === 1 ? 'MISSILE' :
+    i === 2 ? 'DOUBLE' :
+    i === 3 ? 'LASER' :
+    i === 4 ? 'OPTION' :
+    i === 5 ? '?' : ''
+    context.fillText(
+      text,
+      size * 9.5 + i * size * 7,
+      canvas.offsetHeight * (249 / 256)
+      )
+    context.strokeStyle = i + 1 === itemStock ? 'yellow' : 'black'
     context.strokeRect(
       size * 6 + i * size * 7,
       canvas.offsetHeight * (15 / 16),
