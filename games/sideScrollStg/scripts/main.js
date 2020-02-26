@@ -27,7 +27,8 @@ const doubleRotateList = [
   ownShotSizeObject.x / 2 * Math.sin(Math.PI *(3/ 4)) +
     ownShotSizeObject.y / 2 * Math.cos(Math.PI *(3/ 4))
 ]
-let doubleFlag = true // temporary
+let doubleFlag = false
+let laserCount = 0
 const ownShotList = []
 const missileList = []
 const doubleList = []
@@ -216,10 +217,17 @@ const itemUseProcess = () => {
   }
   if (key.j === 1) {
     if ((itemStock === 2 && missileFlag) ||
-      (itemStock === 3 && doubleFlag)) return
+      (itemStock === 3 && doubleFlag) ||
+      (itemStock === 4 && 1 < laserCount)) return
     if (itemStock === 1) speedUp()
     else if (itemStock === 2) missileFlag = true
-    else if (itemStock === 3) doubleFlag = true
+    else if (itemStock === 3) {
+      doubleFlag = true
+      laserCount = 0
+    } else if (itemStock === 4) {
+      laserCount += 1
+      doubleFlag = false
+    }
     itemStock = 0
   }
 }
@@ -442,7 +450,8 @@ const drawHUD = () => {
     const text = i === 0 ? 'SPEED UP' :
     i === 1 && !missileFlag ? 'MISSILE' :
     i === 2 && !doubleFlag ? 'DOUBLE' :
-    i === 3 ? 'LASER' :
+    i === 3 && laserCount < 1 ? 'LASER' :
+    i === 3 && laserCount === 1 ? 'LASER # 2' :
     i === 4 ? 'OPTION' :
     i === 5 ? '?' : ''
     context.fillText(
