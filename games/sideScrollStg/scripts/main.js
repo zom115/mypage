@@ -302,6 +302,24 @@ const collisionDetect = () => {
       ) hitProcess(iE, iM, missileList)
 
     })
+    // enemy * double
+    doubleList.forEach((d, iD) => {
+      const offset = {x: d.x - ownShotSizeObject.x / 2, y: d.y + ownShotSizeObject.y / 2}
+      if (
+        Math.sqrt((
+          e.x - offset.x + doubleRotateList[0]) ** 2 + (
+          e.y - offset.y + doubleRotateList[1]) ** 2) < enemySizeList[0] ||
+        Math.sqrt((
+          e.x - offset.x + doubleRotateList[2]) ** 2 + (
+          e.y - offset.y + doubleRotateList[3]) ** 2) < enemySizeList[0] ||
+        Math.sqrt((
+          e.x - offset.x + doubleRotateList[4]) ** 2 + (
+          e.y - offset.y + doubleRotateList[5]) ** 2) < enemySizeList[0] ||
+        Math.sqrt((
+          e.x - offset.x + doubleRotateList[6]) ** 2 + (
+          e.y - offset.y + doubleRotateList[7]) ** 2) < enemySizeList[0]
+      ) hitProcess(iE, iD, doubleList)
+    })
     // enemy * own
     const ownLange = size / 8
     if (
