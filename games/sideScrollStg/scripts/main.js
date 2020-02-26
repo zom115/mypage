@@ -518,9 +518,9 @@ const drawLaser = () => {
 }
 const drawOption = () => {
   context.save()
+  context.scale(2, 1)
   context.fillStyle = 'red'
   optionList.forEach(v => {
-    context.scale(2, 1)
     context.beginPath()
     context.arc(v.x / 2, v.y, size * (1 / 3), 0, Math.PI * 2, false)
     context.fill()
