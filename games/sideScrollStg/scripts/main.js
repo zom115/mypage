@@ -7,7 +7,7 @@ let titleState = screenList[1]
 const settingList = ['HIT DISP', 'FPS COUNTER']
 const settingObject = {}
 settingList.forEach(v => settingObject[v] = false)
-let settingState = Object.keys(settingObject)[0]
+let settingState = settingList[0]
 let startTimestamp = 0
 const size = 16
 const ownStateObject = {
@@ -474,15 +474,15 @@ const settingProcess = () => {
     titleState = screenList[1]
     return
   }
-  const currentIndex = Object.keys(settingObject).findIndex(v => v === settingState)
+  const currentIndex = settingList.findIndex(v => v === settingState)
   if (key.w === 1) {
     settingState = currentIndex === 0 ?
-    Object.keys(settingObject)[Object.keys(settingObject).length - 1] :
-    Object.keys(settingObject)[currentIndex - 1]
+    settingList[settingList.length - 1] :
+    settingList[currentIndex - 1]
   } else if (key.s === 1) {
-    settingState = currentIndex === Object.keys(settingObject).length - 1 ?
-    Object.keys(settingObject)[0] :
-    Object.keys(settingObject)[currentIndex + 1]
+    settingState = currentIndex === settingList.length - 1 ?
+    settingList[0] :
+    settingList[currentIndex + 1]
   }
   const switchBool = () => {
     settingObject[settingState] = !settingObject[settingState]
@@ -711,7 +711,7 @@ const drawSetting = () => {
   const object = {
     x: offsetFirstColumn.x - columnSpace,
     y: offsetFirstColumn.y - size * (1 / 4) +
-      columnSpace * Object.keys(settingObject).findIndex(v => v === settingState)
+      columnSpace * settingList.findIndex(v => v === settingState)
   }
   drawOwnMachine(object)
   context.fillStyle = 'white'
