@@ -2,8 +2,8 @@
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const screenStateList = ['title', 'main', 'pause']
-let screenState = screenStateList[1]
-let startTimestamp = Date.now()
+let screenState = screenStateList[0]
+let startTimestamp = 0
 const size = 16
 const ownStateObject = {
   distance: size / 16,
@@ -125,6 +125,12 @@ const input = () => {
   Object.keys(keyObject).forEach(v => {
     if (key[`${v}Flag`]) key[v] += 1
   })
+}
+const runAcceptor = () => {
+  if (key.k === 1) {
+    screenState = screenStateList[1]
+    startTimestamp = Date.now()
+  }
 }
 const pauseAcceptor = () => {
   const pauseProcess = () => {
@@ -639,7 +645,9 @@ const drawPause = () => {
   context.textAlign = 'center'
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 }
-const title = () => {}
+const title = () => {
+  runAcceptor()
+}
 const main = () => {
   pauseAcceptor()
   ownMoveProcess()
