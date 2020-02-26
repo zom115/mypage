@@ -526,9 +526,9 @@ const drawEnemy = () => {
     }
   })
 }
-const drawOwn = () => {
+const drawOwnMachine = object => {
   context.fillStyle = 'white'
-  const offset = {x: ownStateObject.x - size, y: ownStateObject.y - size / 2}
+  const offset = {x: object.x - size, y: object.y - size / 2}
   context.beginPath()
   context.moveTo(offset.x, offset.y)
   context.lineTo(offset.x + size / 5, offset.y)
@@ -543,6 +543,9 @@ const drawOwn = () => {
   context.lineTo(offset.x + size * (1 / 5), offset.y + size * (3 / 6))
   context.lineTo(offset.x + size * (1 / 3), offset.y + size * (1 / 3))
   context.fill()
+}
+const drawOwn = () => {
+  drawOwnMachine(ownStateObject)
   context.beginPath()
   context.arc(ownStateObject.x, ownStateObject.y, size / 8, 0, Math.PI * 2, false)
   context.fillStyle = 'red'
@@ -649,7 +652,12 @@ const  drawTitle = () => {
   context.fillText('TITLE', canvas.offsetWidth / 2, canvas.offsetHeight * (1 / 3))
   context.font = `${size}px sans-serif`
   context.fillStyle = 'white'
-  context.fillText('PLAYER 1', canvas.offsetWidth / 2, canvas.offsetHeight * (2 / 3))
+  context.fillText('PLAYER 1', canvas.offsetWidth / 2, canvas.offsetHeight * (3 / 4))
+  context.fillText('SETTING', canvas.offsetWidth / 2, canvas.offsetHeight * (7 / 8))
+  const object = titleState === screenStateList[1] ?
+  {x: canvas.offsetWidth * (2 / 5), y: canvas.offsetHeight * (3 / 4) - size * (1 / 4)} :
+  {x: canvas.offsetWidth * (2 / 5), y: canvas.offsetHeight * (7 / 8) - size * (1 / 4)}
+  drawOwnMachine(object)
 }
 const drawPause = () => {
   context.font = `${size}px sans-serif`
