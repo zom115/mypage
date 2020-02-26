@@ -2,7 +2,7 @@
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
-const screenList = ['title', 'main', 'pause', 'setting']
+const screenList = ['title', 'main', 'pause', 'continue', 'setting']
 let screenState = screenList[0]
 let titleState = screenList[1]
 const settingList = ['HIT DISP', 'FPS COUNTER']
@@ -42,7 +42,7 @@ let ownStateObject = {
   y: 0
 }
 let crossKeyState = 0
-let left = 2
+let left = 0
 let optionList = []
 let missileFlag = false
 let doubleFlag = false
@@ -144,7 +144,7 @@ const initialize = () => {
     x: canvas.offsetWidth / 8,
     y: canvas.offsetHeight / 2
   }
-  left = 2
+  left = left === 0 ? 2 : left -= 1
   optionList = []
   missileFlag = false
   doubleFlag = false
@@ -162,7 +162,7 @@ const initialize = () => {
 }
 const titleProcess = () => {
   if (key.w === 1 || key.s === 1) {
-    titleState = titleState === screenList[1] ? screenList[3] : screenList[1]
+    titleState = titleState === screenList[1] ? screenList[4] : screenList[1]
   }
   if (key.k === 1) {
     screenState = titleState
@@ -488,10 +488,8 @@ const collisionDetect = () => {
           barrierCount -= 1
         } else {
           console.log('detect!!')
-          if (0 < left) {
-            left -= 1
-            initialize()
-          }
+          if (0 < left) initialize()
+          else screenState = screenList[3]
         }
       }
   })
@@ -822,7 +820,7 @@ const loop = () => {
   else if (screenState === screenList[1]) {
     main()
   } else if (screenState === screenList[2]) pause()
-  else if (screenState === screenList[3]) setting()
+  else if (screenState === screenList[4]) setting()
   showFps()
   requestAnimationFrame(loop)
 }
