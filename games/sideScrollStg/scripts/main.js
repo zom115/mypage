@@ -639,6 +639,16 @@ const showFps = () => {
   context.fillText(
     `${timestampList.length - 1} fps`, canvas.offsetWidth - size, size * 1.5)
 }
+const  drawTitle = () => {
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  context.font = `${size * 5}px sans-serif`
+  context.fillStyle = 'white'
+  context.textAlign = 'center'
+  context.fillText('TITLE', canvas.offsetWidth / 2, canvas.offsetHeight * (1 / 3))
+  context.font = `${size}px sans-serif`
+  context.fillStyle = 'white'
+  context.fillText('PLAYER 1', canvas.offsetWidth / 2, canvas.offsetHeight * (2 / 3))
+}
 const drawPause = () => {
   context.font = `${size}px sans-serif`
   context.fillStyle = 'white'
@@ -647,6 +657,7 @@ const drawPause = () => {
 }
 const title = () => {
   runAcceptor()
+  drawTitle()
 }
 const main = () => {
   pauseAcceptor()
@@ -662,7 +673,6 @@ const main = () => {
   optionProcess()
   collisionDetect()
   // draw process
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   drawBackground()
   drawItem()
   drawEnemy()
