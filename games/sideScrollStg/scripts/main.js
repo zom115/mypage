@@ -74,6 +74,7 @@ const landObject = {
   floor: [0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 1, 1, 0]
 }
 let pauseTimestamp = 0
+let containueTimestamp = 0
 const timestampList = [] // for calc. fps
 const keyObject = {
   shift: 16,
@@ -504,6 +505,8 @@ const pauseProcess = () => {
   if (key.p === 1) screenState === screenList[1] ? pauseProcess() : resumeProcess()
 }
 const retryProcess = () => {
+  if (containueTimestamp === 0) containueTimestamp = Date.now()
+  if (1e4 < Date.now() - containueTimestamp) screenState = screenList[0]
   if (key.k) {
     screenState = screenList[1]
     initialize()
@@ -742,7 +745,10 @@ const drawContinue = () => {
   context.font = `${size}px sans-serif`
   context.fillStyle = 'white'
   context.textAlign = 'center'
-  context.fillText('CONTINUE?', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+  context.fillText('CONTINUE?', canvas.offsetWidth / 2, canvas.offsetHeight * (1 / 3))
+  const time = (1e4 - (Date.now() - containueTimestamp))
+  const text = time < 1e3 ? 0 : ('0' + time).slice(1, 2)
+  context.fillText(text, canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 }
 const drawSetting = () => {
   const offsetFirstColumn = {
