@@ -571,10 +571,10 @@ const drawOwnMachine = object => {
   context.lineTo(offset.x + size * (1 / 3), offset.y + size * (1 / 3))
   context.fill()
 }
-const drawOwn = () => {
-  drawOwnMachine(ownStateObject)
+const drawHitDisp = object => {
+  if (!settingObject[settingList[0]]) return
   context.beginPath()
-  context.arc(ownStateObject.x, ownStateObject.y, size / 8, 0, Math.PI * 2, false)
+  context.arc(object.x, object.y, size / 8, 0, Math.PI * 2, false)
   context.fillStyle = 'red'
   context.fill()
 }
@@ -754,7 +754,8 @@ const main = () => {
   drawMissile(ownStateObject)
   drawDouble(ownStateObject)
   drawLaser(ownStateObject)
-  drawOwn()
+  drawOwnMachine(ownStateObject)
+  drawHitDisp(ownStateObject)
   drawHUD()
 }
 const pause = () => {
