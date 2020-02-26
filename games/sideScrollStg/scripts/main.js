@@ -1,6 +1,7 @@
 {'use strict'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
+let startTime = Date.now()
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
@@ -8,7 +9,10 @@ const ownShotWidth = size / 2
 const ownShotList = []
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
-const enemyList = [{name: 'small', x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 2}]
+const enemyFormationList = ['S', 'Z']
+const formationFlagList = [2e3, 5e3]
+let formationCount = 0 // temporary
+const enemyList = []
 let itemStock = 0
 const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2}]
 const starList = []
@@ -126,6 +130,50 @@ const ownMoveProcess = () => {
   if (canvas.offsetHeight - screenMarginObject.y < ownPositionObject.y) {
     ownPositionObject.y = canvas.offsetHeight - screenMarginObject.y
   }
+}
+const enemyProcess = () => {
+  if (startTime + formationFlagList[0] < Date.now()) {
+    formationFlagList.shift()
+    formationCount += 1
+    let formation
+    let appearHeight
+    if (formationCount === 1) {
+      formation = enemyFormationList[0]
+      appearHeight = canvas.offsetHeight / 4
+    } else if (formationCount === 2) {
+      formation = enemyFormationList[1]
+      appearHeight = canvas.offsetHeight * (3 / 4)
+    }
+    for (let i = 0; i < 5; i++) {
+      enemyList.push({
+        flag: [false, false],
+        name: enemyNameList[0],
+        type: formation,
+        x: canvas.offsetWidth + i * size * 3,
+        y: appearHeight
+      })
+    }
+  }
+  const distance = size / 6
+  enemyList.forEach((v, i) => {
+    if (v.type === enemyFormationList[0]) {
+      if (v.x < canvas.offsetWidth * (2 / 5)) v.flag[0] = true
+      if (v.flag[0] && !v.flag[1]) {
+        v.x += distance / Math.SQRT2
+        v.y += distance / Math.SQRT2
+      }
+      if (v.flag[0] && canvas.offsetWidth * (3 / 5) < v.x) v.flag[1] = true
+      if ((!v.flag[0] && !v.flag[1]) || v.flag[0] && v.flag[1]) v.x -= distance
+    } else if (v.type === enemyFormationList[1]) {
+      if (v.x < canvas.offsetWidth * (2 / 5)) v.flag[0] = true
+      if (v.flag[0] && !v.flag[1]) {
+        v.x += distance / Math.SQRT2
+        v.y -= distance / Math.SQRT2
+      }
+      if (v.flag[0] && canvas.offsetWidth * (3 / 5) < v.x) v.flag[1] = true
+      if ((!v.flag[0] && !v.flag[1]) || v.flag[0] && v.flag[1]) v.x -= distance
+    }
+  })
 }
 const ownShotProcess = () => {
   const restrictValue = 3
@@ -300,6 +348,7 @@ const showFps = () => {
 const main = () => {
   input()
   ownMoveProcess()
+  enemyProcess()
   ownShotProcess()
   itemProcess()
   itemUseProcess()
