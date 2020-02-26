@@ -1,9 +1,11 @@
 {'use strict'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const screenStateList = ['title', 'main', 'pause', 'setting']
-let screenState = screenStateList[0]
-let titleState = screenStateList[1]
+const screenList = ['title', 'main', 'pause', 'setting']
+let screenState = screenList[0]
+let titleState = screenList[1]
+const settingObject = {'HIT DISP': false, 'FPS COUNTER': false}
+let settingState = Object.keys(settingObject)[0]
 let startTimestamp = 0
 const size = 16
 const ownStateObject = {
@@ -129,24 +131,24 @@ const input = () => {
 }
 const titleProcess = () => {
   if (key.w === 1 || key.s === 1) {
-    titleState = titleState === screenStateList[1] ? screenStateList[3] : screenStateList[1]
+    titleState = titleState === screenList[1] ? screenList[3] : screenList[1]
   }
   if (key.k === 1) {
     screenState = titleState
-    if (titleState === screenStateList[1]) startTimestamp = Date.now()
+    if (titleState === screenList[1]) startTimestamp = Date.now()
   }
 }
 const pauseAcceptor = () => {
   const pauseProcess = () => {
-    screenState = screenStateList[2]
+    screenState = screenList[2]
     pauseTimestamp = Date.now()
   }
   const resumeProcess = () => {
-    screenState = screenStateList[1]
+    screenState = screenList[1]
     startTimestamp += Date.now() - pauseTimestamp
   }
   if (key.p === 1) {
-    screenState === screenStateList[1] ? pauseProcess() :
+    screenState === screenList[1] ? pauseProcess() :
     resumeProcess()
   }
 }
@@ -645,7 +647,6 @@ const showFps = () => {
     `${timestampList.length - 1} fps`, canvas.offsetWidth - size, size * 1.5)
 }
 const  drawTitle = () => {
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.font = `${size * 5}px sans-serif`
   context.fillStyle = 'white'
   context.textAlign = 'center'
@@ -654,7 +655,7 @@ const  drawTitle = () => {
   context.fillStyle = 'white'
   context.fillText('PLAYER 1', canvas.offsetWidth / 2, canvas.offsetHeight * (3 / 4))
   context.fillText('SETTING', canvas.offsetWidth / 2, canvas.offsetHeight * (7 / 8))
-  const object = titleState === screenStateList[1] ?
+  const object = titleState === screenList[1] ?
   {x: canvas.offsetWidth * (2 / 5), y: canvas.offsetHeight * (3 / 4) - size * (1 / 4)} :
   {x: canvas.offsetWidth * (2 / 5), y: canvas.offsetHeight * (7 / 8) - size * (1 / 4)}
   drawOwnMachine(object)
@@ -664,6 +665,31 @@ const drawPause = () => {
   context.fillStyle = 'white'
   context.textAlign = 'center'
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+}
+const drawSetting = () => {
+  const offsetFirstColumn = {
+    x: canvas.offsetWidth  * (1 / 5),
+    y: canvas.offsetWidth  * (1 / 5)
+  }
+  const offsetSecondColumn = {
+    x: canvas.offsetWidth  * (2 / 5),
+    y: canvas.offsetWidth  * (1 / 5)
+  }
+  const columnSpace = size * 2
+  context.font = `${size}px sans-serif`
+  context.fillStyle = 'white'
+  context.textAlign = 'left'
+  context.fillText('SETTING', offsetFirstColumn.x, offsetFirstColumn.y - columnSpace * 2)
+  Object.entries(settingObject).forEach(([k, v], i) => {
+    context.fillText(k, offsetFirstColumn.x, offsetFirstColumn.y + columnSpace * i)
+    context.fillText(v, offsetSecondColumn.x, offsetSecondColumn.y + columnSpace * i)
+  })
+  const object = {
+    x: offsetFirstColumn.x - columnSpace,
+    y: offsetFirstColumn.y - size * (1 / 4) +
+      columnSpace * Object.keys(settingObject).findIndex(v => v === settingState)
+  }
+  drawOwnMachine(object)
 }
 const title = () => {
   titleProcess()
@@ -705,11 +731,16 @@ const pause = () => {
   pauseAcceptor()
   drawPause()
 }
+const setting = () => {
+  drawSetting()
+}
 const loop = () => {
   input()
-  if (screenState === screenStateList[0]) title()
-  else if (screenState === screenStateList[1]) main()
-  else if (screenState === screenStateList[2]) pause()
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  if (screenState === screenList[0]) title()
+  else if (screenState === screenList[1]) main()
+  else if (screenState === screenList[2]) pause()
+  else if (screenState === screenList[3]) setting()
   requestAnimationFrame(loop)
 }
 loop()
