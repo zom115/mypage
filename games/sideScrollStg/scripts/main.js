@@ -44,6 +44,10 @@ const enemyList = []
 let itemStock = 0
 const itemList = [
   {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth * (7/8), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth, y: canvas.offsetHeight / 2}
@@ -491,6 +495,17 @@ const drawLaser = () => {
     context.fillRect(v.x - v.w, v.y - laserHeight / 2, v.w, laserHeight)
   })
 }
+const drawOption = () => {
+  context.save()
+  context.fillStyle = 'red'
+  optionList.forEach(v => {
+    context.scale(2, 1)
+    context.beginPath()
+    context.arc(v.x / 2, v.y, size * (1 / 3), 0, Math.PI * 2, false)
+    context.fill()
+  })
+  context.restore()
+}
 const drawHUD = () => {
   context.save()
   context.textAlign = 'center'
@@ -558,6 +573,7 @@ const main = () => {
   drawMissile()
   drawDouble()
   drawLaser()
+  drawOption()
   drawOwn()
   drawHUD()
   showFps()
