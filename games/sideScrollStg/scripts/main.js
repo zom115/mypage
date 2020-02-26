@@ -467,6 +467,11 @@ const pauseAcceptor = () => {
   }
 }
 const settingProcess = () => {
+  if (key.j === 1) {
+    screenState = screenList[0]
+    titleState = screenList[1]
+    return
+  }
   const currentIndex = Object.keys(settingObject).findIndex(v => v === settingState)
   if (key.w === 1) {
     settingState = currentIndex === 0 ?
@@ -483,7 +488,6 @@ const settingProcess = () => {
   if (key.k === 1) switchBool()
   if (key.a === 1 && settingObject[settingState]) switchBool()
   if (key.d === 1 && !settingObject[settingState]) switchBool()
-
 }
 const drawBackground = () => {
   context.fillStyle = 'black'
@@ -755,6 +759,7 @@ const setting = () => {
   drawSetting()
 }
 const loop = () => {
+  console.log(titleState)
   input()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (screenState === screenList[0]) title()
