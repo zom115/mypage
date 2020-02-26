@@ -492,7 +492,7 @@ const collisionDetect = () => {
       }
   })
 }
-const pauseAcceptor = () => {
+const pauseProcess = () => {
   const pauseProcess = () => {
     screenState = screenList[2]
     pauseTimestamp = Date.now()
@@ -501,12 +501,9 @@ const pauseAcceptor = () => {
     screenState = screenList[1]
     startTimestamp += Date.now() - pauseTimestamp
   }
-  if (key.p === 1) {
-    screenState === screenList[1] ? pauseProcess() :
-    resumeProcess()
-  }
+  if (key.p === 1) screenState === screenList[1] ? pauseProcess() : resumeProcess()
 }
-const retryAcceptor = () => {
+const retryProcess = () => {
   if (key.k) {
     screenState = screenList[1]
     initialize()
@@ -783,7 +780,7 @@ const title = () => {
   drawTitle()
 }
 const main = () => {
-  pauseAcceptor()
+  pauseProcess()
   ownMoveProcess()
   enemyProcess()
   itemProcess()
@@ -815,11 +812,11 @@ const main = () => {
   drawHUD()
 }
 const pause = () => {
-  pauseAcceptor()
+  pauseProcess()
   drawPause()
 }
 const retry = () => {
-  retryAcceptor()
+  retryProcess()
   drawContinue()
 }
 const setting = () => {
@@ -827,7 +824,6 @@ const setting = () => {
   drawSetting()
 }
 const loop = () => {
-  // console.log(formationFlagOriginalList,formationFlagList)
   input()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (screenState === screenList[0]) title()
