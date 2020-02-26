@@ -6,6 +6,7 @@ const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
 const speedUpRate = size / 16
+let missileFlag = false
 const ownShotSizeObject = {x: size / 2, y: size / 8}
 const ownShotList = []
 const enemyNameList = ['small']
@@ -200,7 +201,9 @@ const itemUseProcess = () => {
     ownMovedistance += speedUpRate
   }
   if (key.j === 1) {
+    if (itemStock === 2 && missileFlag) return
     if (itemStock === 1) speedUp()
+    else if (itemStock === 2 && !missileFlag) missileFlag = true
     itemStock = 0
   }
 }
@@ -337,7 +340,7 @@ const drawHUD = () => {
       canvas.offsetHeight * (1 / 24))
     context.fillStyle = 'white'
     const text = i === 0 ? 'SPEED UP' :
-    i === 1 ? 'MISSILE' :
+    i === 1 && !missileFlag ? 'MISSILE' :
     i === 2 ? 'DOUBLE' :
     i === 3 ? 'LASER' :
     i === 4 ? 'OPTION' :
