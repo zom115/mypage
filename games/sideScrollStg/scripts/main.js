@@ -570,8 +570,6 @@ const drawOwnMachine = object => {
   context.lineTo(offset.x + size * (1 / 5), offset.y + size * (3 / 6))
   context.lineTo(offset.x + size * (1 / 3), offset.y + size * (1 / 3))
   context.fill()
-}
-const drawHitDisp = object => {
   if (!settingObject[settingList[0]]) return
   context.beginPath()
   context.arc(object.x, object.y, size / 8, 0, Math.PI * 2, false)
@@ -716,6 +714,7 @@ const drawSetting = () => {
       columnSpace * Object.keys(settingObject).findIndex(v => v === settingState)
   }
   drawOwnMachine(object)
+  context.fillStyle = 'white'
   context.textAlign = 'right'
   context.fillText(
     'RETURN TO TITLE [J]',
@@ -755,7 +754,6 @@ const main = () => {
   drawDouble(ownStateObject)
   drawLaser(ownStateObject)
   drawOwnMachine(ownStateObject)
-  drawHitDisp(ownStateObject)
   drawHUD()
 }
 const pause = () => {
