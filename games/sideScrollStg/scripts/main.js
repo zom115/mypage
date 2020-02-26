@@ -1,31 +1,16 @@
 {'use strict'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
+const size = 16
 const screenList = ['title', 'main', 'pause', 'setting']
 let screenState = screenList[0]
 let titleState = screenList[1]
 const settingList = ['HIT DISP', 'FPS COUNTER']
 const settingObject = {}
 settingList.forEach(v => settingObject[v] = false)
-let settingState = settingList[0]
-let startTimestamp = 0
-const size = 16
-const ownStateObject = {
-  distance: size / 16,
-  shotList: [],
-  missileList: [],
-  doubleList: [],
-  laserList: [],
-  x: canvas.offsetWidth / 8,
-  y: canvas.offsetHeight / 2
-}
-let left = 2
-const optionList = []
-let crossKeyState = 0
 const speedUpRate = size / 16
 const ownShotSizeObject = {x: size / 2, y: size / 8}
 const missileRadius = size / 4
-let missileFlag = false
 const doubleRotateList = [
   ownShotSizeObject.x / 2 * Math.cos(Math.PI *(3/ 4)) -
     - ownShotSizeObject.y / 2 * Math.sin(Math.PI *(3/ 4)),
@@ -44,20 +29,35 @@ const doubleRotateList = [
   ownShotSizeObject.x / 2 * Math.sin(Math.PI *(3/ 4)) +
     ownShotSizeObject.y / 2 * Math.cos(Math.PI *(3/ 4))
 ]
-let doubleFlag = false
 const laserHeight = size / 8
+let settingState = settingList[0]
+let startTimestamp = 0
+let ownStateObject = {
+  distance: 0,
+  shotList: [],
+  missileList: [],
+  doubleList: [],
+  laserList: [],
+  x: 0,
+  y: 0
+}
+let crossKeyState = 0
+let left = 2
+let optionList = []
+let missileFlag = false
+let doubleFlag = false
 let laserCount = 0
 let barrierCount = 0
+let itemStock = 0
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
 const formationFlagOriginalList = [2e3, 5e3, 8e3, 11e3, 20e3]
 let formationFlagList = formationFlagOriginalList.concat()
 let formationCount = 0 // temporary
-const enemyList = []
-let itemStock = 0
-const itemList = []
-const starList = []
+let fieldEnemyList = []
+let fieldItemList = []
+let starList = []
 const starDensity = 1 / 10
 const makeStar = () => {
   const falseNum = -1
@@ -67,7 +67,6 @@ const makeStar = () => {
     starList.unshift(Math.random() * canvas.offsetHeight)
   }
 }
-for (let i = 0; i < canvas.offsetWidth; i++) makeStar(i)
 let landFlag = false
 let landCount = 0
 const landObject = {
@@ -134,13 +133,40 @@ const input = () => {
     if (key[`${v}Flag`]) key[v] += 1
   })
 }
+const initialize = () => {
+  startTimestamp = Date.now()
+  ownStateObject = {
+    distance: size / 16,
+    shotList: [],
+    missileList: [],
+    doubleList: [],
+    laserList: [],
+    x: canvas.offsetWidth / 8,
+    y: canvas.offsetHeight / 2
+  }
+  left = 2
+  optionList = []
+  missileFlag = false
+  doubleFlag = false
+  laserCount = 0
+  barrierCount = 0
+  itemStock = 0 < itemStock ? 1 : 0
+  formationFlagList = formationFlagOriginalList.concat()
+  formationCount = 0 // temporary
+  fieldEnemyList = []
+  fieldItemList = []
+  starList = []
+  for (let i = 0; i < canvas.offsetWidth; i++) makeStar(i)
+  landFlag = false
+  landCount = 0
+}
 const titleProcess = () => {
   if (key.w === 1 || key.s === 1) {
     titleState = titleState === screenList[1] ? screenList[3] : screenList[1]
   }
   if (key.k === 1) {
     screenState = titleState
-    if (titleState === screenList[1]) startTimestamp = Date.now()
+    initialize()
   }
 }
 const moveProcess = (object, state, distance) => {
@@ -206,7 +232,7 @@ const enemyProcess = () => {
       appearHeight = canvas.offsetHeight * (3 / 4)
     } else if (formationCount === 5) landFlag = true
     for (let i = 0; i < 5; i++) {
-      enemyList.push({
+      fieldEnemyList.push({
         flag: [false, false],
         name: enemyNameList[0],
         platoon: formationCount,
@@ -217,7 +243,7 @@ const enemyProcess = () => {
     }
   }
   const distance = size / 6
-  enemyList.forEach((v, i) => {
+  fieldEnemyList.forEach((v, i) => {
     if (v.type === enemyFormationList[0]) {
       if (v.x < canvas.offsetWidth * (2 / 5)) v.flag[0] = true
       if (v.flag[0] && !v.flag[1]) {
@@ -239,9 +265,9 @@ const enemyProcess = () => {
 }
 const itemProcess = () => {
   const distance = size / 16
-  itemList.forEach((v, i) => {
+  fieldItemList.forEach((v, i) => {
     v.x -= distance
-    if (v.x < 0) itemList.splice(i, 1)
+    if (v.x < 0) fieldItemList.splice(i, 1)
   })
 }
 const itemUseProcess = () => {
@@ -362,7 +388,7 @@ const optionProcess = () => {
 const collisionDetect = () => {
   // item
   const itemLangeObject = {x: size * (3 / 4), y: size / 2}
-  itemList.forEach((v, i) => {
+  fieldItemList.forEach((v, i) => {
     if (v.x - itemLangeObject.x <= ownStateObject.x &&
       ownStateObject.x <= v.x + itemLangeObject.x &&
       v.y - itemLangeObject.y <= ownStateObject.y &&
@@ -370,16 +396,16 @@ const collisionDetect = () => {
     ) {
       if (itemStock < 7) itemStock += 1
       else itemStock = 0
-      itemList.splice(i, 1)
+      fieldItemList.splice(i, 1)
     }
   })
-  enemyList.forEach((e, iE) => {
+  fieldEnemyList.forEach((e, iE) => {
     // enemy * shot
     // -- normal shot description --
     // hit judgement is bullet top or bottom only
     const hitProcess = (enemyIndex, listIndex, list) => {
-      enemyList.splice(enemyIndex, 1)
-      if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
+      fieldEnemyList.splice(enemyIndex, 1)
+      if (fieldEnemyList.every(v => v.platoon !== e.platoon)) fieldItemList.push({x: e.x, y: e.y})
       list.splice(listIndex, 1)
     }
     const shot = object => {
@@ -436,8 +462,8 @@ const collisionDetect = () => {
             e.x - l.x + l.w / 2) ** 2 + (
             e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0]
         ) {
-          enemyList.splice(iE, 1)
-          if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
+          fieldEnemyList.splice(iE, 1)
+          if (fieldEnemyList.every(v => v.platoon !== e.platoon)) fieldItemList.push({x: e.x, y: e.y})
         }
       })
     }
@@ -457,14 +483,14 @@ const collisionDetect = () => {
       Math.sqrt((ownStateObject.x - e.x) ** 2 + (ownStateObject.y - e.y) ** 2) <
       ownLange + enemySizeList[0]) {
         if (0 < barrierCount) {
-          enemyList.splice(iE, 1)
-          if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
+          fieldEnemyList.splice(iE, 1)
+          if (fieldEnemyList.every(v => v.platoon !== e.platoon)) fieldItemList.push({x: e.x, y: e.y})
           barrierCount -= 1
         } else {
           console.log('detect!!')
           if (0 < left) {
             left -= 1
-            formationFlagList = formationFlagOriginalList.concat()
+            initialize()
           }
         }
       }
@@ -532,7 +558,7 @@ const drawBackground = () => {
   }
 }
 const drawItem = () => {
-  itemList.forEach(v => {
+  fieldItemList.forEach(v => {
     context.fillStyle = 'white'
     context.beginPath()
     context.moveTo(v.x - size * (3 / 4), v.y - size / 2)
@@ -561,7 +587,7 @@ const drawItem = () => {
 }
 const drawEnemy = () => {
   context.fillStyle = 'gray'
-  enemyList.forEach(v => {
+  fieldEnemyList.forEach(v => {
     if (v.name === enemyNameList[0]) {
       context.beginPath()
       context.arc(v.x, v.y, enemySizeList[0], 0, Math.PI * 2, false)
@@ -793,8 +819,9 @@ const loop = () => {
   input()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (screenState === screenList[0]) title()
-  else if (screenState === screenList[1]) main()
-  else if (screenState === screenList[2]) pause()
+  else if (screenState === screenList[1]) {
+    main()
+  } else if (screenState === screenList[2]) pause()
   else if (screenState === screenList[3]) setting()
   showFps()
   requestAnimationFrame(loop)
