@@ -4,7 +4,9 @@ const context = canvas.getContext`2d`
 const screenList = ['title', 'main', 'pause', 'setting']
 let screenState = screenList[0]
 let titleState = screenList[1]
-const settingObject = {'HIT DISP': false, 'FPS COUNTER': false}
+const settingList = ['HIT DISP', 'FPS COUNTER']
+const settingObject = {}
+settingList.forEach(v => settingObject[v] = false)
 let settingState = Object.keys(settingObject)[0]
 let startTimestamp = 0
 const size = 16
@@ -659,6 +661,7 @@ const drawHUD = () => {
   context.restore()
 }
 const showFps = () => {
+  if (!settingObject[settingList[1]]) return
   timestampList.push(Date.now())
   timestampList.forEach((v, i) => {
     if (v < Date.now() - 1e3) timestampList.splice(i, 1)
