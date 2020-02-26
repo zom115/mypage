@@ -713,6 +713,11 @@ const drawSetting = () => {
       columnSpace * Object.keys(settingObject).findIndex(v => v === settingState)
   }
   drawOwnMachine(object)
+  context.textAlign = 'right'
+  context.fillText(
+    'RETURN TO TITLE [J]',
+    canvas.offsetWidth - offsetFirstColumn.x,
+    offsetFirstColumn.y - columnSpace * 2)
 }
 const title = () => {
   titleProcess()
