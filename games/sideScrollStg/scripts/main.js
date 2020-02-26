@@ -6,9 +6,11 @@ const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
 const speedUpRate = size / 16
-let missileFlag = false
+const missileRadius = size / 4
+let missileFlag = true // temporary
 const ownShotSizeObject = {x: size / 2, y: size / 8}
 const ownShotList = []
+const ownMissileList = []
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
@@ -16,7 +18,8 @@ const formationFlagList = [2e3, 5e3, 8e3, 11e3]
 let formationCount = 0 // temporary
 const enemyList = []
 let itemStock = 0
-const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2}]
+const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (7/8), y: canvas.offsetHeight / 2}]
 const starList = []
 const starDensity = 1 / 10
 const makeStar = () => {
@@ -179,14 +182,28 @@ const enemyProcess = () => {
   })
 }
 const ownShotProcess = () => {
-  const restrictValue = 3
+  const bulletRestrictValue = 3
+  const missileRestrictValue = 2
   const distance = size / 2
-  if (key.k === 1 && ownShotList.length + 1 <= restrictValue) {
-    ownShotList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
+  if (key.k === 1) {
+    if (ownShotList.length + 1 <= bulletRestrictValue) {
+      ownShotList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
+    }
+    if (missileFlag && ownMissileList.length + 1 <= missileRestrictValue) {
+      ownMissileList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
+    }
   }
   ownShotList.forEach((v, i) => {
     v.x += distance
-    if (canvas.offsetWidth <= v.x) {ownShotList.splice(i, 1)}
+    if (canvas.offsetWidth <= v.x) ownShotList.splice(i, 1)
+  })
+}
+const missileProcess = () => {
+  const distance = size / 6
+  ownMissileList.forEach((v, i) => {
+    v.x += distance / Math.SQRT2
+    v.y += distance / Math.SQRT2
+    if (canvas.offsetWidth <= v.x || canvas.offsetHeight <= v.y) ownMissileList.splice(i, 1)
   })
 }
 const itemProcess = () => {
@@ -326,6 +343,15 @@ const drawShot = () => {
     context.fill()
   })
 }
+const drawMissile = () => {
+  ownMissileList.forEach(v => {
+    context.fillStyle = 'lightgray'
+    context.beginPath()
+    context.arc(v.x, v.y, missileRadius, 0, Math.PI * 2, false)
+    context.fill()
+  })
+
+}
 const drawHUD = () => {
   context.save()
   context.textAlign = 'center'
@@ -375,6 +401,7 @@ const main = () => {
   ownMoveProcess()
   enemyProcess()
   ownShotProcess()
+  missileProcess()
   itemProcess()
   itemUseProcess()
   collisionDetect()
@@ -384,6 +411,7 @@ const main = () => {
   drawItem()
   drawEnemy()
   drawShot()
+  drawMissile()
   drawOwn()
   drawHUD()
   showFps()
