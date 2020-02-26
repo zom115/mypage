@@ -2,11 +2,12 @@
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
-const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 4.5}
+const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
 const ownShotList = []
 const enemyNameList = ['small']
-const enemyList = [{name: 'small', x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}]
+const enemySizeList = [size * (2 / 3)]
+const enemyList = [{name: 'small', x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 2}]
 let itemStock = 0
 const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2}]
 const starList = []
@@ -165,6 +166,11 @@ const collisionDetect = () => {
       itemList.splice(i, 1)
     }
   })
+  const ownLange = size / 8
+  enemyList.forEach((v, i) => {
+    if (Math.sqrt((ownPositionObject.x - v.x) ** 2 + (ownPositionObject.y - v.y) ** 2) <
+    ownLange + enemySizeList[0]) console.log('detect!!')
+  })
 }
 const drawBackground = () => {
   context.fillStyle = 'black'
@@ -205,9 +211,9 @@ const drawItem = () => {
 const drawEnemy = () => {
   enemyList.forEach(v => {
     if (v.name === enemyNameList[0]) {
-      context.fillStyle = 'blue'
+      context.fillStyle = 'gray'
       context.beginPath()
-      context.arc(v.x, v.y, size / 2, 0, Math.PI * 2, false)
+      context.arc(v.x, v.y, enemySizeList[0], 0, Math.PI * 2, false)
       context.fill()
     }
   })
