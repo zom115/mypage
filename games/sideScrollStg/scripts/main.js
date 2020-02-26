@@ -8,10 +8,10 @@ const ownStateObject = {
   missileList: [],
   doubleList: [],
   laserList: [],
-  optionList: [],
   x: canvas.offsetWidth / 8,
   y: canvas.offsetHeight / 2
 }
+const optionList = []
 let crossKeyState = 0
 let ownMoveDistance = size / 16
 const speedUpRate = size / 16
@@ -236,7 +236,7 @@ const itemUseProcess = () => {
     if ((itemStock === 2 && missileFlag) || (
       itemStock === 3 && doubleFlag) || (
       itemStock === 4 && 1 < laserCount) ||
-      (itemStock === 5 && 3 < ownStateObject.optionList.length)) return
+      (itemStock === 5 && 3 < optionList.length)) return
     if (itemStock === 1) ownMoveDistance += speedUpRate
     else if (itemStock === 2) missileFlag = true
     else if (itemStock === 3) {
@@ -246,7 +246,7 @@ const itemUseProcess = () => {
       laserCount += 1
       doubleFlag = false
     } else if (itemStock === 5) {
-      ownStateObject.optionList.push({
+      optionList.push({
         count: 0,
         shotList: [],
         missileList: [],
@@ -259,74 +259,79 @@ const itemUseProcess = () => {
     itemStock = 0
   }
 }
-const attackProcess = () => {
+const attackProcess = object => {
   const bulletRestrictValue = 3
   const missileRestrictValue = 2
   const doubleRestrictValue = 3
   const laserRestrictValue = 3
   if (key.k === 1) {
-    if (ownStateObject.shotList.length + 1 <= bulletRestrictValue && !laserCount) {
-      ownStateObject.shotList.push({x: ownStateObject.x + size / 2, y: ownStateObject.y})
+    if (object.shotList.length + 1 <= bulletRestrictValue && !laserCount) {
+      object.shotList.push({x: object.x + size / 2, y: object.y})
     }
-    if (missileFlag && ownStateObject.missileList.length + 1 <= missileRestrictValue) {
-      ownStateObject.missileList.push({x: ownStateObject.x + size / 2, y: ownStateObject.y})
+    if (missileFlag && object.missileList.length + 1 <= missileRestrictValue) {
+      object.missileList.push({x: object.x + size / 2, y: object.y})
     }
-    if (doubleFlag && ownStateObject.doubleList.length + 1 <= doubleRestrictValue) {
-      ownStateObject.doubleList.push({x: ownStateObject.x + size / 2, y: ownStateObject.y})
+    if (doubleFlag && object.doubleList.length + 1 <= doubleRestrictValue) {
+      object.doubleList.push({x: object.x + size / 2, y: object.y})
     }
-    if (laserCount && ownStateObject.laserList.length + 1 <= laserRestrictValue) {
-      ownStateObject.laserList.push({
+    if (laserCount && object.laserList.length + 1 <= laserRestrictValue) {
+      object.laserList.push({
         count: 0,
         w: 0,
-        x: ownStateObject.x + size / 2,
-        y: ownStateObject.y
+        x: object.x + size / 2,
+        y: object.y
       })
     }
   }
 }
-const ownShotProcess = () => {
+const shotProcess = object => {
   const distance = size / 2
-  ownStateObject.shotList.forEach((v, i) => {
+  object.shotList.forEach((v, i) => {
     v.x += distance
-    if (canvas.offsetWidth <= v.x) ownStateObject.shotList.splice(i, 1)
+    if (canvas.offsetWidth <= v.x) object.shotList.splice(i, 1)
   })
 }
-const missileProcess = () => {
+const missileProcess = object => {
   const distance = size / 6
-  ownStateObject.missileList.forEach((v, i) => {
+  object.missileList.forEach((v, i) => {
     v.x += distance / Math.SQRT2
     v.y += distance / Math.SQRT2
-    if (canvas.offsetWidth <= v.x || canvas.offsetHeight <= v.y) ownStateObject.missileList.splice(i, 1)
+    if (canvas.offsetWidth <= v.x || canvas.offsetHeight <= v.y) object.missileList.splice(i, 1)
   })
 }
-const doubleProcess = () => {
+const doubleProcess = object => {
   const distance = size / 2
-  ownStateObject.doubleList.forEach((v, i) => {
+  object.doubleList.forEach((v, i) => {
     v.x += distance / Math.SQRT2
     v.y -= distance / Math.SQRT2
-    if (canvas.offsetWidth <= v.x || v.y <= 0) ownStateObject.doubleList.splice(i, 1)
+    if (canvas.offsetWidth <= v.x || v.y <= 0) object.doubleList.splice(i, 1)
   })
 }
-const laserProcess = () => {
+const laserProcess = object => {
   const distance = size / 2
   const firstLimit = 5
   const secondLimit = 20
-  ownStateObject.laserList.forEach((v, i) => {
+  object.laserList.forEach((v, i) => {
     v.count += 1
     if ((
       laserCount === 1 && v.count < firstLimit) ||
       laserCount === 2 && v.count < secondLimit
     ) {
       v.w += distance
-      v.y = ownStateObject.y
+      v.y = object.y
     }
     v.x += distance
-    if (canvas.offsetWidth <= v.x - v.w) ownStateObject.laserList.splice(i, 1)
+    if (canvas.offsetWidth <= v.x - v.w) object.laserList.splice(i, 1)
   })
 }
 const optionProcess = () => {
   const interval = 30
-  ownStateObject.optionList.forEach((v, i) => {
+  optionList.forEach((v, i) => {
+    attackProcess(v)
+    shotProcess(v)
+    missileProcess(v)
+    doubleProcess(v)
+    laserProcess(v)
     if (0 < crossKeyState) {
       v.log.push(crossKeyState)
       v.count = v.count === null || interval * (1 + i) < v.count ? null : v.count += 1
@@ -490,9 +495,9 @@ const drawOwn = () => {
   context.fillStyle = 'red'
   context.fill()
 }
-const drawShot = () => {
+const drawShot = object => {
   context.fillStyle = 'white'
-  ownStateObject.shotList.forEach(v => {
+  object.shotList.forEach(v => {
     context.beginPath()
     context.moveTo(v.x, v.y)
     context.lineTo(v.x - ownShotSizeObject.x, v.y)
@@ -501,17 +506,17 @@ const drawShot = () => {
     context.fill()
   })
 }
-const drawMissile = () => {
+const drawMissile = object => {
   context.fillStyle = 'lightgray'
-  ownStateObject.missileList.forEach(v => {
+  object.missileList.forEach(v => {
     context.beginPath()
     context.arc(v.x, v.y, missileRadius, 0, Math.PI * 2, false)
     context.fill()
   })
 }
-const drawDouble = () => {
+const drawDouble = object => {
   context.fillStyle = 'white'
-  ownStateObject.doubleList.forEach(v => {
+  object.doubleList.forEach(v => {
     const offset = {x: v.x - ownShotSizeObject.x / 2, y: v.y + ownShotSizeObject.y / 2}
     context.beginPath()
     context.moveTo(offset.x + doubleRotateList[0], offset.y + doubleRotateList[1])
@@ -521,9 +526,9 @@ const drawDouble = () => {
     context.fill()
   })
 }
-const drawLaser = () => {
+const drawLaser = object => {
   context.fillStyle = 'deepskyblue'
-  ownStateObject.laserList.forEach(v => {
+  object.laserList.forEach(v => {
     context.fillRect(v.x - v.w, v.y - laserHeight / 2, v.w, laserHeight)
   })
 }
@@ -531,7 +536,7 @@ const drawOption = () => {
   context.save()
   context.scale(2, 1)
   context.fillStyle = 'red'
-  ownStateObject.optionList.forEach(v => {
+  optionList.forEach(v => {
     context.beginPath()
     context.arc(v.x / 2, v.y, size * (1 / 3), 0, Math.PI * 2, false)
     context.fill()
@@ -556,7 +561,7 @@ const drawHUD = () => {
     i === 2 && !doubleFlag ? 'DOUBLE' :
     i === 3 && laserCount < 1 ? 'LASER' :
     i === 3 && laserCount === 1 ? 'LASER # 2' :
-    i === 4 && ownStateObject.optionList.length < 4 ? 'OPTION' :
+    i === 4 && optionList.length < 4 ? 'OPTION' :
     i === 5 ? '?' : ''
     context.fillText(
       text,
@@ -589,11 +594,11 @@ const main = () => {
   enemyProcess()
   itemProcess()
   itemUseProcess()
-  attackProcess()
-  ownShotProcess()
-  missileProcess()
-  doubleProcess()
-  laserProcess()
+  attackProcess(ownStateObject)
+  shotProcess(ownStateObject)
+  missileProcess(ownStateObject)
+  doubleProcess(ownStateObject)
+  laserProcess(ownStateObject)
   optionProcess()
   collisionDetect()
   // draw process
@@ -601,11 +606,17 @@ const main = () => {
   drawBackground()
   drawItem()
   drawEnemy()
-  drawShot()
-  drawMissile()
-  drawDouble()
-  drawLaser()
   drawOption()
+  optionList.forEach(v => {
+    drawShot(v)
+    drawMissile(v)
+    drawDouble(v)
+    drawLaser(v)
+  })
+  drawShot(ownStateObject)
+  drawMissile(ownStateObject)
+  drawDouble(ownStateObject)
+  drawLaser(ownStateObject)
   drawOwn()
   drawHUD()
   showFps()
