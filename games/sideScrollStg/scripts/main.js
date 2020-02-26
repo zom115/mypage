@@ -19,6 +19,7 @@ const ownStateObject = {
   x: canvas.offsetWidth / 8,
   y: canvas.offsetHeight / 2
 }
+let left = 2
 const optionList = []
 let crossKeyState = 0
 const speedUpRate = size / 16
@@ -50,7 +51,8 @@ let barrierCount = 0
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
-const formationFlagList = [2e3, 5e3, 8e3, 11e3, 20e3]
+const formationFlagOriginalList = [2e3, 5e3, 8e3, 11e3, 20e3]
+let formationFlagList = formationFlagOriginalList.concat()
 let formationCount = 0 // temporary
 const enemyList = []
 let itemStock = 0
@@ -460,6 +462,10 @@ const collisionDetect = () => {
           barrierCount -= 1
         } else {
           console.log('detect!!')
+          if (0 < left) {
+            left -= 1
+            formationFlagList = formationFlagOriginalList.concat()
+          }
         }
       }
   })
@@ -783,7 +789,7 @@ const setting = () => {
   drawSetting()
 }
 const loop = () => {
-  console.log(titleState)
+  // console.log(formationFlagOriginalList,formationFlagList)
   input()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (screenState === screenList[0]) title()
