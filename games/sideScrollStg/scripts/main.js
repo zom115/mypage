@@ -365,60 +365,74 @@ const collisionDetect = () => {
       if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
       list.splice(listIndex, 1)
     }
-    ownStateObject.shotList.forEach((s, iS) => {
-      if (
-        Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
-        Math.sqrt((e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
-        Math.sqrt((e.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) < enemySizeList[0] ||
-        Math.sqrt(
-          (e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) <
-          enemySizeList[0]
-      ) hitProcess(iE, iS, ownStateObject.shotList)
-    })
-    // enemy * missile
-    ownStateObject.missileList.forEach((m, iM) => {
-      if (
-        Math.sqrt((m.x - e.x) ** 2 + (m.y - e.y) ** 2) < missileRadius + enemySizeList[0]
-      ) hitProcess(iE, iM, ownStateObject.missileList)
-
-    })
-    // enemy * double
-    ownStateObject.doubleList.forEach((d, iD) => {
-      const offset = {x: d.x - ownShotSizeObject.x / 2, y: d.y + ownShotSizeObject.y / 2}
-      if (
-        Math.sqrt((
-          e.x - offset.x + doubleRotateList[0]) ** 2 + (
-          e.y - offset.y + doubleRotateList[1]) ** 2) < enemySizeList[0] ||
-        Math.sqrt((
-          e.x - offset.x + doubleRotateList[2]) ** 2 + (
-          e.y - offset.y + doubleRotateList[3]) ** 2) < enemySizeList[0] ||
-        Math.sqrt((
-          e.x - offset.x + doubleRotateList[4]) ** 2 + (
-          e.y - offset.y + doubleRotateList[5]) ** 2) < enemySizeList[0] ||
-        Math.sqrt((
-          e.x - offset.x + doubleRotateList[6]) ** 2 + (
-          e.y - offset.y + doubleRotateList[7]) ** 2) < enemySizeList[0]
-      ) hitProcess(iE, iD, ownStateObject.doubleList)
-    })
-    // enemy * laser
-    ownStateObject.laserList.forEach(l => {
-      if (
-        Math.sqrt((
-          e.x - l.x) ** 2 + (
-          e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0] ||
-        Math.sqrt((
-          e.x - l.x + l.w) ** 2 + (
-          e.y - l.y) ** 2) < enemySizeList[0] ||
-        Math.sqrt((
-          e.x - l.x) ** 2 + (
-          e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0] ||
-        Math.sqrt((
-          e.x - l.x + l.w / 2) ** 2 + (
-          e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0]
-      ) {
-        enemyList.splice(iE, 1)
-        if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
-      }
+    const shot = object => {
+      object.shotList.forEach((s, iS) => {
+        if (
+          Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
+          Math.sqrt((e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
+          Math.sqrt((e.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) < enemySizeList[0] ||
+          Math.sqrt(
+            (e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) <
+            enemySizeList[0]
+        ) hitProcess(iE, iS, object.shotList)
+      })
+    }
+    const missile = object => {
+      object.missileList.forEach((m, iM) => {
+        if (
+          Math.sqrt((m.x - e.x) ** 2 + (m.y - e.y) ** 2) < missileRadius + enemySizeList[0]
+        ) hitProcess(iE, iM, object.missileList)
+      })
+    }
+    const double = object => {
+      object.doubleList.forEach((d, iD) => {
+        const offset = {x: d.x - ownShotSizeObject.x / 2, y: d.y + ownShotSizeObject.y / 2}
+        if (
+          Math.sqrt((
+            e.x - offset.x + doubleRotateList[0]) ** 2 + (
+            e.y - offset.y + doubleRotateList[1]) ** 2) < enemySizeList[0] ||
+          Math.sqrt((
+            e.x - offset.x + doubleRotateList[2]) ** 2 + (
+            e.y - offset.y + doubleRotateList[3]) ** 2) < enemySizeList[0] ||
+          Math.sqrt((
+            e.x - offset.x + doubleRotateList[4]) ** 2 + (
+            e.y - offset.y + doubleRotateList[5]) ** 2) < enemySizeList[0] ||
+          Math.sqrt((
+            e.x - offset.x + doubleRotateList[6]) ** 2 + (
+            e.y - offset.y + doubleRotateList[7]) ** 2) < enemySizeList[0]
+        ) hitProcess(iE, iD, object.doubleList)
+      })
+    }
+    const laser = object => {
+      object.laserList.forEach(l => {
+        if (
+          Math.sqrt((
+            e.x - l.x) ** 2 + (
+            e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0] ||
+          Math.sqrt((
+            e.x - l.x + l.w) ** 2 + (
+            e.y - l.y) ** 2) < enemySizeList[0] ||
+          Math.sqrt((
+            e.x - l.x) ** 2 + (
+            e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0] ||
+          Math.sqrt((
+            e.x - l.x + l.w / 2) ** 2 + (
+            e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0]
+        ) {
+          enemyList.splice(iE, 1)
+          if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
+        }
+      })
+    }
+    shot(ownStateObject)
+    missile(ownStateObject)
+    double(ownStateObject)
+    laser(ownStateObject)
+    optionList.forEach(v => {
+      shot(v)
+      missile(v)
+      double(v)
+      laser(v)
     })
     // enemy * own
     const ownLange = size / 8
