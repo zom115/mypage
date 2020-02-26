@@ -6,6 +6,7 @@ const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
 const ownShotWidth = size / 2
+const ownShotSizeObject = {x: size / 2, y: size / 8}
 const ownShotList = []
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
@@ -222,9 +223,17 @@ const collisionDetect = () => {
     // -- normal shot description --
     // hit judgement is bullet top or bottom only
     ownShotList.forEach((s, iS) => {
-      if (Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
-        Math.sqrt((e.x - ownShotWidth - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
+      if (
+        Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
+        ||
+        Math.sqrt((e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
+        ||
+        Math.sqrt((e.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) < enemySizeList[0] ||
+        Math.sqrt(
+          (e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) <
+          enemySizeList[0]
       ) {
+        console.log(e.x, s.x, enemySizeList[0])
         const platoon = e.platoon
         enemyList.splice(iE, 1)
         ownShotList.splice(iS, 1)
@@ -311,9 +320,9 @@ const drawShot = () => {
     context.fillStyle = 'white'
     context.beginPath()
     context.moveTo(v.x, v.y)
-    context.lineTo(v.x - ownShotWidth, v.y)
-    context.lineTo(v.x - ownShotWidth, v.y - size / 8)
-    context.lineTo(v.x, v.y - size / 8)
+    context.lineTo(v.x - ownShotSizeObject.x, v.y)
+    context.lineTo(v.x - ownShotSizeObject.x, v.y - ownShotSizeObject.y)
+    context.lineTo(v.x, v.y - ownShotSizeObject.y)
     context.fill()
   })
 }
