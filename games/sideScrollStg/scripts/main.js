@@ -315,10 +315,10 @@ const laserProcess = () => {
 }
 const optionProcess = () => {
   const interval = 30
-  optionList.forEach(v => {
+  optionList.forEach((v, i) => {
     if (0 < crossKeyState) {
       v.log.push(crossKeyState)
-      v.count = v.count === null || interval < v.count ? null : v.count += 1
+      v.count = v.count === null || interval * (1 + i) < v.count ? null : v.count += 1
       if (v.count === null) {
         moveProcess(v, v.log[0])
         v.log.shift()
