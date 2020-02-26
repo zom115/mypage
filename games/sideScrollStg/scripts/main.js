@@ -224,10 +224,8 @@ const collisionDetect = () => {
     // hit judgement is bullet top or bottom only
     ownShotList.forEach((s, iS) => {
       if (
-        Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
-        ||
-        Math.sqrt((e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
-        ||
+        Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
+        Math.sqrt((e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
         Math.sqrt((e.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) < enemySizeList[0] ||
         Math.sqrt(
           (e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) <
@@ -236,8 +234,11 @@ const collisionDetect = () => {
         console.log(e.x, s.x, enemySizeList[0])
         const platoon = e.platoon
         enemyList.splice(iE, 1)
+        if (enemyList.every(v => v.platoon !== platoon)) {
+          itemList.push({x: e.x, y: e.y})
+          console.log(itemList)
+        }
         ownShotList.splice(iS, 1)
-        if (enemyList.every(v => v.platoon !== platoon)) console.log(platoon)
       }
     })
     // enemy
