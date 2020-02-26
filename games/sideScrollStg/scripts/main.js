@@ -477,6 +477,12 @@ const settingProcess = () => {
     Object.keys(settingObject)[0] :
     Object.keys(settingObject)[currentIndex + 1]
   }
+  const switchBool = () => {
+    settingObject[settingState] = !settingObject[settingState]
+  }
+  if (key.k === 1) switchBool()
+  if (key.a === 1) switchBool()
+  if (key.d === 1) switchBool()
 }
 const drawBackground = () => {
   context.fillStyle = 'black'
