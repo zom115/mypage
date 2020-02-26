@@ -29,11 +29,12 @@ const doubleRotateList = [
 ]
 let doubleFlag = false
 const laserHeight = size / 8
-let laserCount = 1
+let laserCount = 0
 const ownShotList = []
 const missileList = []
 const doubleList = []
 const laserList = []
+const optionList = []
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
@@ -216,14 +217,12 @@ const itemProcess = () => {
   })
 }
 const itemUseProcess = () => {
-  const speedUp = () => {
-    ownMovedistance += speedUpRate
-  }
   if (key.j === 1) {
-    if ((itemStock === 2 && missileFlag) ||
-      (itemStock === 3 && doubleFlag) ||
-      (itemStock === 4 && 1 < laserCount)) return
-    if (itemStock === 1) speedUp()
+    if ((itemStock === 2 && missileFlag) || (
+      itemStock === 3 && doubleFlag) || (
+      itemStock === 4 && 1 < laserCount) ||
+      (itemStock === 5 && 3 < optionList.length)) return
+    if (itemStock === 1) ownMovedistance += speedUpRate
     else if (itemStock === 2) missileFlag = true
     else if (itemStock === 3) {
       doubleFlag = true
@@ -231,6 +230,8 @@ const itemUseProcess = () => {
     } else if (itemStock === 4) {
       laserCount += 1
       doubleFlag = false
+    } else if (itemStock === 5) {
+      optionList.push({x: ownPositionObject.x, y: ownPositionObject.y})
     }
     itemStock = 0
   }
@@ -508,7 +509,7 @@ const drawHUD = () => {
     i === 2 && !doubleFlag ? 'DOUBLE' :
     i === 3 && laserCount < 1 ? 'LASER' :
     i === 3 && laserCount === 1 ? 'LASER # 2' :
-    i === 4 ? 'OPTION' :
+    i === 4 && optionList.length < 4 ? 'OPTION' :
     i === 5 ? '?' : ''
     context.fillText(
       text,
@@ -536,6 +537,7 @@ const showFps = () => {
     `${timestampList.length - 1} fps`, canvas.offsetWidth - size, size * 1.5)
 }
 const main = () => {
+  console.log(optionList.length)
   input()
   ownMoveProcess()
   enemyProcess()
