@@ -1,8 +1,9 @@
 {'use strict'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const screenStateList = ['title', 'main', 'pause']
+const screenStateList = ['title', 'main', 'pause', 'setting']
 let screenState = screenStateList[0]
+let titleState = screenStateList[1]
 let startTimestamp = 0
 const size = 16
 const ownStateObject = {
@@ -126,6 +127,11 @@ const input = () => {
     if (key[`${v}Flag`]) key[v] += 1
   })
 }
+const titleProcess = () => {
+  if (key.w === 1 || key.s === 1) {
+    titleState = titleState === screenStateList[1] ? screenStateList[3] : screenStateList[1]
+  }
+}
 const runAcceptor = () => {
   if (key.k === 1) {
     screenState = screenStateList[1]
@@ -138,7 +144,6 @@ const pauseAcceptor = () => {
     pauseTimestamp = Date.now()
   }
   const resumeProcess = () => {
-    console.log('a')
     screenState = screenStateList[1]
     startTimestamp += Date.now() - pauseTimestamp
   }
@@ -146,7 +151,6 @@ const pauseAcceptor = () => {
     screenState === screenStateList[1] ? pauseProcess() :
     resumeProcess()
   }
-  console.log(screenState, pauseTimestamp)
 }
 const moveProcess = (object, state, distance) => {
   //     9 | 1 ,11 |  3
@@ -656,6 +660,7 @@ const drawPause = () => {
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 }
 const title = () => {
+  titleProcess()
   runAcceptor()
   drawTitle()
 }
