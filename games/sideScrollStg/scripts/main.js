@@ -753,7 +753,6 @@ const main = () => {
   drawLaser(ownStateObject)
   drawOwn()
   drawHUD()
-  showFps()
 }
 const pause = () => {
   pauseAcceptor()
@@ -771,6 +770,7 @@ const loop = () => {
   else if (screenState === screenList[1]) main()
   else if (screenState === screenList[2]) pause()
   else if (screenState === screenList[3]) setting()
+  showFps()
   requestAnimationFrame(loop)
 }
 loop()
