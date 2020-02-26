@@ -131,11 +131,9 @@ const titleProcess = () => {
   if (key.w === 1 || key.s === 1) {
     titleState = titleState === screenStateList[1] ? screenStateList[3] : screenStateList[1]
   }
-}
-const runAcceptor = () => {
   if (key.k === 1) {
-    screenState = screenStateList[1]
-    startTimestamp = Date.now()
+    screenState = titleState
+    if (titleState === screenStateList[1]) startTimestamp = Date.now()
   }
 }
 const pauseAcceptor = () => {
@@ -661,7 +659,6 @@ const drawPause = () => {
 }
 const title = () => {
   titleProcess()
-  runAcceptor()
   drawTitle()
 }
 const main = () => {
