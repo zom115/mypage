@@ -1,7 +1,9 @@
 {'use strict'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-let startTime = Date.now()
+const screenStateList = ['title', 'main', 'pause']
+let screenState = screenStateList[1]
+let startTimestamp = Date.now()
 const size = 16
 const ownStateObject = {
   distance: size / 16,
@@ -64,6 +66,7 @@ const landObject = {
   ceil: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
   floor: [0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 1, 1, 0]
 }
+let pauseTimestamp = 0
 const timestampList = [] // for calc. fps
 const keyObject = {
   shift: 16,
@@ -123,6 +126,22 @@ const input = () => {
     if (key[`${v}Flag`]) key[v] += 1
   })
 }
+const pauseAcceptor = () => {
+  const pauseProcess = () => {
+    screenState = screenStateList[2]
+    pauseTimestamp = Date.now()
+  }
+  const resumeProcess = () => {
+    console.log('a')
+    screenState = screenStateList[1]
+    startTimestamp += Date.now() - pauseTimestamp
+  }
+  if (key.p === 1) {
+    screenState === screenStateList[1] ? pauseProcess() :
+    resumeProcess()
+  }
+  console.log(screenState, pauseTimestamp)
+}
 const moveProcess = (object, state, distance) => {
   //     9 | 1 ,11 |  3
   // 8, 13 |       |  2 ,7
@@ -173,7 +192,7 @@ const ownMoveProcess = () => {
   moveProcess(ownStateObject, crossKeyState, ownStateObject.distance)
 }
 const enemyProcess = () => {
-  if (startTime + formationFlagList[0] < Date.now()) {
+  if (startTimestamp + formationFlagList[0] < Date.now()) {
     formationFlagList.shift()
     formationCount += 1
     let formation
@@ -614,8 +633,15 @@ const showFps = () => {
   context.fillText(
     `${timestampList.length - 1} fps`, canvas.offsetWidth - size, size * 1.5)
 }
+const drawPause = () => {
+  context.font = `${size}px sans-serif`
+  context.fillStyle = 'white'
+  context.textAlign = 'center'
+  context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+}
+const title = () => {}
 const main = () => {
-  input()
+  pauseAcceptor()
   ownMoveProcess()
   enemyProcess()
   itemProcess()
@@ -646,7 +672,17 @@ const main = () => {
   drawOwn()
   drawHUD()
   showFps()
-  window.requestAnimationFrame(main)
 }
-main()
+const pause = () => {
+  pauseAcceptor()
+  drawPause()
+}
+const loop = () => {
+  input()
+  if (screenState === screenStateList[0]) title()
+  else if (screenState === screenStateList[1]) main()
+  else if (screenState === screenStateList[2]) pause()
+  requestAnimationFrame(loop)
+}
+loop()
 }
