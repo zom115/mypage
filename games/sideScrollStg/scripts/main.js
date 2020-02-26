@@ -148,6 +148,7 @@ const enemyProcess = () => {
       enemyList.push({
         flag: [false, false],
         name: enemyNameList[0],
+        platoon: formationCount,
         type: formation,
         x: canvas.offsetWidth + i * size * 3,
         y: appearHeight
@@ -224,8 +225,10 @@ const collisionDetect = () => {
       if (Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
         Math.sqrt((e.x - ownShotWidth - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
       ) {
+        const platoon = e.platoon
         enemyList.splice(iE, 1)
         ownShotList.splice(iS, 1)
+        if (enemyList.every(v => v.platoon !== platoon)) console.log(platoon)
       }
     })
     // enemy
