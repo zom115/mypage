@@ -28,7 +28,8 @@ const doubleRotateList = [
     ownShotSizeObject.y / 2 * Math.cos(Math.PI *(3/ 4))
 ]
 let doubleFlag = false
-let laserCount = 0
+const laserHeight = size / 8
+let laserCount = 1
 const ownShotList = []
 const missileList = []
 const doubleList = []
@@ -357,6 +358,26 @@ const collisionDetect = () => {
           e.y - offset.y + doubleRotateList[7]) ** 2) < enemySizeList[0]
       ) hitProcess(iE, iD, doubleList)
     })
+    // enemy * laser
+    laserList.forEach(l => {
+      if (
+        Math.sqrt((
+          e.x - l.x) ** 2 + (
+          e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0] ||
+        Math.sqrt((
+          e.x - l.x + l.w) ** 2 + (
+          e.y - l.y) ** 2) < enemySizeList[0] ||
+        Math.sqrt((
+          e.x - l.x) ** 2 + (
+          e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0] ||
+        Math.sqrt((
+          e.x - l.x + l.w / 2) ** 2 + (
+          e.y - l.y + laserHeight / 2) ** 2) < enemySizeList[0]
+      ) {
+        enemyList.splice(iE, 1)
+        if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
+      }
+    })
     // enemy * own
     const ownLange = size / 8
     if (
@@ -465,9 +486,8 @@ const drawDouble = () => {
 }
 const drawLaser = () => {
   context.fillStyle = 'deepskyblue'
-  const height = size / 8
   laserList.forEach(v => {
-    context.fillRect(v.x - v.w, v.y - height / 2, v.w, height)
+    context.fillRect(v.x - v.w, v.y - laserHeight / 2, v.w, laserHeight)
   })
 }
 const drawHUD = () => {
