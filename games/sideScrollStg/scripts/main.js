@@ -175,7 +175,10 @@ const collisionDetect = () => {
     ownShotList.forEach((s, iS) => {
       if (Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
         Math.sqrt((e.x - ownShotWidth - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
-      ) console.log('boooom!!!!')
+      ) {
+        enemyList.splice(iE, 1)
+        ownShotList.splice(iS, 1)
+      }
     })
     // enemy
     const ownLange = size / 8
