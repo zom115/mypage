@@ -4,6 +4,7 @@ const context = canvas.getContext`2d`
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
+const ownShotWidth = size / 2
 const ownShotList = []
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
@@ -154,6 +155,7 @@ const itemUseProcess = () => {
   }
 }
 const collisionDetect = () => {
+  // item
   const itemLangeObject = {x: size * (3 / 4), y: size / 2}
   itemList.forEach((v, i) => {
     if (v.x - itemLangeObject.x <= ownPositionObject.x &&
@@ -166,10 +168,20 @@ const collisionDetect = () => {
       itemList.splice(i, 1)
     }
   })
-  const ownLange = size / 8
-  enemyList.forEach((v, i) => {
-    if (Math.sqrt((ownPositionObject.x - v.x) ** 2 + (ownPositionObject.y - v.y) ** 2) <
-    ownLange + enemySizeList[0]) console.log('detect!!')
+  enemyList.forEach((e, iE) => {
+    // shot
+    // -- normal shot description --
+    // hit judgement is bullet top or bottom only
+    ownShotList.forEach((s, iS) => {
+      if (Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
+        Math.sqrt((e.x - ownShotWidth - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0]
+      ) console.log('boooom!!!!')
+    })
+    // enemy
+    const ownLange = size / 8
+    if (
+      Math.sqrt((ownPositionObject.x - e.x) ** 2 + (ownPositionObject.y - e.y) ** 2) <
+      ownLange + enemySizeList[0]) console.log('detect!!')
   })
 }
 const drawBackground = () => {
@@ -245,8 +257,8 @@ const drawShot = () => {
     context.fillStyle = 'white'
     context.beginPath()
     context.moveTo(v.x, v.y)
-    context.lineTo(v.x - size / 2, v.y)
-    context.lineTo(v.x - size / 2, v.y - size / 8)
+    context.lineTo(v.x - ownShotWidth, v.y)
+    context.lineTo(v.x - ownShotWidth, v.y - size / 8)
     context.lineTo(v.x, v.y - size / 8)
     context.fill()
   })
