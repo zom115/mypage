@@ -5,13 +5,13 @@ let startTime = Date.now()
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
-const ownShotWidth = size / 2
+const speedUpRate = size / 16
 const ownShotSizeObject = {x: size / 2, y: size / 8}
 const ownShotList = []
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
-const formationFlagList = [2e3, 5e3]
+const formationFlagList = [2e3, 5e3, 8e3, 11e3]
 let formationCount = 0 // temporary
 const enemyList = []
 let itemStock = 0
@@ -138,10 +138,10 @@ const enemyProcess = () => {
     formationCount += 1
     let formation
     let appearHeight
-    if (formationCount === 1) {
+    if (formationCount === 1 || formationCount === 3) {
       formation = enemyFormationList[0]
       appearHeight = canvas.offsetHeight / 4
-    } else if (formationCount === 2) {
+    } else if (formationCount === 2 || formationCount === 4) {
       formation = enemyFormationList[1]
       appearHeight = canvas.offsetHeight * (3 / 4)
     }
@@ -197,7 +197,7 @@ const itemProcess = () => {
 }
 const itemUseProcess = () => {
   const speedUp = () => {
-    ownMovedistance += ownMovedistance
+    ownMovedistance += speedUpRate
   }
   if (key.j === 1) {
     if (itemStock === 1) speedUp()
@@ -231,13 +231,9 @@ const collisionDetect = () => {
           (e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) <
           enemySizeList[0]
       ) {
-        console.log(e.x, s.x, enemySizeList[0])
         const platoon = e.platoon
         enemyList.splice(iE, 1)
-        if (enemyList.every(v => v.platoon !== platoon)) {
-          itemList.push({x: e.x, y: e.y})
-          console.log(itemList)
-        }
+        if (enemyList.every(v => v.platoon !== platoon)) itemList.push({x: e.x, y: e.y})
         ownShotList.splice(iS, 1)
       }
     })
