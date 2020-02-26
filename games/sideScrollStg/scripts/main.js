@@ -6,11 +6,31 @@ const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
 let ownMovedistance = size / 16
 const speedUpRate = size / 16
-const missileRadius = size / 4
-let missileFlag = true // temporary
 const ownShotSizeObject = {x: size / 2, y: size / 8}
+const missileRadius = size / 4
+let missileFlag = false
+const doubleRotateList = [
+  ownShotSizeObject.x / 2 * Math.cos(Math.PI *(3/ 4)) -
+    - ownShotSizeObject.y / 2 * Math.sin(Math.PI *(3/ 4)),
+  ownShotSizeObject.x / 2 * Math.sin(Math.PI *(3/ 4)) +
+    - ownShotSizeObject.y / 2 * Math.cos(Math.PI *(3/ 4)),
+  - ownShotSizeObject.x / 2 * Math.cos(Math.PI *(3/ 4)) -
+    - ownShotSizeObject.y / 2 * Math.sin(Math.PI *(3/ 4)),
+  - ownShotSizeObject.x / 2 * Math.sin(Math.PI *(3/ 4)) +
+    - ownShotSizeObject.y / 2 * Math.cos(Math.PI *(3/ 4)),
+  - ownShotSizeObject.x / 2 * Math.cos(Math.PI *(3/ 4)) -
+    ownShotSizeObject.y / 2 * Math.sin(Math.PI *(3/ 4)),
+  - ownShotSizeObject.x / 2 * Math.sin(Math.PI *(3/ 4)) +
+    ownShotSizeObject.y / 2 * Math.cos(Math.PI *(3/ 4)),
+  ownShotSizeObject.x / 2 * Math.cos(Math.PI *(3/ 4)) -
+    ownShotSizeObject.y / 2 * Math.sin(Math.PI *(3/ 4)),
+  ownShotSizeObject.x / 2 * Math.sin(Math.PI *(3/ 4)) +
+    ownShotSizeObject.y / 2 * Math.cos(Math.PI *(3/ 4))
+]
+let doubleFlag = true // temporary
 const ownShotList = []
-const ownMissileList = []
+const missileList = []
+const doubleList = []
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
@@ -19,7 +39,9 @@ let formationCount = 0 // temporary
 const enemyList = []
 let itemStock = 0
 const itemList = [{x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (7/8), y: canvas.offsetHeight / 2}]
+  {x: canvas.offsetWidth * (7/8), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth, y: canvas.offsetHeight / 2}
+]
 const starList = []
 const starDensity = 1 / 10
 const makeStar = () => {
@@ -181,31 +203,6 @@ const enemyProcess = () => {
     }
   })
 }
-const ownShotProcess = () => {
-  const bulletRestrictValue = 3
-  const missileRestrictValue = 2
-  const distance = size / 2
-  if (key.k === 1) {
-    if (ownShotList.length + 1 <= bulletRestrictValue) {
-      ownShotList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
-    }
-    if (missileFlag && ownMissileList.length + 1 <= missileRestrictValue) {
-      ownMissileList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
-    }
-  }
-  ownShotList.forEach((v, i) => {
-    v.x += distance
-    if (canvas.offsetWidth <= v.x) ownShotList.splice(i, 1)
-  })
-}
-const missileProcess = () => {
-  const distance = size / 6
-  ownMissileList.forEach((v, i) => {
-    v.x += distance / Math.SQRT2
-    v.y += distance / Math.SQRT2
-    if (canvas.offsetWidth <= v.x || canvas.offsetHeight <= v.y) ownMissileList.splice(i, 1)
-  })
-}
 const itemProcess = () => {
   const distance = size / 16
   itemList.forEach((v, i) => {
@@ -218,11 +215,52 @@ const itemUseProcess = () => {
     ownMovedistance += speedUpRate
   }
   if (key.j === 1) {
-    if (itemStock === 2 && missileFlag) return
+    if ((itemStock === 2 && missileFlag) ||
+      (itemStock === 3 && doubleFlag)) return
     if (itemStock === 1) speedUp()
-    else if (itemStock === 2 && !missileFlag) missileFlag = true
+    else if (itemStock === 2) missileFlag = true
+    else if (itemStock === 3) doubleFlag = true
     itemStock = 0
   }
+}
+const attackProcess = () => {
+  const bulletRestrictValue = 3
+  const missileRestrictValue = 2
+  const doubleRestrictValue = 3
+  if (key.k === 1) {
+    if (ownShotList.length + 1 <= bulletRestrictValue) {
+      ownShotList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
+    }
+    if (missileFlag && missileList.length + 1 <= missileRestrictValue) {
+      missileList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
+    }
+    if (doubleFlag && doubleList.length + 1 <= doubleRestrictValue) {
+      doubleList.push({x: ownPositionObject.x + size / 2, y: ownPositionObject.y})
+    }
+  }
+}
+const ownShotProcess = () => {
+  const distance = size / 2
+  ownShotList.forEach((v, i) => {
+    v.x += distance
+    if (canvas.offsetWidth <= v.x) ownShotList.splice(i, 1)
+  })
+}
+const missileProcess = () => {
+  const distance = size / 6
+  missileList.forEach((v, i) => {
+    v.x += distance / Math.SQRT2
+    v.y += distance / Math.SQRT2
+    if (canvas.offsetWidth <= v.x || canvas.offsetHeight <= v.y) missileList.splice(i, 1)
+  })
+}
+const doubleProcess = () => {
+  const distance = size / 2
+  doubleList.forEach((v, i) => {
+    v.x += distance / Math.SQRT2
+    v.y -= distance / Math.SQRT2
+    if (canvas.offsetWidth <= v.x || v.y <= 0) doubleList.splice(i, 1)
+  })
 }
 const collisionDetect = () => {
   // item
@@ -258,10 +296,10 @@ const collisionDetect = () => {
       ) hitProcess(iE, iS, ownShotList)
     })
     // enemy * missile
-    ownMissileList.forEach((m, iM) => {
+    missileList.forEach((m, iM) => {
       if (
         Math.sqrt((m.x - e.x) ** 2 + (m.y - e.y) ** 2) < missileRadius + enemySizeList[0]
-      ) hitProcess(iE, iM, ownMissileList)
+      ) hitProcess(iE, iM, missileList)
 
     })
     // enemy * own
@@ -351,13 +389,24 @@ const drawShot = () => {
   })
 }
 const drawMissile = () => {
-  ownMissileList.forEach(v => {
+  missileList.forEach(v => {
     context.fillStyle = 'lightgray'
     context.beginPath()
     context.arc(v.x, v.y, missileRadius, 0, Math.PI * 2, false)
     context.fill()
   })
-
+}
+const drawDouble = () => {
+  doubleList.forEach(v => {
+    const offset = {x: v.x - ownShotSizeObject.x / 2, y: v.y + ownShotSizeObject.y / 2}
+    context.fillStyle = 'white'
+    context.beginPath()
+    context.moveTo(offset.x + doubleRotateList[0], offset.y + doubleRotateList[1])
+    context.lineTo(offset.x + doubleRotateList[2], offset.y + doubleRotateList[3])
+    context.lineTo(offset.x + doubleRotateList[4], offset.y + doubleRotateList[5])
+    context.lineTo(offset.x + doubleRotateList[6], offset.y + doubleRotateList[7])
+    context.fill()
+  })
 }
 const drawHUD = () => {
   context.save()
@@ -374,7 +423,7 @@ const drawHUD = () => {
     context.fillStyle = 'white'
     const text = i === 0 ? 'SPEED UP' :
     i === 1 && !missileFlag ? 'MISSILE' :
-    i === 2 ? 'DOUBLE' :
+    i === 2 && !doubleFlag ? 'DOUBLE' :
     i === 3 ? 'LASER' :
     i === 4 ? 'OPTION' :
     i === 5 ? '?' : ''
@@ -407,10 +456,12 @@ const main = () => {
   input()
   ownMoveProcess()
   enemyProcess()
-  ownShotProcess()
-  missileProcess()
   itemProcess()
   itemUseProcess()
+  attackProcess()
+  ownShotProcess()
+  missileProcess()
+  doubleProcess()
   collisionDetect()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -419,6 +470,7 @@ const main = () => {
   drawEnemy()
   drawShot()
   drawMissile()
+  drawDouble()
   drawOwn()
   drawHUD()
   showFps()
