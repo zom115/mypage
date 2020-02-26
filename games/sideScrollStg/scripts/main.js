@@ -242,6 +242,11 @@ const collisionDetect = () => {
     // enemy * shot
     // -- normal shot description --
     // hit judgement is bullet top or bottom only
+    const hitProcess = (enemyIndex, listIndex, list) => {
+      enemyList.splice(enemyIndex, 1)
+      if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
+      list.splice(listIndex, 1)
+    }
     ownShotList.forEach((s, iS) => {
       if (
         Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2) < enemySizeList[0] ||
@@ -250,23 +255,13 @@ const collisionDetect = () => {
         Math.sqrt(
           (e.x + ownShotSizeObject.x - s.x) ** 2 + (e.y + ownShotSizeObject.y - s.y) ** 2) <
           enemySizeList[0]
-      ) {
-        const platoon = e.platoon
-        enemyList.splice(iE, 1)
-        if (enemyList.every(v => v.platoon !== platoon)) itemList.push({x: e.x, y: e.y})
-        ownShotList.splice(iS, 1)
-      }
+      ) hitProcess(iE, iS, ownShotList)
     })
     // enemy * missile
     ownMissileList.forEach((m, iM) => {
       if (
         Math.sqrt((m.x - e.x) ** 2 + (m.y - e.y) ** 2) < missileRadius + enemySizeList[0]
-      ) {
-        const platoon = e.platoon
-        enemyList.splice(iE, 1)
-        if (enemyList.every(v => v.platoon !== platoon)) itemList.push({x: e.x, y: e.y})
-        ownMissileList.splice(iM, 1)
-      }
+      ) hitProcess(iE, iM, ownMissileList)
 
     })
     // enemy * own
