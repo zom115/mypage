@@ -166,7 +166,7 @@ const titleProcess = () => {
   }
   if (key.k === 1) {
     screenState = titleState
-    initialize()
+    if (titleState === screenList[1]) initialize()
   }
 }
 const moveProcess = (object, state, distance) => {
@@ -484,13 +484,11 @@ const collisionDetect = () => {
       ownLange + enemySizeList[0]) {
         if (0 < barrierCount) {
           fieldEnemyList.splice(iE, 1)
-          if (fieldEnemyList.every(v => v.platoon !== e.platoon)) fieldItemList.push({x: e.x, y: e.y})
+          if (fieldEnemyList.every(v => v.platoon !== e.platoon)) {
+            fieldItemList.push({x: e.x, y: e.y})
+          }
           barrierCount -= 1
-        } else {
-          console.log('detect!!')
-          if (0 < left) initialize()
-          else screenState = screenList[3]
-        }
+        } else 0 < left ? initialize() : screenState = screenList[3]
       }
   })
 }
@@ -506,6 +504,12 @@ const pauseAcceptor = () => {
   if (key.p === 1) {
     screenState === screenList[1] ? pauseProcess() :
     resumeProcess()
+  }
+}
+const retryAcceptor = () => {
+  if (key.k) {
+    screenState = screenList[1]
+    initialize()
   }
 }
 const settingProcess = () => {
@@ -737,6 +741,12 @@ const drawPause = () => {
   context.textAlign = 'center'
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 }
+const drawContinue = () => {
+  context.font = `${size}px sans-serif`
+  context.fillStyle = 'white'
+  context.textAlign = 'center'
+  context.fillText('CONTINUE?', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+}
 const drawSetting = () => {
   const offsetFirstColumn = {
     x: canvas.offsetWidth  * (1 / 5),
@@ -808,6 +818,10 @@ const pause = () => {
   pauseAcceptor()
   drawPause()
 }
+const retry = () => {
+  retryAcceptor()
+  drawContinue()
+}
 const setting = () => {
   settingProcess()
   drawSetting()
@@ -817,9 +831,9 @@ const loop = () => {
   input()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (screenState === screenList[0]) title()
-  else if (screenState === screenList[1]) {
-    main()
-  } else if (screenState === screenList[2]) pause()
+  else if (screenState === screenList[1]) main()
+  else if (screenState === screenList[2]) pause()
+  else if (screenState === screenList[3]) retry()
   else if (screenState === screenList[4]) setting()
   showFps()
   requestAnimationFrame(loop)
