@@ -4,7 +4,8 @@ const context = canvas.getContext`2d`
 let startTime = Date.now()
 const size = 16
 const ownPositionObject = {x: canvas.offsetWidth / 8, y: canvas.offsetHeight / 2}
-let ownMovedistance = size / 16
+let crossKeyState = 0
+let ownMoveDistance = size / 16
 const speedUpRate = size / 16
 const ownShotSizeObject = {x: size / 2, y: size / 8}
 const missileRadius = size / 4
@@ -48,6 +49,10 @@ const itemList = [
   {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
+  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth * (7/8), y: canvas.offsetHeight / 2},
   {x: canvas.offsetWidth, y: canvas.offsetHeight / 2}
@@ -122,9 +127,45 @@ const input = () => {
     if (key[`${v}Flag`]) key[v] += 1
   })
 }
+const moveProcess = (positionObject, state) => {
+  //     9 | 1 ,11 |  3
+  // 8, 13 |       |  2 ,7
+  //    12 | 4 ,14 |  6
+  // 納得いかん。w, a押下時に追加でd押下すると左上に進むのが自然でしょ
+  if (state === 1 || state === 11) {
+    positionObject.y -= ownMoveDistance
+  } else if (state === 2 || state === 7) {
+    positionObject.x += ownMoveDistance
+  } else if (state === 4 || state === 14) {
+    positionObject.y += ownMoveDistance
+  } else if (state === 8 || state === 13) {
+    positionObject.x -= ownMoveDistance
+  } else if (state === 3) {
+    positionObject.x += ownMoveDistance / Math.SQRT2
+    positionObject.y -= ownMoveDistance / Math.SQRT2
+  } else if (state === 6) {
+    positionObject.x += ownMoveDistance / Math.SQRT2
+    positionObject.y += ownMoveDistance / Math.SQRT2
+  } else if (state === 9) {
+    positionObject.x -= ownMoveDistance / Math.SQRT2
+    positionObject.y -= ownMoveDistance / Math.SQRT2
+  } else if (state === 12) {
+    positionObject.x -= ownMoveDistance / Math.SQRT2
+    positionObject.y += ownMoveDistance / Math.SQRT2
+  }
+  const screenMarginObject = {x: size, y: size / 4}
+  if (positionObject.x < screenMarginObject.x) positionObject.x = screenMarginObject.x
+  if (canvas.offsetWidth - screenMarginObject.x < positionObject.x) {
+    positionObject.x = canvas.offsetWidth - screenMarginObject.x
+  }
+  if (positionObject.y < screenMarginObject.y) positionObject.y = screenMarginObject.y
+  if (canvas.offsetHeight - screenMarginObject.y < positionObject.y) {
+    positionObject.y = canvas.offsetHeight - screenMarginObject.y
+  }
+}
 const ownMoveProcess = () => {
   const keyList = ['w', 'd', 's', 'a']
-  let crossKeyState = 0
+  crossKeyState = 0
   keyList.forEach((v, i) => {
     if (key[`${v}Flag`]) {
       i === 0 ? crossKeyState += 1 :
@@ -133,40 +174,7 @@ const ownMoveProcess = () => {
       i === 3 ? crossKeyState += 8 : false
     }
   })
-  //     9 | 1 ,11 |  3
-  // 8, 13 |       |  2 ,7
-  //    12 | 4 ,14 |  6
-  // 納得いかん。w, a押下時に追加でd押下すると左上に進むのが自然でしょ
-  if (crossKeyState === 1 || crossKeyState === 11) {
-    ownPositionObject.y -= ownMovedistance
-  } else if (crossKeyState === 2 || crossKeyState === 7) {
-    ownPositionObject.x += ownMovedistance
-  } else if (crossKeyState === 4 || crossKeyState === 14) {
-    ownPositionObject.y += ownMovedistance
-  } else if (crossKeyState === 8 || crossKeyState === 13) {
-    ownPositionObject.x -= ownMovedistance
-  } else if (crossKeyState === 3) {
-    ownPositionObject.x += ownMovedistance / Math.SQRT2
-    ownPositionObject.y -= ownMovedistance / Math.SQRT2
-  } else if (crossKeyState === 6) {
-    ownPositionObject.x += ownMovedistance / Math.SQRT2
-    ownPositionObject.y += ownMovedistance / Math.SQRT2
-  } else if (crossKeyState === 9) {
-    ownPositionObject.x -= ownMovedistance / Math.SQRT2
-    ownPositionObject.y -= ownMovedistance / Math.SQRT2
-  } else if (crossKeyState === 12) {
-    ownPositionObject.x -= ownMovedistance / Math.SQRT2
-    ownPositionObject.y += ownMovedistance / Math.SQRT2
-  }
-  screenMarginObject = {x: size, y: size / 4}
-  if (ownPositionObject.x < screenMarginObject.x) ownPositionObject.x = screenMarginObject.x
-  if (canvas.offsetWidth - screenMarginObject.x < ownPositionObject.x) {
-    ownPositionObject.x = canvas.offsetWidth - screenMarginObject.x
-  }
-  if (ownPositionObject.y < screenMarginObject.y) ownPositionObject.y = screenMarginObject.y
-  if (canvas.offsetHeight - screenMarginObject.y < ownPositionObject.y) {
-    ownPositionObject.y = canvas.offsetHeight - screenMarginObject.y
-  }
+  moveProcess(ownPositionObject, crossKeyState)
 }
 const enemyProcess = () => {
   if (startTime + formationFlagList[0] < Date.now()) {
@@ -226,7 +234,7 @@ const itemUseProcess = () => {
       itemStock === 3 && doubleFlag) || (
       itemStock === 4 && 1 < laserCount) ||
       (itemStock === 5 && 3 < optionList.length)) return
-    if (itemStock === 1) ownMovedistance += speedUpRate
+    if (itemStock === 1) ownMoveDistance += speedUpRate
     else if (itemStock === 2) missileFlag = true
     else if (itemStock === 3) {
       doubleFlag = true
@@ -235,7 +243,7 @@ const itemUseProcess = () => {
       laserCount += 1
       doubleFlag = false
     } else if (itemStock === 5) {
-      optionList.push({x: ownPositionObject.x, y: ownPositionObject.y})
+      optionList.push({count: 0, log: [], x: ownPositionObject.x, y: ownPositionObject.y})
     }
     itemStock = 0
   }
@@ -303,6 +311,19 @@ const laserProcess = () => {
     }
     v.x += distance
     if (canvas.offsetWidth <= v.x - v.w) laserList.splice(i, 1)
+  })
+}
+const optionProcess = () => {
+  const interval = 30
+  optionList.forEach(v => {
+    if (0 < crossKeyState) {
+      v.log.push(crossKeyState)
+      v.count = v.count === null || interval < v.count ? null : v.count += 1
+      if (v.count === null) {
+        moveProcess(v, v.log[0])
+        v.log.shift()
+      }
+    }
   })
 }
 const collisionDetect = () => {
@@ -552,7 +573,6 @@ const showFps = () => {
     `${timestampList.length - 1} fps`, canvas.offsetWidth - size, size * 1.5)
 }
 const main = () => {
-  console.log(optionList.length)
   input()
   ownMoveProcess()
   enemyProcess()
@@ -563,6 +583,7 @@ const main = () => {
   missileProcess()
   doubleProcess()
   laserProcess()
+  optionProcess()
   collisionDetect()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
