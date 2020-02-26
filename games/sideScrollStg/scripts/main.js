@@ -42,24 +42,11 @@ let laserCount = 0
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
-const formationFlagList = [2e3, 5e3, 8e3, 11e3]
+const formationFlagList = [2e3, 5e3, 8e3, 11e3, 20e3]
 let formationCount = 0 // temporary
 const enemyList = []
 let itemStock = 0
-const itemList = [
-  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (5/8), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (3/4), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth * (7/8), y: canvas.offsetHeight / 2},
-  {x: canvas.offsetWidth, y: canvas.offsetHeight / 2}
-]
+const itemList = []
 const starList = []
 const starDensity = 1 / 10
 const makeStar = () => {
@@ -71,6 +58,12 @@ const makeStar = () => {
   }
 }
 for (let i = 0; i < canvas.offsetWidth; i++) makeStar(i)
+let landFlag = false
+let landCount = 0
+const landObject = {
+  ceil: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  floor: [0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 1, 1, 0]
+}
 const timestampList = [] // for calc. fps
 const keyObject = {
   shift: 16,
@@ -191,7 +184,7 @@ const enemyProcess = () => {
     } else if (formationCount === 2 || formationCount === 4) {
       formation = enemyFormationList[1]
       appearHeight = canvas.offsetHeight * (3 / 4)
-    }
+    } else if (formationCount === 5) landFlag = true
     for (let i = 0; i < 5; i++) {
       enemyList.push({
         flag: [false, false],
@@ -448,9 +441,25 @@ const drawBackground = () => {
   context.fillStyle = 'black'
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   starList.pop()
-  makeStar()
+  landFlag ? starList.unshift(-1) : makeStar()
   context.fillStyle = 'white'
   starList.forEach((v, i) => context.fillRect(canvas.offsetWidth - i, v, 1, 1))
+  if (landFlag) {
+    landCount += 1
+    context.fillStyle = 'brown'
+    context.beginPath()
+    context.moveTo(canvas.offsetWidth - landCount, canvas.offsetHeight)
+    landObject.floor.forEach((v, i) => {
+      context.lineTo(canvas.offsetWidth - landCount + i * size, canvas.offsetHeight - v * size)
+    })
+    context.fill()
+    context.beginPath()
+    context.moveTo(canvas.offsetWidth - landCount, 0)
+    landObject.ceil.forEach((v, i) => {
+      context.lineTo(canvas.offsetWidth - landCount + i * size, v * size)
+    })
+    context.fill()
+  }
 }
 const drawItem = () => {
   itemList.forEach(v => {
