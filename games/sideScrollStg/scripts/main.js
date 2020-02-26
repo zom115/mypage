@@ -46,6 +46,7 @@ const doubleRotateList = [
 let doubleFlag = false
 const laserHeight = size / 8
 let laserCount = 0
+let barrierCount = 0
 const enemyNameList = ['small']
 const enemySizeList = [size * (2 / 3)]
 const enemyFormationList = ['S', 'Z']
@@ -245,8 +246,9 @@ const itemUseProcess = () => {
   if (key.j === 1) {
     if ((itemStock === 2 && missileFlag) || (
       itemStock === 3 && doubleFlag) || (
-      itemStock === 4 && 1 < laserCount) ||
-      (itemStock === 5 && 3 < optionList.length)) return
+      itemStock === 4 && 1 < laserCount) || (
+      itemStock === 5 && 3 < optionList.length) || (
+      itemStock === 6 && barrierCount !== 0)) return
     if (itemStock === 1) ownStateObject.distance += speedUpRate
     else if (itemStock === 2) missileFlag = true
     else if (itemStock === 3) {
@@ -266,7 +268,7 @@ const itemUseProcess = () => {
         distance: [],
         x: ownStateObject.x,
         y: ownStateObject.y})
-    }
+    } else if (itemStock === 6) barrierCount = 5
     itemStock = 0
   }
 }
@@ -451,7 +453,15 @@ const collisionDetect = () => {
     const ownLange = size / 8
     if (
       Math.sqrt((ownStateObject.x - e.x) ** 2 + (ownStateObject.y - e.y) ** 2) <
-      ownLange + enemySizeList[0]) console.log('detect!!')
+      ownLange + enemySizeList[0]) {
+        if (0 < barrierCount) {
+          enemyList.splice(iE, 1)
+          if (enemyList.every(v => v.platoon !== e.platoon)) itemList.push({x: e.x, y: e.y})
+          barrierCount -= 1
+        } else {
+          console.log('detect!!')
+        }
+      }
   })
 }
 const pauseAcceptor = () => {
@@ -618,10 +628,17 @@ const drawOption = () => {
   context.scale(2, 1)
   context.fillStyle = 'red'
   optionList.forEach(v => {
-    context.beginPath()
-    context.arc(v.x / 2, v.y, size * (1 / 3), 0, Math.PI * 2, false)
-    context.fill()
   })
+  context.restore()
+}
+const drawBarrier = () => {
+  context.save()
+  context.scale(2, 1)
+  context.fillStyle = 1 < barrierCount ? 'deepskyblue' : barrierCount === 1 ? 'red' :
+  'rgba(0, 0, 0, 0)'
+  context.beginPath()
+  context.arc(ownStateObject.x / 2, ownStateObject.y, size * (1 / 2), 0, Math.PI * 2, false)
+  context.fill()
   context.restore()
 }
 const drawHUD = () => {
@@ -743,6 +760,7 @@ const main = () => {
   drawItem()
   drawEnemy()
   drawOption()
+  drawBarrier()
   optionList.forEach(v => {
     drawShot(v)
     drawMissile(v)
