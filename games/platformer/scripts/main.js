@@ -51,10 +51,10 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
+  '100000000110000000000000000000000000000000000000000001',
+  '100000000110000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000011100000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '111111111111111111111111111111111111111111111111111111'
 ]
@@ -157,35 +157,36 @@ const collisionDetect = () => {
         const up = iY * size // 上
         const dn = iY * size + size // 下
         const rs = size // 自機の半径
-        if (
+        if ( // 矩形
           up - rs < oy && oy < dn + rs && // 1 縦
-          lt - rs < ox && ox < rt + rs // 2 横
+          lt - rs < ox && ox < rt + rs && // 2 横
+          ( // 3 四隅 a.k.a. 点と矩形
+            (lt - ox) ** 2 + (up - oy) ** 2 < rs ** 2 || // 左上
+            (rt - ox) ** 2 + (up - oy) ** 2 < rs ** 2 || // 右上
+            (rt - ox) ** 2 + (dn - oy) ** 2 < rs ** 2 || // 右下
+            (lt - ox) ** 2 + (dn - oy) ** 2 < rs ** 2 // 左下
+          )
         ) {
           console.log('detect')
         }
-        // 3 四隅
-        // 左上
-        // 右上
-        // 右下
-        // 左下
 
       }
     }
   })
 }
 const draw = () => {
+  context.fillStyle = 'hsl(0, 100%, 50%)'
+  context.fillRect(ownCondition.x - size, ownCondition.y - size, size * 2, size * 2)
+  context.beginPath()
+  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size, 0, Math.PI * 2, false)
+  context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
+  context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
       if (y[iX] === '1') context.fillRect(iX * size, iY * size, size, size)
     }
   })
-  context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size, 0, Math.PI * 2, false)
-  context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
-  context.fill()
-  context.fillStyle = 'hsl(0, 100%, 50%)'
-  context.fillRect(ownCondition.x, ownCondition.y, size, size)
 }
 const main = () => {
   // internal process
