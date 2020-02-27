@@ -1,5 +1,4 @@
-!(_ = () => {'use strict'
-
+{'use strict'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
@@ -90,7 +89,6 @@ const input = () => {
 const collisionDetect = () => {
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
-  // if (-stopConstant < ownCondition.dx && ownCondition.dx < stopConstant) ownCondition.dx = 0
   ownCondition.dy += gravityConstant
   if (size < ownCondition.dy) ownCondition.dy = size // terminal speed
   ground.forEach(obj => {
@@ -98,9 +96,7 @@ const collisionDetect = () => {
       obj.x - size < ownCondition.x && ownCondition.x < obj.x + obj.w + size &&
       obj.y - size < ownCondition.y && ownCondition.y < obj.y + obj.h + size
     ) {
-      if (ownCondition.x < obj.x) {
-        console.log('hello')
-      }
+      if (ownCondition.x < obj.x) console.log('hello')
       if (ownCondition.y < obj.y + size) {
         ownCondition.y = obj.y - size
         jumpFlag = false
@@ -135,14 +131,10 @@ const main = () => {
   // internal process
   input()
   collisionDetect()
-  // createObject()
-  // move()
-  // collisionDetect()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
   window.requestAnimationFrame(main)
 }
 main()
-
-})()
+}
