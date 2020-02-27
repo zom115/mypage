@@ -135,6 +135,7 @@ const input = () => {
   })
 }
 const initialize = () => {
+  containueTimestamp = 0
   startTimestamp = Date.now()
   ownStateObject = {
     distance: size / 16,
@@ -507,9 +508,14 @@ const pauseProcess = () => {
 const retryProcess = () => {
   if (containueTimestamp === 0) containueTimestamp = Date.now()
   if (1e4 < Date.now() - containueTimestamp) screenState = screenList[0]
-  if (key.k) {
+  if (key.k === 1) {
     screenState = screenList[1]
     initialize()
+  }
+  if (key.j === 1) {
+    console.log(Date.now() - containueTimestamp, 1e3 - (Date.now() - containueTimestamp) % 1e3)
+    containueTimestamp -= 1e3 - (Date.now() - containueTimestamp) % 1e3
+    console.log(Date.now() - containueTimestamp, 1e3 - (Date.now() - containueTimestamp) % 1e3)
   }
 }
 const settingProcess = () => {
