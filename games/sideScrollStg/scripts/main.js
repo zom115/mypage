@@ -512,11 +512,7 @@ const retryProcess = () => {
     screenState = screenList[1]
     initialize()
   }
-  if (key.j === 1) {
-    console.log(Date.now() - containueTimestamp, 1e3 - (Date.now() - containueTimestamp) % 1e3)
-    containueTimestamp -= 1e3 - (Date.now() - containueTimestamp) % 1e3
-    console.log(Date.now() - containueTimestamp, 1e3 - (Date.now() - containueTimestamp) % 1e3)
-  }
+  if (key.j === 1) containueTimestamp -= 1e3 - (Date.now() - containueTimestamp) % 1e3
 }
 const settingProcess = () => {
   if (key.j === 1) {
@@ -681,6 +677,17 @@ const drawBarrier = () => {
   context.fill()
   context.restore()
 }
+const drawLeft = () => {
+  context.font = `${size}px sans-serif`
+  context.fillStyle = 'white'
+  context.textAlign = 'left'
+  context.fillText('LEFT', size, size)
+  for (let i = 0; i < left; i++) {
+    context.beginPath()
+    context.arc(size + size * i, size * 2, size * (1 / 3), 0, Math.PI * 2, false)
+    context.fill()
+  }
+}
 const drawHUD = () => {
   context.save()
   context.textAlign = 'center'
@@ -821,6 +828,7 @@ const main = () => {
   drawDouble(ownStateObject)
   drawLaser(ownStateObject)
   drawOwnMachine(ownStateObject)
+  drawLeft()
   drawHUD()
 }
 const pause = () => {
