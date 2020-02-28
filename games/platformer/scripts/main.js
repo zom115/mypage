@@ -72,12 +72,8 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 87) key.w = false
 }, false)
 const input = () => {
-  if (key.a) {
-    if (-moveConstant < ownCondition.dx) ownCondition.dx -= moveAcceleration
-  }
-  if (key.d) {
-    if (ownCondition.dx < moveConstant) ownCondition.dx += moveAcceleration
-  }
+  if (key.a) ownCondition.dx -= moveAcceleration
+  if (key.d) ownCondition.dx += moveAcceleration
   if (key.w) ownCondition.dy -= moveAcceleration // temporary
   if (key.s) ownCondition.dy += moveAcceleration // temporary
   // if (key.j) {
@@ -116,9 +112,61 @@ const collisionDetect = () => {
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
       if (y[iX] === '1') {
-        const r = size
+        let r = size
         const tileWidth = size
-        { // floor
+        if (0 < ownCondition.dx) { // left wall
+          const ax = iX * size - r
+          const ay = iY * size - r
+          const bx = iX * size - r
+          const by = iY * size + tileWidth + r
+          const aby = by - ay
+          let nx = -aby
+          let length = (nx ** 2) ** .5
+          if (0 < length) length = 1 / length
+          nx *= length
+          const d = -(ax * nx)
+          const t = -(nx * ownCondition.x + d) / (nx * ownCondition.dx)
+          if (0 <= t && t <= 1) {
+            const cx = ownCondition.x + ownCondition.dx * t
+            const cy = ownCondition.y + ownCondition.dy * t
+            const acx = cx - ax
+            const acy = cy - ay
+            const bcx = cx - bx
+            const bcy = cy - by
+            const doc = acx * bcx + acy * bcy
+            if (doc < 0) {
+              console.log('detect left', iX)
+              ownCondition.dx = -ownCondition.dx * elasticModulus
+            }
+          }
+        }
+        if (ownCondition.dx < 0) { // right wall
+          const ax = iX * size + tileWidth + r
+          const ay = iY * size - r
+          const bx = iX * size + tileWidth + r
+          const by = iY * size + tileWidth + r
+          const aby = by - ay
+          let nx = -aby
+          let length = (nx ** 2) ** .5
+          if (0 < length) length = 1 / length
+          nx *= length
+          const d = -(ax * nx)
+          const t = -(nx * ownCondition.x + d) / (nx * ownCondition.dx)
+          if (0 <= t && t <= 1) {
+            const cx = ownCondition.x + ownCondition.dx * t
+            const cy = ownCondition.y + ownCondition.dy * t
+            const acx = cx - ax
+            const acy = cy - ay
+            const bcx = cx - bx
+            const bcy = cy - by
+            const doc = acx * bcx + acy * bcy
+            if (doc < 0) {
+              console.log('detect right', iX)
+              ownCondition.dx = -ownCondition.dx * elasticModulus
+            }
+          }
+        }
+        if (0 < ownCondition.dy) { // floor
           const ax = iX * size - r
           const ay = iY * size - r
           const bx = iX * size + tileWidth + r
@@ -130,7 +178,7 @@ const collisionDetect = () => {
           ny *= length
           const d = -(ay * ny)
           const t = -(ny * ownCondition.y + d) / (ny * ownCondition.dy)
-          if (0 < t && t <= 1) {
+          if (0 <= t && t <= 1) {
             const cx = ownCondition.x + ownCondition.dx * t
             const cy = ownCondition.y + ownCondition.dy * t
             const acx = cx - ax
@@ -139,12 +187,12 @@ const collisionDetect = () => {
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
             if (doc < 0) {
-              // console.log('detect floor', iX, t)
+              console.log('detect floor', iX, t)
               ownCondition.dy = -ownCondition.dy * elasticModulus
             }
           }
         }
-        { // ceil
+        if (ownCondition.dy < 0) { // ceil
           const ax = iX * size - r
           const ay = iY * size + tileWidth + r
           const bx = iX * size + tileWidth + r
@@ -156,7 +204,7 @@ const collisionDetect = () => {
           ny *= length
           const d = -(ay * ny)
           const t = -(ny * ownCondition.y + d) / (ny * ownCondition.dy)
-          if (0 < t && t <= 1) {
+          if (0 <= t && t <= 1) {
             const cx = ownCondition.x + ownCondition.dx * t
             const cy = ownCondition.y + ownCondition.dy * t
             const acx = cx - ax
@@ -165,68 +213,8 @@ const collisionDetect = () => {
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
             if (doc < 0) {
-              // console.log('detect ceil', iX)
-              ownCondition.dy = -ownCondition.dy
-            }
-          }
-        }
-        { // left wall
-          const ax = iX * size - r
-          const ay = iY * size - r
-          const bx = iX * size - r
-          const by = iY * size + tileWidth + r
-          const abx = bx - ax
-          const aby = by - ay
-          let nx = -aby
-          let ny = abx
-          let length = (nx ** 2 + ny ** 2) ** .5
-          if (0 < length) length = 1 / length
-          nx *= length
-          ny *= length
-          const d = -(ax * nx + ay * ny)
-          const t = -(nx * ownCondition.x + ny * ownCondition.y + d) / (
-            nx * ownCondition.dx + ny * ownCondition.dy)
-          if (0 < t && t <= 1) {
-            const cx = ownCondition.x + ownCondition.dx * t
-            const cy = ownCondition.y + ownCondition.dy * t
-            const acx = cx - ax
-            const acy = cy - ay
-            const bcx = cx - bx
-            const bcy = cy - by
-            const doc = acx * bcx + acy * bcy
-            if (doc < 0) {
-              console.log('detect left', iX)
-              ownCondition.dx = -ownCondition.dx
-            }
-          }
-        }
-        { // right wall
-          const ax = iX * size + tileWidth + r
-          const ay = iY * size - r
-          const bx = iX * size + tileWidth + r
-          const by = iY * size + tileWidth + r
-          const abx = bx - ax
-          const aby = by - ay
-          let nx = -aby
-          let ny = abx
-          let length = (nx ** 2 + ny ** 2) ** .5
-          if (0 < length) length = 1 / length
-          nx *= length
-          ny *= length
-          const d = -(ax * nx + ay * ny)
-          const t = -(nx * ownCondition.x + ny * ownCondition.y + d) / (
-            nx * ownCondition.dx + ny * ownCondition.dy)
-          if (0 < t && t <= 1) {
-            const cx = ownCondition.x + ownCondition.dx * t
-            const cy = ownCondition.y + ownCondition.dy * t
-            const acx = cx - ax
-            const acy = cy - ay
-            const bcx = cx - bx
-            const bcy = cy - by
-            const doc = acx * bcx + acy * bcy
-            if (doc < 0) {
-              console.log('detect left', iX)
-              ownCondition.dx = -ownCondition.dx
+              console.log('detect ceil', iX)
+              ownCondition.dy = -ownCondition.dy * elasticModulus
             }
           }
         }
