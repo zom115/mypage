@@ -48,13 +48,13 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
+  '100011000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000110000000000000000000000000000000000000000001',
   '100000000110000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
+  '100010000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '111111111111111111111111111111111111111111111111111111'
 ]
@@ -116,10 +116,6 @@ const input = () => {
   // }
 }
 const collisionDetect = () => {
-  ownCondition.x += ownCondition.dx
-  ownCondition.y += ownCondition.dy
-  ownCondition.dx = 0
-  ownCondition.dy = 0
   // ownCondition.dy += gravityConstant
   // if (size < ownCondition.dy) ownCondition.dy = size // terminal speed
   // ground.forEach(obj => {
@@ -146,33 +142,135 @@ const collisionDetect = () => {
   //     ownCondition.dx = -ownCondition.dx
   //   }
   // })
+  let moveFlag = true
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
       if (y[iX] === '1') {
-        // 矩形 * 円の当たり判定
-        const ox = ownCondition.x // 自機のx座標
-        const oy = ownCondition.y // 自機のy座標
-        const lt = iX * size // 左
-        const rt = iX * size + size // 右
-        const up = iY * size // 上
-        const dn = iY * size + size // 下
-        const rs = size // 自機の半径
-        if ( // 矩形
-          up - rs < oy && oy < dn + rs && // 1 縦
-          lt - rs < ox && ox < rt + rs && // 2 横
-          ( // 3 四隅 a.k.a. 点と矩形
-            (lt - ox) ** 2 + (up - oy) ** 2 < rs ** 2 || // 左上
-            (rt - ox) ** 2 + (up - oy) ** 2 < rs ** 2 || // 右上
-            (rt - ox) ** 2 + (dn - oy) ** 2 < rs ** 2 || // 右下
-            (lt - ox) ** 2 + (dn - oy) ** 2 < rs ** 2 // 左下
-          )
-        ) {
-          console.log('detect')
+        const r = size
+        { // floor
+          const tileWidth = size
+          const ax = iX * size - r
+          const ay = iY * size - r
+          const bx = iX * size + tileWidth + r
+          const by = iY * size - r
+          const abx = bx - ax
+          let ny = abx
+          let length = (ny ** 2) ** .5
+          if (0 < length) length = 1 / length
+          ny *= length
+          const d = -(ay * ny)
+          const t = -(ny * ownCondition.y + d) / (ny * ownCondition.dy)
+          if (0 < t && t <= 1) {
+            const cx = ownCondition.x + ownCondition.dx * t
+            const cy = ownCondition.y + ownCondition.dy * t
+            const acx = cx - ax
+            const acy = cy - ay
+            const bcx = cx - bx
+            const bcy = cy - by
+            const doc = acx * bcx + acy * bcy
+            if (doc < 0) {
+              console.log('detect floor', iX)
+              ownCondition.y -= t * ownCondition.dy
+              // ownCondition.dy = 0
+            }
+          }
         }
+        { // ceil
+          const tileWidth = size
+          const ax = iX * size - r
+          const ay = iY * size + size + r
+          const bx = iX * size + tileWidth + r
+          const by = iY * size + size + r
+          const abx = bx - ax
+          let ny = abx
+          let length = (ny ** 2) ** .5
+          if (0 < length) length = 1 / length
+          ny *= length
+          const d = -(ay * ny)
+          const t = -(ny * ownCondition.y + d) / (ny * ownCondition.dy)
+          if (0 < t && t <= 1) {
+            const cx = ownCondition.x + ownCondition.dx * t
+            const cy = ownCondition.y + ownCondition.dy * t
+            const acx = cx - ax
+            const acy = cy - ay
+            const bcx = cx - bx
+            const bcy = cy - by
+            const doc = acx * bcx + acy * bcy
+            if (doc < 0) {
+              console.log('detect ceil', iX)
+              ownCondition.y -= t * ownCondition.dy
+              // ownCondition.dy = 0
+            }
+          }
+        }
+      // if (y[iX] === '1') {
+      //   const r = size
+      //   const tileWidth = size
+      //   const ax = iX * size - r
+      //   const ay = iY * size
+      //   const bx = iX * size + tileWidth + r
+      //   const by = iY * size
+      //   const abx = bx - ax
+      //   const aby = by - ay
+      //   let nx = -aby
+      //   let ny = abx
+      //   let length = (nx ** 2 + ny ** 2) ** .5
+      //   if (0 < length) length = 1 / length
+      //   nx *= length
+      //   ny *= length
+      //   const d = -(ax * nx + ay * ny)
+      //   const t = -(nx * ownCondition.x + ny * ownCondition.y + d) / (nx * ownCondition.dx + ny * ownCondition.dy)
+      //   if (0 < t && t <= 1) {
+      //     const cx = ownCondition.x + ownCondition.dx * t
+      //     const cy = ownCondition.y + ownCondition.dy * t
+      //     const acx = cx - ax
+      //     const acy = cy - ay
+      //     const bcx = cx - bx
+      //     const bcy = cy - by
+      //     const doc = acx * bcx + acy * bcy
+      //     if (doc < 0) {
+      //       console.log('detect', iX)
+      //       ownCondition.y -= t * ownCondition.dy
+      //       // ownCondition.dy = 0
+      //     }
+      //   }
 
+        // // 矩形 * 円の当たり判定
+        // const ox = ownCondition.x // 自機のx座標
+        // const oy = ownCondition.y // 自機のy座標
+        // const lt = iX * size // 左
+        // const rt = iX * size + size // 右
+        // const tp = iY * size // 上
+        // const bm = iY * size + size // 下
+        // const rs = size // 自機の半径
+        // if ( // 矩形
+        //   tp - rs < oy && oy < bm + rs && // 1 縦
+        //   lt - rs < ox && ox < rt + rs && // 2 横
+        //   ( // 3 四隅 a.k.a. 点と矩形
+        //     (lt - ox) ** 2 + (tp - oy) ** 2 < rs ** 2 || // 左上
+        //     (rt - ox) ** 2 + (tp - oy) ** 2 < rs ** 2 || // 右上
+        //     (rt - ox) ** 2 + (bm - oy) ** 2 < rs ** 2 || // 右下
+        //     (lt - ox) ** 2 + (bm - oy) ** 2 < rs ** 2 // 左下
+        //   )
+        // ) {
+        //   console.log('detect')
+        //   if (moveFlag) {
+        //     const dx = ownCondition.dx
+        //     if (0 !== dx) ownCondition.x -= dx
+        //     const dy = ownCondition.dy
+        //     if (0 !== dy) ownCondition.y -= dy
+        //     moveFlag = false
+        //   }
+        // }
       }
     }
   })
+  if (moveFlag) {
+    ownCondition.x += ownCondition.dx
+    ownCondition.y += ownCondition.dy
+  }
+  ownCondition.dx = 0
+  ownCondition.dy = 0
 }
 const draw = () => {
   context.fillStyle = 'hsl(0, 100%, 50%)'
