@@ -115,9 +115,9 @@ const collisionDetect = () => {
         let r = size
         const tileWidth = size
         if (0 < ownCondition.dx) { // left wall
-          const ax = iX * size - r
+          const ax = iX * size
           const ay = iY * size - r
-          const bx = iX * size - r
+          const bx = iX * size
           const by = iY * size + tileWidth + r
           const aby = by - ay
           let nx = -aby
@@ -125,7 +125,7 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           const d = -(ax * nx)
-          const t = -(nx * ownCondition.x + d) / (nx * ownCondition.dx)
+          const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx + r))
           if (0 <= t && t <= 1) {
             const cx = ownCondition.x + ownCondition.dx * t
             const cy = ownCondition.y + ownCondition.dy * t
@@ -141,9 +141,9 @@ const collisionDetect = () => {
           }
         }
         if (ownCondition.dx < 0) { // right wall
-          const ax = iX * size + tileWidth + r
+          const ax = iX * size + tileWidth
           const ay = iY * size - r
-          const bx = iX * size + tileWidth + r
+          const bx = iX * size + tileWidth
           const by = iY * size + tileWidth + r
           const aby = by - ay
           let nx = -aby
@@ -151,7 +151,7 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           const d = -(ax * nx)
-          const t = -(nx * ownCondition.x + d) / (nx * ownCondition.dx)
+          const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx - r))
           if (0 <= t && t <= 1) {
             const cx = ownCondition.x + ownCondition.dx * t
             const cy = ownCondition.y + ownCondition.dy * t
@@ -168,16 +168,16 @@ const collisionDetect = () => {
         }
         if (0 < ownCondition.dy) { // floor
           const ax = iX * size - r
-          const ay = iY * size - r
+          const ay = iY * size
           const bx = iX * size + tileWidth + r
-          const by = iY * size - r
+          const by = iY * size
           const abx = bx - ax
           let ny = abx
           let length = (ny ** 2) ** .5
           if (0 < length) length = 1 / length
           ny *= length
           const d = -(ay * ny)
-          const t = -(ny * ownCondition.y + d) / (ny * ownCondition.dy)
+          const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy + r))
           if (0 <= t && t <= 1) {
             const cx = ownCondition.x + ownCondition.dx * t
             const cy = ownCondition.y + ownCondition.dy * t
@@ -187,23 +187,28 @@ const collisionDetect = () => {
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
             if (doc < 0) {
-              console.log('detect floor', iX, t)
-              ownCondition.dy = -ownCondition.dy * elasticModulus
+              const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
+              bx - r < ownCondition.x ? ownCondition.x- bx + r : 0
+              console.log(t,iY * size, ownCondition.y, ownCondition.y - ay + r, diff * Math.sin(diff / r * Math.PI / 2))
+                // if (diff * Math.sin(diff / r * Math.PI / 2) <= ownCondition.dy)
+                // {
+                  ownCondition.dy = -ownCondition.dy * elasticModulus
+                // }
             }
           }
         }
         if (ownCondition.dy < 0) { // ceil
           const ax = iX * size - r
-          const ay = iY * size + tileWidth + r
+          const ay = iY * size + tileWidth
           const bx = iX * size + tileWidth + r
-          const by = iY * size + tileWidth + r
+          const by = iY * size + tileWidth
           const abx = bx - ax
           let ny = abx
           let length = (ny ** 2) ** .5
           if (0 < length) length = 1 / length
           ny *= length
           const d = -(ay * ny)
-          const t = -(ny * ownCondition.y + d) / (ny * ownCondition.dy)
+          const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy - r))
           if (0 <= t && t <= 1) {
             const cx = ownCondition.x + ownCondition.dx * t
             const cy = ownCondition.y + ownCondition.dy * t
@@ -229,9 +234,13 @@ const collisionDetect = () => {
 const draw = () => {
   context.fillStyle = 'hsl(0, 100%, 50%)'
   context.fillRect(ownCondition.x - size, ownCondition.y - size, size * 2, size * 2)
+  context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
   context.beginPath()
   context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size, 0, Math.PI * 2, false)
-  context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
+  context.fill()
+  context.fillStyle = context.strokeStyle = 'hsl(300, 100%, 60%)'
+  context.beginPath()
+  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 8, 0, Math.PI * 2, false)
   context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
   terrainList.forEach((y, iY) => {
