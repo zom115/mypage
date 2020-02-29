@@ -137,7 +137,7 @@ const collisionDetect = () => {
             const diff = ownCondition.y < ay + r ? ownCondition.y - ay - r :
             by - r < ownCondition.y ? ownCondition.y - by + r : 0
             if (
-              (doc < 0 && ay + r < ownCondition.y && ownCondition.y < by - r) ||
+              (doc < 0 && ay + r <= ownCondition.y && ownCondition.y <= by - r) ||
               ((ay < ownCondition.y && ownCondition.y < ay + r) ||
               (by - r < ownCondition.y && ownCondition.y < by)) &&
                 ax - ownCondition.x - ownCondition.dx <
@@ -171,7 +171,7 @@ const collisionDetect = () => {
             const diff = ownCondition.y < ay + r ? ownCondition.y - ay - r :
             by - r < ownCondition.y ? ownCondition.y - by + r : 0
             if (
-              (doc < 0 && ay + r < ownCondition.y && ownCondition.y < by - r) ||
+              (doc < 0 && ay + r <= ownCondition.y && ownCondition.y <= by - r) ||
               ((ay < ownCondition.y && ownCondition.y < ay + r) ||
               (by - r < ownCondition.y && ownCondition.y < by)) &&
               -(ax - ownCondition.x - ownCondition.dx) <
@@ -205,7 +205,7 @@ const collisionDetect = () => {
             const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
             bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
             if (
-              (doc < 0 && ax + r < ownCondition.x && ownCondition.x < bx - r) ||
+              (doc < 0 && ax + r <= ownCondition.x && ownCondition.x <= bx - r) ||
               ((ax < ownCondition.x && ownCondition.x < ax + r) ||
               (bx - r < ownCondition.x && ownCondition.x < bx)) &&
                 ay - ownCondition.y - ownCondition.dy <
@@ -239,7 +239,7 @@ const collisionDetect = () => {
             const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
             bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
             if (
-              (doc < 0 && ax + r < ownCondition.x && ownCondition.x < bx - r) ||
+              (doc < 0 && ax + r <= ownCondition.x && ownCondition.x <= bx - r) ||
               ((ax < ownCondition.x && ownCondition.x < ax + r) ||
               (bx - r < ownCondition.x && ownCondition.x < bx)) &&
               -(ay - ownCondition.y - ownCondition.dy) <
