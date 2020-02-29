@@ -134,8 +134,16 @@ const collisionDetect = () => {
             const bcx = cx - bx
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
-            if (doc < 0) {
-              console.log('detect left', iX)
+            const diff = ownCondition.y < ay + r ? ownCondition.y - ay - r :
+            by - r < ownCondition.y ? ownCondition.y - by + r : 0
+            if (
+              (doc < 0 && ay + r < ownCondition.y && ownCondition.y < by - r) ||
+              ((ay < ownCondition.y && ownCondition.y < ay + r) ||
+              (by - r < ownCondition.y && ownCondition.y < by)) &&
+                ax - ownCondition.x - ownCondition.dx <
+                r * Math.cos((diff / r) * (Math.PI / 2))
+            ) {
+              console.log('detect left wall')
               ownCondition.dx = -ownCondition.dx * elasticModulus
             }
           }
@@ -160,8 +168,16 @@ const collisionDetect = () => {
             const bcx = cx - bx
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
-            if (doc < 0) {
-              console.log('detect right', iX)
+            const diff = ownCondition.y < ay + r ? ownCondition.y - ay - r :
+            by - r < ownCondition.y ? ownCondition.y - by + r : 0
+            if (
+              (doc < 0 && ay + r < ownCondition.y && ownCondition.y < by - r) ||
+              ((ay < ownCondition.y && ownCondition.y < ay + r) ||
+              (by - r < ownCondition.y && ownCondition.y < by)) &&
+              -(ax - ownCondition.x - ownCondition.dx) <
+              r * Math.cos((diff / r) * (Math.PI / 2))
+            ) {
+              console.log('detect right wall')
               ownCondition.dx = -ownCondition.dx * elasticModulus
             }
           }
@@ -232,10 +248,6 @@ const collisionDetect = () => {
               console.log('detect ceil')
               ownCondition.dy = -ownCondition.dy * elasticModulus
             }
-            // if (doc < 0) {
-            //   console.log('detect ceil', iX)
-            //   ownCondition.dy = -ownCondition.dy * elasticModulus
-            // }
           }
         }
       }
