@@ -74,7 +74,7 @@ document.addEventListener('keyup', e => {
 const input = () => {
   if (key.a) ownCondition.dx -= moveAcceleration
   if (key.d) ownCondition.dx += moveAcceleration
-  if (key.w) ownCondition.dy -= moveAcceleration // temporary
+  if (key.w) ownCondition.dy -= moveAcceleration * 2 // temporary
   if (key.s) ownCondition.dy += moveAcceleration // temporary
   // if (key.j) {
   //     jumpTime += 1
@@ -108,7 +108,7 @@ const input = () => {
   // }
 }
 const collisionDetect = () => {
-  // ownCondition.dy += gravityConstant
+  ownCondition.dy += gravityConstant
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
       if (y[iX] === '1') {
@@ -204,15 +204,19 @@ const collisionDetect = () => {
             const doc = acx * bcx + acy * bcy
             const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
             bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
-            if (
-              (doc < 0 && ax + r <= ownCondition.x && ownCondition.x <= bx - r) ||
-              ((ax < ownCondition.x && ownCondition.x < ax + r) ||
-              (bx - r < ownCondition.x && ownCondition.x < bx)) &&
-                ay - ownCondition.y - ownCondition.dy <
-                r * Math.cos((diff / r) * (Math.PI / 2))
-            ) {
+            if (doc < 0 && ax + r <= ownCondition.x && ownCondition.x <= bx - r) {
               console.log('detect floor')
               ownCondition.dy = -ownCondition.dy * elasticModulus
+            } else if (
+              ((ax < ownCondition.x && ownCondition.x < ax + r) ||
+              (bx - r < ownCondition.x && ownCondition.x < bx)) &&
+              ay - ownCondition.y - ownCondition.dy <
+              r * Math.cos((diff / r) * (Math.PI / 2))
+            ) {
+              console.log('detect floor corner')
+              ownCondition.dy = -ownCondition.dy * elasticModulus
+              ax < ownCondition.x && ownCondition.x < ax + r ?
+              ownCondition.dx -= moveAcceleration : ownCondition.dx += moveAcceleration
             }
           }
         }
