@@ -178,22 +178,35 @@ const collisionDetect = () => {
           ny *= length
           const d = -(ay * ny)
           const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy + r))
+          const cx = ownCondition.x + ownCondition.dx * t
+          const cy = ownCondition.y + ownCondition.dy * t
+          const acx = cx - ax
+          const acy = cy - ay
+          const bcx = cx - bx
+          const bcy = cy - by
+          const doc = acx * bcx + acy * bcy
+
+          const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
+          bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
           if (0 <= t && t <= 1) {
-            const cx = ownCondition.x + ownCondition.dx * t
-            const cy = ownCondition.y + ownCondition.dy * t
-            const acx = cx - ax
-            const acy = cy - ay
-            const bcx = cx - bx
-            const bcy = cy - by
-            const doc = acx * bcx + acy * bcy
-            if (doc < 0) {
-              const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
-              bx - r < ownCondition.x ? ownCondition.x- bx + r : 0
-              console.log(t,iY * size, ownCondition.y, ownCondition.y - ay + r, diff * Math.sin(diff / r * Math.PI / 2))
-                // if (diff * Math.sin(diff / r * Math.PI / 2) <= ownCondition.dy)
-                // {
-                  ownCondition.dy = -ownCondition.dy * elasticModulus
-                // }
+            if (
+              doc < 0 && ax + r < ownCondition.x && ownCondition.x < bx - r
+              ) {
+              console.log('detect')
+              ownCondition.dy = -ownCondition.dy * elasticModulus
+            } else if (
+              (ax < ownCondition.x && ownCondition.x < ax + r) ||
+              (bx - r < ownCondition.x && ownCondition.x < bx)
+            ) {
+              if (ay - ownCondition.y - ownCondition.dy < r * Math.cos((diff / r) * (Math.PI / 2))) {
+                console.log(
+                't', t,
+                'diff', diff, diff / r,
+                'dy' , ay - ownCondition.y - ownCondition.dy,
+                'd' , r * Math.cos((diff / r) * (Math.PI / 2)),
+                )
+                ownCondition.dy = -ownCondition.dy * elasticModulus
+              }
             }
           }
         }
