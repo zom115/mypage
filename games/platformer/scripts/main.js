@@ -220,10 +220,22 @@ const collisionDetect = () => {
             const bcx = cx - bx
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
-            if (doc < 0) {
-              console.log('detect ceil', iX)
+            const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
+            bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
+            if (
+              (doc < 0 && ax + r < ownCondition.x && ownCondition.x < bx - r) ||
+              ((ax < ownCondition.x && ownCondition.x < ax + r) ||
+              (bx - r < ownCondition.x && ownCondition.x < bx)) &&
+              -(ay - ownCondition.y - ownCondition.dy) <
+              r * Math.cos((diff / r) * (Math.PI / 2))
+            ) {
+              console.log('detect ceil')
               ownCondition.dy = -ownCondition.dy * elasticModulus
             }
+            // if (doc < 0) {
+            //   console.log('detect ceil', iX)
+            //   ownCondition.dy = -ownCondition.dy * elasticModulus
+            // }
           }
         }
       }
