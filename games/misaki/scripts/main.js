@@ -617,6 +617,8 @@ const setStage = arg => {
     ]
   }
   fieldArray = mapData[arg]
+  fieldArray.unshift('0'.repeat(mapData[arg][0].length))
+  fieldArray.push('0'.repeat(mapData[arg][0].length))
   stage = {
     name: arg,
     time: 0,
@@ -1079,130 +1081,139 @@ const modelUpdate = () => {
   }
   let aerialFlag = true
   if (player.dx !== 0) player.wallFlag = false
-  field.forEach(obj => {
-    if (0 < player.dy) { // floor
-      const ax = obj.x - player.hitbox.w / 2
-      const ay = obj.y
-      const bx = obj.x + obj.w + player.hitbox.w / 2
-      const by = obj.y
-      const abx = bx - ax
-      const aby = by - ay
-      let nx = -aby
-      let ny = abx
-      let length = (nx ** 2 + ny ** 2) ** .5
-      if (0 < length) length = 1 / length
-      nx *= length
-      ny *= length
-      const d = -(ax * nx + ay * ny)
-      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-      if (0 < t && t <= 1) {
-        const cx = player.x + player.dx * t
-        const cy = player.y + player.dy * t
-        const acx = cx - ax
-        const acy = cy - ay
-        const bcx = cx - bx
-        const bcy = cy - by
-        const doc = acx * bcx + acy * bcy
-        if (doc < 0) {
-          player.y = obj.y - gravityConstant + 1e-12
-          player.dy = 0
-          aerialFlag = false
+  do {
+    let flag = false // TODO: implementation ASAP
+    fieldArray.forEach((y, iY) => {
+      for (let iX = 0; iX < fieldArray[0].length; iX++) {
+        if (y[iX] === '1') {
+          if (0 < player.dy && fieldArray[iY - 1][iX] !== '1') { // floor
+            const ax = iX * size - player.hitbox.w / 2
+            const ay = iY * size
+            const bx = iX * size + size + player.hitbox.w / 2
+            const by = iY * size
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            const d = -(ax * nx + ay * ny)
+            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+            if (0 < t && t <= 1) {
+              const cx = player.x + player.dx * t
+              const cy = player.y + player.dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc < 0) {
+                player.y = iY * size - gravityConstant + 1e-12
+                player.dy = 0
+                aerialFlag = false
+              }
+            }
+          }
+          if (player.dy < 0 && fieldArray[iY + 1][iX] !== '1') { // ceiling
+            const ax = iX * size - player.hitbox.w / 2
+            const ay = iY * size + size + player.hitbox.h
+            const bx = iX * size + size + player.hitbox.w / 2
+            const by = iY * size + size + player.hitbox.h
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            const d = -(ax * nx + ay * ny)
+            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+            if (0 < t && t <= 1) {
+              const cx = player.x + player.dx * t
+              const cy = player.y + player.dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc < 0) {
+                player.y = iY * size + size + player.hitbox.h
+                player.dy = 0
+              }
+            }
+          }
+          if (0 < player.dx && y[iX - 1] !== '1') { // right wall
+            const ax = iX * size - player.hitbox.w / 2
+            const ay = iY * size
+            const bx = iX * size - player.hitbox.w / 2
+            const by = iY * size + size + player.hitbox.h
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            const d = -(ax * nx + ay * ny)
+            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+            if (0 < t && t <= 1) {
+              const cx = player.x + player.dx * t
+              const cy = player.y + player.dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc < 0) {
+                player.x = iX * size - player.hitbox.w / 2 - 1
+                player.dx = 0
+                player.wallFlag = 'left'
+                console.log('right')
+              }
+            }
+          } else if (player.dx !== 0 && y[iX + 1] !== '1') { // left wall
+            const ax = iX * size + size + player.hitbox.w / 2
+            const ay = iY * size
+            const bx = iX * size + size + player.hitbox.w / 2
+            const by = iY * size + size + player.hitbox.h
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            const d = -(ax * nx + ay * ny)
+            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+            if (0 < t && t <= 1) {
+              const cx = player.x + player.dx * t
+              const cy = player.y + player.dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc < 0) {
+                player.x = iX * size + size + player.hitbox.w / 2 + 1
+                player.dx = 0
+                player.wallFlag = 'right'
+              }
+            }
+          }
         }
+        if (
+          player.hitbox.x <= iX * size + size && iX * size <= player.hitbox.x + player.hitbox.w &&
+          player.hitbox.y <= iY * size + size && iY * size <= player.hitbox.y + player.hitbox.h &&
+          player.state === 'slide'
+        ) player.dx = 0
       }
-    } else if (player.dy !== 0) { // ceiling
-      const ax = obj.x - player.hitbox.w / 2
-      const ay = obj.y + obj.h + player.hitbox.h
-      const bx = obj.x + obj.w + player.hitbox.w / 2
-      const by = obj.y + obj.h + player.hitbox.h
-      const abx = bx - ax
-      const aby = by - ay
-      let nx = -aby
-      let ny = abx
-      let length = (nx ** 2 + ny ** 2) ** .5
-      if (0 < length) length = 1 / length
-      nx *= length
-      ny *= length
-      const d = -(ax * nx + ay * ny)
-      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-      if (0 < t && t <= 1) {
-        const cx = player.x + player.dx * t
-        const cy = player.y + player.dy * t
-        const acx = cx - ax
-        const acy = cy - ay
-        const bcx = cx - bx
-        const bcy = cy - by
-        const doc = acx * bcx + acy * bcy
-        if (doc < 0) {
-          player.y = obj.y + obj.h + player.hitbox.h
-          player.dy = 0
-        }
-      }
-    }
-    if (0 < player.dx) { // left wall
-      const ax = obj.x - player.hitbox.w / 2
-      const ay = obj.y
-      const bx = obj.x - player.hitbox.w / 2
-      const by = obj.y + obj.h + player.hitbox.h
-      const abx = bx - ax
-      const aby = by - ay
-      let nx = -aby
-      let ny = abx
-      let length = (nx ** 2 + ny ** 2) ** .5
-      if (0 < length) length = 1 / length
-      nx *= length
-      ny *= length
-      const d = -(ax * nx + ay * ny)
-      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-      if (0 < t && t <= 1) {
-        const cx = player.x + player.dx * t
-        const cy = player.y + player.dy * t
-        const acx = cx - ax
-        const acy = cy - ay
-        const bcx = cx - bx
-        const bcy = cy - by
-        const doc = acx * bcx + acy * bcy
-        if (doc < 0) {
-          player.x = obj.x - player.hitbox.w / 2 - 1
-          player.dx = 0
-          player.wallFlag = 'left'
-        }
-      }
-    } else if (player.dx !== 0) { // right wall
-      const ax = obj.x + obj.w + player.hitbox.w / 2
-      const ay = obj.y
-      const bx = obj.x + obj.w + player.hitbox.w / 2
-      const by = obj.y + obj.h + player.hitbox.h
-      const abx = bx - ax
-      const aby = by - ay
-      let nx = -aby
-      let ny = abx
-      let length = (nx ** 2 + ny ** 2) ** .5
-      if (0 < length) length = 1 / length
-      nx *= length
-      ny *= length
-      const d = -(ax * nx + ay * ny)
-      const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-      if (0 < t && t <= 1) {
-        const cx = player.x + player.dx * t
-        const cy = player.y + player.dy * t
-        const acx = cx - ax
-        const acy = cy - ay
-        const bcx = cx - bx
-        const bcy = cy - by
-        const doc = acx * bcx + acy * bcy
-        if (doc < 0) {
-          player.x = obj.x + obj.w + player.hitbox.w / 2 + 1
-          player.dx = 0
-          player.wallFlag = 'right'
-        }
-      }
-    }
-    if (
-      player.hitbox.x <= obj.x + obj.w && obj.x <= player.hitbox.x + player.hitbox.w &&
-      player.hitbox.y <= obj.y + obj.h && obj.y <= player.hitbox.y + player.hitbox.h &&
-      player.state === 'slide'
-    ) player.dx = 0
-  })
+    })
+  } while (flag);
   { // enemy update
     stage.time += 1
     if (enemies.length < 1 && stage.name === 'BattleField') {
