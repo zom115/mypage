@@ -17,7 +17,7 @@ const dashConstant = 10
 const stopConstant = .1
 const brakeConstant = .98
 const gravityConstant = .5
-const elasticModulus = 1
+const elasticModulus = 0
 const jumpConstant = size
 let jumpFlag = false
 let jumpTime = 0
@@ -75,7 +75,9 @@ document.addEventListener('keyup', e => {
 const input = () => {
   if (key.a && -moveConstant < ownCondition.dx) ownCondition.dx -= moveAcceleration
   if (key.d && ownCondition.dx < moveConstant) ownCondition.dx += moveAcceleration
-  if (key.w && -moveConstant < ownCondition.dy) ownCondition.dy -= moveAcceleration // temporary
+  if (key.w && -moveConstant < ownCondition.dy) {
+    ownCondition.dy -= moveAcceleration * 20
+  } // temporary
   if (key.s && ownCondition.dy < moveConstant) ownCondition.dy += moveAcceleration // temporary
   // if (key.j) {
   //     jumpTime += 1
@@ -107,14 +109,11 @@ const input = () => {
   //     jumpFlag = true
   //   }
   // }
+  ownCondition.dy += gravityConstant
 }
-let flag = false
 const collisionDetect = () => {
-  // ownCondition.dy += gravityConstant
-  let count = 0
   do {
-    count += 1
-    flag = false
+    let flag = false
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
         if (y[iX] === '1') {
@@ -150,7 +149,7 @@ const collisionDetect = () => {
                 // ownCondition.y = ay - r
                 ownCondition.dy = -ownCondition.dy * elasticModulus
                 //  - gravityConstant * (1 - t)
-                // ownCondition.dx *= brakeConstant
+                ownCondition.dx *= brakeConstant
                 flag = true
               }
               // else if (
@@ -292,8 +291,6 @@ const collisionDetect = () => {
     ownCondition.x += ownCondition.dx
     ownCondition.y += ownCondition.dy
   } while (flag)
-  console.log(count)
-  flag = false
 }
 const draw = () => {
   context.fillStyle = 'hsl(0, 100%, 50%)'
