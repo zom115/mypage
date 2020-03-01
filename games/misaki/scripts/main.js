@@ -1,4 +1,4 @@
-'use strict'
+{'use strict'
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -258,6 +258,8 @@ const playAudio = (path, startTime = 0) => {
   voiceLoadedMap[path].currentTime = startTime
   voiceLoadedMap[path].play()
 }
+const screenList = ['title', 'main']
+let screenState = screenList[0]
 let stage = {name: '', time: 0, w: 0, h: 0, checkPoint: {x: 0, y: 0}}
 let field = []
 let fieldArray = []
@@ -1977,12 +1979,31 @@ const musicProcess = () => {
     60 + 13 < musicLoadedMap[currentPlay].currentTime
   ) musicLoadedMap[currentPlay].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
-const main = () => {
+const title = () => {
+  if (action.attack.some(v => key[v])) screenState = screenList[1]
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  const drawTitle = () => {
+    context.font = `${size * 4}px sans-serif`
+    context.textAlign = 'center'
+    context.fillText('Title', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+    context.font = `${size * 2}px sans-serif`
+    context.fillText(
+      `Press '${action.attack[0].toUpperCase()}' to Start`,
+      canvas.offsetWidth / 2, canvas.offsetHeight * 3 / 4)
+  }
+  drawTitle()
+}
+const inGame = () => {
   frame += 1
-  input()
   modelUpdate()
   viewUpdate()
   draw()
   musicProcess()
+}
+const main = () => {
+  input()
+  if (screenState === screenList[0]) title()
+  else if (screenState === screenList[1]) inGame()
   window.requestAnimationFrame(main)
+}
 }
