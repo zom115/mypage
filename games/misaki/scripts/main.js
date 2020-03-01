@@ -1983,6 +1983,7 @@ const title = () => {
   if (action.attack.some(v => key[v])) screenState = screenList[1]
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   const drawTitle = () => {
+    context.fillStyle = 'hsl(0, 0%, 0%)'
     context.font = `${size * 4}px sans-serif`
     context.textAlign = 'center'
     context.fillText('Title', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
@@ -1992,6 +1993,19 @@ const title = () => {
       canvas.offsetWidth / 2, canvas.offsetHeight * 3 / 4)
   }
   drawTitle()
+}
+let menuFlag = false
+const gaugeMax = 100
+let gauge = 0
+const floatingMenu = () => {
+  if (gauge < 0) {return menuFlag = false}
+  if (menuFlag && gauge < gaugeMax) gauge += 1
+  else if (!menuFlag) gauge -= 1
+  const ratio = gauge / gaugeMax
+  context.fillStyle = 'hsl(0, 0%, 25%)'
+  context.fillRect(
+    canvas.offsetWidth - (canvas.offsetWidth / 2) * ratio,
+    0, canvas.offsetWidth, canvas.offsetHeight)
 }
 const inGame = () => {
   frame += 1
@@ -2004,6 +2018,8 @@ const main = () => {
   input()
   if (screenState === screenList[0]) title()
   else if (screenState === screenList[1]) inGame()
+  if (key.o===1) menuFlag = !menuFlag
+  if (menuFlag || gauge) floatingMenu()
   window.requestAnimationFrame(main)
 }
 }
