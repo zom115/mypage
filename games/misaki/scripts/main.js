@@ -1994,48 +1994,36 @@ const title = () => {
   }
   drawTitle()
 }
-let menuFlag = false
 const gaugeMax = 100
-let gauge = 0
-const floatingMenu = () => {
-  if (key.o === 1) menuFlag = !menuFlag
-  if (!menuFlag && !gauge) return
-  if (gauge < 0) {return menuFlag = false}
-  if (menuFlag && gauge < gaugeMax) gauge += 1
-  else if (!menuFlag) gauge -= 1
-  const ratio = gauge / gaugeMax
+let menuFlag = false
+let menuGauge = 0
+let menuGaugeMaxTime = 100 * (1 / 75)
+let menuOpenTimestamp = 0
+let menuCloseTimestamp = 0
+const floatMenu = () => {
+  if (key.o === 1) {
+    menuFlag = !menuFlag
+    if (menuOpenTimestamp) {
+      menuOpenTimestamp = 0
+      menuCloseTimestamp = Date.now()
+    } else {
+      menuOpenTimestamp = Date.now()
+      menuCloseTimestamp = 0
+    }
+  }
+  if (!menuFlag && !menuGauge) return
+  if (menuGauge < 0) {return menuFlag = false}
+  if (menuFlag && menuGauge < gaugeMax &&
+    menuGauge * (1 / 75) < Date.now() - menuOpenTimestamp) menuGauge += 1
+  else if (
+    !menuFlag &&
+    menuGaugeMaxTime - menuGauge * (1 / 75) < Date.now() - menuCloseTimestamp
+  ) menuGauge -= 1
+  const ratio = menuGauge / gaugeMax
   context.fillStyle = 'hsl(0, 0%, 25%)'
   context.fillRect(
     canvas.offsetWidth - (canvas.offsetWidth / 2) * ratio,
     0, canvas.offsetWidth, canvas.offsetHeight)
-}
-let leftMenuFlag = false
-let leftGauge = 0
-let leftGaugeMaxTime = 100 * (1 / 75)
-let leftMenuStartTimestamp = 0
-let leftMenuCloseTimestamp = 0
-const floatingLeftMenu = () => {
-  if (key.q === 1) {
-    leftMenuFlag = !leftMenuFlag
-    if (leftMenuStartTimestamp) {
-      leftMenuStartTimestamp = 0
-      leftMenuCloseTimestamp = Date.now()
-    } else {
-      leftMenuStartTimestamp = Date.now()
-      leftMenuCloseTimestamp = 0
-    }
-  }
-  if (!leftMenuFlag && !leftGauge) return
-  if (leftGauge < 0) {return leftMenuFlag = false}
-  if (leftMenuFlag && leftGauge < gaugeMax) {
-    console.log(leftGauge * (1 / 75), Date.now() - leftMenuStartTimestamp)
-    if (leftGauge * (1 / 75) < Date.now() - leftMenuStartTimestamp) leftGauge += 1
-  } else if (!leftMenuFlag) {
-    if (leftGaugeMaxTime - leftGauge * (1 / 75) < Date.now() - leftMenuCloseTimestamp) leftGauge -= 1
-  }
-  const ratio = leftGauge / gaugeMax
-  context.fillStyle = 'hsl(0, 0%, 25%)'
-  context.fillRect(0, 0, (canvas.offsetWidth / 2) * ratio, canvas.offsetHeight)
 }
 const inGame = () => {
   frame += 1
@@ -2048,8 +2036,7 @@ const main = () => {
   input()
   if (screenState === screenList[0]) title()
   else if (screenState === screenList[1]) inGame()
-  floatingMenu()
-  floatingLeftMenu()
+  floatMenu()
   window.requestAnimationFrame(main)
 }
 }
