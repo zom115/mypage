@@ -258,6 +258,14 @@ const playAudio = (path, startTime = 0) => {
   voiceLoadedMap[path].currentTime = startTime
   voiceLoadedMap[path].play()
 }
+let menuFlag = false
+const menuWidthMax = canvas.offsetWidth / 2
+const menuGaugeMax = 100
+let menuGauge = 0
+let menuWidth = 0
+let menuGaugeMaxTime = 100 * (1 / 75)
+let menuOpenTimestamp = 0
+let menuCloseTimestamp = 0
 const screenList = ['title', 'main']
 let screenState = screenList[0]
 let stage = {name: '', time: 0, w: 0, h: 0, checkPoint: {x: 0, y: 0}}
@@ -817,7 +825,7 @@ let cooltime = {
 }
 let action = {
   up: ['w'], right: ['d'], down: ['s'], left: ['a'], jump: ['i', 'l', 'space'],
-  attack: ['k'], accel: ['j']
+  attack: ['k'], accel: ['j'], menu: ['m']
 }
 let toggle = {
   DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
@@ -1986,22 +1994,25 @@ const title = () => {
     context.fillStyle = 'hsl(0, 0%, 0%)'
     context.font = `${size * 4}px sans-serif`
     context.textAlign = 'center'
-    context.fillText('Title', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+    const ow = -menuWidth / 2
+    context.fillText('Title', canvas.offsetWidth / 2 + ow, canvas.offsetHeight / 2)
     context.font = `${size * 2}px sans-serif`
     context.fillText(
       `Press '${action.attack[0].toUpperCase()}' to Start`,
-      canvas.offsetWidth / 2, canvas.offsetHeight * 3 / 4)
+      canvas.offsetWidth / 2 - menuWidth / 2, canvas.offsetHeight * 3 / 4)
+    Object.entries(action).forEach(([k, v], i) => {
+      context.fillText(
+        k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * size * 2)
+      context.fillText(
+        v, canvas.offsetWidth * 3 / 4 + size * 8 + ow,
+        canvas.offsetHeight * 1 / 4 + i * size * 2)
+    })
+
   }
   drawTitle()
 }
-const gaugeMax = 100
-let menuFlag = false
-let menuGauge = 0
-let menuGaugeMaxTime = 100 * (1 / 75)
-let menuOpenTimestamp = 0
-let menuCloseTimestamp = 0
 const floatMenu = () => {
-  if (key.o === 1) {
+  if (action.menu.some(v => key[v] === 1)) {
     menuFlag = !menuFlag
     if (menuOpenTimestamp) {
       menuOpenTimestamp = 0
@@ -2013,17 +2024,16 @@ const floatMenu = () => {
   }
   if (!menuFlag && !menuGauge) return
   if (menuGauge < 0) {return menuFlag = false}
-  if (menuFlag && menuGauge < gaugeMax &&
+  if (menuFlag && menuGauge < menuGaugeMax &&
     menuGauge * (1 / 75) < Date.now() - menuOpenTimestamp) menuGauge += 1
   else if (
     !menuFlag &&
     menuGaugeMaxTime - menuGauge * (1 / 75) < Date.now() - menuCloseTimestamp
   ) menuGauge -= 1
-  const ratio = menuGauge / gaugeMax
+  menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
   context.fillStyle = 'hsl(0, 0%, 25%)'
   context.fillRect(
-    canvas.offsetWidth - (canvas.offsetWidth / 2) * ratio,
-    0, canvas.offsetWidth, canvas.offsetHeight)
+    canvas.offsetWidth - menuWidth, 0, canvas.offsetWidth, canvas.offsetHeight)
 }
 const inGame = () => {
   frame += 1
