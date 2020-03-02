@@ -2011,6 +2011,8 @@ const title = () => {
   }
   drawTitle()
 }
+let floatMenuCursor = 0
+const floatMenuCursorMax = 3
 const floatMenu = () => {
   if (action.option.some(v => key[v] === 1)) {
     menuFlag = !menuFlag
@@ -2031,9 +2033,37 @@ const floatMenu = () => {
     menuGaugeMaxTime - menuGauge * (1 / 75) < Date.now() - menuCloseTimestamp
   ) menuGauge -= 1
   menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
+  // process
+  if (action.down.some(v => key[v] === 1)) {
+    floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
+  }
+  if (action.up.some(v => key[v] === 1)) {
+    floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
+  }
+  const k = Object.keys(settings.type)[floatMenuCursor]
+  if (
+    (action.attack.some(v => key[v] === 1)) ||
+    (action.left.some(v => key[v] === 1) && settings.type[k]) ||
+    (action.right.some(v => key[v] === 1) && !settings.type[k])
+  ) {
+    settings.type[k] = setStorage(k, !settings.type[k])
+    inputDOM[k].checked = !inputDOM[k].checked
+  }
+  // drawing
   context.fillStyle = 'hsl(0, 0%, 25%)'
-  context.fillRect(
-    canvas.offsetWidth - menuWidth, 0, canvas.offsetWidth, canvas.offsetHeight)
+  const ox = canvas.offsetWidth - menuWidth
+  context.fillRect( // BG
+    ox, 0, canvas.offsetWidth, canvas.offsetHeight)
+  context.font = `${size * 2}px sans-serif`
+  context.fillStyle = 'hsl(0, 0%, 100%)'
+  context.textAlign = 'left'
+  Object.entries(settings.type).forEach(([k, v], i) => {
+    context.fillText(k, ox + size * 2, size * 4 + i * size * 2)
+    context.fillText(v, ox + size * 10, size * 4 + i * size * 2)
+  })
+  context.fillText('[', ox + size, size * 4 + floatMenuCursor * size * 2)
+  context.fillText(']', ox + size * 15, size * 4 + floatMenuCursor * size * 2)
+
 }
 const inGame = () => {
   frame += 1
