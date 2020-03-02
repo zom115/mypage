@@ -900,178 +900,181 @@ const input = () => {
   })
 }
 const modelUpdate = () => {
-  if (player.state === 'crouch') player.state = 'idle'
-  const crouchProhibitionList = ['run']
-  if (
-    action.down.some(v => key[v]) && player.landFlag && !player.grapFlag &&
-    !crouchProhibitionList.some(v => v === player.state)
-    ) {
-    if (action.down.some(v => key[v] === 1)) player.timeStamp.crouch = frame
-    player.state = 'crouch'
-  }
-  const walkProhibitionList = ['crouch', 'punch', 'kick', 'damage']
-  if ( // walk
-    !walkProhibitionList.some(v => v === player.state) &&
-    !(action.left.some(v => key[v]) && action.right.some(v => key[v]))
-  ) {
-    let speed = dashConstant
-    speed = action.left.some(v => key[v]) && -speed < player.dx ? -speed
-    : key[action.left] && -dashThreshold < player.dx ? -speed / 4
-    : action.right.some(v => key[v]) && player.dx < speed ? speed
-    : action.right.some(v => key[v]) && player.dx < dashThreshold ? speed / 4
-    : 0
-    speed = player.landFlag ? speed : speed / 3 // aerial brake
-    player.dx += speed
-  }
-  { // jump
-    if (action.jump.some(v => key[v] === 1) && player.state !== 'damage') {
-      if (jump.flag) {
-        if (!jump.double && jump.time === 0 && !player.grapFlag) {
-          player.dy = -jumpConstant
-          player.state = 'jump'
-          jump.double = true
-          cooltime.aerialStep = 0
-          playAudio(voiceStat.doubleJump)
-          if (5 < player.breathInterval) player.breathInterval -= 1
-          jump.time = 0
-        }
-      } else if (jump.time === 0) {
-        player.timeStamp.jump = frame
-        player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
-        player.state = 'jump'
-        jump.flag = true
-        if (!player.landFlag && !player.grapFlag) {
-          jump.double = true
-          cooltime.aerialStep = 0
-          playAudio(voiceStat.doubleJump)
-        } else {
-          player.dx *= .7
-          playAudio(voiceStat.jump)
-        }
-        if (10 < player.breathInterval) player.breathInterval -= 1
-        player.landFlag = false
-      }
-      jump.time += 1
-    }
-    if(!action.jump.some(v => key[v])) {
-      if (settings.type.DECO) jump.time = 0
-      else {
-        if (5 < jump.time) {
-          if (player.dy < 0) player.dy = 0
-          jump.time = 0
-        } else if (jump.time !== 0) jump.time += 1
-      }
-    }
-  }
-  { // wall grap
-    if (player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v])) {
-      if (
-        (player.wallFlag === 'left' && player.direction === 'right') ||
-        (player.wallFlag === 'right' && player.direction === 'left')
-      ) {
-        player.dy *= .5
-        player.dx = player.direction === 'left' ? -dashConstant : dashConstant
-        player.grapFlag = true
-      }
-    }
-    if (!(player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v]))) {
-      player.grapFlag = false
-    }
-  }
-  if (player.grapFlag) { // wall kick
-    let flag = false
+  const inGameInputProcess = () => {
+    if (player.state === 'crouch') player.state = 'idle'
+    const crouchProhibitionList = ['run']
     if (
-      action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'right'
-    ) {
-      player.dx = -4
-      player.direction = 'left'
-      flag = true
-    } else if (
-      action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'left'
-    ) {
-      player.dx = 4
-      player.direction = 'right'
-      flag = true
+      action.down.some(v => key[v]) && player.landFlag && !player.grapFlag &&
+      !crouchProhibitionList.some(v => v === player.state)
+      ) {
+      if (action.down.some(v => key[v] === 1)) player.timeStamp.crouch = frame
+      player.state = 'crouch'
     }
-    if (flag) {
-      player.timeStamp.jump = frame
-      player.dy = -jumpConstant
-      player.wallFlag = false
-      player.grapFlag = false
-      jump.flag = true
-      player.state = 'jump'
-    }
-  }
-  { // attack
-    const actionList = ['crouch', 'slide', 'punch', 'kick']
-    if ( // punch
-      action.attack.some(v => key[v]) &&
-      !action.left.some(v => key[v]) &&
-      !action.right.some(v => key[v]) &&
-      player.landFlag &&
-      !actionList.some(v => v === player.state) &&
-      action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
+    const walkProhibitionList = ['crouch', 'punch', 'kick', 'damage']
+    if ( // walk
+      !walkProhibitionList.some(v => v === player.state) &&
+      !(action.left.some(v => key[v]) && action.right.some(v => key[v]))
     ) {
-      player.timeStamp.attack = frame
-      player.state = 'punch'
-      imageStat.punch.time = 0
+      let speed = dashConstant
+      speed = action.left.some(v => key[v]) && -speed < player.dx ? -speed
+      : key[action.left] && -dashThreshold < player.dx ? -speed / 4
+      : action.right.some(v => key[v]) && player.dx < speed ? speed
+      : action.right.some(v => key[v]) && player.dx < dashThreshold ? speed / 4
+      : 0
+      speed = player.landFlag ? speed : speed / 3 // aerial brake
+      player.dx += speed
     }
-    if ( // kick
-      action.attack.some(v => key[v]) &&
-      player.landFlag &&
-      !actionList.some(v => v === player.state) && (
-      action.left.some(v => frame - 6 <= keyTimestamp.pressed[v]) ||
-      action.right.some(v => frame - 6 <= keyTimestamp.pressed[v])) &&
-      action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
-    ) {
-      player.timeStamp.attack = frame
-      player.state = 'kick'
-      imageStat.kick.time = 0
+    { // jump
+      if (action.jump.some(v => key[v] === 1) && player.state !== 'damage') {
+        if (jump.flag) {
+          if (!jump.double && jump.time === 0 && !player.grapFlag) {
+            player.dy = -jumpConstant
+            player.state = 'jump'
+            jump.double = true
+            cooltime.aerialStep = 0
+            playAudio(voiceStat.doubleJump)
+            if (5 < player.breathInterval) player.breathInterval -= 1
+            jump.time = 0
+          }
+        } else if (jump.time === 0) {
+          player.timeStamp.jump = frame
+          player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
+          player.state = 'jump'
+          jump.flag = true
+          if (!player.landFlag && !player.grapFlag) {
+            jump.double = true
+            cooltime.aerialStep = 0
+            playAudio(voiceStat.doubleJump)
+          } else {
+            player.dx *= .7
+            playAudio(voiceStat.jump)
+          }
+          if (10 < player.breathInterval) player.breathInterval -= 1
+          player.landFlag = false
+        }
+        jump.time += 1
+      }
+      if(!action.jump.some(v => key[v])) {
+        if (settings.type.DECO) jump.time = 0
+        else {
+          if (5 < jump.time) {
+            if (player.dy < 0) player.dy = 0
+            jump.time = 0
+          } else if (jump.time !== 0) jump.time += 1
+        }
+      }
     }
-    if (cooltime.slide === 0) {
-      if ( // slide
+    { // wall grap
+      if (player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v])) {
+        if (
+          (player.wallFlag === 'left' && player.direction === 'right') ||
+          (player.wallFlag === 'right' && player.direction === 'left')
+        ) {
+          player.dy *= .5
+          player.dx = player.direction === 'left' ? -dashConstant : dashConstant
+          player.grapFlag = true
+        }
+      }
+      if (!(player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v]))) {
+        player.grapFlag = false
+      }
+    }
+    if (player.grapFlag) { // wall kick
+      let flag = false
+      if (
+        action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'right'
+      ) {
+        player.dx = -4
+        player.direction = 'left'
+        flag = true
+      } else if (
+        action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'left'
+      ) {
+        player.dx = 4
+        player.direction = 'right'
+        flag = true
+      }
+      if (flag) {
+        player.timeStamp.jump = frame
+        player.dy = -jumpConstant
+        player.wallFlag = false
+        player.grapFlag = false
+        jump.flag = true
+        player.state = 'jump'
+      }
+    }
+    { // attack
+      const actionList = ['crouch', 'slide', 'punch', 'kick']
+      if ( // punch
         action.attack.some(v => key[v]) &&
-        (action.left.some(v => key[v]) || action.right.some(v => key[v])) &&
-        !actionList.some(v => v === player.state) &&
+        !action.left.some(v => key[v]) &&
+        !action.right.some(v => key[v]) &&
         player.landFlag &&
-        !player.wallFlag &&
-        !slide.flag &&
+        !actionList.some(v => v === player.state) &&
         action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
       ) {
-        const slideSpeed = slideConstant < player.dx ? boostConstant
-        : player.dx < -slideConstant ? -boostConstant : 0
-        if (slideSpeed !== 0) {
-          player.timeStamp.attack = frame
-          player.dx += slideSpeed
-          player.state = 'slide'
-          cooltime.slide = cooltime.slideLimit
-          if (10 < player.breathInterval) player.breathInterval -= 1
-        }
-        slide.flag = true
+        player.timeStamp.attack = frame
+        player.state = 'punch'
+        imageStat.punch.time = 0
       }
+      if ( // kick
+        action.attack.some(v => key[v]) &&
+        player.landFlag &&
+        !actionList.some(v => v === player.state) && (
+        action.left.some(v => frame - 6 <= keyTimestamp.pressed[v]) ||
+        action.right.some(v => frame - 6 <= keyTimestamp.pressed[v])) &&
+        action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
+      ) {
+        player.timeStamp.attack = frame
+        player.state = 'kick'
+        imageStat.kick.time = 0
+      }
+      if (cooltime.slide === 0) {
+        if ( // slide
+          action.attack.some(v => key[v]) &&
+          (action.left.some(v => key[v]) || action.right.some(v => key[v])) &&
+          !actionList.some(v => v === player.state) &&
+          player.landFlag &&
+          !player.wallFlag &&
+          !slide.flag &&
+          action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
+        ) {
+          const slideSpeed = slideConstant < player.dx ? boostConstant
+          : player.dx < -slideConstant ? -boostConstant : 0
+          if (slideSpeed !== 0) {
+            player.timeStamp.attack = frame
+            player.dx += slideSpeed
+            player.state = 'slide'
+            cooltime.slide = cooltime.slideLimit
+            if (10 < player.breathInterval) player.breathInterval -= 1
+          }
+          slide.flag = true
+        }
+      }
+      if (player.state !== 'slide' && cooltime.slide !== 0) {
+        if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
+        else cooltime.slide -= 1
+      }
+      if (!action.accel.some(v => key[v])) slide.flag = false
+      // if ( // accel
+      //   player.action !== 'crouch' && !jump.step
+      // ) {
+      //   const stepSpeed = key[action.left] && key[action.accel] ? -stepConstant
+      //   : key[action.right] && key[action.accel] ? stepConstant : 0
+      //   if (stepSpeed !== 0) {
+      //     player.dx += stepSpeed
+      //     jump.step = true
+      //     cooltime.aerialStep = cooltime.aerialStepLimit
+      //   }
+      // }
+      // if (player.action !== 'jump' && jump.step) jump.step = false
+      // if (0 < cooltime.aerialStep) {
+      //   player.dy = 0
+      //   cooltime.aerialStep -= 1
+      // }
     }
-    if (player.state !== 'slide' && cooltime.slide !== 0) {
-      if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
-      else cooltime.slide -= 1
-    }
-    if (!action.accel.some(v => key[v])) slide.flag = false
-    // if ( // accel
-    //   player.action !== 'crouch' && !jump.step
-    // ) {
-    //   const stepSpeed = key[action.left] && key[action.accel] ? -stepConstant
-    //   : key[action.right] && key[action.accel] ? stepConstant : 0
-    //   if (stepSpeed !== 0) {
-    //     player.dx += stepSpeed
-    //     jump.step = true
-    //     cooltime.aerialStep = cooltime.aerialStepLimit
-    //   }
-    // }
-    // if (player.action !== 'jump' && jump.step) jump.step = false
-    // if (0 < cooltime.aerialStep) {
-    //   player.dy = 0
-    //   cooltime.aerialStep -= 1
-    // }
   }
+  if (!menuFlag) inGameInputProcess()
   Object.keys(toggle).forEach(v => {
     if (key[toggle[v]] === 1) {
       settings.type[v] = setStorage(v, !settings.type[v])
@@ -1459,7 +1462,7 @@ const modelUpdate = () => {
       player.y = stage.checkPoint.y
     }
   }
-  Object.values(action).forEach(act => {
+  if (!menuFlag) Object.values(action).forEach(act => {
     if (key[act]) {
       if (keyTimestamp.pressed[act] < keyTimestamp.released[act]) {
         keyTimestamp.pressed[act] = frame
@@ -1501,7 +1504,7 @@ const modelUpdate = () => {
     }
   } else player.attackBox = {x: 0, y: 0, w: 0, h: 0}
   if (0 < player.invincibleTimer) player.invincibleTimer -= 1
-  { // gate process
+  if (!menuFlag) { // gate process
     gate.forEach(v => {
       if (
         player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
@@ -1513,19 +1516,21 @@ const modelUpdate = () => {
       }
     })
   }
-  const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
-  player.direction = ((
-    action.left.some(v => key[v]) && action.right.some(v => key[v])) || !player.landFlag ||
-    turnProhibitionList.some(v => v === player.state)
-  ) ? player.direction
-  : action.left.some(v => key[v]) ? 'left'
-  : action.right.some(v => key[v]) ? 'right'
-  : player.direction
-  if (!turnProhibitionList.some(v => v === player.state)) {
-    if (action.right.some(v => key[v]) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
-    if (action.left.some(v => key[v]) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
-    if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-    if (action.left.some(v => key[v]) && action.right.some(v => key[v])) player.state = 'idle'
+  if (!menuFlag) {
+    const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
+    player.direction = ((
+      action.left.some(v => key[v]) && action.right.some(v => key[v])) || !player.landFlag ||
+      turnProhibitionList.some(v => v === player.state)
+    ) ? player.direction
+    : action.left.some(v => key[v]) ? 'left'
+    : action.right.some(v => key[v]) ? 'right'
+    : player.direction
+    if (!turnProhibitionList.some(v => v === player.state)) {
+      if (action.right.some(v => key[v]) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
+      if (action.left.some(v => key[v]) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
+      if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
+      if (action.left.some(v => key[v]) && action.right.some(v => key[v])) player.state = 'idle'
+    }
   }
   const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
   if (!stateList.some(v => v === player.state)) {
@@ -1606,7 +1611,11 @@ const viewUpdate = () => {
     if (i.condition === imageListObject.misaki[player.state].length) {
       i.condition -= imageListObject.misaki[player.state].length
       i.time = 0
-      if (!(player.wallFlag && action.left.some(v => key[v]) && action.right.some(v => key[v]))) player.state = 'walk'
+      if (!menuFlag) {
+        if (
+          !(player.wallFlag && action.left.some(v => key[v]) &&
+          action.right.some(v => key[v]))) player.state = 'walk'
+      }
     }
   } else if (player.state === 'run') {
     const i = imageStat[player.state]
@@ -1987,33 +1996,42 @@ const musicProcess = () => {
     60 + 13 < musicLoadedMap[currentPlay].currentTime
   ) musicLoadedMap[currentPlay].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
-const title = () => {
+const titleProcess = () => {
   if (action.attack.some(v => key[v])) screenState = screenList[1]
+}
+const drawTitle = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  const drawTitle = () => {
-    context.fillStyle = 'hsl(0, 0%, 0%)'
-    context.font = `${size * 4}px sans-serif`
-    context.textAlign = 'center'
-    const ow = -menuWidth / 2
-    context.fillText('Title', canvas.offsetWidth / 2 + ow, canvas.offsetHeight / 2)
-    context.font = `${size * 2}px sans-serif`
+  context.fillStyle = 'hsl(0, 0%, 0%)'
+  context.font = `${size * 4}px sans-serif`
+  context.textAlign = 'center'
+  const ow = -menuWidth / 2
+  context.fillText('Title', canvas.offsetWidth / 2 + ow, canvas.offsetHeight / 2)
+  context.font = `${size * 2}px sans-serif`
+  context.fillText(
+    `Press '${action.attack[0].toUpperCase()}' to Start`,
+    canvas.offsetWidth / 2 - menuWidth / 2, canvas.offsetHeight * 3 / 4)
+  Object.entries(action).forEach(([k, v], i) => {
     context.fillText(
-      `Press '${action.attack[0].toUpperCase()}' to Start`,
-      canvas.offsetWidth / 2 - menuWidth / 2, canvas.offsetHeight * 3 / 4)
-    Object.entries(action).forEach(([k, v], i) => {
-      context.fillText(
-        k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * size * 2)
-      context.fillText(
-        v, canvas.offsetWidth * 3 / 4 + size * 8 + ow,
-        canvas.offsetHeight * 1 / 4 + i * size * 2)
-    })
-
-  }
+      k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * size * 2)
+    context.fillText(
+      v, canvas.offsetWidth * 3 / 4 + size * 8 + ow,
+      canvas.offsetHeight * 1 / 4 + i * size * 2)
+  })
+}
+const title = () => {
+  if (!menuFlag) titleProcess()
   drawTitle()
+}
+const inGame = () => {
+  frame += 1
+  modelUpdate()
+  viewUpdate()
+  draw()
+  musicProcess()
 }
 let floatMenuCursor = 0
 const floatMenuCursorMax = 3
-const floatMenu = () => {
+const floatMenuProcess = () => {
   if (action.option.some(v => key[v] === 1)) {
     menuFlag = !menuFlag
     if (menuOpenTimestamp) {
@@ -2033,23 +2051,26 @@ const floatMenu = () => {
     menuGaugeMaxTime - menuGauge * (1 / 75) < Date.now() - menuCloseTimestamp
   ) menuGauge -= 1
   menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
-  // process
-  if (action.down.some(v => key[v] === 1)) {
-    floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
+  const config = () => {
+    if (action.down.some(v => key[v] === 1)) {
+      floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
+    }
+    if (action.up.some(v => key[v] === 1)) {
+      floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
+    }
+    const k = Object.keys(settings.type)[floatMenuCursor]
+    if (
+      (action.attack.some(v => key[v] === 1)) ||
+      (action.left.some(v => key[v] === 1) && settings.type[k]) ||
+      (action.right.some(v => key[v] === 1) && !settings.type[k])
+    ) {
+      settings.type[k] = setStorage(k, !settings.type[k])
+      inputDOM[k].checked = !inputDOM[k].checked
+    }
   }
-  if (action.up.some(v => key[v] === 1)) {
-    floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
-  }
-  const k = Object.keys(settings.type)[floatMenuCursor]
-  if (
-    (action.attack.some(v => key[v] === 1)) ||
-    (action.left.some(v => key[v] === 1) && settings.type[k]) ||
-    (action.right.some(v => key[v] === 1) && !settings.type[k])
-  ) {
-    settings.type[k] = setStorage(k, !settings.type[k])
-    inputDOM[k].checked = !inputDOM[k].checked
-  }
-  // drawing
+  if (menuFlag) config()
+}
+const drawFloatMenu = () => {
   context.fillStyle = 'hsl(0, 0%, 25%)'
   const ox = canvas.offsetWidth - menuWidth
   context.fillRect( // BG
@@ -2063,14 +2084,10 @@ const floatMenu = () => {
   })
   context.fillText('[', ox + size, size * 4 + floatMenuCursor * size * 2)
   context.fillText(']', ox + size * 15, size * 4 + floatMenuCursor * size * 2)
-
 }
-const inGame = () => {
-  frame += 1
-  modelUpdate()
-  viewUpdate()
-  draw()
-  musicProcess()
+const floatMenu = () => {
+  floatMenuProcess()
+  drawFloatMenu()
 }
 const main = () => {
   input()
