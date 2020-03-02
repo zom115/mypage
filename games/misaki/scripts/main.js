@@ -825,7 +825,7 @@ let cooltime = {
 }
 let action = {
   up: ['w'], right: ['d'], down: ['s'], left: ['a'], jump: ['i', 'l', 'space'],
-  attack: ['k'], accel: ['j'], menu: ['m']
+  attack: ['k'], accel: ['j'], option: ['o']
 }
 let toggle = {
   DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
@@ -2012,7 +2012,7 @@ const title = () => {
   drawTitle()
 }
 const floatMenu = () => {
-  if (action.menu.some(v => key[v] === 1)) {
+  if (action.option.some(v => key[v] === 1)) {
     menuFlag = !menuFlag
     if (menuOpenTimestamp) {
       menuOpenTimestamp = 0
