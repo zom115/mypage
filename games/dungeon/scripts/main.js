@@ -25,8 +25,8 @@ view.appendChild(building)
 building.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
-buildingList = []
-buildingNameList = [
+const buildingList = []
+const buildingNameList = [
   'Textile Mill',
   'Clothing Factory',
   'Lumber Mill',
@@ -44,6 +44,33 @@ buildingList.forEach(v => {
 })
 }
 {
+const worker = document.createElement`table`
+const tr = document.createElement`tr`
+const th = document.createElement`th`
+th.textContent = 'Worker'
+const value = document.createElement`th`
+value.textContent = 'value'
+view.appendChild(worker)
+worker.appendChild(tr)
+tr.appendChild(th)
+tr.appendChild(value)
+const workerList = []
+const workerNameList = [
+  'None',
+  'Farmer',
+  'Rancher',
+  'Forester',
+  'Miner',
+  'Driller'
+]
+workerNameList.forEach(v => {
+  workerList.push({name: v, value: 0})
+})
+workerList.forEach(v => {
+  worker.appendChild(generateTableColumn(v.name, v.value))
+})
+}
+{
 const commodities = document.createElement`table`
 const tr = document.createElement`tr`
 const th = document.createElement`th`
@@ -54,8 +81,8 @@ view.appendChild(commodities)
 commodities.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
-comoditiesList = []
-comoditiesNameList = ['Grain', 'Livestock', 'Fruit', 'Wool', 'Timber']
+const comoditiesList = []
+const comoditiesNameList = ['Grain', 'Livestock', 'Fruit', 'Wool', 'Timber']
 comoditiesNameList.forEach(v => {
   comoditiesList.push({name: v, value: 0})
 })
