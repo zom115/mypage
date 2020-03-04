@@ -146,7 +146,6 @@ const generateTableColumn = d => {
   td.appendChild(button)
   button.addEventListener('click', e => {
     terrainListObject[canvasSerector].push(d)
-    console.log(e.target.id)
   })
   return tr
 }
@@ -181,10 +180,15 @@ const pushCanvas = () => {
   })
   canvas.addEventListener('mouseup', e => {
     canvasSerector = canvas.id
-    buildingObject[buildingNameList[0]]++
-    workerObject[workerNameList[0]]++
-    commoditiesObject[commoditiesNameList[0]]++
-    console.log (e)
+    let value = ((x - size * 1.5) / (size * 6))
+    value = .5 < value % 1 ? 0 : Math.floor(value)
+    if (value !== 0 && value < terrainListObject[canvas.id].length) {
+      console.log(value)
+      terrainListObject[canvas.id].splice(value, 1)
+    }
+    // buildingObject[buildingNameList[0]]++
+    // workerObject[workerNameList[0]]++
+    // commoditiesObject[commoditiesNameList[0]]++
     elementUpdate()
   })
   const main = () => {
