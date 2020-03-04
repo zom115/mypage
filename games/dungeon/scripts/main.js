@@ -1,8 +1,13 @@
 {'use strict'
 const display = document.getElementById`display`
-const view = document.createElement`div`
-view.className = 'container'
-display.appendChild(view)
+const indicateView = document.createElement`div`
+const canvasView = document.createElement`div`
+const menuView = document.createElement`div`
+indicateView.className = 'container'
+menuView.className = 'container'
+display.appendChild(indicateView)
+display.appendChild(canvasView)
+display.appendChild(menuView)
 const generateTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
@@ -33,7 +38,7 @@ const th = document.createElement`th`
 th.textContent = 'Building'
 const value = document.createElement`th`
 value.textContent = 'value'
-view.appendChild(building)
+indicateView.appendChild(building)
 building.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
@@ -60,7 +65,7 @@ const th = document.createElement`th`
 th.textContent = 'Worker'
 const value = document.createElement`th`
 value.textContent = 'value'
-view.appendChild(worker)
+indicateView.appendChild(worker)
 worker.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
@@ -86,7 +91,7 @@ const th = document.createElement`th`
 th.textContent = 'Commodities'
 const value = document.createElement`th`
 value.textContent = 'value'
-view.appendChild(commodities)
+indicateView.appendChild(commodities)
 commodities.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
@@ -108,15 +113,23 @@ const elementUpdate = () => {
     document.getElementById(k).textContent = v
   })
 }
+const terrainList = [
+  'Town',
+  'Open Range',
+  'Farm',
+  'Orchard',
+  'Fertile Hills',
+  'Forest'
+]
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
   const canvas = document.createElement`canvas`
   canvas.id = canvasId
   canvas.width = size * 16 * 3
-  canvas.height = size * 9
+  canvas.height = size * 4
   const context = canvas.getContext`2d`
-  display.appendChild(canvas)
+  canvasView.appendChild(canvas)
   const rect = canvas.getBoundingClientRect()
   canvasId++
   let x = 0
@@ -142,10 +155,17 @@ const pushCanvas = () => {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
     context.save()
     context.font = `normal ${size}px sans-serif`
+    context.textAlign = 'center'
+    terrainList.forEach((v, i) => {
+      context.fillStyle = 'black'
+      context.fillText(v, size * 3 + i * size * 6, size)
+      context.fillStyle = 'gray'
+      context.fillRect(size * 1.5 + i * size * 6, size, size * 3, size * 3)
+    })
+    context.fillStyle = 'black'
     context.fillText(`id: ${canvas.id}`, size * 2, size * 2)
     context.fillText(`x: ${x}`, size * 2, size * 3)
     context.fillText(`y: ${y}`, size * 2, size * 4)
-    context.textAlign = 'center'
     context.fillStyle = 'lightgray'
     context.fillRect(canvas.offsetWidth - size * 3, size, size * 2, size * 2)
     if (canvas.offsetWidth - size * 3 < x && x < canvas.offsetWidth - size &&
