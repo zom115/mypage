@@ -113,14 +113,46 @@ const elementUpdate = () => {
     document.getElementById(k).textContent = v
   })
 }
-const terrainList = [
-  'Town',
+const terrainList = ['Town']
+const terrainNameList = [
   'Open Range',
   'Farm',
   'Orchard',
   'Fertile Hills',
   'Forest'
 ]
+{
+const terrain = document.createElement`table`
+const tr = document.createElement`tr`
+const th = document.createElement`th`
+th.textContent = 'Add Terrain'
+const value = document.createElement`th`
+value.textContent = 'value'
+menuView.appendChild(terrain)
+terrain.appendChild(tr)
+tr.appendChild(th)
+tr.appendChild(value)
+const generateTableColumn = (d, v) => {
+  const tr = document.createElement`tr`
+  const item = document.createElement`td`
+  const td = document.createElement`td`
+  const button = document.createElement`button`
+  item.textContent = d
+  td.className = 'value'
+  button.id = d
+  button.textContent = '+'
+  tr.appendChild(item)
+  tr.appendChild(td)
+  td.appendChild(button)
+  button.addEventListener('click', e => {
+    console.log(e.target.id)
+  })
+  return tr
+}
+terrainNameList.forEach(v => {
+  terrain.appendChild(generateTableColumn(v))
+})
+}
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
