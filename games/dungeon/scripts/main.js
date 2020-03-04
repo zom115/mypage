@@ -153,6 +153,7 @@ terrainNameList.forEach(v => {
   terrain.appendChild(generateTableColumn(v))
 })
 }
+let canvasSerector = '0'
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
@@ -177,6 +178,7 @@ const pushCanvas = () => {
     }
   })
   canvas.addEventListener('mouseup', e => {
+    canvasSerector = canvas.id
     buildingObject[buildingNameList[0]]++
     workerObject[workerNameList[0]]++
     commoditiesObject[commoditiesNameList[0]]++
@@ -195,6 +197,9 @@ const pushCanvas = () => {
       context.fillRect(size * 1.5 + i * size * 6, size, size * 3, size * 3)
     })
     context.fillStyle = 'black'
+    if (canvasSerector === canvas.id) {
+      context.fillRect(0, 0, size / 2, size / 2)
+    }
     context.fillText(`id: ${canvas.id}`, size * 2, size * 2)
     context.fillText(`x: ${x}`, size * 2, size * 3)
     context.fillText(`y: ${y}`, size * 2, size * 4)
