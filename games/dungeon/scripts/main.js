@@ -115,8 +115,8 @@ const elementUpdate = () => {
 }
 const terrainList = ['Town']
 const terrainNameList = [
-  'Open Range',
   'Farm',
+  'Open Range',
   'Orchard',
   'Fertile Hills',
   'Forest'
@@ -132,7 +132,7 @@ menuView.appendChild(terrain)
 terrain.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
-const generateTableColumn = (d, v) => {
+const generateTableColumn = d => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   const td = document.createElement`td`
@@ -145,6 +145,7 @@ const generateTableColumn = (d, v) => {
   tr.appendChild(td)
   td.appendChild(button)
   button.addEventListener('click', e => {
+    terrainListObject[canvasSerector].push(d)
     console.log(e.target.id)
   })
   return tr
@@ -154,6 +155,7 @@ terrainNameList.forEach(v => {
 })
 }
 let canvasSerector = '0'
+const terrainListObject = {[canvasSerector]: terrainList}
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
@@ -190,7 +192,7 @@ const pushCanvas = () => {
     context.save()
     context.font = `normal ${size}px sans-serif`
     context.textAlign = 'center'
-    terrainList.forEach((v, i) => {
+    terrainListObject[canvas.id].forEach((v, i) => {
       if (size * 1.5 + i * size * 6 <= x && x <= size * 4.5 + i * size * 6) {
         context.font = `bold ${size}px sans-serif`
       }
