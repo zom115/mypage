@@ -8,8 +8,9 @@ const generateTableColumn = (d, v) => {
   const item = document.createElement`td`
   const value = document.createElement`td`
   item.textContent = d
-  value.textContent = v
+  value.id = d
   value.className = 'value'
+  value.textContent = v
   tr.appendChild(item)
   tr.appendChild(value)
   return tr
@@ -96,6 +97,17 @@ Object.entries(commoditiesObject).forEach(([k, v]) => {
   commodities.appendChild(generateTableColumn(k, v))
 })
 }
+const elementUpdate = () => {
+  Object.entries(buildingObject).forEach(([k, v]) => {
+    document.getElementById(k).textContent = v
+  })
+  Object.entries(workerObject).forEach(([k, v]) => {
+    document.getElementById(k).textContent = v
+  })
+  Object.entries(commoditiesObject).forEach(([k, v]) => {
+    document.getElementById(k).textContent = v
+  })
+}
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
@@ -121,9 +133,10 @@ const pushCanvas = () => {
   })
   canvas.addEventListener('mouseup', e => {
     buildingObject[buildingNameList[0]]++
-    workerObject
-    commoditiesObject
+    workerObject[workerNameList[0]]++
+    commoditiesObject[commoditiesNameList[0]]++
     console.log (e)
+    elementUpdate()
   })
   const main = () => {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
