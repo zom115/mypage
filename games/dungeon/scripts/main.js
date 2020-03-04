@@ -1,8 +1,6 @@
 {'use strict'
 const display = document.getElementById`display`
 const size = 16
-let gX = 0
-let gY = 0
 let canvasId = 0
 const pushCanvas = () => {
   const canvas = document.createElement`canvas`
@@ -10,31 +8,44 @@ const pushCanvas = () => {
   canvas.width = size * 16 * 3
   canvas.height = size * 9
   const context = canvas.getContext`2d`
-  // const rect = document.getElementById(canvas.Id).getBoundingClientRect()
   display.appendChild(canvas)
   const rect = canvas.getBoundingClientRect()
   canvasId++
+  let x = 0
+  let y = 0
   canvas.addEventListener('mousemove', e => {
-    gX = e.clientX - rect.left
-    gY = e.clientY - rect.top
-    drawIndicator(canvas, context)
+    x = e.clientX - rect.left
+    y = e.clientY - rect.top
   }, false)
+  canvas.addEventListener('mousedown', e => {
+    if (canvas.offsetWidth - size * 3 < x && x < canvas.offsetWidth - size &&
+      size < y && y < size * 3) {
+      pushCanvas()
+    }
+  })
+  canvas.addEventListener('mouseup', e => {
+    console.log(e)
+  })
+  const main = () => {
+    context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+    context.save()
+    context.font = `normal ${size}px sans-serif`
+    context.fillText(`id: ${canvas.id}`, size * 2, size * 2)
+    context.fillText(`x: ${x}`, size * 2, size * 3)
+    context.fillText(`y: ${y}`, size * 2, size * 4)
+    context.textAlign = 'center'
+    context.fillStyle = 'lightgray'
+    context.fillRect(canvas.offsetWidth - size * 3, size, size * 2, size * 2)
+    if (canvas.offsetWidth - size * 3 < x && x < canvas.offsetWidth - size &&
+      size < y && y < size * 3) {
+      context.font = `bold ${size}px sans-serif`
+    }
+    context.fillStyle = 'black'
+    context.fillText('+', canvas.offsetWidth - size * 2, size * 2.25)
+    context.restore()
+    window.requestAnimationFrame(main)
+  }
+  main()
 }
-const button = document.createElement`button`
-button.textContent = 'Push Canvas'
-button.addEventListener('click', () => {
-  pushCanvas()
-}, false)
-display.appendChild(button)
-// pushCanvas()
-const drawIndicator = (canvas, context) => {
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  context.fillText(`id: ${canvas.id}`, size * 2, size * 2)
-  context.fillText(`x: ${gX}`, size * 2, size * 3)
-  context.fillText(`y: ${gY}`, size * 2, size * 4)
-}
-const main = () => {
-  window.requestAnimationFrame(main)
-}
-main()
+pushCanvas()
 }
