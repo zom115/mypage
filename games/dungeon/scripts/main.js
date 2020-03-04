@@ -14,6 +14,17 @@ const generateTableColumn = (d, v) => {
   tr.appendChild(value)
   return tr
 }
+const buildingObject = {}
+const buildingNameList = [
+  'Textile Mill',
+  'Clothing Factory',
+  'Lumber Mill',
+  'Furniture Factory',
+  'Steel Mill',
+  'Metal Works',
+  'Refinery',
+  'Food Production'
+]
 {
 const building = document.createElement`table`
 const tr = document.createElement`tr`
@@ -25,24 +36,22 @@ view.appendChild(building)
 building.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
-const buildingList = []
-const buildingNameList = [
-  'Textile Mill',
-  'Clothing Factory',
-  'Lumber Mill',
-  'Furniture Factory',
-  'Steel Mill',
-  'Metal Works',
-  'Refinery',
-  'Food Production'
-]
 buildingNameList.forEach(v => {
-  buildingList.push({name: v, value: 0})
+  buildingObject[v] = 0
 })
-buildingList.forEach(v => {
-  building.appendChild(generateTableColumn(v.name, v.value))
+Object.entries(buildingObject).forEach(([k, v]) => {
+  building.appendChild(generateTableColumn(k, v))
 })
 }
+const workerObject = []
+const workerNameList = [
+  'None',
+  'Farmer',
+  'Rancher',
+  'Forester',
+  'Miner',
+  'Driller'
+]
 {
 const worker = document.createElement`table`
 const tr = document.createElement`tr`
@@ -54,22 +63,21 @@ view.appendChild(worker)
 worker.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
-const workerList = []
-const workerNameList = [
-  'None',
-  'Farmer',
-  'Rancher',
-  'Forester',
-  'Miner',
-  'Driller'
-]
 workerNameList.forEach(v => {
-  workerList.push({name: v, value: 0})
+  workerObject[v] = 0
 })
-workerList.forEach(v => {
-  worker.appendChild(generateTableColumn(v.name, v.value))
+Object.entries(workerObject).forEach(([k, v]) => {
+  worker.appendChild(generateTableColumn(k, v))
 })
 }
+const commoditiesObject = []
+const commoditiesNameList = [
+  'Grain',
+  'Livestock',
+  'Fruit',
+  'Wool',
+  'Timber'
+]
 {
 const commodities = document.createElement`table`
 const tr = document.createElement`tr`
@@ -81,13 +89,11 @@ view.appendChild(commodities)
 commodities.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
-const comoditiesList = []
-const comoditiesNameList = ['Grain', 'Livestock', 'Fruit', 'Wool', 'Timber']
-comoditiesNameList.forEach(v => {
-  comoditiesList.push({name: v, value: 0})
+commoditiesNameList.forEach(v => {
+  commoditiesObject[v] = 0
 })
-comoditiesList.forEach(v => {
-  commodities.appendChild(generateTableColumn(v.name, v.value))
+Object.entries(commoditiesObject).forEach(([k, v]) => {
+  commodities.appendChild(generateTableColumn(k, v))
 })
 }
 const size = 16
@@ -114,7 +120,10 @@ const pushCanvas = () => {
     }
   })
   canvas.addEventListener('mouseup', e => {
-    console.log(e)
+    buildingObject[buildingNameList[0]]++
+    workerObject
+    commoditiesObject
+    console.log (e)
   })
   const main = () => {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
