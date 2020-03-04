@@ -191,8 +191,12 @@ const pushCanvas = () => {
     context.font = `normal ${size}px sans-serif`
     context.textAlign = 'center'
     terrainList.forEach((v, i) => {
+      if (size * 1.5 + i * size * 6 <= x && x <= size * 4.5 + i * size * 6) {
+        context.font = `bold ${size}px sans-serif`
+      }
       context.fillStyle = 'black'
       context.fillText(v, size * 3 + i * size * 6, size)
+      context.font = `normal ${size}px sans-serif`
       context.fillStyle = 'gray'
       context.fillRect(size * 1.5 + i * size * 6, size, size * 3, size * 3)
     })
