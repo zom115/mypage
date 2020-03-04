@@ -1,17 +1,8 @@
 {'use strict'
 const display = document.getElementById`display`
-const size = 16
-let canvasId = 0
-const commodities = document.createElement`table`
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Commodities'
-const value = document.createElement`th`
-value.textContent = 'value'
-display.appendChild(commodities)
-commodities.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
+const view = document.createElement`div`
+view.className = 'container'
+display.appendChild(view)
 const generateTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
@@ -19,16 +10,61 @@ const generateTableColumn = (d, v) => {
   item.textContent = d
   value.textContent = v
   value.className = 'value'
-  commodities.appendChild(tr)
   tr.appendChild(item)
   tr.appendChild(value)
+  return tr
 }
+{
+const building = document.createElement`table`
+const tr = document.createElement`tr`
+const th = document.createElement`th`
+th.textContent = 'Building'
+const value = document.createElement`th`
+value.textContent = 'value'
+view.appendChild(building)
+building.appendChild(tr)
+tr.appendChild(th)
+tr.appendChild(value)
+buildingList = []
+buildingNameList = [
+  'Textile Mill',
+  'Clothing Factory',
+  'Lumber Mill',
+  'Furniture Factory',
+  'Steel Mill',
+  'Metal Works',
+  'Refinery',
+  'Food Production'
+]
+buildingNameList.forEach(v => {
+  buildingList.push({name: v, value: 0})
+})
+buildingList.forEach(v => {
+  building.appendChild(generateTableColumn(v.name, v.value))
+})
+}
+{
+const commodities = document.createElement`table`
+const tr = document.createElement`tr`
+const th = document.createElement`th`
+th.textContent = 'Commodities'
+const value = document.createElement`th`
+value.textContent = 'value'
+view.appendChild(commodities)
+commodities.appendChild(tr)
+tr.appendChild(th)
+tr.appendChild(value)
 comoditiesList = []
 comoditiesNameList = ['Grain', 'Livestock', 'Fruit', 'Wool', 'Timber']
 comoditiesNameList.forEach(v => {
   comoditiesList.push({name: v, value: 0})
 })
-comoditiesList.forEach(v => generateTableColumn(v.name, v.value))
+comoditiesList.forEach(v => {
+  commodities.appendChild(generateTableColumn(v.name, v.value))
+})
+}
+const size = 16
+let canvasId = 0
 const pushCanvas = () => {
   const canvas = document.createElement`canvas`
   canvas.id = canvasId
