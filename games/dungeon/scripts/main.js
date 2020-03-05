@@ -93,6 +93,10 @@ const generateWorkerTableColumn = (d, v) => {
     if (0 < workerObject[d]) {
       workerObject[d] -= 1
       workerObject[workerNameList[0]] += 1
+      workerList[workerList.findIndex(va => va.post === d)] = {
+        post: workerNameList[0], direction: 0
+      }
+      console.log(workerList)
       elementUpdate()
     }
   })
@@ -101,6 +105,8 @@ const generateWorkerTableColumn = (d, v) => {
     if (0 < workerObject[workerNameList[0]]) {
       workerObject[workerNameList[0]] -= 1
       workerObject[d] += 1
+      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {post: d, direction: 0}
+      console.log(workerList)
       elementUpdate()
     }
   })
