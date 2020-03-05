@@ -233,6 +233,7 @@ const pushCanvas = () => {
     // commoditiesObject[commoditiesNameList[0]]++
     elementUpdate()
   })
+  let timestamp = Date.now()
   const main = () => {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
     context.save()
@@ -252,17 +253,21 @@ const pushCanvas = () => {
     if (canvasSerector === canvas.id) {
       context.fillRect(0, 0, size / 2, size / 2)
     }
-    context.fillText(`id: ${canvas.id}`, size * 2, size * 2)
-    context.fillText(`x: ${x}`, size * 2, size * 3)
-    context.fillText(`y: ${y}`, size * 2, size * 4)
-    context.fillStyle = 'lightgray'
-    context.fillRect(canvas.offsetWidth - size * 3, size, size * 2, size * 2)
-    if (canvas.offsetWidth - size * 3 < x && x < canvas.offsetWidth - size &&
-      size < y && y < size * 3) {
-      context.font = `bold ${size}px sans-serif`
+    context.fillStyle = 'cyan'
+    const moveTime = 3e3
+    const workTime = 4e3
+    const spot = 2
+    let elapseTime = Date.now() - timestamp
+    if (moveTime * 2 + workTime < elapseTime) {
+      timestamp = Date.now()
+      elapseTime = 0
     }
-    context.fillStyle = 'black'
-    context.fillText('+', canvas.offsetWidth - size * 2, size * 2.25)
+    const rate = elapseTime < moveTime ? elapseTime / moveTime * spot :
+    moveTime <= elapseTime && elapseTime < moveTime + workTime ? spot :
+    (moveTime * 2 - elapseTime + workTime) / moveTime * spot
+    context.fillText(rate, size * 10, size)
+    const progress = rate * size * 6
+    context.fillRect(size * 2.5 + progress, size * 3, size, size)
     context.restore()
     window.requestAnimationFrame(main)
   }
