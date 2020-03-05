@@ -49,7 +49,7 @@ Object.entries(buildingObject).forEach(([k, v]) => {
   building.appendChild(generateTableColumn(k, v))
 })
 }
-const workerObject = []
+const workerObject = {}
 const workerNameList = [
   'None',
   'Farmer',
@@ -94,7 +94,6 @@ const generateWorkerTableColumn = (d, v) => {
       workerObject[workerNameList[0]] -= 1
       workerObject[d] += 1
       elementUpdate()
-      console.log(workerObject[workerNameList[0]], workerObject[d])
     }
   })
   plusButton.textContent = '+'
@@ -111,7 +110,7 @@ Object.entries(workerObject).forEach(([k, v]) => {
   worker.appendChild(generateWorkerTableColumn(k, v))
 })
 }
-const commoditiesObject = []
+const commoditiesObject = {}
 const commoditiesNameList = [
   'Grain',
   'Livestock',
