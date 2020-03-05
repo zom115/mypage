@@ -58,6 +58,14 @@ const workerNameList = [
   'Miner',
   'Driller'
 ]
+let population = 5
+const workerList = []
+for (let i = 0; i < population; i++) {
+  workerList.push({
+    post: workerNameList[0],
+    direction: 0
+  })
+}
 {
 const worker = document.createElement`table`
 const tr = document.createElement`tr`
@@ -70,7 +78,7 @@ worker.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
 workerNameList.forEach(v => {
-  workerObject[v] = v === workerNameList[0] ? 5 : 0
+  workerObject[v] = v === workerNameList[0] ? population : 0
 })
 const generateWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
