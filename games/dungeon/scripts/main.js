@@ -70,10 +70,45 @@ worker.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
 workerNameList.forEach(v => {
-  workerObject[v] = 0
+  workerObject[v] = v === workerNameList[0] ? 5 : 0
 })
+const generateWorkerTableColumn = (d, v) => {
+  const tr = document.createElement`tr`
+  const item = document.createElement`td`
+  const td = document.createElement`td`
+  const span = document.createElement`span`
+  span.id = d
+  span.textContent = v
+  const minusButton = document.createElement`button`
+  minusButton.textContent = '-'
+  minusButton.addEventListener('click', () => {
+    if (0 < workerObject[d]) {
+      workerObject[d] -= 1
+      workerObject[workerNameList[0]] += 1
+      elementUpdate()
+    }
+  })
+  const plusButton = document.createElement`button`
+  plusButton.addEventListener('click', () => {
+    if (0 < workerObject[workerNameList[0]]) {
+      workerObject[workerNameList[0]] -= 1
+      workerObject[d] += 1
+      elementUpdate()
+      console.log(workerObject[workerNameList[0]], workerObject[d])
+    }
+  })
+  plusButton.textContent = '+'
+  item.textContent = d
+  td.className = 'value'
+  td.appendChild(minusButton)
+  td.appendChild(span)
+  td.appendChild(plusButton)
+  tr.appendChild(item)
+  tr.appendChild(td)
+  return tr
+}
 Object.entries(workerObject).forEach(([k, v]) => {
-  worker.appendChild(generateTableColumn(k, v))
+  worker.appendChild(generateWorkerTableColumn(k, v))
 })
 }
 const commoditiesObject = []
