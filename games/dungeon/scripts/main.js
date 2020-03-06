@@ -66,7 +66,7 @@ const generateWorkerTableColumn = (d, v) => {
   plusButton.textContent = '+'
   item.textContent = d
   td.className = 'value'
-  td.appendChild(minusButton)
+  if (d !== workerNameList[0]) td.appendChild(minusButton)
   td.appendChild(span)
   td.appendChild(plusButton)
   tr.appendChild(item)
