@@ -362,17 +362,54 @@ const pushCanvas = () => {
 console.log(commoditiesObject['Fabric'])
 pushCanvas()
 const main = () => {
-  Object.entries(buildingObject).forEach(([k, v]) => {
-    if (0 < v) {
-      if (buildingNameList[0] && 1 < commoditiesObject[commoditiesNameList[3]]) {
-        commoditiesObject[commoditiesNameList[3]] -= 2
-        if (commoditiesObject['Fabric'] === undefined) {
-          commoditiesObject['Fabric'] = 0
-          commodities.appendChild(generateCommoditiesTableColumn('Fabric', 0))
+  const convertObject = {
+    [buildingNameList[0]]: {
+      in: {[commoditiesNameList[3]]: 2},
+      out: {Fabric: 1}
+    }, [buildingNameList[1]]: {
+      in: {Fabric: 2},
+      out: {Clothing: 1}
+    }, [buildingNameList[2]]: {
+      in: {[commoditiesNameList[4]]: 2},
+      out: {Lumber: 1}
+    }, [buildingNameList[3]]: {
+      in: {Lumber: 2},
+      out: {Furniture: 1}
+    }, [buildingNameList[4]]: {
+      in: {Coal: 1, Iron: 1},
+      out: {Steel: 1}
+    }, [buildingNameList[5]]: {
+      in: {Steel: 2},
+      out: {Hardware: 1}
+    }, [buildingNameList[6]]: {
+      in: {Oil: 2},
+      out: {Fuel: 1}
+    }, [buildingNameList[7]]: {
+      in: {
+        [commoditiesNameList[0]]: 1,
+        [commoditiesNameList[1]]: 1,
+        [commoditiesNameList[2]]: 1
+      }, out: {'Canned Food': 1}
+    }
+  }
+  Object.entries(convertObject).forEach(([key, val], i) => {
+    if (i === 0) {
+      console.log(key, val)
+    }
+    if (0 < buildingObject[key] && Object.entries(val.in).every(([ky, vl]) => {
+      return vl <= commoditiesObject[ky]
+    })) {
+      Object.entries(val.in).forEach(([ky, vl]) => {
+        commoditiesObject[ky] -= vl
+      })
+      Object.entries(val.out).forEach(([ky, vl]) => {
+        if (commoditiesObject[ky] === undefined) {
+          commoditiesObject[ky] = 0
+          commodities.appendChild(generateCommoditiesTableColumn(ky, 0))
         }
-        commoditiesObject['Fabric'] += 1
+        commoditiesObject[ky] += vl
         elementUpdate()
-      }
+      })
     }
   })
   window.requestAnimationFrame(main)
