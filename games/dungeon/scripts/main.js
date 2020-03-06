@@ -252,6 +252,20 @@ const pushCanvas = () => {
         v.timestamp === 0 ||
         v.timestamp + moveTime * v.direction * 2 + workTime < Date.now()
       ) {
+        // get commodities
+        if (terrainListObject[canvas.id][v.direction] === terrainNameList[0]) {
+          commoditiesObject[commoditiesNameList[0]]++
+        } else if (terrainListObject[canvas.id][v.direction] === terrainNameList[1]) {
+          commoditiesObject[commoditiesNameList[1]]++
+        } else if (terrainListObject[canvas.id][v.direction] === terrainNameList[2]) {
+          commoditiesObject[commoditiesNameList[2]]++
+        } else if (terrainListObject[canvas.id][v.direction] === terrainNameList[3]) {
+          commoditiesObject[commoditiesNameList[3]]++
+        } else if (terrainListObject[canvas.id][v.direction] === terrainNameList[4]) {
+          commoditiesObject[commoditiesNameList[4]]++
+        }
+        elementUpdate()
+        // set direction
         let n
         if (v.post === workerNameList[1]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
