@@ -8,18 +8,6 @@ menuView.className = 'container'
 display.appendChild(indicateView)
 display.appendChild(canvasView)
 display.appendChild(menuView)
-const generateTableColumn = (d, v) => {
-  const tr = document.createElement`tr`
-  const item = document.createElement`td`
-  const value = document.createElement`td`
-  item.textContent = d
-  value.id = d
-  value.className = 'value'
-  value.textContent = v
-  tr.appendChild(item)
-  tr.appendChild(value)
-  return tr
-}
 const buildingObject = {}
 const buildingNameList = [
   'Textile Mill',
@@ -31,20 +19,7 @@ const buildingNameList = [
   'Refinery',
   'Food Production'
 ]
-{
 const building = document.createElement`table`
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Building'
-const value = document.createElement`th`
-value.textContent = 'value'
-indicateView.appendChild(building)
-building.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
-buildingNameList.forEach(v => {
-  buildingObject[v] = 0
-})
 const generateBuildingTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
@@ -79,6 +54,19 @@ const generateBuildingTableColumn = (d, v) => {
   tr.appendChild(td)
   return tr
 }
+{
+const tr = document.createElement`tr`
+const th = document.createElement`th`
+th.textContent = 'Building'
+const value = document.createElement`th`
+value.textContent = 'value'
+indicateView.appendChild(building)
+building.appendChild(tr)
+tr.appendChild(th)
+tr.appendChild(value)
+buildingNameList.forEach(v => {
+  buildingObject[v] = 0
+})
 Object.entries(buildingObject).forEach(([k, v]) => {
   building.appendChild(generateBuildingTableColumn(k, v))
 })
@@ -101,20 +89,7 @@ for (let i = 0; i < population; i++) {
     timestamp: 0
   })
 }
-{
 const worker = document.createElement`table`
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Worker'
-const value = document.createElement`th`
-value.textContent = 'value'
-indicateView.appendChild(worker)
-worker.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
-workerNameList.forEach(v => {
-  workerObject[v] = v === workerNameList[0] ? population : 0
-})
 const generateWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
@@ -161,6 +136,19 @@ const generateWorkerTableColumn = (d, v) => {
   tr.appendChild(td)
   return tr
 }
+{
+const tr = document.createElement`tr`
+const th = document.createElement`th`
+th.textContent = 'Worker'
+const value = document.createElement`th`
+value.textContent = 'value'
+indicateView.appendChild(worker)
+worker.appendChild(tr)
+tr.appendChild(th)
+tr.appendChild(value)
+workerNameList.forEach(v => {
+  workerObject[v] = v === workerNameList[0] ? population : 0
+})
 Object.entries(workerObject).forEach(([k, v]) => {
   worker.appendChild(generateWorkerTableColumn(k, v))
 })
@@ -173,8 +161,20 @@ const commoditiesNameList = [
   'Wool',
   'Timber'
 ]
-{
 const commodities = document.createElement`table`
+const generateCommoditiesTableColumn = (d, v) => {
+  const tr = document.createElement`tr`
+  const item = document.createElement`td`
+  const value = document.createElement`td`
+  item.textContent = d
+  value.id = d
+  value.className = 'value'
+  value.textContent = v
+  tr.appendChild(item)
+  tr.appendChild(value)
+  return tr
+}
+{
 const tr = document.createElement`tr`
 const th = document.createElement`th`
 th.textContent = 'Commodities'
@@ -188,7 +188,7 @@ commoditiesNameList.forEach(v => {
   commoditiesObject[v] = 0
 })
 Object.entries(commoditiesObject).forEach(([k, v]) => {
-  commodities.appendChild(generateTableColumn(k, v))
+  commodities.appendChild(generateCommoditiesTableColumn(k, v))
 })
 }
 const elementUpdate = () => {
@@ -359,8 +359,22 @@ const pushCanvas = () => {
   }
   camvasMain()
 }
+console.log(commoditiesObject['Fabric'])
 pushCanvas()
 const main = () => {
+  Object.entries(buildingObject).forEach(([k, v]) => {
+    if (0 < v) {
+      if (buildingNameList[0] && 1 < commoditiesObject[commoditiesNameList[3]]) {
+        commoditiesObject[commoditiesNameList[3]] -= 2
+        if (commoditiesObject['Fabric'] === undefined) {
+          commoditiesObject['Fabric'] = 0
+          commodities.appendChild(generateCommoditiesTableColumn('Fabric', 0))
+        }
+        commoditiesObject['Fabric'] += 1
+        elementUpdate()
+      }
+    }
+  })
   window.requestAnimationFrame(main)
 }
 main()
