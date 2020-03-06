@@ -256,22 +256,21 @@ const pushCanvas = () => {
     // commoditiesObject[commoditiesNameList[0]]++
     elementUpdate()
   })
-  let timestamp = Date.now()
   const moveTime = 3e3
   const workTime = 4e3
   const fn = () => {
     workerList.forEach((v, i) => {
       if (
         v.timestamp === 0 ||
-        v.timestamp + moveTime * 2 + workTime < Date.now()
+        v.timestamp + moveTime * (v.direction - 1) * 2 + workTime < Date.now()
       ) {
-        let n = undefined
+        let n
         if (v.post === workerNameList[1]) {
           n = farmerList[farmerList.findIndex(va => v.direction < va)]
         } else if (v.post === workerNameList[2]) {
-          n = rancherList[farmerList.findIndex(va => v.direction < va)]
+          n = rancherList[rancherList.findIndex(va => v.direction < va)]
         } else if (v.post === workerNameList[3]) {
-          n = foresterList[farmerList.findIndex(va => v.direction < va)]
+          n = foresterList[foresterList.findIndex(va => v.direction < va)]
         }
         if (n === undefined) {
           workerList[i].direction = 0
@@ -280,6 +279,7 @@ const pushCanvas = () => {
           workerList[i].direction = n
           workerList[i].timestamp = Date.now()
         }
+        if (i === 0)console.log(v)
       }
     })
   }
@@ -302,18 +302,19 @@ const pushCanvas = () => {
     if (canvasSerector === canvas.id) {
       context.fillRect(0, 0, size / 2, size / 2)
     }
-    context.fillStyle = 'cyan'
-    const spot = 2
-    let elapseTime = Date.now() - timestamp
-    if (moveTime * 2 + workTime < elapseTime) {
-      timestamp = Date.now()
-      elapseTime = 0
-    }
-    const rate = elapseTime < moveTime ? elapseTime / moveTime * spot :
-    moveTime <= elapseTime && elapseTime < moveTime + workTime ? spot :
-    (moveTime * 2 - elapseTime + workTime) / moveTime * spot
-    const progress = rate * size * 6
-    context.fillRect(size * 2.5 + progress, size * 3, size, size)
+    workerList.forEach(v => {
+      if (v.timestamp === 0) return
+      context.fillStyle = 'cyan'
+      let elapsedTime = Date.now() - v.timestamp
+      const rate = elapsedTime < moveTime * (v.direction - 1) ?
+      elapsedTime / moveTime :
+      moveTime * (v.direction - 1) <= elapsedTime &&
+      elapsedTime < moveTime * (v.direction - 1) + workTime ?
+      v.direction - 1 :
+      (moveTime * (v.direction - 1) * 2 + workTime - elapsedTime) / moveTime
+      const progress = rate * size * 6
+      context.fillRect(size * 2.5 + progress, size * 3, size, size)
+    })
     context.restore()
   }
   const main = () => {
