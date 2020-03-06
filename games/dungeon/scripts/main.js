@@ -178,9 +178,6 @@ const terrainNameList = [
 ]
 let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
-const farmerList = []
-const rancherList = []
-const foresterList = []
 {
 const terrain = document.createElement`table`
 const tr = document.createElement`tr`
@@ -204,16 +201,7 @@ const generateTableColumn = d => {
   tr.appendChild(item)
   tr.appendChild(td)
   td.appendChild(button)
-  button.addEventListener('click', e => {
-    terrainListObject[canvasSerector].push(d)
-    if (d === terrainNameList[0] || d === terrainNameList[2]) {
-      farmerList.push(terrainListObject[canvasSerector].length)
-    } else if (d === terrainNameList[1] || d === terrainNameList[3]) {
-      rancherList.push(terrainListObject[canvasSerector].length)
-    } else if (d === terrainNameList[4]) {
-      foresterList.push(terrainListObject[canvasSerector].length)
-    }
-  })
+  button.addEventListener('click', () => terrainListObject[canvasSerector].push(d))
   return tr
 }
 terrainNameList.forEach(v => {
@@ -262,24 +250,29 @@ const pushCanvas = () => {
     workerList.forEach((v, i) => {
       if (
         v.timestamp === 0 ||
-        v.timestamp + moveTime * (v.direction - 1) * 2 + workTime < Date.now()
+        v.timestamp + moveTime * v.direction * 2 + workTime < Date.now()
       ) {
         let n
         if (v.post === workerNameList[1]) {
-          n = farmerList[farmerList.findIndex(va => v.direction < va)]
+          n = terrainListObject[canvas.id].findIndex((va, ind) => {
+            return v.direction < ind && (va === terrainNameList[0] || va === terrainNameList[2])
+          })
         } else if (v.post === workerNameList[2]) {
-          n = rancherList[rancherList.findIndex(va => v.direction < va)]
+          n = terrainListObject[canvas.id].findIndex((va, ind) => {
+            return v.direction < ind && (va === terrainNameList[1] || va === terrainNameList[3])
+          })
         } else if (v.post === workerNameList[3]) {
-          n = foresterList[foresterList.findIndex(va => v.direction < va)]
+          n = terrainListObject[canvas.id].findIndex((va, ind) => {
+            return v.direction < ind && (va === terrainNameList[4])
+          })
         }
-        if (n === undefined) {
+        if (n === undefined || n === -1) {
           workerList[i].direction = 0
           workerList[i].timestamp = 0
         } else {
           workerList[i].direction = n
           workerList[i].timestamp = Date.now()
         }
-        if (i === 0)console.log(v)
       }
     })
   }
@@ -306,12 +299,12 @@ const pushCanvas = () => {
       if (v.timestamp === 0) return
       context.fillStyle = 'cyan'
       let elapsedTime = Date.now() - v.timestamp
-      const rate = elapsedTime < moveTime * (v.direction - 1) ?
+      const rate = elapsedTime < moveTime * v.direction ?
       elapsedTime / moveTime :
-      moveTime * (v.direction - 1) <= elapsedTime &&
-      elapsedTime < moveTime * (v.direction - 1) + workTime ?
-      v.direction - 1 :
-      (moveTime * (v.direction - 1) * 2 + workTime - elapsedTime) / moveTime
+      moveTime * v.direction <= elapsedTime &&
+      elapsedTime < moveTime * v.direction + workTime ?
+      v.direction :
+      (moveTime * v.direction * 2 + workTime - elapsedTime) / moveTime
       const progress = rate * size * 6
       context.fillRect(size * 2.5 + progress, size * 3, size, size)
     })
