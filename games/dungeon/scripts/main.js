@@ -45,8 +45,42 @@ tr.appendChild(value)
 buildingNameList.forEach(v => {
   buildingObject[v] = 0
 })
+const generateBuildingTableColumn = (d, v) => {
+  const tr = document.createElement`tr`
+  const item = document.createElement`td`
+  const td = document.createElement`td`
+  const span = document.createElement`span`
+  span.id = d
+  span.textContent = v
+  const minusButton = document.createElement`button`
+  minusButton.textContent = '-'
+  minusButton.addEventListener('click', () => {
+    if (0 < buildingObject[d]) {
+      buildingObject[d] -= 1
+      workerObject[workerNameList[0]] += 1
+      elementUpdate()
+    }
+  })
+  const plusButton = document.createElement`button`
+  plusButton.addEventListener('click', () => {
+    if (0 < workerObject[workerNameList[0]]) {
+      workerObject[workerNameList[0]] -= 1
+      buildingObject[d] += 1
+      elementUpdate()
+    }
+  })
+  plusButton.textContent = '+'
+  item.textContent = d
+  td.className = 'value'
+  td.appendChild(minusButton)
+  td.appendChild(span)
+  td.appendChild(plusButton)
+  tr.appendChild(item)
+  tr.appendChild(td)
+  return tr
+}
 Object.entries(buildingObject).forEach(([k, v]) => {
-  building.appendChild(generateTableColumn(k, v))
+  building.appendChild(generateBuildingTableColumn(k, v))
 })
 }
 const workerObject = {}
