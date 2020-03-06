@@ -1,76 +1,13 @@
 {'use strict'
 const display = document.getElementById`display`
 const indicateView = document.createElement`div`
-const canvasView = document.createElement`div`
-const menuView = document.createElement`div`
 indicateView.className = 'container'
-menuView.className = 'container'
 display.appendChild(indicateView)
+const canvasView = document.createElement`div`
 display.appendChild(canvasView)
+const menuView = document.createElement`div`
+menuView.className = 'container'
 display.appendChild(menuView)
-const buildingObject = {}
-const buildingNameList = [
-  'Textile Mill',
-  'Clothing Factory',
-  'Lumber Mill',
-  'Furniture Factory',
-  'Steel Mill',
-  'Metal Works',
-  'Refinery',
-  'Food Production'
-]
-const building = document.createElement`table`
-const generateBuildingTableColumn = (d, v) => {
-  const tr = document.createElement`tr`
-  const item = document.createElement`td`
-  const td = document.createElement`td`
-  const span = document.createElement`span`
-  span.id = d
-  span.textContent = v
-  const minusButton = document.createElement`button`
-  minusButton.textContent = '-'
-  minusButton.addEventListener('click', () => {
-    if (0 < buildingObject[d]) {
-      buildingObject[d] -= 1
-      workerObject[workerNameList[0]] += 1
-      elementUpdate()
-    }
-  })
-  const plusButton = document.createElement`button`
-  plusButton.addEventListener('click', () => {
-    if (0 < workerObject[workerNameList[0]]) {
-      workerObject[workerNameList[0]] -= 1
-      buildingObject[d] += 1
-      elementUpdate()
-    }
-  })
-  plusButton.textContent = '+'
-  item.textContent = d
-  td.className = 'value'
-  td.appendChild(minusButton)
-  td.appendChild(span)
-  td.appendChild(plusButton)
-  tr.appendChild(item)
-  tr.appendChild(td)
-  return tr
-}
-{
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Building'
-const value = document.createElement`th`
-value.textContent = 'value'
-indicateView.appendChild(building)
-building.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
-buildingNameList.forEach(v => {
-  buildingObject[v] = 0
-})
-Object.entries(buildingObject).forEach(([k, v]) => {
-  building.appendChild(generateBuildingTableColumn(k, v))
-})
-}
 const workerObject = {}
 const workerNameList = [
   'None',
@@ -151,6 +88,69 @@ workerNameList.forEach(v => {
 })
 Object.entries(workerObject).forEach(([k, v]) => {
   worker.appendChild(generateWorkerTableColumn(k, v))
+})
+}
+const buildingObject = {}
+const buildingNameList = [
+  'Textile Mill',
+  'Clothing Factory',
+  'Lumber Mill',
+  'Furniture Factory',
+  'Steel Mill',
+  'Metal Works',
+  'Refinery',
+  'Food Production'
+]
+const building = document.createElement`table`
+const generateBuildingTableColumn = (d, v) => {
+  const tr = document.createElement`tr`
+  const item = document.createElement`td`
+  const td = document.createElement`td`
+  const span = document.createElement`span`
+  span.id = d
+  span.textContent = v
+  const minusButton = document.createElement`button`
+  minusButton.textContent = '-'
+  minusButton.addEventListener('click', () => {
+    if (0 < buildingObject[d]) {
+      buildingObject[d] -= 1
+      workerObject[workerNameList[0]] += 1
+      elementUpdate()
+    }
+  })
+  const plusButton = document.createElement`button`
+  plusButton.addEventListener('click', () => {
+    if (0 < workerObject[workerNameList[0]]) {
+      workerObject[workerNameList[0]] -= 1
+      buildingObject[d] += 1
+      elementUpdate()
+    }
+  })
+  plusButton.textContent = '+'
+  item.textContent = d
+  td.className = 'value'
+  td.appendChild(minusButton)
+  td.appendChild(span)
+  td.appendChild(plusButton)
+  tr.appendChild(item)
+  tr.appendChild(td)
+  return tr
+}
+{
+const tr = document.createElement`tr`
+const th = document.createElement`th`
+th.textContent = 'Building'
+const value = document.createElement`th`
+value.textContent = 'value'
+indicateView.appendChild(building)
+building.appendChild(tr)
+tr.appendChild(th)
+tr.appendChild(value)
+buildingNameList.forEach(v => {
+  buildingObject[v] = 0
+})
+Object.entries(buildingObject).forEach(([k, v]) => {
+  building.appendChild(generateBuildingTableColumn(k, v))
 })
 }
 const commoditiesObject = {}
