@@ -63,7 +63,8 @@ const workerList = []
 for (let i = 0; i < population; i++) {
   workerList.push({
     post: workerNameList[0],
-    direction: 0
+    direction: 0,
+    timestamp: 0
   })
 }
 {
@@ -94,7 +95,9 @@ const generateWorkerTableColumn = (d, v) => {
       workerObject[d] -= 1
       workerObject[workerNameList[0]] += 1
       workerList[workerList.findIndex(va => va.post === d)] = {
-        post: workerNameList[0], direction: 0
+        post: workerNameList[0],
+        direction: 0,
+        timestamp: 0
       }
       console.log(workerList)
       elementUpdate()
@@ -105,7 +108,11 @@ const generateWorkerTableColumn = (d, v) => {
     if (0 < workerObject[workerNameList[0]]) {
       workerObject[workerNameList[0]] -= 1
       workerObject[d] += 1
-      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {post: d, direction: 0}
+      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {
+        post: d,
+        direction: 0,
+        timestamp: 0
+      }
       console.log(workerList)
       elementUpdate()
     }
@@ -169,6 +176,11 @@ const terrainNameList = [
   'Fertile Hills',
   'Forest'
 ]
+let canvasSerector = '0'
+const terrainListObject = {[canvasSerector]: terrainList}
+const farmerList = []
+const rancherList = []
+const foresterList = []
 {
 const terrain = document.createElement`table`
 const tr = document.createElement`tr`
@@ -194,6 +206,13 @@ const generateTableColumn = d => {
   td.appendChild(button)
   button.addEventListener('click', e => {
     terrainListObject[canvasSerector].push(d)
+    if (d === terrainNameList[0] || d === terrainNameList[2]) {
+      farmerList.push(terrainListObject[canvasSerector].length)
+    } else if (d === terrainNameList[1] || d === terrainNameList[3]) {
+      rancherList.push(terrainListObject[canvasSerector].length)
+    } else if (d === terrainNameList[4]) {
+      foresterList.push(terrainListObject[canvasSerector].length)
+    }
   })
   return tr
 }
@@ -201,8 +220,6 @@ terrainNameList.forEach(v => {
   terrain.appendChild(generateTableColumn(v))
 })
 }
-let canvasSerector = '0'
-const terrainListObject = {[canvasSerector]: terrainList}
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
@@ -240,7 +257,33 @@ const pushCanvas = () => {
     elementUpdate()
   })
   let timestamp = Date.now()
-  const main = () => {
+  const moveTime = 3e3
+  const workTime = 4e3
+  const fn = () => {
+    workerList.forEach((v, i) => {
+      if (
+        v.timestamp === 0 ||
+        v.timestamp + moveTime * 2 + workTime < Date.now()
+      ) {
+        let n = undefined
+        if (v.post === workerNameList[1]) {
+          n = farmerList[farmerList.findIndex(va => v.direction < va)]
+        } else if (v.post === workerNameList[2]) {
+          n = rancherList[farmerList.findIndex(va => v.direction < va)]
+        } else if (v.post === workerNameList[3]) {
+          n = foresterList[farmerList.findIndex(va => v.direction < va)]
+        }
+        if (n === undefined) {
+          workerList[i].direction = 0
+          workerList[i].timestamp = 0
+        } else {
+          workerList[i].direction = n
+          workerList[i].timestamp = Date.now()
+        }
+      }
+    })
+  }
+  const draw = () => {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
     context.save()
     context.font = `normal ${size}px sans-serif`
@@ -260,8 +303,6 @@ const pushCanvas = () => {
       context.fillRect(0, 0, size / 2, size / 2)
     }
     context.fillStyle = 'cyan'
-    const moveTime = 3e3
-    const workTime = 4e3
     const spot = 2
     let elapseTime = Date.now() - timestamp
     if (moveTime * 2 + workTime < elapseTime) {
@@ -271,10 +312,13 @@ const pushCanvas = () => {
     const rate = elapseTime < moveTime ? elapseTime / moveTime * spot :
     moveTime <= elapseTime && elapseTime < moveTime + workTime ? spot :
     (moveTime * 2 - elapseTime + workTime) / moveTime * spot
-    context.fillText(rate, size * 10, size)
     const progress = rate * size * 6
     context.fillRect(size * 2.5 + progress, size * 3, size, size)
     context.restore()
+  }
+  const main = () => {
+    fn()
+    draw()
     window.requestAnimationFrame(main)
   }
   main()
