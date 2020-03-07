@@ -1,19 +1,26 @@
 {'use strict'
 let imagePathList = [
-  'images/小麦アイコン.png'
+  'images/小麦アイコン.png',
+  'images/肉の切り身のアイコン.png',
+  'images/リンゴアイコン6.png',
+  'images/ヒツジアイコン.png',
+  'images/木アイコン.png'
 ]
 let imageList = []
 const imgLoad = async () => {
   return new Promise(async resolve => {
-    await Promise.all(imagePathList.map(async path => {
-      const imgPreload = new Image()
-      imgPreload.src = path
-      imgPreload.addEventListener('load', async e => {
-        console.log(e.path[0])
-        imageList.push(e.path[0])
-        resolve()
+    await Promise.all(imagePathList.map(async (path, i) => {
+      return new Promise(async res => {
+        const imgPreload = new Image()
+        imgPreload.src = path
+        imgPreload.alt = commoditiesNameList[i]
+        imgPreload.addEventListener('load', async e => {
+          imageList.push(e.path[0])
+          res()
+        })
       })
     }))
+    resolve()
   })
 }
 const display = document.getElementById`display`
@@ -190,7 +197,10 @@ const commodities = document.createElement`table`
 const generateCommoditiesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
-  if (d === commoditiesNameList[0]) item.appendChild(imageList[0])
+  commoditiesNameList.forEach(vl => {
+    if (d === vl) {
+      item.appendChild(imageList[imageList.findIndex(val => d === val.alt)])}
+  })
   tr.appendChild(item)
   const span = document.createElement`span`
   span.textContent = d
