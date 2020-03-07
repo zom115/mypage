@@ -395,14 +395,19 @@ const main = () => {
       }, out: {'Canned Food': 1}
     }
   }
-  Object.entries(convertObject).forEach(([key, val], i) => {
-    if (0 < buildingObject[key] && Object.entries(val.in).every(([ky, vl]) => {
-      return vl <= commoditiesObject[ky]
-    })) {
-      Object.entries(val.in).forEach(([ky, vl]) => {
+  console.log(workerObject)
+  Object.keys(workerObject).forEach(k => {
+    if (
+      Object.keys(convertObject).some(ky => k === ky) &&
+      0 < buildingObject[k] &&
+      Object.entries(buildingObject[k].in).every(([ky, vl]) => {
+        return vl <= commoditiesObject[ky]
+      })
+    ) {
+      Object.entries(buildingObject[k].in).forEach(([ky, vl]) => {
         commoditiesObject[ky] -= vl
       })
-      Object.entries(val.out).forEach(([ky, vl]) => {
+      Object.entries(buildingObject[k].out).forEach(([ky, vl]) => {
         if (commoditiesObject[ky] === undefined) {
           commoditiesObject[ky] = 0
           commodities.appendChild(generateCommoditiesTableColumn(ky, 0))
@@ -412,6 +417,23 @@ const main = () => {
       })
     }
   })
+  // Object.entries(convertObject).forEach(([key, val], i) => {
+  //   if (0 < buildingObject[key] && Object.entries(val.in).every(([ky, vl]) => {
+  //     return vl <= commoditiesObject[ky]
+  //   })) {
+  //     Object.entries(val.in).forEach(([ky, vl]) => {
+  //       commoditiesObject[ky] -= vl
+  //     })
+  //     Object.entries(val.out).forEach(([ky, vl]) => {
+  //       if (commoditiesObject[ky] === undefined) {
+  //         commoditiesObject[ky] = 0
+  //         commodities.appendChild(generateCommoditiesTableColumn(ky, 0))
+  //       }
+  //       commoditiesObject[ky] += vl
+  //       elementUpdate()
+  //     })
+  //   }
+  // })
   window.requestAnimationFrame(main)
 }
 main()
