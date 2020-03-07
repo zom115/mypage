@@ -149,14 +149,86 @@ const buildingNameList = [
   'Refinery',
   'Food Production'
 ]
+const commoditiesNameList = [
+  'Grain',
+  'Livestock',
+  'Fruit',
+  'Wool',
+  'Timber'
+]
+const convertObject = {
+  [buildingNameList[0]]: {
+    in: {[commoditiesNameList[3]]: 2},
+    out: {Fabric: 1}
+  }, [buildingNameList[1]]: {
+    in: {Fabric: 2},
+    out: {Clothing: 1}
+  }, [buildingNameList[2]]: {
+    in: {[commoditiesNameList[4]]: 2},
+    out: {Lumber: 1}
+  }, [buildingNameList[3]]: {
+    in: {Lumber: 2},
+    out: {Furniture: 1}
+  }, [buildingNameList[4]]: {
+    in: {Coal: 1, Iron: 1},
+    out: {Steel: 1}
+  }, [buildingNameList[5]]: {
+    in: {Steel: 2},
+    out: {Hardware: 1}
+  }, [buildingNameList[6]]: {
+    in: {Oil: 2},
+    out: {Fuel: 1}
+  }, [buildingNameList[7]]: {
+    in: {
+      [commoditiesNameList[0]]: 1,
+      [commoditiesNameList[1]]: 1,
+      [commoditiesNameList[2]]: 1
+    }, out: {'Canned Food': 1}
+  }
+}
 const building = document.createElement`table`
 const generateBuildingTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
+  tr.appendChild(item)
+  const itemSpan = document.createElement`span`
+  itemSpan.textContent = d
+  item.appendChild(itemSpan)
+  const space = document.createElement`span`
+  space.textContent = ' '
+  item.appendChild(space)
+  const imgSpan = document.createElement`span`
+  item.appendChild(imgSpan)
+  Object.entries(convertObject[d].in).forEach(([k, vl]) => {
+    if (commoditiesNameList.findIndex(va => va === k) !== -1) {
+      const img = new Image()
+      img.src = imagePathList[commoditiesNameList.findIndex(va => va === k)]
+      imgSpan.appendChild(img)
+    }
+    if (1 < vl) {
+      const span = document.createElement`span`
+      span.textContent = `*${vl}`
+      imgSpan.appendChild(span)
+    }
+  })
+  const equalSpan = document.createElement`span`
+  equalSpan.textContent = ' = '
+  imgSpan.appendChild(equalSpan)
+  Object.entries(convertObject[d].out).forEach(([k, vl]) => {
+    if (commoditiesNameList.findIndex(va => va === k) !== -1) {
+      const img = new Image()
+      img.src = imagePathList[commoditiesNameList.findIndex(va => va === k)]
+      imgSpan.appendChild(img)
+    }
+    if (1 < vl) {
+      const span = document.createElement`span`
+      span.textContent = `*${vl}`
+      imgSpan.appendChild(span)
+    }
+  })
   const td = document.createElement`td`
-  const span = document.createElement`span`
-  span.id = d
-  span.textContent = v
+  td.className = 'value'
+  tr.appendChild(td)
   const minusButton = document.createElement`button`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
@@ -171,6 +243,11 @@ const generateBuildingTableColumn = (d, v) => {
       elementUpdate()
     }
   })
+  td.appendChild(minusButton)
+  const valueSpan = document.createElement`span`
+  valueSpan.id = d
+  valueSpan.textContent = v
+  td.appendChild(valueSpan)
   const plusButton = document.createElement`button`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
@@ -185,13 +262,7 @@ const generateBuildingTableColumn = (d, v) => {
       elementUpdate()
     }
   })
-  item.textContent = d
-  td.className = 'value'
-  td.appendChild(minusButton)
-  td.appendChild(span)
   td.appendChild(plusButton)
-  tr.appendChild(item)
-  tr.appendChild(td)
   return tr
 }
 const appendBuildingTable = () => {
@@ -212,13 +283,6 @@ const appendBuildingTable = () => {
   })
 }
 const commoditiesObject = {}
-const commoditiesNameList = [
-  'Grain',
-  'Livestock',
-  'Fruit',
-  'Wool',
-  'Timber'
-]
 const commodities = document.createElement`table`
 const generateCommoditiesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -420,36 +484,6 @@ const pushCanvas = () => {
   camvasMain()
 }
 const main = () => {
-  const convertObject = {
-    [buildingNameList[0]]: {
-      in: {[commoditiesNameList[3]]: 2},
-      out: {Fabric: 1}
-    }, [buildingNameList[1]]: {
-      in: {Fabric: 2},
-      out: {Clothing: 1}
-    }, [buildingNameList[2]]: {
-      in: {[commoditiesNameList[4]]: 2},
-      out: {Lumber: 1}
-    }, [buildingNameList[3]]: {
-      in: {Lumber: 2},
-      out: {Furniture: 1}
-    }, [buildingNameList[4]]: {
-      in: {Coal: 1, Iron: 1},
-      out: {Steel: 1}
-    }, [buildingNameList[5]]: {
-      in: {Steel: 2},
-      out: {Hardware: 1}
-    }, [buildingNameList[6]]: {
-      in: {Oil: 2},
-      out: {Fuel: 1}
-    }, [buildingNameList[7]]: {
-      in: {
-        [commoditiesNameList[0]]: 1,
-        [commoditiesNameList[1]]: 1,
-        [commoditiesNameList[2]]: 1
-      }, out: {'Canned Food': 1}
-    }
-  }
   const workingTime = 1e4
   workerList.forEach(k => {
     if (Object.keys(convertObject).some(ky => k.post === ky)) {
