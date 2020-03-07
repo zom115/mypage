@@ -1,4 +1,21 @@
 {'use strict'
+let imagePathList = [
+  'images/小麦アイコン.png'
+]
+let imageList = []
+const imgLoad = async () => {
+  return new Promise(async resolve => {
+    await Promise.all(imagePathList.map(async path => {
+      const imgPreload = new Image()
+      imgPreload.src = path
+      imgPreload.addEventListener('load', async e => {
+        console.log(e.path[0])
+        imageList.push(e.path[0])
+        resolve()
+      })
+    }))
+  })
+}
 const display = document.getElementById`display`
 const indicateView = document.createElement`div`
 indicateView.className = 'container'
@@ -71,22 +88,22 @@ const generateWorkerTableColumn = (d, v) => {
   tr.appendChild(td)
   return tr
 }
-{
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Worker'
-const value = document.createElement`th`
-value.textContent = 'value'
-indicateView.appendChild(worker)
-worker.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
-workerNameList.forEach(v => {
-  workerObject[v] = v === workerNameList[0] ? population : 0
-})
-Object.entries(workerObject).forEach(([k, v]) => {
-  worker.appendChild(generateWorkerTableColumn(k, v))
-})
+const appendWorkerTable = () => {
+  const tr = document.createElement`tr`
+  const th = document.createElement`th`
+  th.textContent = 'Worker'
+  const value = document.createElement`th`
+  value.textContent = 'value'
+  indicateView.appendChild(worker)
+  worker.appendChild(tr)
+  tr.appendChild(th)
+  tr.appendChild(value)
+  workerNameList.forEach(v => {
+    workerObject[v] = v === workerNameList[0] ? population : 0
+  })
+  Object.entries(workerObject).forEach(([k, v]) => {
+    worker.appendChild(generateWorkerTableColumn(k, v))
+  })
 }
 const buildingObject = {}
 const buildingNameList = [
@@ -144,22 +161,22 @@ const generateBuildingTableColumn = (d, v) => {
   tr.appendChild(td)
   return tr
 }
-{
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Building'
-const value = document.createElement`th`
-value.textContent = 'value'
-indicateView.appendChild(building)
-building.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
-buildingNameList.forEach(v => {
-  buildingObject[v] = 0
-})
-Object.entries(buildingObject).forEach(([k, v]) => {
-  building.appendChild(generateBuildingTableColumn(k, v))
-})
+const appendBuildingTable = () => {
+  const tr = document.createElement`tr`
+  const th = document.createElement`th`
+  th.textContent = 'Building'
+  const value = document.createElement`th`
+  value.textContent = 'value'
+  indicateView.appendChild(building)
+  building.appendChild(tr)
+  tr.appendChild(th)
+  tr.appendChild(value)
+  buildingNameList.forEach(v => {
+    buildingObject[v] = 0
+  })
+  Object.entries(buildingObject).forEach(([k, v]) => {
+    building.appendChild(generateBuildingTableColumn(k, v))
+  })
 }
 const commoditiesObject = {}
 const commoditiesNameList = [
@@ -173,31 +190,34 @@ const commodities = document.createElement`table`
 const generateCommoditiesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
+  if (d === commoditiesNameList[0]) item.appendChild(imageList[0])
+  tr.appendChild(item)
+  const span = document.createElement`span`
+  span.textContent = d
+  item.appendChild(span)
   const value = document.createElement`td`
-  item.textContent = d
   value.id = d
   value.className = 'value'
   value.textContent = v
-  tr.appendChild(item)
   tr.appendChild(value)
   return tr
 }
-{
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Commodities'
-const value = document.createElement`th`
-value.textContent = 'value'
-indicateView.appendChild(commodities)
-commodities.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
-commoditiesNameList.forEach(v => {
-  commoditiesObject[v] = 0
-})
-Object.entries(commoditiesObject).forEach(([k, v]) => {
-  commodities.appendChild(generateCommoditiesTableColumn(k, v))
-})
+const appendCommoditiesTable = () => {
+  const tr = document.createElement`tr`
+  const th = document.createElement`th`
+  th.textContent = 'Commodities'
+  const value = document.createElement`th`
+  value.textContent = 'value'
+  indicateView.appendChild(commodities)
+  commodities.appendChild(tr)
+  tr.appendChild(th)
+  tr.appendChild(value)
+  commoditiesNameList.forEach(v => {
+    commoditiesObject[v] = 0
+  })
+  Object.entries(commoditiesObject).forEach(([k, v]) => {
+    commodities.appendChild(generateCommoditiesTableColumn(k, v))
+  })
 }
 const elementUpdate = () => {
   Object.entries(buildingObject).forEach(([k, v]) => {
@@ -364,7 +384,6 @@ const pushCanvas = () => {
   }
   camvasMain()
 }
-pushCanvas()
 const main = () => {
   const convertObject = {
     [buildingNameList[0]]: {
@@ -402,7 +421,6 @@ const main = () => {
       if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
         return vl <= commoditiesObject[ky]
       })) {
-        console.log(k.timestamp)
         if (k.timestamp === 0) {
           k.timestamp = Date.now()
         }
@@ -420,11 +438,18 @@ const main = () => {
           k.timestamp = 0
           elementUpdate()
         }
-      } else {console.log('hello')
-        k.timestamp = 0}
+      } else k.timestamp = 0
     }
   })
   window.requestAnimationFrame(main)
 }
-main()
+const stream = async () => {
+  await imgLoad()
+  appendWorkerTable()
+  appendBuildingTable()
+  appendCommoditiesTable()
+  pushCanvas()
+  main()
+}
+stream()
 }
