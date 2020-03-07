@@ -119,6 +119,7 @@ const generateWorkerTableColumn = (d, v) => {
   }
   img.forEach(vl => item.appendChild(vl))
   const td = document.createElement`td`
+  td.className = 'value'
   const minusButton = document.createElement`button`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
@@ -140,19 +141,39 @@ const generateWorkerTableColumn = (d, v) => {
   td.appendChild(valuSpan)
   const plusButton = document.createElement`button`
   plusButton.textContent = '+'
-  plusButton.addEventListener('click', () => {
-    if (0 < workerObject[workerNameList[0]]) {
-      workerObject[workerNameList[0]] -= 1
-      workerObject[d] += 1
-      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {
-        post: d,
-        location: 0,
-        timestamp: 0
+  if (d === workerNameList[0]) {
+    plusButton.addEventListener('click', () => {
+      if (
+        0 < commoditiesObject['Canned Food'] &&
+        0 < commoditiesObject['Clothing'] &&
+        0 < commoditiesObject['Furniture']
+      ) {
+        commoditiesObject['Canned Food']--
+        commoditiesObject['Clothing']--
+        commoditiesObject['Furniture']--
+        workerObject['None']++
+        workerList.push({
+          post: workerNameList[0],
+          location: 0,
+          timestamp: 0
+        })
+        elementUpdate()
       }
-      elementUpdate()
-    }
-  })
-  td.className = 'value'
+    })
+  } else {
+    plusButton.addEventListener('click', () => {
+      if (0 < workerObject[workerNameList[0]]) {
+        workerObject[workerNameList[0]] -= 1
+        workerObject[d] += 1
+        workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {
+          post: d,
+          location: 0,
+          timestamp: 0
+        }
+        elementUpdate()
+      }
+    })
+  }
   td.appendChild(plusButton)
   tr.appendChild(td)
   return tr
