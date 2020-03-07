@@ -49,6 +49,7 @@ const generateWorkerTableColumn = (d, v) => {
     }
   })
   const plusButton = document.createElement`button`
+  plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
     if (0 < workerObject[workerNameList[0]]) {
       workerObject[workerNameList[0]] -= 1
@@ -61,7 +62,6 @@ const generateWorkerTableColumn = (d, v) => {
       elementUpdate()
     }
   })
-  plusButton.textContent = '+'
   item.textContent = d
   td.className = 'value'
   if (d !== workerNameList[0]) td.appendChild(minusButton)
@@ -113,18 +113,28 @@ const generateBuildingTableColumn = (d, v) => {
     if (0 < buildingObject[d]) {
       buildingObject[d] -= 1
       workerObject[workerNameList[0]] += 1
+      workerList[workerList.findIndex(va => va.post === d)] = {
+        post: workerNameList[0],
+        location: 0,
+        timestamp: 0
+      }
       elementUpdate()
     }
   })
   const plusButton = document.createElement`button`
+  plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
     if (0 < workerObject[workerNameList[0]]) {
       workerObject[workerNameList[0]] -= 1
       buildingObject[d] += 1
+      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {
+        post: d,
+        location: 0,
+        timestamp: 0
+      }
       elementUpdate()
     }
   })
-  plusButton.textContent = '+'
   item.textContent = d
   td.className = 'value'
   td.appendChild(minusButton)
@@ -405,4 +415,5 @@ const main = () => {
   window.requestAnimationFrame(main)
 }
 main()
+console.log(workerObject)
 }
