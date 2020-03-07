@@ -1,12 +1,48 @@
 {'use strict'
-let imagePathList = [
-  'images/小麦アイコン.png',
-  'images/肉の切り身のアイコン.png',
-  'images/リンゴアイコン6.png',
-  'images/ヒツジアイコン.png',
-  'images/木アイコン.png'
+const commoditiesNameList = [
+  'Grain',
+  'Livestock',
+  'Fruit',
+  'Wool',
+  'Timber',
+  'Coal',
+  'Iron',
+  'Gold',
+  'Gems',
+  'Oil',
+  'Canned Food',
+  'Fabric',
+  'Paper',
+  'Lumber',
+  'Steel',
+  'Fuel',
+  'Clothing',
+  'Furniture',
+  'Hardware'
 ]
-let imageList = []
+const imagePathList = [
+  '小麦アイコン.png',
+  '肉の切り身のアイコン.png',
+  'リンゴアイコン6.png',
+  'ヒツジアイコン.png',
+  '木アイコン.png',
+  'coal.png',
+  'iron.png',
+  'gold.png',
+  'gems.png',
+  '石油アイコン.png',
+  '空き缶アイコン2.png',
+  'fabric.png',
+  '白紙のドキュメントアイコン.png',
+  '丸太アイコン.png',
+  'steel.png',
+  '石油のアイコン.png',
+  'VネックTシャツの無料アイコン1.png',
+  'イスのアイコン9.png',
+  '金づちの無料アイコン.png',
+]
+imagePathList.forEach((v, i) => {imagePathList[i] = 'images/' + v})
+const imageList = []
 const imgLoad = async () => {
   return new Promise(async resolve => {
     await Promise.all(imagePathList.map(async (path, i) => {
@@ -149,13 +185,6 @@ const buildingNameList = [
   'Refinery',
   'Food Production'
 ]
-const commoditiesNameList = [
-  'Grain',
-  'Livestock',
-  'Fruit',
-  'Wool',
-  'Timber'
-]
 const convertObject = {
   [buildingNameList[0]]: {
     in: {[commoditiesNameList[3]]: 2},
@@ -288,7 +317,9 @@ const generateCommoditiesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   commoditiesNameList.forEach(vl => {
-    if (d === vl) item.appendChild(imageList[imageList.findIndex(val => d === val.alt)])
+    if (d === vl) {
+      item.appendChild(imageList[imageList.findIndex(val => d === val.alt)])
+    }
   })
   tr.appendChild(item)
   const span = document.createElement`span`
