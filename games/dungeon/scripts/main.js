@@ -54,10 +54,35 @@ const worker = document.createElement`table`
 const generateWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
+  const itemSpan = document.createElement`span`
+  tr.appendChild(item)
+  itemSpan.textContent = d
+  item.appendChild(itemSpan)
+  const space = document.createElement`span`
+  space.textContent = ' '
+  item.appendChild(space)
+  const img = []
+  if (d === workerNameList[1]) {
+    const grain = new Image()
+    grain.src = imagePathList[0]
+    img.push(grain)
+    const fruit = new Image()
+    fruit.src = imagePathList[2]
+    img.push(fruit)
+  } else if (d === workerNameList[2]) {
+    const livestock = new Image()
+    livestock.src = imagePathList[1]
+    img.push(livestock)
+    const wool = new Image()
+    wool.src = imagePathList[3]
+    img.push(wool)
+  } else if (d === workerNameList[3]) {
+    const timber = new Image()
+    timber.src = imagePathList[4]
+    img.push(timber)
+  }
+  img.forEach(vl => item.appendChild(vl))
   const td = document.createElement`td`
-  const span = document.createElement`span`
-  span.id = d
-  span.textContent = v
   const minusButton = document.createElement`button`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
@@ -72,6 +97,11 @@ const generateWorkerTableColumn = (d, v) => {
       elementUpdate()
     }
   })
+  if (d !== workerNameList[0]) td.appendChild(minusButton)
+  const valuSpan = document.createElement`span`
+  valuSpan.id = d
+  valuSpan.textContent = v
+  td.appendChild(valuSpan)
   const plusButton = document.createElement`button`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
@@ -86,12 +116,8 @@ const generateWorkerTableColumn = (d, v) => {
       elementUpdate()
     }
   })
-  item.textContent = d
   td.className = 'value'
-  if (d !== workerNameList[0]) td.appendChild(minusButton)
-  td.appendChild(span)
   td.appendChild(plusButton)
-  tr.appendChild(item)
   tr.appendChild(td)
   return tr
 }
@@ -198,8 +224,7 @@ const generateCommoditiesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   commoditiesNameList.forEach(vl => {
-    if (d === vl) {
-      item.appendChild(imageList[imageList.findIndex(val => d === val.alt)])}
+    if (d === vl) item.appendChild(imageList[imageList.findIndex(val => d === val.alt)])
   })
   tr.appendChild(item)
   const span = document.createElement`span`
