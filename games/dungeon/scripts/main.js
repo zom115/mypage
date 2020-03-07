@@ -286,6 +286,7 @@ const pushCanvas = () => {
   const workTime = 4e3
   const fn = () => {
     workerList.forEach((v, i) => {
+      if (buildingNameList.some(va => {return v.post === va})) return
       if (
         v.timestamp === 0 ||
         v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
@@ -395,44 +396,34 @@ const main = () => {
       }, out: {'Canned Food': 1}
     }
   }
+  const workingTime = 1e4
   workerList.forEach(k => {
-    if (
-      Object.keys(convertObject).some(ky => k.post === ky) &&
-      0 < buildingObject[k.post] &&
-      Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
+    if (Object.keys(convertObject).some(ky => k.post === ky)) {
+      if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
         return vl <= commoditiesObject[ky]
-      })
-    ) {
-      Object.entries(convertObject[k.post].in).forEach(([ky, vl]) => {
-        commoditiesObject[ky] -= vl
-      })
-      Object.entries(convertObject[k.post].out).forEach(([ky, vl]) => {
-        if (commoditiesObject[ky] === undefined) {
-          commoditiesObject[ky] = 0
-          commodities.appendChild(generateCommoditiesTableColumn(ky, 0))
+      })) {
+        console.log(k.timestamp)
+        if (k.timestamp === 0) {
+          k.timestamp = Date.now()
         }
-        commoditiesObject[ky] += vl
-        elementUpdate()
-      })
+        if (k.timestamp + workingTime <= Date.now()) { // completed task
+          Object.entries(convertObject[k.post].in).forEach(([ky, vl]) => {
+            commoditiesObject[ky] -= vl
+          })
+          Object.entries(convertObject[k.post].out).forEach(([ky, vl]) => {
+            if (commoditiesObject[ky] === undefined) {
+              commoditiesObject[ky] = 0
+              commodities.appendChild(generateCommoditiesTableColumn(ky, 0))
+            }
+            commoditiesObject[ky] += vl
+          })
+          k.timestamp = 0
+          elementUpdate()
+        }
+      } else {console.log('hello')
+        k.timestamp = 0}
     }
   })
-  // Object.entries(convertObject).forEach(([key, val], i) => {
-  //   if (0 < buildingObject[key] && Object.entries(val.in).every(([ky, vl]) => {
-  //     return vl <= commoditiesObject[ky]
-  //   })) {
-  //     Object.entries(val.in).forEach(([ky, vl]) => {
-  //       commoditiesObject[ky] -= vl
-  //     })
-  //     Object.entries(val.out).forEach(([ky, vl]) => {
-  //       if (commoditiesObject[ky] === undefined) {
-  //         commoditiesObject[ky] = 0
-  //         commodities.appendChild(generateCommoditiesTableColumn(ky, 0))
-  //       }
-  //       commoditiesObject[ky] += vl
-  //       elementUpdate()
-  //     })
-  //   }
-  // })
   window.requestAnimationFrame(main)
 }
 main()
