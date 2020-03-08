@@ -87,7 +87,7 @@ for (let i = 0; i < population; i++) {
   })
 }
 const worker = document.createElement`table`
-const generateWorkerTableColumn = (d, v) => {
+const createWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   const itemSpan = document.createElement`span`
@@ -192,7 +192,7 @@ const appendWorkerTable = () => {
     workerObject[v] = v === workerNameList[0] ? population : 0
   })
   Object.entries(workerObject).forEach(([k, v]) => {
-    worker.appendChild(generateWorkerTableColumn(k, v))
+    worker.appendChild(createWorkerTableColumn(k, v))
   })
 }
 const buildingObject = {}
@@ -237,7 +237,7 @@ const convertObject = {
   }
 }
 const building = document.createElement`table`
-const generateBuildingTableColumn = (d, v) => {
+const createBuildingTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   tr.appendChild(item)
@@ -329,12 +329,12 @@ const appendBuildingTable = () => {
     buildingObject[v] = 0
   })
   Object.entries(buildingObject).forEach(([k, v]) => {
-    building.appendChild(generateBuildingTableColumn(k, v))
+    building.appendChild(createBuildingTableColumn(k, v))
   })
 }
 const commoditiesObject = {}
 const commodities = document.createElement`table`
-const generateCommoditiesTableColumn = (d, v) => {
+const createCommoditiesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   commoditiesNameList.forEach(vl => {
@@ -367,7 +367,7 @@ const appendCommoditiesTable = () => {
     commoditiesObject[v] = 0
   })
   Object.entries(commoditiesObject).forEach(([k, v]) => {
-    commodities.appendChild(generateCommoditiesTableColumn(k, v))
+    commodities.appendChild(createCommoditiesTableColumn(k, v))
   })
 }
 const elementUpdate = () => {
@@ -402,7 +402,7 @@ menuView.appendChild(terrain)
 terrain.appendChild(tr)
 tr.appendChild(th)
 tr.appendChild(value)
-const generateTableColumn = d => {
+const createTableColumn = d => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   const td = document.createElement`td`
@@ -418,7 +418,7 @@ const generateTableColumn = d => {
   return tr
 }
 terrainNameList.forEach(v => {
-  terrain.appendChild(generateTableColumn(v))
+  terrain.appendChild(createTableColumn(v))
 })
 }
 const size = 16
@@ -552,7 +552,7 @@ const main = () => {
           Object.entries(convertObject[k.post].out).forEach(([ky, vl]) => {
             if (commoditiesObject[ky] === undefined) {
               commoditiesObject[ky] = 0
-              commodities.appendChild(generateCommoditiesTableColumn(ky, 0))
+              commodities.appendChild(createCommoditiesTableColumn(ky, 0))
             }
             commoditiesObject[ky] += vl
           })
