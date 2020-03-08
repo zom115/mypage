@@ -79,12 +79,15 @@ const workerNameList = [
 ]
 let population = 5
 const workerList = []
-for (let i = 0; i < population; i++) {
-  workerList.push({
-    post: workerNameList[0],
+const createWorker = p => {
+  return {
+    post: p,
     location: 0,
     timestamp: 0
-  })
+  }
+}
+for (let i = 0; i < population; i++) {
+  workerList.push(createWorker(workerNameList[0]))
 }
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
@@ -126,11 +129,7 @@ const createWorkerTableColumn = (d, v) => {
     if (0 < workerObject[d]) {
       workerObject[d] -= 1
       workerObject[workerNameList[0]] += 1
-      workerList[workerList.findIndex(va => va.post === d)] = {
-        post: workerNameList[0],
-        location: 0,
-        timestamp: 0
-      }
+      workerList[workerList.findIndex(va => va.post === d)] = createWorker(workerNameList[0])
       elementUpdate()
     }
   })
@@ -152,11 +151,7 @@ const createWorkerTableColumn = (d, v) => {
         commoditiesObject['Clothing']--
         commoditiesObject['Furniture']--
         workerObject['None']++
-        workerList.push({
-          post: workerNameList[0],
-          location: 0,
-          timestamp: 0
-        })
+        workerList.push(createWorker(workerNameList[0]))
         elementUpdate()
       }
     })
@@ -165,11 +160,7 @@ const createWorkerTableColumn = (d, v) => {
       if (0 < workerObject[workerNameList[0]]) {
         workerObject[workerNameList[0]] -= 1
         workerObject[d] += 1
-        workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {
-          post: d,
-          location: 0,
-          timestamp: 0
-        }
+        workerList[workerList.findIndex(va => va.post === workerNameList[0])] = createWorker(d)
         elementUpdate()
       }
     })
@@ -285,11 +276,7 @@ const createBuildingTableColumn = (d, v) => {
     if (0 < buildingObject[d]) {
       buildingObject[d] -= 1
       workerObject[workerNameList[0]] += 1
-      workerList[workerList.findIndex(va => va.post === d)] = {
-        post: workerNameList[0],
-        location: 0,
-        timestamp: 0
-      }
+      workerList[workerList.findIndex(va => va.post === d)] = createWorker(workerNameList[0])
       elementUpdate()
     }
   })
@@ -304,11 +291,7 @@ const createBuildingTableColumn = (d, v) => {
     if (0 < workerObject[workerNameList[0]]) {
       workerObject[workerNameList[0]] -= 1
       buildingObject[d] += 1
-      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = {
-        post: d,
-        location: 0,
-        timestamp: 0
-      }
+      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = createWorker(d)
       elementUpdate()
     }
   })
