@@ -403,6 +403,7 @@ const elementUpdate = () => {
   Object.entries(commoditiesObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
+  workerList.forEach(v => personalViewUpdate(v))
 }
 const terrainList = ['Town']
 const terrainNameList = [
@@ -522,9 +523,8 @@ const pushCanvas = () => {
         terrainNameList.forEach((val, ind) => {
           if (terrainListObject[canvas.id][v.location] === val) {
             commoditiesObject[commoditiesNameList[ind]]++
-            elementUpdate()
             v.fullness--
-            personalViewUpdate(v)
+            elementUpdate()
           }
         })
         // set location
