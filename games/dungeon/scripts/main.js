@@ -121,13 +121,13 @@ const createWorkerTableColumn = (d, v) => {
   const img = []
   if (d === workerNameList[0]) {
     const can = new Image()
-    can.src = commoditiesImagePathList[10]
+    can.src = commoditiesImagePathList[11]
     img.push(can)
     const clothing = new Image()
-    clothing.src = commoditiesImagePathList[16]
+    clothing.src = commoditiesImagePathList[17]
     img.push(clothing)
     const furniture = new Image()
-    furniture.src = commoditiesImagePathList[17]
+    furniture.src = commoditiesImagePathList[18]
     img.push(furniture)
     const span = document.createElement`span`
     span.textContent = ' = '
