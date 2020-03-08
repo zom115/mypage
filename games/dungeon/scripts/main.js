@@ -10,6 +10,7 @@ const commoditiesNameList = [
   'Gold',
   'Gems',
   'Oil',
+  'Cuisine',
   'Canned Food',
   'Fabric',
   'Paper',
@@ -31,6 +32,7 @@ const commoditiesImagePathList = [
   'gold',
   'gems',
   '石油アイコン',
+  'フォークとナイフのお食事アイコン素材',
   '空き缶アイコン2',
   'fabric',
   '白紙のドキュメントアイコン',
@@ -218,6 +220,7 @@ const appendWorkerTable = () => {
 }
 const buildingObject = {}
 const buildingNameList = [
+  'Canteen',
   'Textile Mill',
   'Clothing Factory',
   'Lumber Mill',
@@ -229,27 +232,34 @@ const buildingNameList = [
 ]
 const convertObject = {
   [buildingNameList[0]]: {
+    in: {
+      [commoditiesNameList[0]]: 14,
+      [commoditiesNameList[1]]: 7,
+      [commoditiesNameList[2]]: 8,
+    },
+    out: {Cuisine: 1e3}
+  }, [buildingNameList[1]]: {
     in: {[commoditiesNameList[3]]: 2},
     out: {Fabric: 1}
-  }, [buildingNameList[1]]: {
+  }, [buildingNameList[2]]: {
     in: {Fabric: 2},
     out: {Clothing: 1}
-  }, [buildingNameList[2]]: {
+  }, [buildingNameList[3]]: {
     in: {[commoditiesNameList[4]]: 2},
     out: {Lumber: 1}
-  }, [buildingNameList[3]]: {
+  }, [buildingNameList[4]]: {
     in: {Lumber: 2},
     out: {Furniture: 1}
-  }, [buildingNameList[4]]: {
+  }, [buildingNameList[5]]: {
     in: {Coal: 1, Iron: 1},
     out: {Steel: 1}
-  }, [buildingNameList[5]]: {
+  }, [buildingNameList[6]]: {
     in: {Steel: 2},
     out: {Hardware: 1}
-  }, [buildingNameList[6]]: {
+  }, [buildingNameList[7]]: {
     in: {Oil: 2},
     out: {Fuel: 1}
-  }, [buildingNameList[7]]: {
+  }, [buildingNameList[8]]: {
     in: {
       [commoditiesNameList[0]]: 1,
       [commoditiesNameList[1]]: 1,
