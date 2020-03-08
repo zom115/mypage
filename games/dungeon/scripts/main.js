@@ -86,15 +86,24 @@ const workerNameList = [
 ]
 let population = 5
 const workerList = []
-const createWorker = p => {
+let workerId = -1
+const createWorkerFirst = p => {
+  workerId++
   return {
-    post: p,
+    fullness: 100,
+    id: workerId,
     location: 0,
-    timestamp: 0
+    post: p,
+    timestamp: 0,
   }
 }
+const setJob = (worker, post) => {
+  worker.location = 0
+  worker.post = post
+  worker.timestamp = 0
+}
 for (let i = 0; i < population; i++) {
-  workerList.push(createWorker(workerNameList[0]))
+  workerList.push(createWorkerFirst(workerNameList[0]))
 }
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
@@ -150,7 +159,7 @@ const createWorkerTableColumn = (d, v) => {
     if (0 < workerObject[d]) {
       workerObject[d] -= 1
       workerObject[workerNameList[0]] += 1
-      workerList[workerList.findIndex(va => va.post === d)] = createWorker(workerNameList[0])
+      setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
       elementUpdate()
     }
   })
@@ -172,7 +181,7 @@ const createWorkerTableColumn = (d, v) => {
         commoditiesObject['Clothing']--
         commoditiesObject['Furniture']--
         workerObject['None']++
-        workerList.push(createWorker(workerNameList[0]))
+        workerList.push(createWorkerFirst(workerNameList[0]))
         elementUpdate()
       }
     })
@@ -181,7 +190,7 @@ const createWorkerTableColumn = (d, v) => {
       if (0 < workerObject[workerNameList[0]]) {
         workerObject[workerNameList[0]] -= 1
         workerObject[d] += 1
-        workerList[workerList.findIndex(va => va.post === workerNameList[0])] = createWorker(d)
+        setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
         elementUpdate()
       }
     })
@@ -297,7 +306,7 @@ const createBuildingTableColumn = (d, v) => {
     if (0 < buildingObject[d]) {
       buildingObject[d] -= 1
       workerObject[workerNameList[0]] += 1
-      workerList[workerList.findIndex(va => va.post === d)] = createWorker(workerNameList[0])
+      setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
       elementUpdate()
     }
   })
@@ -312,7 +321,7 @@ const createBuildingTableColumn = (d, v) => {
     if (0 < workerObject[workerNameList[0]]) {
       workerObject[workerNameList[0]] -= 1
       buildingObject[d] += 1
-      workerList[workerList.findIndex(va => va.post === workerNameList[0])] = createWorker(d)
+      setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
       elementUpdate()
     }
   })
@@ -425,6 +434,39 @@ terrainNameList.forEach(v => {
   terrain.appendChild(createTableColumn(v))
 })
 }
+{
+const personalView = document.createElement`table`
+menuView.appendChild(personalView)
+const tr = document.createElement`tr`
+personalView.appendChild(tr)
+const post = document.createElement`th`
+post.textContent = 'Post'
+tr.appendChild(post)
+const fullness = document.createElement`th`
+fullness.textContent = 'Fullness'
+tr.appendChild(fullness)
+const appendPersonalTable = d => {
+  const tr = document.createElement`tr`
+  personalView.appendChild(tr)
+  const post = document.createElement`td`
+  post.id = `post-${d.id}`
+  post.textContent = d.post
+  tr.appendChild(post)
+  const fullness = document.createElement`td`
+  fullness.className = 'value'
+  tr.appendChild(fullness)
+  const progress = document.createElement`progress`
+  progress.id = `progress-${d.id}`
+  progress.max = 100
+  progress.value = d.fullness
+  fullness.appendChild(progress)
+}
+workerList.forEach(v => appendPersonalTable(v))
+}
+const personalViewUpdate = d => {
+  document.getElementById(`post-${d.id}`).textContent = d.post
+  document.getElementById(`progress-${d.id}`).value = d.fullness
+}
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
@@ -471,6 +513,8 @@ const pushCanvas = () => {
           if (terrainListObject[canvas.id][v.location] === val) {
             commoditiesObject[commoditiesNameList[ind]]++
             elementUpdate()
+            v.fullness--
+            personalViewUpdate(v)
           }
         })
         // set location
