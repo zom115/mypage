@@ -5,8 +5,8 @@ const resourcesNameList = [
   'Fruit',
   'Wool',
   'Timber',
-  'Coal',
   'Iron',
+  'Coal',
   'Gold',
   'Gems',
   'Oil',
@@ -35,8 +35,8 @@ const resourcesImagePathList = [
   'リンゴアイコン6',
   'ヒツジアイコン',
   '木アイコン',
-  'coal',
   'iron',
+  'coal',
   'gold',
   'gems',
   '石油アイコン',
@@ -501,13 +501,16 @@ const elementUpdate = () => {
   workerList.forEach(v => personalViewUpdate(v))
 }
 const terrainList = ['Town']
-const terrainNameList = [
-  'Farm',
-  'Open Range',
-  'Orchard',
-  'Fertile Hills',
-  'Forest'
-]
+const terrainProductObject = {
+  'Farm': 'Grain',
+  'Open Range': 'Livestock',
+  'Orchard': 'Fruit',
+  'Fertile Hills': 'Wool',
+  'Forest': 'Timber',
+  'Iron Mines': 'Iron',
+  'Coal Mines': 'Coal',
+  'Desert': 'Oil',
+}
 let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
 {
@@ -536,7 +539,7 @@ const createTableColumn = d => {
   button.addEventListener('click', () => terrainListObject[canvasSerector].push(d))
   return tr
 }
-terrainNameList.forEach(v => {
+Object.keys(terrainProductObject).forEach(v => {
   terrain.appendChild(createTableColumn(v))
 })
 }
@@ -614,16 +617,15 @@ const pushCanvas = () => {
         v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
       ) {
         // get resources
-        const productObject = {
-          Farm: 'Grain',
-          'Open Range': 'Livestock',
-          Orchard: 'Fruit',
-          'Fertile Hills': 'Wool',
-          Forest: 'Timber',
-        }
-        terrainNameList.forEach(val => {
+        Object.keys(terrainProductObject).forEach(val => {
           if (terrainListObject[canvas.id][v.location] === val) {
-            commoditiesObject[productObject[val]]++
+            if (terrainProductObject[val] === 'Iron' || terrainProductObject[val] === 'Coal') {
+              const goldDropRate = 1 / 2 ** 7
+              const gemsDropRate = 1 / 2 ** 9
+              if (1 / goldDropRate < Math.random()) commoditiesObject['Gold']++
+              if (1 / gemsDropRate < Math.random()) commoditiesObject['Gems']++
+            }
+            commoditiesObject[terrainProductObject[val]]++
             v.fullness -= v.location
             elementUpdate()
           }
@@ -632,15 +634,23 @@ const pushCanvas = () => {
         let n
         if (v.post === workerNameList[1]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === terrainNameList[0] || va === terrainNameList[2])
+            return v.location < ind && (va === 'Farm' || va === 'Orchard')
           })
         } else if (v.post === workerNameList[2]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === terrainNameList[1] || va === terrainNameList[3])
+            return v.location < ind && (va === 'Open Range' || va === 'Fertile Hills')
           })
         } else if (v.post === workerNameList[3]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === terrainNameList[4])
+            return v.location < ind && (va === 'Forest')
+          })
+        } else if (v.post === workerNameList[4]) {
+          n = terrainListObject[canvas.id].findIndex((va, ind) => {
+            return v.location < ind && (va === 'Iron Mines' || va === 'Coal Mines')
+          })
+        } else if (v.post === workerNameList[5]) {
+          n = terrainListObject[canvas.id].findIndex((va, ind) => {
+            return v.location < ind && (va === 'Desert')
           })
         }
         if (n === undefined || n === -1) {
