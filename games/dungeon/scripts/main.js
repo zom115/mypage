@@ -685,24 +685,34 @@ const pushCanvas = () => {
   const fn = () => {
     workerList.forEach((v, i) => {
       if (buildingNameList.some(va => {return v.post === va})) return
+      if (Date.now() - v.timestamp < moveTime + workTime &&
+        terrainListObject[canvas.id][v.location] === undefined
+      ) {
+        v.state = 'return'
+        if (Date.now() - v.timestamp < moveTime) {
+          v.timestamp -= workTime + (moveTime - Date.now() + v.timestamp) * 2
+        } else v.timestamp -= moveTime + workTime - Date.now() + v.timestamp
+      }
       if (
         v.timestamp === 0 ||
         v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
       ) {
         // get resources
-        Object.keys(terrainProductObject).forEach(val => {
-          if (terrainListObject[canvas.id][v.location] === val) {
-            if (terrainProductObject[val] === 'Iron' || terrainProductObject[val] === 'Coal') {
-              const goldDropRate = 1 / 2 ** 7
-              const gemsDropRate = 1 / 2 ** 9
-              if (1 / goldDropRate < Math.random()) commoditiesObject['Gold']++
-              if (1 / gemsDropRate < Math.random()) commoditiesObject['Gems']++
+        if (v.state !== 'return') {
+          Object.keys(terrainProductObject).forEach(val => {
+            if (terrainListObject[canvas.id][v.location] === val) {
+              if (terrainProductObject[val] === 'Iron' || terrainProductObject[val] === 'Coal') {
+                const goldDropRate = 1 / 2 ** 7
+                const gemsDropRate = 1 / 2 ** 9
+                if (1 / goldDropRate < Math.random()) commoditiesObject['Gold']++
+                if (1 / gemsDropRate < Math.random()) commoditiesObject['Gems']++
+              }
+              commoditiesObject[terrainProductObject[val]]++
+              v.fullness -= v.location
+              elementUpdate()
             }
-            commoditiesObject[terrainProductObject[val]]++
-            v.fullness -= v.location
-            elementUpdate()
-          }
-        })
+          })
+        } else v.state = null
         // set location
         let n
         if (v.post === workerNameList[1]) {
@@ -758,7 +768,7 @@ const pushCanvas = () => {
     workerList.forEach(v => {
       if (v.timestamp === 0) return
       context.fillStyle = 'cyan'
-      let elapsedTime = Date.now() - v.timestamp
+      const elapsedTime = Date.now() - v.timestamp
       const rate = elapsedTime < moveTime * v.location ?
       elapsedTime / moveTime :
       moveTime * v.location <= elapsedTime &&
