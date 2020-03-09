@@ -247,9 +247,15 @@ const createWorkerTableColumn = (d, v) => {
     const can = new Image()
     can.src = goodsImagePathList[1]
     img.push(can)
+    const pan = document.createElement`span`
+    pan.textContent = ' '
+    img.push(pan)
     const clothing = new Image()
     clothing.src = goodsImagePathList[2]
     img.push(clothing)
+    const sn = document.createElement`span`
+    sn.textContent = ' '
+    img.push(sn)
     const furniture = new Image()
     furniture.src = goodsImagePathList[3]
     img.push(furniture)
@@ -261,6 +267,9 @@ const createWorkerTableColumn = (d, v) => {
     const grain = new Image()
     grain.src = resourcesImagePathList[0]
     img.push(grain)
+    const span = document.createElement`span`
+    span.textContent = ' '
+    img.push(span)
     const fruit = new Image()
     fruit.src = resourcesImagePathList[2]
     img.push(fruit)
@@ -268,6 +277,9 @@ const createWorkerTableColumn = (d, v) => {
     const livestock = new Image()
     livestock.src = resourcesImagePathList[1]
     img.push(livestock)
+    const span = document.createElement`span`
+    span.textContent = ' '
+    img.push(span)
     const wool = new Image()
     wool.src = resourcesImagePathList[3]
     img.push(wool)
@@ -275,7 +287,19 @@ const createWorkerTableColumn = (d, v) => {
     const timber = new Image()
     timber.src = resourcesImagePathList[4]
     img.push(timber)
+  } else if (d === workerNameList[4]) {
+    const iron = new Image()
+    iron.src = resourcesImagePathList[5]
+    img.push(iron)
+    const coal = new Image()
+    coal.src = resourcesImagePathList[6]
+    img.push(coal)
+  } else if (d === workerNameList[5]) {
+    const oil = new Image()
+    oil.src = resourcesImagePathList[9]
+    img.push(oil)
   }
+  console.log(img)
   img.forEach(vl => item.appendChild(vl))
   const td = document.createElement`td`
   td.className = 'value'
