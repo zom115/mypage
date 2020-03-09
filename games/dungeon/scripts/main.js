@@ -595,7 +595,28 @@ const pushCanvas = () => {
 }
 const main = () => {
   const workingTime = 1e4
+  const eatInterval = 200
   workerList.forEach(k => {
+    if (k.timestamp === 0 &&
+      k.fullness < 100 &&
+      0 < commoditiesObject[commoditiesNameList[10]]
+    ) {
+      k.state = 'eat'
+      k.timestamp = Date.now()
+    }
+    if (k.state === 'eat') {
+      if (Date.now() - k.timestamp <= eatInterval) return
+      if (k.fullness < 100 && 0 < commoditiesObject[commoditiesNameList[10]]) {
+        commoditiesObject[commoditiesNameList[10]]--
+        k.fullness++
+        k.timestamp += eatInterval
+        elementUpdate()
+        return
+      } else {
+        k.state = null
+        k.timestamp = 0
+      }
+    }
     if (Object.keys(convertObject).some(ky => k.post === ky)) {
       if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
         return vl <= commoditiesObject[ky]
