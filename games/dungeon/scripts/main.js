@@ -88,14 +88,16 @@ const workerNameList = [
 ]
 let population = 5
 const workerList = []
+const fullnessMax = 100
 let workerId = -1
 const createWorkerFirst = p => {
   workerId++
   return {
-    fullness: 100,
+    fullness: fullnessMax,
     id: workerId,
     location: 0,
     post: p,
+    state: null,
     timestamp: 0,
   }
 }
@@ -184,6 +186,7 @@ const createWorkerTableColumn = (d, v) => {
         commoditiesObject['Furniture']--
         workerObject['None']++
         workerList.push(createWorkerFirst(workerNameList[0]))
+        appendPersonalTable(workerList[workerList.length - 1])
         elementUpdate()
       }
     })
@@ -445,7 +448,6 @@ terrainNameList.forEach(v => {
   terrain.appendChild(createTableColumn(v))
 })
 }
-{
 const personalView = document.createElement`table`
 menuView.appendChild(personalView)
 const tr = document.createElement`tr`
@@ -473,7 +475,6 @@ const appendPersonalTable = d => {
   fullness.appendChild(progress)
 }
 workerList.forEach(v => appendPersonalTable(v))
-}
 const personalViewUpdate = d => {
   document.getElementById(`post-${d.id}`).textContent = d.post
   document.getElementById(`progress-${d.id}`).value = d.fullness
@@ -523,7 +524,7 @@ const pushCanvas = () => {
         terrainNameList.forEach((val, ind) => {
           if (terrainListObject[canvas.id][v.location] === val) {
             commoditiesObject[commoditiesNameList[ind]]++
-            v.fullness--
+            v.fullness -= v.location
             elementUpdate()
           }
         })
@@ -593,13 +594,19 @@ const pushCanvas = () => {
   }
   camvasMain()
 }
+let decreaseTime = 0
 const main = () => {
   const workingTime = 1e4
+  const hungerInterval = 6e3
   const eatInterval = 200
+  if (hungerInterval <= Date.now() - decreaseTime) {
+    workerList.forEach(v => v.fullness--)
+    decreaseTime += hungerInterval
+    elementUpdate()
+  }
   workerList.forEach((k, i) => {
-    if (k.fullness <= 0) workerList.splice(i, 1)
     if (k.timestamp === 0 &&
-      k.fullness < 100 &&
+      k.fullness < fullnessMax &&
       0 < commoditiesObject[commoditiesNameList[10]]
     ) {
       k.state = 'eat'
@@ -618,6 +625,7 @@ const main = () => {
         k.timestamp = 0
       }
     }
+    if (k.fullness <= 0) workerList.splice(i, 1)
     if (Object.keys(convertObject).some(ky => k.post === ky)) {
       if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
         return vl <= commoditiesObject[ky]
@@ -637,6 +645,8 @@ const main = () => {
             commoditiesObject[ky] += vl
           })
           k.timestamp = 0
+          const rate = 10
+          k.fullness -= rate
           elementUpdate()
         }
       } else k.timestamp = 0
@@ -652,6 +662,7 @@ const stream = async () => {
   appendBuildingTable()
   appendCommoditiesTable()
   pushCanvas()
+  decreaseTime = Date.now()
   main()
 }
 stream()
