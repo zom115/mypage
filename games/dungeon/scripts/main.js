@@ -596,7 +596,8 @@ const pushCanvas = () => {
 const main = () => {
   const workingTime = 1e4
   const eatInterval = 200
-  workerList.forEach(k => {
+  workerList.forEach((k, i) => {
+    if (k.fullness <= 0) workerList.splice(i, 1)
     if (k.timestamp === 0 &&
       k.fullness < 100 &&
       0 < commoditiesObject[commoditiesNameList[10]]
