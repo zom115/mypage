@@ -403,6 +403,7 @@ const convertObject = {
     }, out: {[goodsNameList[1]]: 1}
   }
 }
+const buildingWorkTime = 1e4
 const building = document.createElement`table`
 const createBuildingTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -449,14 +450,21 @@ const createBuildingTableColumn = (d, v) => {
       rightSide.appendChild(span)
     }
   })
+  const progressTd = document.createElement`td`
+  tr.appendChild(progressTd)
+  const progress = document.createElement`progress`
+  progress.id = `buildingProgress-${d}`
+  progress.max = buildingWorkTime
+  progress.value = 0
+  progressTd.appendChild(progress)
   const td = document.createElement`td`
   td.className = 'value'
   tr.appendChild(td)
   const minusButton = document.createElement`button`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
-    if (0 < buildingObject[d]) {
-      buildingObject[d] -= 1
+    if (0 < buildingObject[d].value) {
+      buildingObject[d].value -= 1
       workerObject[workerNameList[0]] += 1
       setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
       elementUpdate()
@@ -472,7 +480,7 @@ const createBuildingTableColumn = (d, v) => {
   plusButton.addEventListener('click', () => {
     if (0 < workerObject[workerNameList[0]]) {
       workerObject[workerNameList[0]] -= 1
-      buildingObject[d] += 1
+      buildingObject[d].value += 1
       setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
       elementUpdate()
     }
@@ -493,27 +501,40 @@ const appendBuildingTable = () => {
   tr.appendChild(productTh)
   const dummyTh = document.createElement`th`
   tr.appendChild(dummyTh)
+  const progressTh = document.createElement`th`
+  progressTh.textContent = 'Progress'
+  tr.appendChild(progressTh)
   const value = document.createElement`th`
   value.textContent = 'value'
   tr.appendChild(value)
   buildingNameList.forEach(v => {
-    buildingObject[v] = 0
+    buildingObject[v] = {}
+    buildingObject[v].value = 0
+    buildingObject[v].timestamp = 0
   })
   Object.entries(buildingObject).forEach(([k, v]) => {
-    building.appendChild(createBuildingTableColumn(k, v))
+    building.appendChild(createBuildingTableColumn(k, v.value))
   })
+}
+const buildingProgressUpdate = d => {
+  document.getElementById(`buildingProgress-${d}`).value =
+  workerList.reduce((acc, cur) => {
+    if (cur.post === d && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+    else return acc
+  }, 0)
 }
 const elementUpdate = () => {
   Object.entries(commoditiesObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
   Object.entries(buildingObject).forEach(([k, v]) => {
-    document.getElementById(k).textContent = v
+    document.getElementById(k).textContent = v.value
   })
   Object.entries(workerObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
   workerList.forEach(v => personalViewUpdate(v))
+  buildingNameList.forEach(v => buildingProgressUpdate(v))
 }
 const terrainList = ['Town']
 const terrainProductObject = {
@@ -721,13 +742,11 @@ const pushCanvas = () => {
 }
 let decreaseTime = 0
 const main = () => {
-  const workingTime = 1e4
   const hungerInterval = 6e3
   const eatInterval = 200
   if (hungerInterval <= Date.now() - decreaseTime) {
     workerList.forEach(v => v.fullness--)
     decreaseTime += hungerInterval
-    elementUpdate()
   }
   workerList.forEach((k, i) => {
     if (k.timestamp === 0 &&
@@ -743,7 +762,6 @@ const main = () => {
         commoditiesObject['Cuisine']--
         k.fullness++
         k.timestamp += eatInterval
-        elementUpdate()
         return
       } else {
         k.state = null
@@ -752,19 +770,21 @@ const main = () => {
     }
     if (k.fullness <= 0) {
       if (workerNameList.some(v => v === k.post)) workerObject[k.post]--
-      else if (buildingNameList.some(v => v === k.post)) buildingObject[k.post]--
+      else if (buildingNameList.some(v => v === k.post)) buildingObject[k.post].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
-      elementUpdate()
     }
     if (Object.keys(convertObject).some(ky => k.post === ky)) {
       if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
         return vl <= commoditiesObject[ky]
       })) {
-        if (k.timestamp === 0) {
-          k.timestamp = Date.now()
-        }
-        if (k.timestamp + workingTime <= Date.now()) { // completed task
+        if (buildingObject[k.post].timestamp === 0) buildingObject[k.post].timestamp = Date.now()
+        if (k.timestamp === 0) k.timestamp = Date.now()
+        if (buildingWorkTime <= workerList.reduce((acc, cur) => {
+            if (cur.post === k.post && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+            else return acc
+          }, 0)
+        ) { // task completed
           Object.entries(convertObject[k.post].in).forEach(([ky, vl]) => {
             commoditiesObject[ky] -= vl
           })
@@ -772,13 +792,25 @@ const main = () => {
             commoditiesObject[ky] += vl
           })
           k.timestamp = 0
+          const number = workerList.reduce((acc, cur) => {
+            console.log(cur.post, k.post)
+            if (cur.post === k.post) return ++acc
+            else return acc
+          }, 0)
           const rate = 10
-          k.fullness -= rate
-          elementUpdate()
+          console.log(Math.floor(rate / number), rate, number)
+          workerList.forEach(v => {
+            if (v.post === k.post) v.fullness -= Math.floor(rate / number)
+          })
+          // k.fullness -= rate
         }
-      } else k.timestamp = 0
+      } else {
+        buildingObject[k.post].timestamp = 0
+        k.timestamp = 0
+      }
     }
   })
+  elementUpdate()
   window.requestAnimationFrame(main)
 }
 const stream = async () => {
