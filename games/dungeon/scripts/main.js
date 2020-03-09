@@ -409,8 +409,11 @@ const createBuildingTableColumn = (d, v) => {
   const item = document.createElement`td`
   item.textContent = d
   tr.appendChild(item)
-  const product = document.createElement`td`
-  tr.appendChild(product)
+  const leftSide = document.createElement`td`
+  leftSide.className = 'value'
+  tr.appendChild(leftSide)
+  const rightSide = document.createElement`td`
+  tr.appendChild(rightSide)
   Object.entries(convertObject[d].in).forEach(([k, vl]) => {
     const img = new Image()
     if (resourcesNameList.findIndex(va => va === k) !== -1) {
@@ -420,16 +423,16 @@ const createBuildingTableColumn = (d, v) => {
     } else if (goodsNameList.findIndex(va => va === k) !== -1) {
       img.src = goodsImagePathList[goodsNameList.findIndex(va => va === k)]
     }
-    product.appendChild(img)
+    leftSide.appendChild(img)
     if (1 < vl) {
       const span = document.createElement`span`
       span.textContent = `*${vl}`
-      product.appendChild(span)
+      leftSide.appendChild(span)
     }
   })
   const equalSpan = document.createElement`span`
   equalSpan.textContent = ' = '
-  product.appendChild(equalSpan)
+  rightSide.appendChild(equalSpan)
   Object.entries(convertObject[d].out).forEach(([k, vl]) => {
     const img = new Image()
     if (resourcesNameList.findIndex(va => va === k) !== -1) {
@@ -439,11 +442,11 @@ const createBuildingTableColumn = (d, v) => {
     } else if (goodsNameList.findIndex(va => va === k) !== -1) {
       img.src = goodsImagePathList[goodsNameList.findIndex(va => va === k)]
     }
-    product.appendChild(img)
+    rightSide.appendChild(img)
     if (1 < vl) {
       const span = document.createElement`span`
       span.textContent = `*${vl}`
-      product.appendChild(span)
+      rightSide.appendChild(span)
     }
   })
   const td = document.createElement`td`
@@ -486,7 +489,10 @@ const appendBuildingTable = () => {
   tr.appendChild(buildingTh)
   const productTh = document.createElement`th`
   productTh.textContent = 'Products'
+  productTh.className = 'value'
   tr.appendChild(productTh)
+  const dummyTh = document.createElement`th`
+  tr.appendChild(dummyTh)
   const value = document.createElement`th`
   value.textContent = 'value'
   tr.appendChild(value)
