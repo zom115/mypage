@@ -234,28 +234,19 @@ for (let i = 0; i < population; i++) {
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
-  const item = document.createElement`td`
-  const itemSpan = document.createElement`span`
-  tr.appendChild(item)
-  itemSpan.textContent = d
-  item.appendChild(itemSpan)
-  const space = document.createElement`span`
-  space.textContent = ' '
-  item.appendChild(space)
+  const itemTd = document.createElement`td`
+  itemTd.textContent = d
+  tr.appendChild(itemTd)
+  const productTd = document.createElement`td`
+  tr.appendChild(productTd)
   const img = []
   if (d === workerNameList[0]) {
     const can = new Image()
     can.src = goodsImagePathList[1]
     img.push(can)
-    const pan = document.createElement`span`
-    pan.textContent = ' '
-    img.push(pan)
     const clothing = new Image()
     clothing.src = goodsImagePathList[2]
     img.push(clothing)
-    const sn = document.createElement`span`
-    sn.textContent = ' '
-    img.push(sn)
     const furniture = new Image()
     furniture.src = goodsImagePathList[3]
     img.push(furniture)
@@ -267,9 +258,6 @@ const createWorkerTableColumn = (d, v) => {
     const grain = new Image()
     grain.src = resourcesImagePathList[0]
     img.push(grain)
-    const span = document.createElement`span`
-    span.textContent = ' '
-    img.push(span)
     const fruit = new Image()
     fruit.src = resourcesImagePathList[2]
     img.push(fruit)
@@ -277,9 +265,6 @@ const createWorkerTableColumn = (d, v) => {
     const livestock = new Image()
     livestock.src = resourcesImagePathList[1]
     img.push(livestock)
-    const span = document.createElement`span`
-    span.textContent = ' '
-    img.push(span)
     const wool = new Image()
     wool.src = resourcesImagePathList[3]
     img.push(wool)
@@ -299,8 +284,7 @@ const createWorkerTableColumn = (d, v) => {
     oil.src = resourcesImagePathList[9]
     img.push(oil)
   }
-  console.log(img)
-  img.forEach(vl => item.appendChild(vl))
+  img.forEach(vl => productTd.appendChild(vl))
   const td = document.createElement`td`
   td.className = 'value'
   const minusButton = document.createElement`button`
@@ -351,14 +335,17 @@ const createWorkerTableColumn = (d, v) => {
   return tr
 }
 const appendWorkerTable = () => {
+  indicateView.appendChild(worker)
   const tr = document.createElement`tr`
-  const th = document.createElement`th`
-  th.textContent = 'Worker'
+  worker.appendChild(tr)
+  const jobTh = document.createElement`th`
+  jobTh.textContent = 'Job'
+  tr.appendChild(jobTh)
+  const productTh = document.createElement`th`
+  productTh.textContent = 'Products'
+  tr.appendChild(productTh)
   const value = document.createElement`th`
   value.textContent = 'value'
-  indicateView.appendChild(worker)
-  worker.appendChild(tr)
-  tr.appendChild(th)
   tr.appendChild(value)
   workerNameList.forEach(v => {
     workerObject[v] = v === workerNameList[0] ? population : 0
@@ -420,15 +407,10 @@ const building = document.createElement`table`
 const createBuildingTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
+  item.textContent = d
   tr.appendChild(item)
-  const itemSpan = document.createElement`span`
-  itemSpan.textContent = d
-  item.appendChild(itemSpan)
-  const space = document.createElement`span`
-  space.textContent = ' '
-  item.appendChild(space)
-  const imgSpan = document.createElement`span`
-  item.appendChild(imgSpan)
+  const product = document.createElement`td`
+  tr.appendChild(product)
   Object.entries(convertObject[d].in).forEach(([k, vl]) => {
     const img = new Image()
     if (resourcesNameList.findIndex(va => va === k) !== -1) {
@@ -438,16 +420,16 @@ const createBuildingTableColumn = (d, v) => {
     } else if (goodsNameList.findIndex(va => va === k) !== -1) {
       img.src = goodsImagePathList[goodsNameList.findIndex(va => va === k)]
     }
-    imgSpan.appendChild(img)
+    product.appendChild(img)
     if (1 < vl) {
       const span = document.createElement`span`
       span.textContent = `*${vl}`
-      imgSpan.appendChild(span)
+      product.appendChild(span)
     }
   })
   const equalSpan = document.createElement`span`
   equalSpan.textContent = ' = '
-  imgSpan.appendChild(equalSpan)
+  product.appendChild(equalSpan)
   Object.entries(convertObject[d].out).forEach(([k, vl]) => {
     const img = new Image()
     if (resourcesNameList.findIndex(va => va === k) !== -1) {
@@ -457,11 +439,11 @@ const createBuildingTableColumn = (d, v) => {
     } else if (goodsNameList.findIndex(va => va === k) !== -1) {
       img.src = goodsImagePathList[goodsNameList.findIndex(va => va === k)]
     }
-    imgSpan.appendChild(img)
+    product.appendChild(img)
     if (1 < vl) {
       const span = document.createElement`span`
       span.textContent = `*${vl}`
-      imgSpan.appendChild(span)
+      product.appendChild(span)
     }
   })
   const td = document.createElement`td`
@@ -496,14 +478,17 @@ const createBuildingTableColumn = (d, v) => {
   return tr
 }
 const appendBuildingTable = () => {
+  indicateView.appendChild(building)
   const tr = document.createElement`tr`
-  const th = document.createElement`th`
-  th.textContent = 'Building'
+  building.appendChild(tr)
+  const buildingTh = document.createElement`th`
+  buildingTh.textContent = 'Building'
+  tr.appendChild(buildingTh)
+  const productTh = document.createElement`th`
+  productTh.textContent = 'Products'
+  tr.appendChild(productTh)
   const value = document.createElement`th`
   value.textContent = 'value'
-  indicateView.appendChild(building)
-  building.appendChild(tr)
-  tr.appendChild(th)
   tr.appendChild(value)
   buildingNameList.forEach(v => {
     buildingObject[v] = 0
