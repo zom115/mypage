@@ -288,6 +288,7 @@ const createWorkerTableColumn = (d, v) => {
   const td = document.createElement`td`
   td.className = 'value'
   const minusButton = document.createElement`button`
+  minusButton.id = `minus-${d}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
     if (0 < workerObject[d]) {
@@ -303,6 +304,7 @@ const createWorkerTableColumn = (d, v) => {
   valuSpan.textContent = v
   td.appendChild(valuSpan)
   const plusButton = document.createElement`button`
+  plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
   if (d === workerNameList[0]) {
     plusButton.addEventListener('click', () => {
@@ -461,6 +463,7 @@ const createBuildingTableColumn = (d, v) => {
   td.className = 'value'
   tr.appendChild(td)
   const minusButton = document.createElement`button`
+  minusButton.id = `minus-${d}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
     if (0 < buildingObject[d].value) {
@@ -476,6 +479,7 @@ const createBuildingTableColumn = (d, v) => {
   valueSpan.textContent = v
   td.appendChild(valueSpan)
   const plusButton = document.createElement`button`
+  plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
     if (0 < workerObject[workerNameList[0]]) {
@@ -522,10 +526,6 @@ const buildingProgressUpdate = d => {
     progress.value = 0
     return
   }
-  console.log(workerList.reduce((acc, cur) => {
-    if (cur.post === d && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
-    else return acc
-  }, 0), buildingObject[d].value, Math.log2(1 + buildingObject[d].value))
   progress.value = workerList.reduce((acc, cur) => {
     if (cur.post === d && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
     else return acc
@@ -541,8 +541,34 @@ const elementUpdate = () => {
   Object.entries(workerObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
+  workerNameList.forEach(v => {
+    if (v === 'None') {
+      if (
+        0 < commoditiesObject['Canned Food'] &&
+        0 < commoditiesObject['Clothing'] &&
+        0 < commoditiesObject['Furniture']
+      ) {
+        document.getElementById(`plus-${v}`).disabled = false
+      } else document.getElementById(`plus-${v}`).disabled = true
+      return
+    }
+    if (workerObject[v] <= 0) {
+      document.getElementById(`minus-${v}`).disabled = true
+    } else document.getElementById(`minus-${v}`).disabled = false
+    if (workerObject['None'] <= 0) {
+      document.getElementById(`plus-${v}`).disabled = true
+    } else document.getElementById(`plus-${v}`).disabled = false
+  })
   workerList.forEach(v => personalViewUpdate(v))
-  buildingNameList.forEach(v => buildingProgressUpdate(v))
+  buildingNameList.forEach(v => {
+    if (buildingObject[v].value <= 0) {
+      document.getElementById(`minus-${v}`).disabled = true
+    } else document.getElementById(`minus-${v}`).disabled = false
+    if (workerObject['None'] <= 0) {
+      document.getElementById(`plus-${v}`).disabled = true
+    } else document.getElementById(`plus-${v}`).disabled = false
+    buildingProgressUpdate(v)
+  })
 }
 const terrainList = ['Town']
 const terrainProductObject = {
