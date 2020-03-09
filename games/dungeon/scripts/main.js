@@ -460,6 +460,7 @@ fullness.textContent = 'Fullness'
 tr.appendChild(fullness)
 const appendPersonalTable = d => {
   const tr = document.createElement`tr`
+  tr.id = `tr-${d.id}`
   personalView.appendChild(tr)
   const post = document.createElement`td`
   post.id = `post-${d.id}`
@@ -625,7 +626,13 @@ const main = () => {
         k.timestamp = 0
       }
     }
-    if (k.fullness <= 0) workerList.splice(i, 1)
+    if (k.fullness <= 0) {
+      if (workerNameList.some(v => v === k.post)) workerObject[k.post]--
+      else if (buildingNameList.some(v => v === k.post)) buildingObject[k.post]--
+      document.getElementById(`tr-${k.id}`).remove()
+      workerList.splice(i, 1)
+      elementUpdate()
+    }
     if (Object.keys(convertObject).some(ky => k.post === ky)) {
       if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
         return vl <= commoditiesObject[ky]
