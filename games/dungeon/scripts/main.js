@@ -25,6 +25,10 @@ const goodsNameList = [
   'Furniture',
   'Hardware',
 ]
+const commoditiesObject = {}
+resourcesNameList.forEach(v => commoditiesObject[v] = 0)
+materialsNameList.forEach(v => commoditiesObject[v] = 0)
+goodsNameList.forEach(v => commoditiesObject[v] = 0)
 const resourcesImagePathList = [
   '小麦アイコン',
   '肉の切り身のアイコン',
@@ -92,7 +96,6 @@ display.appendChild(canvasView)
 const menuView = document.createElement`div`
 menuView.className = 'container'
 display.appendChild(menuView)
-const resourcesObject = {}
 const resourcesTable = document.createElement`table`
 const createResourcesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -123,12 +126,10 @@ const appendResourcesTable = () => {
   const value = document.createElement`th`
   value.textContent = 'value'
   tr.appendChild(value)
-  resourcesNameList.forEach(v => resourcesObject[v] = 0)
-  Object.entries(resourcesObject).forEach(([k, v]) => {
-    resourcesTable.appendChild(createResourcesTableColumn(k, v))
+  resourcesNameList.forEach(v => {
+    resourcesTable.appendChild(createResourcesTableColumn(v, 0))
   })
 }
-const materialsObject = {}
 const materialsTable = document.createElement`table`
 const createMaterialsTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -159,12 +160,11 @@ const appendMaterialsTable = () => {
   const value = document.createElement`th`
   value.textContent = 'value'
   tr.appendChild(value)
-  materialsNameList.forEach(v => materialsObject[v] = 0)
-  Object.entries(materialsObject).forEach(([k, v]) => {
-    materialsTable.appendChild(createMaterialsTableColumn(k, v))
+  materialsNameList.forEach(v => {
+    materialsTable.appendChild(createMaterialsTableColumn(v, 0))
   })
 }
-const goodsObject = {}
+  const goodsObject = {}
 const goodsTable = document.createElement`table`
 const createGoodsTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -195,9 +195,8 @@ const appendGoodsTable = () => {
   const value = document.createElement`th`
   value.textContent = 'value'
   tr.appendChild(value)
-  goodsNameList.forEach(v => goodsObject[v] = 0)
-  Object.entries(goodsObject).forEach(([k, v]) => {
-    goodsTable.appendChild(createGoodsTableColumn(k, v))
+  goodsNameList.forEach(v => {
+    goodsTable.appendChild(createGoodsTableColumn(v, 0))
   })
 }
 const workerObject = {}
@@ -300,13 +299,13 @@ const createWorkerTableColumn = (d, v) => {
   if (d === workerNameList[0]) {
     plusButton.addEventListener('click', () => {
       if (
-        0 < goodsObject['Canned Food'] &&
-        0 < goodsObject['Clothing'] &&
-        0 < goodsObject['Furniture']
+        0 < commoditiesObject['Canned Food'] &&
+        0 < commoditiesObject['Clothing'] &&
+        0 < commoditiesObject['Furniture']
       ) {
-        goodsObject['Canned Food']--
-        goodsObject['Clothing']--
-        goodsObject['Furniture']--
+        commoditiesObject['Canned Food']--
+        commoditiesObject['Clothing']--
+        commoditiesObject['Furniture']--
         workerObject['None']++
         workerList.push(createWorkerFirst(workerNameList[0]))
         appendPersonalTable(workerList[workerList.length - 1])
@@ -490,13 +489,7 @@ const appendBuildingTable = () => {
   })
 }
 const elementUpdate = () => {
-  Object.entries(resourcesObject).forEach(([k, v]) => {
-    document.getElementById(k).textContent = v
-  })
-  Object.entries(materialsObject).forEach(([k, v]) => {
-    document.getElementById(k).textContent = v
-  })
-  Object.entries(goodsObject).forEach(([k, v]) => {
+  Object.entries(commoditiesObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
   Object.entries(buildingObject).forEach(([k, v]) => {
@@ -621,9 +614,16 @@ const pushCanvas = () => {
         v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
       ) {
         // get resources
-        terrainNameList.forEach((val, ind) => {
+        const productObject = {
+          Farm: 'Grain',
+          'Open Range': 'Livestock',
+          Orchard: 'Fruit',
+          'Fertile Hills': 'Wool',
+          Forest: 'Timber',
+        }
+        terrainNameList.forEach(val => {
           if (terrainListObject[canvas.id][v.location] === val) {
-            resourcesObject[resourcesNameList[ind]]++
+            commoditiesObject[productObject[val]]++
             v.fullness -= v.location
             elementUpdate()
           }
@@ -707,15 +707,15 @@ const main = () => {
   workerList.forEach((k, i) => {
     if (k.timestamp === 0 &&
       k.fullness < fullnessMax &&
-      0 < goodsObject[goodsNameList[0]]
+      0 < commoditiesObject['Cuisine']
     ) {
       k.state = 'eat'
       k.timestamp = Date.now()
     }
     if (k.state === 'eat') {
       if (Date.now() - k.timestamp <= eatInterval) return
-      if (k.fullness < 100 && 0 < goodsObject[goodsNameList[0]]) {
-        goodsObject[goodsNameList[0]]--
+      if (k.fullness < 100 && 0 < commoditiesObject['Cuisine']) {
+        commoditiesObject['Cuisine']--
         k.fullness++
         k.timestamp += eatInterval
         elementUpdate()
@@ -734,23 +734,17 @@ const main = () => {
     }
     if (Object.keys(convertObject).some(ky => k.post === ky)) {
       if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
-        return vl <= resourcesObject[ky] ||
-        vl <= materialsObject[ky] ||
-        vl <= goodsObject[ky]
+        return vl <= commoditiesObject[ky]
       })) {
         if (k.timestamp === 0) {
           k.timestamp = Date.now()
         }
         if (k.timestamp + workingTime <= Date.now()) { // completed task
           Object.entries(convertObject[k.post].in).forEach(([ky, vl]) => {
-            if (Object.keys(resourcesObject).some(v => v === ky)) resourcesObject[ky] -= vl
-            else if (Object.keys(materialsObject).some(v => v === ky)) materialsObject[ky] -= vl
-            else if (Object.keys(goodsObject).some(v => v === ky)) goodsObject[ky] -= vl
+            commoditiesObject[ky] -= vl
           })
           Object.entries(convertObject[k.post].out).forEach(([ky, vl]) => {
-            if (Object.keys(resourcesObject).some(v => v === ky)) resourcesObject[ky] += vl
-            else if (Object.keys(materialsObject).some(v => v === ky)) materialsObject[ky] += vl
-            else if (Object.keys(goodsObject).some(v => v === ky)) goodsObject[ky] += vl
+            commoditiesObject[ky] += vl
           })
           k.timestamp = 0
           const rate = 10
