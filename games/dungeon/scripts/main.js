@@ -466,12 +466,15 @@ const createBuildingTableColumn = (d, v) => {
   minusButton.id = `minus-${d}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
-    if (0 < buildingObject[d].value) {
-      buildingObject[d].value -= 1
-      workerObject[workerNameList[0]] += 1
-      setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
-      elementUpdate()
+    const i = workerList.findIndex(va => va.post === d)
+    if (buildingObject[d].value !== 1) {
+      workerList[workerList.findIndex((va, idx) => {
+        return i < idx && va.post === d
+      })].timestamp -= (Date.now() - workerList[i].timestamp) / buildingObject[d].value
     }
+    buildingObject[d].value -= 1
+    workerObject[workerNameList[0]] += 1
+    setJob(workerList[i], workerNameList[0])
   })
   td.appendChild(minusButton)
   const valueSpan = document.createElement`span`
@@ -814,7 +817,8 @@ const main = () => {
       })) {
         if (buildingObject[k.post].timestamp === 0) buildingObject[k.post].timestamp = Date.now()
         if (k.timestamp === 0) k.timestamp = Date.now()
-        if (buildingWorkTime <= workerList.reduce((acc, cur) => {
+        if (
+          buildingWorkTime <= workerList.reduce((acc, cur) => {
             if (cur.post === k.post && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
             else return acc
           }, 0) / buildingObject[k.post].value * Math.log2(1 + buildingObject[k.post].value)
@@ -826,6 +830,7 @@ const main = () => {
             commoditiesObject[ky] += vl
           })
           k.timestamp = 0
+          buildingObject[k.post].timestamp = 0
           const number = buildingObject[k.post].value
           const rate = 10
           workerList.forEach(v => {
