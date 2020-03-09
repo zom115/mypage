@@ -517,11 +517,19 @@ const appendBuildingTable = () => {
   })
 }
 const buildingProgressUpdate = d => {
-  document.getElementById(`buildingProgress-${d}`).value =
-  workerList.reduce((acc, cur) => {
+  const progress = document.getElementById(`buildingProgress-${d}`)
+  if (buildingObject[d].value <= 0) {
+    progress.value = 0
+    return
+  }
+  console.log(workerList.reduce((acc, cur) => {
     if (cur.post === d && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
     else return acc
-  }, 0)
+  }, 0), buildingObject[d].value, Math.log2(1 + buildingObject[d].value))
+  progress.value = workerList.reduce((acc, cur) => {
+    if (cur.post === d && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+    else return acc
+  }, 0) / buildingObject[d].value * Math.log2(1 + buildingObject[d].value)
 }
 const elementUpdate = () => {
   Object.entries(commoditiesObject).forEach(([k, v]) => {
@@ -783,7 +791,7 @@ const main = () => {
         if (buildingWorkTime <= workerList.reduce((acc, cur) => {
             if (cur.post === k.post && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
             else return acc
-          }, 0)
+          }, 0) / buildingObject[k.post].value * Math.log2(1 + buildingObject[k.post].value)
         ) { // task completed
           Object.entries(convertObject[k.post].in).forEach(([ky, vl]) => {
             commoditiesObject[ky] -= vl
@@ -792,17 +800,14 @@ const main = () => {
             commoditiesObject[ky] += vl
           })
           k.timestamp = 0
-          const number = workerList.reduce((acc, cur) => {
-            console.log(cur.post, k.post)
-            if (cur.post === k.post) return ++acc
-            else return acc
-          }, 0)
+          const number = buildingObject[k.post].value
           const rate = 10
-          console.log(Math.floor(rate / number), rate, number)
           workerList.forEach(v => {
-            if (v.post === k.post) v.fullness -= Math.floor(rate / number)
+            if (v.post === k.post) {
+              v.fullness -= Math.floor(rate / number)
+              v.timestamp = 0
+            }
           })
-          // k.fullness -= rate
         }
       } else {
         buildingObject[k.post].timestamp = 0
