@@ -552,34 +552,40 @@ const terrainProductObject = {
 let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
 const appendTerrainTable = () => {
-  const terrain = document.createElement`table`
+  const terrainTable = document.createElement`table`
+  menuView.appendChild(terrainTable)
   const tr = document.createElement`tr`
+  terrainTable.appendChild(tr)
   const th = document.createElement`th`
   th.textContent = 'Terrain'
+  tr.appendChild(th)
+  const productTh = document.createElement`th`
+  productTh.textContent = 'Products'
+  tr.appendChild(productTh)
   const value = document.createElement`th`
   value.textContent = 'Add'
-  menuView.appendChild(terrain)
-  terrain.appendChild(tr)
-  tr.appendChild(th)
   tr.appendChild(value)
   const createTableColumn = d => {
     const tr = document.createElement`tr`
-    const item = document.createElement`td`
-    const td = document.createElement`td`
+    terrainTable.appendChild(tr)
+    const nameTd = document.createElement`td`
+    nameTd.textContent = d
+    tr.appendChild(nameTd)
+    const productTd = document.createElement`td`
+    tr.appendChild(productTd)
+    const img = new Image()
+    img.src = commoditiesImagePathObject[terrainProductObject[d]]
+    productTd.appendChild(img)
+    const addTd = document.createElement`td`
+    addTd.className = 'value'
+    tr.appendChild(addTd)
     const button = document.createElement`button`
-    item.textContent = d
-    td.className = 'value'
     button.id = d
     button.textContent = '+'
-    tr.appendChild(item)
-    tr.appendChild(td)
-    td.appendChild(button)
+    addTd.appendChild(button)
     button.addEventListener('click', () => terrainListObject[canvasSerector].push(d))
-    return tr
   }
-  Object.keys(terrainProductObject).forEach(v => {
-    terrain.appendChild(createTableColumn(v))
-  })
+  Object.keys(terrainProductObject).forEach(v => createTableColumn(v))
 }
 const personalTable = document.createElement`table`
 const pushPersonalTable = d => {
