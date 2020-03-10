@@ -302,7 +302,6 @@ const createWorkerTableColumn = (d, v) => {
       workerObject[d] -= 1
       workerObject[workerNameList[0]] += 1
       setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
-      elementUpdate()
     }
   })
   if (d !== workerNameList[0]) td.appendChild(minusButton)
@@ -326,7 +325,6 @@ const createWorkerTableColumn = (d, v) => {
         workerObject['None']++
         workerList.push(createWorkerFirst(workerNameList[0]))
         appendPersonalTable(workerList[workerList.length - 1])
-        elementUpdate()
       }
     })
   } else {
@@ -335,7 +333,6 @@ const createWorkerTableColumn = (d, v) => {
         workerObject[workerNameList[0]] -= 1
         workerObject[d] += 1
         setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
-        elementUpdate()
       }
     })
   }
@@ -496,7 +493,6 @@ const createBuildingTableColumn = (d, v) => {
       workerObject[workerNameList[0]] -= 1
       buildingObject[d].value += 1
       setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
-      elementUpdate()
     }
   })
   td.appendChild(plusButton)
@@ -780,7 +776,6 @@ const pushCanvas = () => {
     if (value !== 0 && value < terrainListObject[canvas.id].length) {
       terrainListObject[canvas.id].splice(value, 1)
     }
-    elementUpdate()
   })
   const moveTime = 3e3
   const workTime = 4e3
@@ -811,7 +806,6 @@ const pushCanvas = () => {
               }
               commoditiesObject[terrainProductObject[val]]++
               v.fullness -= v.location
-              elementUpdate()
             }
           })
         } else v.state = null
