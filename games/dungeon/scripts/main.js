@@ -537,45 +537,6 @@ const buildingProgressUpdate = d => {
     else return acc
   }, 0) / buildingObject[d].value * Math.log2(1 + buildingObject[d].value)
 }
-const elementUpdate = () => {
-  Object.entries(commoditiesObject).forEach(([k, v]) => {
-    document.getElementById(k).textContent = v
-  })
-  Object.entries(buildingObject).forEach(([k, v]) => {
-    document.getElementById(k).textContent = v.value
-  })
-  Object.entries(workerObject).forEach(([k, v]) => {
-    document.getElementById(k).textContent = v
-  })
-  workerNameList.forEach(v => {
-    if (v === 'None') {
-      if (
-        0 < commoditiesObject['Canned Food'] &&
-        0 < commoditiesObject['Clothing'] &&
-        0 < commoditiesObject['Furniture']
-      ) {
-        document.getElementById(`plus-${v}`).disabled = false
-      } else document.getElementById(`plus-${v}`).disabled = true
-      return
-    }
-    if (workerObject[v] <= 0) {
-      document.getElementById(`minus-${v}`).disabled = true
-    } else document.getElementById(`minus-${v}`).disabled = false
-    if (workerObject['None'] <= 0) {
-      document.getElementById(`plus-${v}`).disabled = true
-    } else document.getElementById(`plus-${v}`).disabled = false
-  })
-  workerList.forEach(v => personalViewUpdate(v))
-  buildingNameList.forEach(v => {
-    if (buildingObject[v].value <= 0) {
-      document.getElementById(`minus-${v}`).disabled = true
-    } else document.getElementById(`minus-${v}`).disabled = false
-    if (workerObject['None'] <= 0) {
-      document.getElementById(`plus-${v}`).disabled = true
-    } else document.getElementById(`plus-${v}`).disabled = false
-    buildingProgressUpdate(v)
-  })
-}
 const terrainList = ['Town']
 const terrainProductObject = {
   'Farm': 'Grain',
@@ -717,6 +678,7 @@ const appendTradeTable = () => {
     price.textContent = v
     tr.appendChild(price)
     const available = document.createElement`td`
+    available.id = `trade-available-${k}`
     available.className = 'value'
     available.textContent = commoditiesObject[k]
     tr.appendChild(available)
@@ -726,8 +688,10 @@ const appendTradeTable = () => {
     minusButton.id = `trade-minus-${k}`
     minusButton.textContent = '-'
     td.appendChild(minusButton)
-    minusButton.addEventListener('click', () => {})
     const input = document.createElement`input`
+    minusButton.addEventListener('click', () => {
+      if (0 < input.value) input.value--
+    })
     input.id = `trade-range-${k}`
     input.type = 'range'
     input.max = 0
@@ -742,9 +706,63 @@ const appendTradeTable = () => {
     plusButton.id = `trade-plus-${k}`
     plusButton.textContent = '+'
     td.appendChild(plusButton)
-    plusButton.addEventListener('click', () => {})
+    plusButton.addEventListener('click', () => {
+      if (input.value < input.max) input.value++
+    })
   }
   Object.entries(tradeObject).forEach(([k, v]) => createTradeTr(k, v))
+}
+const elementUpdate = () => {
+  Object.entries(commoditiesObject).forEach(([k, v]) => {
+    document.getElementById(k).textContent = v
+  })
+  Object.entries(buildingObject).forEach(([k, v]) => {
+    document.getElementById(k).textContent = v.value
+  })
+  Object.entries(workerObject).forEach(([k, v]) => {
+    document.getElementById(k).textContent = v
+  })
+  workerNameList.forEach(v => {
+    if (v === 'None') {
+      if (
+        0 < commoditiesObject['Canned Food'] &&
+        0 < commoditiesObject['Clothing'] &&
+        0 < commoditiesObject['Furniture']
+      ) {
+        document.getElementById(`plus-${v}`).disabled = false
+      } else document.getElementById(`plus-${v}`).disabled = true
+      return
+    }
+    if (workerObject[v] <= 0) {
+      document.getElementById(`minus-${v}`).disabled = true
+    } else document.getElementById(`minus-${v}`).disabled = false
+    if (workerObject['None'] <= 0) {
+      document.getElementById(`plus-${v}`).disabled = true
+    } else document.getElementById(`plus-${v}`).disabled = false
+  })
+  workerList.forEach(v => personalViewUpdate(v))
+  buildingNameList.forEach(v => {
+    if (buildingObject[v].value <= 0) {
+      document.getElementById(`minus-${v}`).disabled = true
+    } else document.getElementById(`minus-${v}`).disabled = false
+    if (workerObject['None'] <= 0) {
+      document.getElementById(`plus-${v}`).disabled = true
+    } else document.getElementById(`plus-${v}`).disabled = false
+    buildingProgressUpdate(v)
+  })
+  Object.keys(tradeObject).forEach(v => {
+    document.getElementById(`trade-available-${v}`).textContent = commoditiesObject[v]
+    const range = document.getElementById(`trade-range-${v}`)
+    range.max = commoditiesObject[v]
+    value = document.getElementById(`trade-range-${v}`).value
+    document.getElementById(`trade-value-${v}`).textContent = value
+    if (value === '0') {
+      document.getElementById(`trade-minus-${v}`).disabled = true
+    } else document.getElementById(`trade-minus-${v}`).disabled = false
+    if ('' + commoditiesObject[v] === value) {
+      document.getElementById(`trade-plus-${v}`).disabled = true
+    } else document.getElementById(`trade-plus-${v}`).disabled = false
+  })
 }
 const size = 16
 let canvasId = 0
