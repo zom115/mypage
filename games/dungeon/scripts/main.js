@@ -337,7 +337,7 @@ const createWorkerTableColumn = (d, v) => {
       commoditiesObject['Furniture']--
       workerObject['None']++
       workerList.push(createWorkerFirst(workerNameList[0]))
-      appendPersonalTable(workerList[workerList.length - 1])
+      pushPersonalTable(workerList[workerList.length - 1])
     })
   } else plusButton.addEventListener('click', () => {
     workerObject[workerNameList[0]] -= 1
@@ -551,50 +551,41 @@ const terrainProductObject = {
 }
 let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
-{
-const terrain = document.createElement`table`
-const tr = document.createElement`tr`
-const th = document.createElement`th`
-th.textContent = 'Add Terrain'
-const value = document.createElement`th`
-value.textContent = 'value'
-menuView.appendChild(terrain)
-terrain.appendChild(tr)
-tr.appendChild(th)
-tr.appendChild(value)
-const createTableColumn = d => {
+const appendTerrainTable = () => {
+  const terrain = document.createElement`table`
   const tr = document.createElement`tr`
-  const item = document.createElement`td`
-  const td = document.createElement`td`
-  const button = document.createElement`button`
-  item.textContent = d
-  td.className = 'value'
-  button.id = d
-  button.textContent = '+'
-  tr.appendChild(item)
-  tr.appendChild(td)
-  td.appendChild(button)
-  button.addEventListener('click', () => terrainListObject[canvasSerector].push(d))
-  return tr
+  const th = document.createElement`th`
+  th.textContent = 'Add Terrain'
+  const value = document.createElement`th`
+  value.textContent = 'value'
+  menuView.appendChild(terrain)
+  terrain.appendChild(tr)
+  tr.appendChild(th)
+  tr.appendChild(value)
+  const createTableColumn = d => {
+    const tr = document.createElement`tr`
+    const item = document.createElement`td`
+    const td = document.createElement`td`
+    const button = document.createElement`button`
+    item.textContent = d
+    td.className = 'value'
+    button.id = d
+    button.textContent = '+'
+    tr.appendChild(item)
+    tr.appendChild(td)
+    td.appendChild(button)
+    button.addEventListener('click', () => terrainListObject[canvasSerector].push(d))
+    return tr
+  }
+  Object.keys(terrainProductObject).forEach(v => {
+    terrain.appendChild(createTableColumn(v))
+  })
 }
-Object.keys(terrainProductObject).forEach(v => {
-  terrain.appendChild(createTableColumn(v))
-})
-}
-const personalView = document.createElement`table`
-menuView.appendChild(personalView)
-const tr = document.createElement`tr`
-personalView.appendChild(tr)
-const post = document.createElement`th`
-post.textContent = 'Post'
-tr.appendChild(post)
-const fullness = document.createElement`th`
-fullness.textContent = 'Fullness'
-tr.appendChild(fullness)
-const appendPersonalTable = d => {
+const personalTable = document.createElement`table`
+const pushPersonalTable = d => {
   const tr = document.createElement`tr`
   tr.id = `tr-${d.id}`
-  personalView.appendChild(tr)
+  personalTable.appendChild(tr)
   const post = document.createElement`td`
   post.id = `post-${d.id}`
   post.textContent = d.post
@@ -608,10 +599,21 @@ const appendPersonalTable = d => {
   progress.value = d.fullness
   fullness.appendChild(progress)
 }
-workerList.forEach(v => appendPersonalTable(v))
 const personalViewUpdate = d => {
   document.getElementById(`post-${d.id}`).textContent = d.post
   document.getElementById(`progress-${d.id}`).value = d.fullness
+}
+const appendPersonalTable = () => {
+  menuView.appendChild(personalTable)
+  const tr = document.createElement`tr`
+  personalTable.appendChild(tr)
+  const post = document.createElement`th`
+  post.textContent = 'Post'
+  tr.appendChild(post)
+  const fullness = document.createElement`th`
+  fullness.textContent = 'Fullness'
+  tr.appendChild(fullness)
+  workerList.forEach(v => pushPersonalTable(v))
 }
 const tradeObject = {
   'Grain': 100,
@@ -1022,7 +1024,6 @@ const main = () => {
         tradeBidObject[k] + number < 0 ? 0 : tradeBidObject[k] += number
       }
     })
-
     if (tradeInterval <= Date.now() - tradeTimestamp) tradeTimestamp = Date.now()
   }
   elementUpdate()
@@ -1041,6 +1042,8 @@ const stream = async () => {
   appendGoodsTable()
   appendWorkerTable()
   appendBuildingTable()
+  appendTerrainTable()
+  appendPersonalTable()
   appendTradeTable()
   pushCanvas()
   decreaseTime = Date.now()
