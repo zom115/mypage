@@ -318,7 +318,7 @@ const createWorkerTableColumn = (d, v) => {
   minusButton.addEventListener('click', () => {
     workerObject[d] -= 1
     workerObject[workerNameList[0]] += 1
-    setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
+    workerList[workerList.findIndex(va => va.post === d)].post = 'None'
   })
   if (d !== workerNameList[0]) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
@@ -756,7 +756,10 @@ const elementUpdate = () => {
     if (workerObject[v] <= 0) {
       document.getElementById(`minus-${v}`).disabled = true
     } else document.getElementById(`minus-${v}`).disabled = false
-    if (workerObject['None'] <= 0) {
+    if (workerObject['None'] <= workerList.reduce((acc, cur) => {
+      if (cur.post === 'None' && cur.state === 'return') return ++acc
+      else return acc
+    }, 0)) {
       document.getElementById(`plus-${v}`).disabled = true
     } else document.getElementById(`plus-${v}`).disabled = false
   })
@@ -765,7 +768,10 @@ const elementUpdate = () => {
     if (buildingObject[v].value <= 0) {
       document.getElementById(`minus-${v}`).disabled = true
     } else document.getElementById(`minus-${v}`).disabled = false
-    if (workerObject['None'] <= 0) {
+    if (workerObject['None'] <= workerList.reduce((acc, cur) => {
+      if (cur.post === 'None' && cur.state === 'return') return ++acc
+      else return acc
+    }, 0)) {
       document.getElementById(`plus-${v}`).disabled = true
     } else document.getElementById(`plus-${v}`).disabled = false
     buildingProgressUpdate(v)
@@ -824,8 +830,8 @@ const pushCanvas = () => {
   const fn = () => {
     workerList.forEach((v, i) => {
       if (buildingNameList.some(va => {return v.post === va})) return
-      if (Date.now() - v.timestamp < moveTime + workTime &&
-        terrainListObject[canvas.id][v.location] === undefined
+      if (Date.now() - v.timestamp < moveTime + workTime && (
+        terrainListObject[canvas.id][v.location] === undefined || v.post === 'None')
       ) {
         v.state = 'return'
         if (Date.now() - v.timestamp < moveTime * v.location) {
