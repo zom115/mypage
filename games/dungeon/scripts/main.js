@@ -632,7 +632,7 @@ const tradeObject = {
   'Iron': 100,
   'Coal': 100,
   'Gold': 200,
-  'Gems': 400,
+  'Gems': 500,
   'Oil': 100,
   'Fabric': 200,
   'Paper': 200,
