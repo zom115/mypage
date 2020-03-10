@@ -316,11 +316,9 @@ const createWorkerTableColumn = (d, v) => {
   minusButton.id = `minus-${d}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
-    if (0 < workerObject[d]) {
-      workerObject[d] -= 1
-      workerObject[workerNameList[0]] += 1
-      setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
-    }
+    workerObject[d] -= 1
+    workerObject[workerNameList[0]] += 1
+    setJob(workerList[workerList.findIndex(va => va.post === d)], workerNameList[0])
   })
   if (d !== workerNameList[0]) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
@@ -332,28 +330,18 @@ const createWorkerTableColumn = (d, v) => {
   plusButton.textContent = '+'
   if (d === workerNameList[0]) {
     plusButton.addEventListener('click', () => {
-      if (
-        0 < commoditiesObject['Canned Food'] &&
-        0 < commoditiesObject['Clothing'] &&
-        0 < commoditiesObject['Furniture']
-      ) {
-        commoditiesObject['Canned Food']--
-        commoditiesObject['Clothing']--
-        commoditiesObject['Furniture']--
-        workerObject['None']++
-        workerList.push(createWorkerFirst(workerNameList[0]))
-        appendPersonalTable(workerList[workerList.length - 1])
-      }
+      commoditiesObject['Canned Food']--
+      commoditiesObject['Clothing']--
+      commoditiesObject['Furniture']--
+      workerObject['None']++
+      workerList.push(createWorkerFirst(workerNameList[0]))
+      appendPersonalTable(workerList[workerList.length - 1])
     })
-  } else {
-    plusButton.addEventListener('click', () => {
-      if (0 < workerObject[workerNameList[0]]) {
-        workerObject[workerNameList[0]] -= 1
-        workerObject[d] += 1
-        setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
-      }
-    })
-  }
+  } else plusButton.addEventListener('click', () => {
+    workerObject[workerNameList[0]] -= 1
+    workerObject[d] += 1
+    setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
+  })
   td.appendChild(plusButton)
   tr.appendChild(td)
   return tr
@@ -507,11 +495,9 @@ const createBuildingTableColumn = (d, v) => {
   plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
-    if (0 < workerObject[workerNameList[0]]) {
-      workerObject[workerNameList[0]] -= 1
-      buildingObject[d].value += 1
-      setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
-    }
+    workerObject[workerNameList[0]] -= 1
+    buildingObject[d].value += 1
+    setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
   })
   td.appendChild(plusButton)
   return tr
