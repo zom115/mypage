@@ -25,6 +25,7 @@ const goodsNameList = [
   'Clothing',
   'Furniture',
   'Hardware',
+  'Armaments',
 ]
 const commoditiesObject = {}
 resourcesNameList.forEach(v => commoditiesObject[v] = 0)
@@ -55,6 +56,7 @@ const goodsImagePathList = [
   'VネックTシャツの無料アイコン1',
   'イスのアイコン9',
   '金づちの無料アイコン',
+  '大砲アイコン2',
 ]
 const commoditiesImagePathObject = {}
 const nameList = ['people']
