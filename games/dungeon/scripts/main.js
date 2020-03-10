@@ -1038,6 +1038,10 @@ const main = () => {
   elementUpdate()
   window.requestAnimationFrame(main)
 }
+const debugBonus = () => {
+  money += 1e4
+  commoditiesObject['Paper'] += 12
+}
 const stream = async () => {
   await imgLoad(
     resourcesImagePathList, resourcesNameList, resourcesImageList)
@@ -1057,6 +1061,7 @@ const stream = async () => {
   appendPersonalTable()
   decreaseTime = Date.now()
   tradeTimestamp = Date.now()
+  debugBonus()
   main()
 }
 stream()
