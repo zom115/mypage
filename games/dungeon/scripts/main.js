@@ -689,9 +689,9 @@ const pushCanvas = () => {
         terrainListObject[canvas.id][v.location] === undefined
       ) {
         v.state = 'return'
-        if (Date.now() - v.timestamp < moveTime) {
-          v.timestamp -= workTime + (moveTime - Date.now() + v.timestamp) * 2
-        } else v.timestamp -= moveTime + workTime - Date.now() + v.timestamp
+        if (Date.now() - v.timestamp < moveTime * v.location) {
+          v.timestamp -= workTime + (moveTime * v.location - Date.now() + v.timestamp) * 2
+        } else v.timestamp -= moveTime * v.location + workTime - Date.now() + v.timestamp
       }
       if (
         v.timestamp === 0 ||
