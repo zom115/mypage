@@ -97,20 +97,21 @@ const imgLoad = async (pathList, nameList, imageList) => {
   })
 }
 const display = document.getElementById`display`
-const itemView = document.createElement`div`
-itemView.className = 'container'
-display.appendChild(itemView)
-const indicateView = document.createElement`div`
-indicateView.className = 'container'
-display.appendChild(indicateView)
-const canvasView = document.createElement`div`
-display.appendChild(canvasView)
-const menuView = document.createElement`div`
-menuView.className = 'container'
-display.appendChild(menuView)
-const tradeView = document.createElement`div`
-tradeView.className = 'container'
-display.appendChild(tradeView)
+const firstPanel = document.createElement`div`
+firstPanel.className = 'container'
+display.appendChild(firstPanel)
+const secondPanel = document.createElement`div`
+secondPanel.className = 'container'
+display.appendChild(secondPanel)
+const thirdPanel = document.createElement`div`
+display.appendChild(thirdPanel)
+thirdPanel.className = 'container'
+const fourthPanel = document.createElement`div`
+fourthPanel.className = 'container'
+display.appendChild(fourthPanel)
+const fifthPanel = document.createElement`div`
+fifthPanel.className = 'container'
+display.appendChild(fifthPanel)
 const resourcesTable = document.createElement`table`
 const createResourcesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -132,7 +133,7 @@ const createResourcesTableColumn = (d, v) => {
   return tr
 }
 const appendResourcesTable = () => {
-  itemView.appendChild(resourcesTable)
+  firstPanel.appendChild(resourcesTable)
   const tr = document.createElement`tr`
   resourcesTable.appendChild(tr)
   const th = document.createElement`th`
@@ -166,7 +167,7 @@ const createMaterialsTableColumn = (d, v) => {
   return tr
 }
 const appendMaterialsTable = () => {
-  itemView.appendChild(materialsTable)
+  firstPanel.appendChild(materialsTable)
   const tr = document.createElement`tr`
   materialsTable.appendChild(tr)
   const th = document.createElement`th`
@@ -200,7 +201,7 @@ const createGoodsTableColumn = (d, v) => {
   return tr
 }
 const appendGoodsTable = () => {
-  itemView.appendChild(goodsTable)
+  firstPanel.appendChild(goodsTable)
   const tr = document.createElement`tr`
   goodsTable.appendChild(tr)
   const th = document.createElement`th`
@@ -351,7 +352,7 @@ const createWorkerTableColumn = (d, v) => {
   return tr
 }
 const appendJobTable = () => {
-  indicateView.appendChild(worker)
+  secondPanel.appendChild(worker)
   const tr = document.createElement`tr`
   worker.appendChild(tr)
   const jobTh = document.createElement`th`
@@ -502,7 +503,7 @@ const createBuildingTableColumn = (d, v) => {
   return tr
 }
 const appendBuildingTable = () => {
-  indicateView.appendChild(building)
+  secondPanel.appendChild(building)
   const tr = document.createElement`tr`
   building.appendChild(tr)
   const buildingTh = document.createElement`th`
@@ -555,7 +556,7 @@ let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
 const appendTerrainTable = () => {
   const terrainTable = document.createElement`table`
-  menuView.appendChild(terrainTable)
+  fourthPanel.appendChild(terrainTable)
   const tr = document.createElement`tr`
   terrainTable.appendChild(tr)
   const th = document.createElement`th`
@@ -612,7 +613,7 @@ const personalViewUpdate = d => {
   document.getElementById(`progress-${d.id}`).value = d.fullness
 }
 const appendPersonalTable = () => {
-  menuView.appendChild(personalTable)
+  fourthPanel.appendChild(personalTable)
   const tr = document.createElement`tr`
   personalTable.appendChild(tr)
   const post = document.createElement`th`
@@ -651,7 +652,7 @@ const tradeInterval = 3e4
 let tradeTimestamp = 0
 const tradeTable = document.createElement`table`
 const appendTradeTable = () => {
-  tradeView.appendChild(tradeTable)
+  fifthPanel.appendChild(tradeTable)
   const tr = document.createElement`tr`
   tradeTable.appendChild(tr)
   const th = document.createElement`th`
@@ -809,7 +810,7 @@ const pushCanvas = () => {
   canvas.width = size * 16 * 3
   canvas.height = size * 4
   const context = canvas.getContext`2d`
-  canvasView.appendChild(canvas)
+  thirdPanel.appendChild(canvas)
   const rect = canvas.getBoundingClientRect()
   canvasId++
   let x = 0
