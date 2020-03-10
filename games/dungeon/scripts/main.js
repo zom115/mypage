@@ -503,7 +503,7 @@ const createBuildingTableColumn = (d, v) => {
   return tr
 }
 const appendBuildingTable = () => {
-  secondPanel.appendChild(building)
+  fourthPanel.appendChild(building)
   const tr = document.createElement`tr`
   building.appendChild(tr)
   const buildingTh = document.createElement`th`
@@ -556,7 +556,7 @@ let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
 const appendTerrainTable = () => {
   const terrainTable = document.createElement`table`
-  fourthPanel.appendChild(terrainTable)
+  secondPanel.appendChild(terrainTable)
   const tr = document.createElement`tr`
   terrainTable.appendChild(tr)
   const th = document.createElement`th`
@@ -613,7 +613,7 @@ const personalViewUpdate = d => {
   document.getElementById(`progress-${d.id}`).value = d.fullness
 }
 const appendPersonalTable = () => {
-  fourthPanel.appendChild(personalTable)
+  fifthPanel.appendChild(personalTable)
   const tr = document.createElement`tr`
   personalTable.appendChild(tr)
   const post = document.createElement`th`
@@ -1049,12 +1049,12 @@ const stream = async () => {
   appendResourcesTable()
   appendMaterialsTable()
   appendGoodsTable()
-  appendJobTable()
-  appendBuildingTable()
   appendTerrainTable()
-  appendPersonalTable()
-  appendTradeTable()
+  appendJobTable()
   pushCanvas()
+  appendBuildingTable()
+  appendTradeTable()
+  appendPersonalTable()
   decreaseTime = Date.now()
   tradeTimestamp = Date.now()
   main()
