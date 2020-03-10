@@ -139,7 +139,7 @@ const appendResourcesTable = () => {
   th.textContent = 'Resources'
   tr.appendChild(th)
   const value = document.createElement`th`
-  value.textContent = 'value'
+  value.textContent = 'Value'
   tr.appendChild(value)
   resourcesNameList.forEach(v => {
     resourcesTable.appendChild(createResourcesTableColumn(v, 0))
@@ -173,7 +173,7 @@ const appendMaterialsTable = () => {
   th.textContent = 'Materials'
   tr.appendChild(th)
   const value = document.createElement`th`
-  value.textContent = 'value'
+  value.textContent = 'Value'
   tr.appendChild(value)
   materialsNameList.forEach(v => {
     materialsTable.appendChild(createMaterialsTableColumn(v, 0))
@@ -207,7 +207,7 @@ const appendGoodsTable = () => {
   th.textContent = 'Goods'
   tr.appendChild(th)
   const value = document.createElement`th`
-  value.textContent = 'value'
+  value.textContent = 'Value'
   tr.appendChild(value)
   goodsNameList.forEach(v => {
     goodsTable.appendChild(createGoodsTableColumn(v, 0))
@@ -361,7 +361,7 @@ const appendJobTable = () => {
   productTh.textContent = 'Products'
   tr.appendChild(productTh)
   const value = document.createElement`th`
-  value.textContent = 'value'
+  value.textContent = 'Value'
   tr.appendChild(value)
   jobNameList.forEach(v => {
     jobObject[v] = v === jobNameList[0] ? population : 0
@@ -518,7 +518,7 @@ const appendBuildingTable = () => {
   progressTh.textContent = 'Progress'
   tr.appendChild(progressTh)
   const value = document.createElement`th`
-  value.textContent = 'value'
+  value.textContent = 'Value'
   tr.appendChild(value)
   Object.keys(convertObject).forEach(v => {
     buildingObject[v] = {}
