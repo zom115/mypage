@@ -918,7 +918,8 @@ const pushCanvas = () => {
       context.fillRect(0, 0, size / 2, size / 2)
     }
     workerList.forEach(v => {
-      if (v.timestamp === 0 || buildingNameList.some(vl => vl === v.post)) return
+      if (v.timestamp === 0 || buildingNameList.some(vl => vl === v.post) ||
+        v.state === 'eat') return
       context.fillStyle = 'cyan'
       const elapsedTime = Date.now() - v.timestamp
       const rate = elapsedTime < moveTime * v.location ?
