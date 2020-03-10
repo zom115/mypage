@@ -1003,7 +1003,7 @@ const main = () => {
       if (order === 'Bid') payment += tradeObject[k] * range.value
       if (tradeInterval <= Date.now() - tradeTimestamp) {
         if (order === 'Offer' && 0 < +range.value) {
-          const number = Math.floor(Math.random() * range.value)
+          const number = Math.round(Math.random() * range.value)
           range.value -= number
           commoditiesObject[k] -= number
           range.max = commoditiesObject[k]
