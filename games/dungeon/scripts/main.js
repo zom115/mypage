@@ -369,53 +369,48 @@ const appendWorkerTable = () => {
   })
 }
 const buildingObject = {}
-const buildingNameList = [
-  'Canteen',
-  'Textile Mill',
-  'Clothing Factory',
-  'Lumber Mill',
-  'Furniture Factory',
-  'Steel Mill',
-  'Metal Works',
-  'Refinery',
-  'Food Production'
-]
 const convertObject = {
-  [buildingNameList[0]]: {
+  'Canteen': {
     in: {
       [resourcesNameList[0]]: 14,
       [resourcesNameList[1]]: 7,
       [resourcesNameList[2]]: 8,
     },
     out: {[goodsNameList[0]]: 1e3}
-  }, [buildingNameList[1]]: {
-    in: {[resourcesNameList[3]]: 2},
-    out: {[materialsNameList[0]]: 1}
-  }, [buildingNameList[2]]: {
-    in: {[materialsNameList[0]]: 2},
-    out: {[goodsNameList[2]]: 1}
-  }, [buildingNameList[3]]: {
-    in: {[resourcesNameList[4]]: 2},
-    out: {[materialsNameList[2]]: 1}
-  }, [buildingNameList[4]]: {
-    in: {[materialsNameList[2]]: 2},
-    out: {[goodsNameList[3]]: 1}
-  }, [buildingNameList[5]]: {
-    in: {Coal: 1, Iron: 1},
-    out: {[materialsNameList[3]]: 1}
-  }, [buildingNameList[6]]: {
-    in: {[materialsNameList[3]]: 2},
-    out: {[goodsNameList[4]]: 1}
-  }, [buildingNameList[7]]: {
-    in: {[resourcesNameList[9]]: 2},
-    out: {[materialsNameList[4]]: 1}
-  }, [buildingNameList[8]]: {
+  }, 'Food Production': {
     in: {
       [resourcesNameList[0]]: 1,
       [resourcesNameList[1]]: 1,
       [resourcesNameList[2]]: 1
     }, out: {[goodsNameList[1]]: 1}
-  }
+  }, 'Textile Mill': {
+    in: {[resourcesNameList[3]]: 2},
+    out: {[materialsNameList[0]]: 1}
+  }, 'Clothing Factory': {
+    in: {[materialsNameList[0]]: 2},
+    out: {[goodsNameList[2]]: 1}
+  }, 'Lumber Mill': {
+    in: {[resourcesNameList[4]]: 2},
+    out: {[materialsNameList[2]]: 1}
+  }, 'Furniture Factory': {
+    in: {[materialsNameList[2]]: 2},
+    out: {[goodsNameList[3]]: 1}
+  }, 'Paper Mill': {
+    in: {[resourcesNameList[4]]: 2},
+    out: {[materialsNameList[1]]: 1}
+  }, 'Steel Mill': {
+    in: {Coal: 1, Iron: 1},
+    out: {[materialsNameList[3]]: 1}
+  }, 'Blacksmith': {
+    in: {[materialsNameList[3]]: 2},
+    out: {[goodsNameList[4]]: 1}
+  }, 'Armaments Factory': {
+    in: {[materialsNameList[3]]: 2},
+    out: {[goodsNameList[5]]: 1}
+  }, 'Refinery': {
+    in: {[resourcesNameList[9]]: 2},
+    out: {[materialsNameList[4]]: 1}
+  },
 }
 const buildingWorkTime = 1e4
 const building = document.createElement`table`
@@ -523,7 +518,7 @@ const appendBuildingTable = () => {
   const value = document.createElement`th`
   value.textContent = 'value'
   tr.appendChild(value)
-  buildingNameList.forEach(v => {
+  Object.keys(convertObject).forEach(v => {
     buildingObject[v] = {}
     buildingObject[v].value = 0
     buildingObject[v].timestamp = 0
@@ -766,7 +761,7 @@ const elementUpdate = () => {
     } else document.getElementById(`plus-${v}`).disabled = false
   })
   workerList.forEach(v => personalViewUpdate(v))
-  buildingNameList.forEach(v => {
+  Object.keys(convertObject).forEach(v => {
     if (buildingObject[v].value <= 0) {
       document.getElementById(`minus-${v}`).disabled = true
     } else document.getElementById(`minus-${v}`).disabled = false
@@ -831,7 +826,7 @@ const pushCanvas = () => {
   const workTime = 4e3
   const fn = () => {
     workerList.forEach((v, i) => {
-      if (buildingNameList.some(va => {return v.post === va})) return
+      if (Object.keys(convertObject).some(va => {return v.post === va})) return
       if (Date.now() - v.timestamp < moveTime + workTime && (
         terrainListObject[canvas.id][v.location] === undefined || v.post === 'None')
       ) {
@@ -912,7 +907,7 @@ const pushCanvas = () => {
       context.fillRect(0, 0, size / 2, size / 2)
     }
     workerList.forEach(v => {
-      if (v.timestamp === 0 || buildingNameList.some(vl => vl === v.post) ||
+      if (v.timestamp === 0 || Object.keys(convertObject).some(vl => vl === v.post) ||
         v.state === 'eat') return
       context.fillStyle = 'cyan'
       const elapsedTime = Date.now() - v.timestamp
@@ -964,7 +959,7 @@ const main = () => {
     }
     if (k.fullness <= 0) {
       if (workerNameList.some(v => v === k.post)) workerObject[k.post]--
-      else if (buildingNameList.some(v => v === k.post)) buildingObject[k.post].value--
+      else if (Object.keys(convertObject).some(v => v === k.post)) buildingObject[k.post].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
     }
