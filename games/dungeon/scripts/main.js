@@ -1,5 +1,5 @@
 {'use strict'
-const money = 0
+let money = 0
 const resourcesNameList = [
   'Grain',
   'Livestock',
@@ -651,6 +651,8 @@ const tradeObject = {
   'Furniture': 900,
   'Hardware': 900,
 }
+const tradeInterval = 3e4
+let tradeTimestamp = 0
 const tradeTable = document.createElement`table`
 const appendTradeTable = () => {
   tradeView.appendChild(tradeTable)
@@ -671,6 +673,10 @@ const appendTradeTable = () => {
   const quantity = document.createElement`th`
   quantity.textContent = 'Quantity to Offer'
   tr.appendChild(quantity)
+  const interval = document.createElement`td`
+  interval.id = 'trade-interval'
+  interval.textContent = 0
+  tr.appendChild(interval)
   const createTradeTr = (k, v) => {
     const tr = document.createElement`tr`
     tradeTable.appendChild(tr)
@@ -740,6 +746,7 @@ const elementUpdate = () => {
   Object.entries(workerObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
+  document.getElementById(`money`).textContent = money
   workerNameList.forEach(v => {
     if (v === 'None') {
       if (
@@ -781,6 +788,8 @@ const elementUpdate = () => {
       document.getElementById(`trade-plus-${v}`).disabled = true
     } else document.getElementById(`trade-plus-${v}`).disabled = false
   })
+  document.getElementById('trade-interval').textContent = tradeTimestamp === 0 ? '00000' :
+  ('00000' + (tradeInterval - Date.now() + tradeTimestamp)).slice(-5)
 }
 const size = 16
 let canvasId = 0
@@ -988,6 +997,23 @@ const main = () => {
       }
     }
   })
+  { // trade
+    if (Object.keys(tradeObject).some(v => {
+      return +document.getElementById(`trade-range-${v}`).value !== 0
+    })) {
+      if (tradeTimestamp === 0) tradeTimestamp = Date.now()
+      if (tradeInterval <= Date.now() - tradeTimestamp) {
+        Object.entries(tradeObject).forEach(([k, v]) => {
+          if (0 < +document.getElementById(`trade-range-${k}`).value) {
+            document.getElementById(`trade-range-${k}`).value =
+            document.getElementById(`trade-range-${k}`).value - 1
+            commoditiesObject[k]--
+            money += v
+          }
+        })
+      }
+    } else tradeTimestamp = 0
+  }
   elementUpdate()
   window.requestAnimationFrame(main)
 }
