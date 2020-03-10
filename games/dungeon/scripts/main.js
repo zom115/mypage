@@ -555,9 +555,9 @@ const appendTerrainTable = () => {
   const terrain = document.createElement`table`
   const tr = document.createElement`tr`
   const th = document.createElement`th`
-  th.textContent = 'Add Terrain'
+  th.textContent = 'Terrain'
   const value = document.createElement`th`
-  value.textContent = 'value'
+  value.textContent = 'Add'
   menuView.appendChild(terrain)
   terrain.appendChild(tr)
   tr.appendChild(th)
