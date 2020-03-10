@@ -226,8 +226,8 @@ const appendGoodsTable = () => {
   moneyValue.textContent = money
   moneyTr.appendChild(moneyValue)
 }
-const workerObject = {}
-const workerNameList = [
+const jobObject = {}
+const jobNameList = [
   'None',
   'Farmer',
   'Rancher',
@@ -256,7 +256,7 @@ const setJob = (worker, post) => {
   worker.timestamp = 0
 }
 for (let i = 0; i < population; i++) {
-  workerList.push(createWorkerFirst(workerNameList[0]))
+  workerList.push(createWorkerFirst(jobNameList[0]))
 }
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
@@ -267,7 +267,7 @@ const createWorkerTableColumn = (d, v) => {
   const productTd = document.createElement`td`
   tr.appendChild(productTd)
   const img = []
-  if (d === workerNameList[0]) {
+  if (d === jobNameList[0]) {
     const can = new Image()
     can.src = goodsImagePathList[1]
     img.push(can)
@@ -281,32 +281,32 @@ const createWorkerTableColumn = (d, v) => {
     span.textContent = ' = '
     img.push(span)
     img.push(imageList[0])
-  } else if (d === workerNameList[1]) {
+  } else if (d === jobNameList[1]) {
     const grain = new Image()
     grain.src = resourcesImagePathList[0]
     img.push(grain)
     const fruit = new Image()
     fruit.src = resourcesImagePathList[2]
     img.push(fruit)
-  } else if (d === workerNameList[2]) {
+  } else if (d === jobNameList[2]) {
     const livestock = new Image()
     livestock.src = resourcesImagePathList[1]
     img.push(livestock)
     const wool = new Image()
     wool.src = resourcesImagePathList[3]
     img.push(wool)
-  } else if (d === workerNameList[3]) {
+  } else if (d === jobNameList[3]) {
     const timber = new Image()
     timber.src = resourcesImagePathList[4]
     img.push(timber)
-  } else if (d === workerNameList[4]) {
+  } else if (d === jobNameList[4]) {
     const iron = new Image()
     iron.src = resourcesImagePathList[5]
     img.push(iron)
     const coal = new Image()
     coal.src = resourcesImagePathList[6]
     img.push(coal)
-  } else if (d === workerNameList[5]) {
+  } else if (d === jobNameList[5]) {
     const oil = new Image()
     oil.src = resourcesImagePathList[9]
     img.push(oil)
@@ -318,11 +318,11 @@ const createWorkerTableColumn = (d, v) => {
   minusButton.id = `minus-${d}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
-    workerObject[d] -= 1
-    workerObject[workerNameList[0]] += 1
+    jobObject[d] -= 1
+    jobObject[jobNameList[0]] += 1
     workerList[workerList.findIndex(va => va.post === d)].post = 'None'
   })
-  if (d !== workerNameList[0]) td.appendChild(minusButton)
+  if (d !== jobNameList[0]) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
   valuSpan.id = d
   valuSpan.textContent = v
@@ -330,25 +330,25 @@ const createWorkerTableColumn = (d, v) => {
   const plusButton = document.createElement`button`
   plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
-  if (d === workerNameList[0]) {
+  if (d === jobNameList[0]) {
     plusButton.addEventListener('click', () => {
       commoditiesObject['Canned Food']--
       commoditiesObject['Clothing']--
       commoditiesObject['Furniture']--
-      workerObject['None']++
-      workerList.push(createWorkerFirst(workerNameList[0]))
+      jobObject['None']++
+      workerList.push(createWorkerFirst(jobNameList[0]))
       pushPersonalTable(workerList[workerList.length - 1])
     })
   } else plusButton.addEventListener('click', () => {
-    workerObject[workerNameList[0]] -= 1
-    workerObject[d] += 1
-    setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
+    jobObject[jobNameList[0]] -= 1
+    jobObject[d] += 1
+    setJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
   })
   td.appendChild(plusButton)
   tr.appendChild(td)
   return tr
 }
-const appendWorkerTable = () => {
+const appendJobTable = () => {
   indicateView.appendChild(worker)
   const tr = document.createElement`tr`
   worker.appendChild(tr)
@@ -361,10 +361,10 @@ const appendWorkerTable = () => {
   const value = document.createElement`th`
   value.textContent = 'value'
   tr.appendChild(value)
-  workerNameList.forEach(v => {
-    workerObject[v] = v === workerNameList[0] ? population : 0
+  jobNameList.forEach(v => {
+    jobObject[v] = v === jobNameList[0] ? population : 0
   })
-  Object.entries(workerObject).forEach(([k, v]) => {
+  Object.entries(jobObject).forEach(([k, v]) => {
     worker.appendChild(createWorkerTableColumn(k, v))
   })
 }
@@ -480,8 +480,8 @@ const createBuildingTableColumn = (d, v) => {
       })].timestamp -= (Date.now() - workerList[i].timestamp) / buildingObject[d].value
     }
     buildingObject[d].value -= 1
-    workerObject[workerNameList[0]] += 1
-    setJob(workerList[i], workerNameList[0])
+    jobObject[jobNameList[0]] += 1
+    setJob(workerList[i], jobNameList[0])
   })
   td.appendChild(minusButton)
   const valueSpan = document.createElement`span`
@@ -492,9 +492,9 @@ const createBuildingTableColumn = (d, v) => {
   plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
-    workerObject[workerNameList[0]] -= 1
+    jobObject[jobNameList[0]] -= 1
     buildingObject[d].value += 1
-    setJob(workerList[workerList.findIndex(va => va.post === workerNameList[0])], d)
+    setJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
   })
   td.appendChild(plusButton)
   return tr
@@ -737,11 +737,11 @@ const elementUpdate = () => {
   Object.entries(buildingObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v.value
   })
-  Object.entries(workerObject).forEach(([k, v]) => {
+  Object.entries(jobObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
   document.getElementById(`money`).textContent = money
-  workerNameList.forEach(v => {
+  jobNameList.forEach(v => {
     if (v === 'None') {
       if (
         0 < commoditiesObject['Canned Food'] &&
@@ -752,10 +752,10 @@ const elementUpdate = () => {
       } else document.getElementById(`plus-${v}`).disabled = true
       return
     }
-    if (workerObject[v] <= 0) {
+    if (jobObject[v] <= 0) {
       document.getElementById(`minus-${v}`).disabled = true
     } else document.getElementById(`minus-${v}`).disabled = false
-    if (workerObject['None'] <= workerList.reduce((acc, cur) => {
+    if (jobObject['None'] <= workerList.reduce((acc, cur) => {
       if (cur.post === 'None' && cur.state === 'return') return ++acc
       else return acc
     }, 0)) {
@@ -767,7 +767,7 @@ const elementUpdate = () => {
     if (buildingObject[v].value <= 0) {
       document.getElementById(`minus-${v}`).disabled = true
     } else document.getElementById(`minus-${v}`).disabled = false
-    if (workerObject['None'] <= workerList.reduce((acc, cur) => {
+    if (jobObject['None'] <= workerList.reduce((acc, cur) => {
       if (cur.post === 'None' && cur.state === 'return') return ++acc
       else return acc
     }, 0)) {
@@ -858,23 +858,23 @@ const pushCanvas = () => {
         } else v.state = null
         // set location
         let n
-        if (v.post === workerNameList[1]) {
+        if (v.post === jobNameList[1]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Farm' || va === 'Orchard')
           })
-        } else if (v.post === workerNameList[2]) {
+        } else if (v.post === jobNameList[2]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Open Range' || va === 'Fertile Hills')
           })
-        } else if (v.post === workerNameList[3]) {
+        } else if (v.post === jobNameList[3]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Forest')
           })
-        } else if (v.post === workerNameList[4]) {
+        } else if (v.post === jobNameList[4]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Iron Mines' || va === 'Coal Mines')
           })
-        } else if (v.post === workerNameList[5]) {
+        } else if (v.post === jobNameList[5]) {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Desert')
           })
@@ -960,7 +960,7 @@ const main = () => {
       }
     }
     if (k.fullness <= 0) {
-      if (workerNameList.some(v => v === k.post)) workerObject[k.post]--
+      if (jobNameList.some(v => v === k.post)) jobObject[k.post]--
       else if (Object.keys(convertObject).some(v => v === k.post)) buildingObject[k.post].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
@@ -1040,7 +1040,7 @@ const stream = async () => {
   appendResourcesTable()
   appendMaterialsTable()
   appendGoodsTable()
-  appendWorkerTable()
+  appendJobTable()
   appendBuildingTable()
   appendTerrainTable()
   appendPersonalTable()
