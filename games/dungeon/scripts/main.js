@@ -6,6 +6,7 @@ const resourcesNameList = [
   'Fruit',
   'Wool',
   'Timber',
+  'Horses',
   'Iron',
   'Coal',
   'Gold',
@@ -37,6 +38,7 @@ const resourcesImagePathList = [
   'リンゴアイコン6',
   'ヒツジアイコン',
   '木アイコン',
+  '馬アイコン4',
   'iron',
   'coal',
   'gold',
@@ -301,14 +303,14 @@ const createWorkerTableColumn = (d, v) => {
     img.push(timber)
   } else if (d === jobNameList[4]) {
     const iron = new Image()
-    iron.src = resourcesImagePathList[5]
+    iron.src = resourcesImagePathList[6]
     img.push(iron)
     const coal = new Image()
-    coal.src = resourcesImagePathList[6]
+    coal.src = resourcesImagePathList[7]
     img.push(coal)
   } else if (d === jobNameList[5]) {
     const oil = new Image()
-    oil.src = resourcesImagePathList[9]
+    oil.src = resourcesImagePathList[10]
     img.push(oil)
   }
   img.forEach(vl => productTd.appendChild(vl))
@@ -408,7 +410,7 @@ const convertObject = {
     in: {[materialsNameList[3]]: 2},
     out: {[goodsNameList[5]]: 1}
   }, 'Refinery': {
-    in: {[resourcesNameList[9]]: 2},
+    in: {[resourcesNameList[10]]: 2},
     out: {[materialsNameList[4]]: 1}
   },
 }
