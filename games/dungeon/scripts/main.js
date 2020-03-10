@@ -714,7 +714,7 @@ const appendTradeTable = () => {
     td.appendChild(minusButton)
     const input = document.createElement`input`
     minusButton.addEventListener('click', () => {
-      if (0 < input.value) input.value--
+      if (0 < +input.value) input.value--
     })
     input.id = `trade-range-${k}`
     input.type = 'range'
@@ -731,7 +731,7 @@ const appendTradeTable = () => {
     plusButton.textContent = '+'
     td.appendChild(plusButton)
     plusButton.addEventListener('click', () => {
-      if (input.value < input.max) input.value++
+      if (+input.value < +input.max) input.value++
     })
   }
   Object.entries(tradeObject).forEach(([k, v]) => createTradeTr(k, v))
@@ -998,21 +998,19 @@ const main = () => {
     }
   })
   { // trade
-    if (Object.keys(tradeObject).some(v => {
-      return +document.getElementById(`trade-range-${v}`).value !== 0
-    })) {
-      if (tradeTimestamp === 0) tradeTimestamp = Date.now()
-      if (tradeInterval <= Date.now() - tradeTimestamp) {
-        Object.entries(tradeObject).forEach(([k, v]) => {
-          if (0 < +document.getElementById(`trade-range-${k}`).value) {
-            document.getElementById(`trade-range-${k}`).value =
-            document.getElementById(`trade-range-${k}`).value - 1
-            commoditiesObject[k]--
-            money += v
-          }
-        })
-      }
-    } else tradeTimestamp = 0
+    if (tradeInterval <= Date.now() - tradeTimestamp) {
+      tradeTimestamp = Date.now()
+      Object.entries(tradeObject).forEach(([k, v]) => {
+        if (0 < +document.getElementById(`trade-range-${k}`).value) {
+          const range = document.getElementById(`trade-range-${k}`)
+          const number = Math.floor(Math.random() * range.value)
+          range.value -= number
+          commoditiesObject[k] -= number
+          range.max = commoditiesObject[k]
+          money += v * number
+        }
+      })
+    }
   }
   elementUpdate()
   window.requestAnimationFrame(main)
@@ -1033,6 +1031,7 @@ const stream = async () => {
   appendTradeTable()
   pushCanvas()
   decreaseTime = Date.now()
+  tradeTimestamp = Date.now()
   main()
 }
 stream()
