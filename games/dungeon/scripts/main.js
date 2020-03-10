@@ -55,6 +55,7 @@ const goodsImagePathList = [
   'イスのアイコン9',
   '金づちの無料アイコン',
 ]
+const commoditiesImagePathObject = {}
 const nameList = ['people']
 const imagePathList = ['歩くアイコン']
 const addPathList = list => {
@@ -63,6 +64,9 @@ const addPathList = list => {
 addPathList(resourcesImagePathList)
 addPathList(materialsImagePathList)
 addPathList(goodsImagePathList)
+resourcesImagePathList.forEach((v, i) => commoditiesImagePathObject[resourcesNameList[i]] = v)
+materialsImagePathList.forEach((v, i) => commoditiesImagePathObject[materialsNameList[i]] = v)
+goodsImagePathList.forEach((v, i) => commoditiesImagePathObject[goodsNameList[i]] = v)
 addPathList(imagePathList)
 const resourcesImageList = []
 const materialsImageList = []
@@ -96,6 +100,9 @@ display.appendChild(canvasView)
 const menuView = document.createElement`div`
 menuView.className = 'container'
 display.appendChild(menuView)
+const tradeView = document.createElement`div`
+tradeView.className = 'container'
+display.appendChild(tradeView)
 const resourcesTable = document.createElement`table`
 const createResourcesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -648,6 +655,101 @@ const personalViewUpdate = d => {
   document.getElementById(`post-${d.id}`).textContent = d.post
   document.getElementById(`progress-${d.id}`).value = d.fullness
 }
+const tradeObject = {
+  'Grain': 100,
+  'Livestock': 100,
+  'Fruit': 100,
+  'Wool': 100,
+  'Timber': 100,
+  'Iron': 100,
+  'Coal': 100,
+  'Gold': 200,
+  'Gems': 400,
+  'Oil': 100,
+  'Fabric': 200,
+  'Paper': 200,
+  'Lumber': 200,
+  'Steel': 200,
+  'Fuel': 200,
+  'Canned Food': 400,
+  'Clothing': 900,
+  'Furniture': 900,
+  'Hardware': 900,
+}
+const tradeTable = document.createElement`table`
+const appendTradeTable = () => {
+  tradeView.appendChild(tradeTable)
+  const tr = document.createElement`tr`
+  tradeTable.appendChild(tr)
+  const th = document.createElement`th`
+  th.textContent = 'Commodity'
+  tr.appendChild(th)
+  const orders = document.createElement`th`
+  orders.textContent = 'Orders'
+  tr.appendChild(orders)
+  const price = document.createElement`th`
+  price.textContent = 'Price'
+  tr.appendChild(price)
+  const available = document.createElement`th`
+  available.textContent = 'Available'
+  tr.appendChild(available)
+  const quantity = document.createElement`th`
+  quantity.textContent = 'Quantity to Offer'
+  tr.appendChild(quantity)
+  const createTradeTr = (k, v) => {
+    const tr = document.createElement`tr`
+    tradeTable.appendChild(tr)
+    const item = document.createElement`td`
+    tr.appendChild(item)
+    const img = new Image()
+    img.src = commoditiesImagePathObject[k]
+    item.appendChild(img)
+    const name = document.createElement`span`
+    name.textContent = k
+    item.appendChild(name)
+    const orders = document.createElement`td`
+    tr.appendChild(orders)
+    const toggle = document.createElement`button`
+    toggle.id = `trade-orders-${k}`
+    toggle.textContent = 'Offer'
+    orders.appendChild(toggle)
+    toggle.addEventListener('click', e => {
+      e.target.textContent = e.target.textContent === 'Bid' ? 'Offer': 'Bid'
+    })
+    const price = document.createElement`td`
+    price.className = 'value'
+    price.textContent = v
+    tr.appendChild(price)
+    const available = document.createElement`td`
+    available.className = 'value'
+    available.textContent = commoditiesObject[k]
+    tr.appendChild(available)
+    const td = document.createElement`td`
+    tr.appendChild(td)
+    const minusButton = document.createElement`button`
+    minusButton.id = `trade-minus-${k}`
+    minusButton.textContent = '-'
+    td.appendChild(minusButton)
+    minusButton.addEventListener('click', () => {})
+    const input = document.createElement`input`
+    input.id = `trade-range-${k}`
+    input.type = 'range'
+    input.max = 0
+    input.value = 0
+    td.appendChild(input)
+    input.addEventListener('input', () => {})
+    const inputValue = document.createElement`span`
+    inputValue.id = `trade-value-${k}`
+    inputValue.textContent = 0
+    td.appendChild(inputValue)
+    const plusButton = document.createElement`button`
+    plusButton.id = `trade-plus-${k}`
+    plusButton.textContent = '+'
+    td.appendChild(plusButton)
+    plusButton.addEventListener('click', () => {})
+  }
+  Object.entries(tradeObject).forEach(([k, v]) => createTradeTr(k, v))
+}
 const size = 16
 let canvasId = 0
 const pushCanvas = () => {
@@ -872,6 +974,7 @@ const stream = async () => {
   appendGoodsTable()
   appendWorkerTable()
   appendBuildingTable()
+  appendTradeTable()
   pushCanvas()
   decreaseTime = Date.now()
   main()
