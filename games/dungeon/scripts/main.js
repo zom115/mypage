@@ -1,4 +1,5 @@
 {'use strict'
+const money = 0
 const resourcesNameList = [
   'Grain',
   'Livestock',
@@ -57,7 +58,10 @@ const goodsImagePathList = [
 ]
 const commoditiesImagePathObject = {}
 const nameList = ['people']
-const imagePathList = ['歩くアイコン']
+const imagePathList = [
+  '歩くアイコン',
+  'コインのベクター素材',
+]
 const addPathList = list => {
   list.forEach((v, i) => list[i] = `images/${v}.png`)
 }
@@ -171,7 +175,6 @@ const appendMaterialsTable = () => {
     materialsTable.appendChild(createMaterialsTableColumn(v, 0))
   })
 }
-  const goodsObject = {}
 const goodsTable = document.createElement`table`
 const createGoodsTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -205,6 +208,21 @@ const appendGoodsTable = () => {
   goodsNameList.forEach(v => {
     goodsTable.appendChild(createGoodsTableColumn(v, 0))
   })
+  const moneyTr = document.createElement`tr`
+  goodsTable.appendChild(moneyTr)
+  const moneyTh = document.createElement`th`
+  moneyTr.appendChild(moneyTh)
+  const img = new Image()
+  img.src = imagePathList[1]
+  moneyTh.appendChild(img)
+  const span = document.createElement`span`
+  span.textContent = 'Money'
+  moneyTh.appendChild(span)
+  const moneyValue = document.createElement`td`
+  moneyValue.id = 'money'
+  moneyValue.className = 'value'
+  moneyValue.textContent = money
+  moneyTr.appendChild(moneyValue)
 }
 const workerObject = {}
 const workerNameList = [
