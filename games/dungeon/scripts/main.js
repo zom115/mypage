@@ -651,6 +651,9 @@ const tradeObject = {
   'Furniture': 900,
   'Hardware': 900,
 }
+const tradeBidObject = {}
+Object.keys(tradeObject).forEach(v => tradeBidObject[v] = 0)
+let payment = 0
 const tradeInterval = 3e4
 let tradeTimestamp = 0
 const tradeTable = document.createElement`table`
@@ -694,9 +697,6 @@ const appendTradeTable = () => {
     toggle.id = `trade-orders-${k}`
     toggle.textContent = 'Offer'
     orders.appendChild(toggle)
-    toggle.addEventListener('click', e => {
-      e.target.textContent = e.target.textContent === 'Bid' ? 'Offer': 'Bid'
-    })
     const price = document.createElement`td`
     price.className = 'value'
     price.textContent = v
@@ -713,15 +713,24 @@ const appendTradeTable = () => {
     minusButton.textContent = '-'
     td.appendChild(minusButton)
     const input = document.createElement`input`
-    minusButton.addEventListener('click', () => {
-      if (0 < +input.value) input.value--
-    })
     input.id = `trade-range-${k}`
     input.type = 'range'
     input.max = 0
     input.value = 0
     td.appendChild(input)
-    input.addEventListener('input', () => {})
+    toggle.addEventListener('click', e => {
+      if (e.target.textContent === 'Bid') {
+        e.target.textContent = 'Offer'
+        input.max = commoditiesObject[k]
+      } else {
+        e.target.textContent = 'Bid'
+        input.max = tradeBidObject[k]
+      }
+      input.value = 0
+    })
+    minusButton.addEventListener('click', () => {
+      if (0 < +input.value) input.value--
+    })
     const inputValue = document.createElement`span`
     inputValue.id = `trade-value-${k}`
     inputValue.textContent = 0
@@ -776,15 +785,17 @@ const elementUpdate = () => {
     buildingProgressUpdate(v)
   })
   Object.keys(tradeObject).forEach(v => {
-    document.getElementById(`trade-available-${v}`).textContent = commoditiesObject[v]
+    const order = document.getElementById(`trade-orders-${v}`).textContent
     const range = document.getElementById(`trade-range-${v}`)
-    range.max = commoditiesObject[v]
-    value = document.getElementById(`trade-range-${v}`).value
-    document.getElementById(`trade-value-${v}`).textContent = value
-    if (value === '0') {
+    const available = document.getElementById(`trade-available-${v}`)
+    const value = order === 'Offer' ? commoditiesObject[v] : tradeBidObject[v]
+    available.textContent = value
+    range.max = value
+    if (+range.value === 0) {
       document.getElementById(`trade-minus-${v}`).disabled = true
     } else document.getElementById(`trade-minus-${v}`).disabled = false
-    if ('' + commoditiesObject[v] === value) {
+    document.getElementById(`trade-value-${v}`).textContent = range.value
+    if (value === +range.value || (order === 'Bid' && money < payment + tradeObject[v])) {
       document.getElementById(`trade-plus-${v}`).disabled = true
     } else document.getElementById(`trade-plus-${v}`).disabled = false
   })
@@ -998,19 +1009,31 @@ const main = () => {
     }
   })
   { // trade
-    if (tradeInterval <= Date.now() - tradeTimestamp) {
-      tradeTimestamp = Date.now()
-      Object.entries(tradeObject).forEach(([k, v]) => {
-        if (0 < +document.getElementById(`trade-range-${k}`).value) {
-          const range = document.getElementById(`trade-range-${k}`)
+    payment = 0
+    Object.entries(tradeObject).forEach(([k, v]) => {
+      const range = document.getElementById(`trade-range-${k}`)
+      const order = document.getElementById(`trade-orders-${k}`).textContent
+      if (order === 'Bid') payment += tradeObject[k] * range.value
+      if (tradeInterval <= Date.now() - tradeTimestamp) {
+        if (order === 'Offer' && 0 < +range.value) {
           const number = Math.floor(Math.random() * range.value)
           range.value -= number
           commoditiesObject[k] -= number
           range.max = commoditiesObject[k]
           money += v * number
+        } else if (0 < +range.value) { // bid
+          money -= v * range.value
+          commoditiesObject[k] += +range.value
+          tradeBidObject[k] -= +range.value
+          range.max = tradeBidObject[k]
+          range.value = 0
         }
-      })
-    }
+        const number = Math.floor((Math.random() - .5) * 8) // temporary
+        tradeBidObject[k] + number < 0 ? 0 : tradeBidObject[k] += number
+      }
+    })
+
+    if (tradeInterval <= Date.now() - tradeTimestamp) tradeTimestamp = Date.now()
   }
   elementUpdate()
   window.requestAnimationFrame(main)
