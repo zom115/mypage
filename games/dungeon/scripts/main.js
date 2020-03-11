@@ -990,7 +990,13 @@ const main = () => {
           buildingWorkTime <= workerList.reduce((acc, cur) => {
             if (cur.location === k.location && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
             else return acc
-          }, 0) / recipeList[k.location].value * Math.log2(1 + recipeList[k.location].value)
+          }, 0) / workerList.reduce((acc, cur) => {
+            if (cur.post === k.post) return ++acc
+            else return acc
+          }, 0) * Math.log2(1 + workerList.reduce((acc, cur) => {
+            if (cur.post === k.post) return ++acc
+            else return acc
+          }, 0))
         ) { // task completed
           Object.entries(recipeList[k.location].in).forEach(([ky, vl]) => {
             commoditiesObject[ky] -= vl
