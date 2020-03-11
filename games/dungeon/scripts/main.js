@@ -773,14 +773,14 @@ const elementUpdate = () => {
     if (v.value <= 0) {
       document.getElementById(`building-minus-${i}`).disabled = true
     } else document.getElementById(`building-minus-${i}`).disabled = false
-    if (jobObject['None'] <= workerList.reduce((acc, cur) => {
-      if (cur.post === 'None' || cur.state === 'return') return ++acc
+    if (0 < workerList.reduce((acc, cur) => {
+      if (cur.post === 'None' && cur.state !== 'return') return ++acc
       else return acc
     }, 0) && Object.entries(recipeList[i].in).some(([k, v]) => {
-      return commoditiesObject[k] < v})
+      return v <= commoditiesObject[k]})
     ) {
-      document.getElementById(`building-plus-${i}`).disabled = true
-    } else document.getElementById(`building-plus-${i}`).disabled = false
+      document.getElementById(`building-plus-${i}`).disabled = false
+    } else document.getElementById(`building-plus-${i}`).disabled = true
     const progress = document.getElementById(`building-progress-${i}`)
     if (v.value <= 0) progress.value = 0
     else {
