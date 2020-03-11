@@ -400,9 +400,6 @@ const convertObject = {
   },], 'Furniture Factory': [{
     in: {[materialsNameList[2]]: 2},
     out: {[goodsNameList[3]]: 1},
-  },], 'Paper Mill': [{
-    in: {[resourcesNameList[4]]: 2},
-    out: {[materialsNameList[1]]: 1},
   },], 'Steel Mill': [{
     in: {Coal: 1, Iron: 1},
     out: {[materialsNameList[3]]: 1},
@@ -410,9 +407,6 @@ const convertObject = {
     in: {[materialsNameList[3]]: 2},
     out: {[goodsNameList[4]]: 1},
   }, {
-    in: {[materialsNameList[3]]: 2},
-    out: {[goodsNameList[5]]: 1},
-  },], 'Armaments Factory': [{
     in: {[materialsNameList[3]]: 2},
     out: {[goodsNameList[5]]: 1},
   },], 'Refinery': [{
