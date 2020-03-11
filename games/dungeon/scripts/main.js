@@ -253,7 +253,7 @@ const createWorkerFirst = p => {
     timestamp: 0,
   }
 }
-const setJob = (worker, post) => {
+const resetJob = (worker, post) => {
   worker.location = 0
   worker.post = post
   worker.timestamp = 0
@@ -345,7 +345,7 @@ const createWorkerTableColumn = (d, v) => {
   } else plusButton.addEventListener('click', () => {
     jobObject[jobNameList[0]] -= 1
     jobObject[d] += 1
-    setJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
+    resetJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
   })
   td.appendChild(plusButton)
   tr.appendChild(td)
@@ -371,53 +371,57 @@ const appendJobTable = () => {
     worker.appendChild(createWorkerTableColumn(k, v))
   })
 }
-const buildingObject = {}
 const convertObject = {
-  'Canteen': {
+  'Canteen': [{
     in: {
       [resourcesNameList[0]]: 14,
       [resourcesNameList[1]]: 7,
       [resourcesNameList[2]]: 8,
     },
     out: {[goodsNameList[0]]: 1e3}
-  }, 'Food Production': {
+  }], 'Food Production': [{
     in: {
       [resourcesNameList[0]]: 1,
       [resourcesNameList[1]]: 1,
       [resourcesNameList[2]]: 1
     }, out: {[goodsNameList[1]]: 1}
-  }, 'Textile Mill': {
+  }], 'Textile Mill': [{
     in: {[resourcesNameList[3]]: 2},
     out: {[materialsNameList[0]]: 1}
-  }, 'Clothing Factory': {
+  }], 'Clothing Factory': [{
     in: {[materialsNameList[0]]: 2},
     out: {[goodsNameList[2]]: 1}
-  }, 'Lumber Mill': {
+  }], 'Lumber Mill': [{
     in: {[resourcesNameList[4]]: 2},
     out: {[materialsNameList[2]]: 1}
-  }, 'Furniture Factory': {
+  }], 'Furniture Factory': [{
     in: {[materialsNameList[2]]: 2},
     out: {[goodsNameList[3]]: 1}
-  }, 'Paper Mill': {
+  }], 'Paper Mill': [{
     in: {[resourcesNameList[4]]: 2},
     out: {[materialsNameList[1]]: 1}
-  }, 'Steel Mill': {
+  }], 'Steel Mill': [{
     in: {Coal: 1, Iron: 1},
     out: {[materialsNameList[3]]: 1}
-  }, 'Blacksmith': {
+  }], 'Blacksmith': [{
     in: {[materialsNameList[3]]: 2},
     out: {[goodsNameList[4]]: 1}
-  }, 'Armaments Factory': {
+  }], 'Armaments Factory': [{
     in: {[materialsNameList[3]]: 2},
     out: {[goodsNameList[5]]: 1}
-  }, 'Refinery': {
+  }], 'Refinery': [{
     in: {[resourcesNameList[10]]: 2},
     out: {[materialsNameList[4]]: 1}
-  },
+  }],
 }
+const recipeList = Object.values(convertObject).flat()
+recipeList.forEach(v => {
+  v.value = 0
+  v.timestamp = 0
+})
 const buildingWorkTime = 1e4
 const building = document.createElement`table`
-const createBuildingTableColumn = (d, v) => {
+const createBuildingTableColumn = (d, v, i) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
   item.textContent = d
@@ -427,7 +431,7 @@ const createBuildingTableColumn = (d, v) => {
   tr.appendChild(leftSide)
   const rightSide = document.createElement`td`
   tr.appendChild(rightSide)
-  Object.entries(convertObject[d].in).forEach(([k, vl]) => {
+  Object.entries(recipeList[i].in).forEach(([k, vl]) => {
     const img = new Image()
     if (resourcesNameList.findIndex(va => va === k) !== -1) {
       img.src = resourcesImagePathList[resourcesNameList.findIndex(va => va === k)]
@@ -446,7 +450,7 @@ const createBuildingTableColumn = (d, v) => {
   const equalSpan = document.createElement`span`
   equalSpan.textContent = ' = '
   rightSide.appendChild(equalSpan)
-  Object.entries(convertObject[d].out).forEach(([k, vl]) => {
+  Object.entries(recipeList[i].out).forEach(([k, vl]) => {
     const img = new Image()
     if (resourcesNameList.findIndex(va => va === k) !== -1) {
       img.src = resourcesImagePathList[resourcesNameList.findIndex(va => va === k)]
@@ -465,7 +469,7 @@ const createBuildingTableColumn = (d, v) => {
   const progressTd = document.createElement`td`
   tr.appendChild(progressTd)
   const progress = document.createElement`progress`
-  progress.id = `buildingProgress-${d}`
+  progress.id = `building-progress-${i}`
   progress.max = buildingWorkTime
   progress.value = 0
   progressTd.appendChild(progress)
@@ -473,31 +477,34 @@ const createBuildingTableColumn = (d, v) => {
   td.className = 'value'
   tr.appendChild(td)
   const minusButton = document.createElement`button`
-  minusButton.id = `minus-${d}`
+  minusButton.id = `building-minus-${i}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
-    const i = workerList.findIndex(va => va.post === d)
-    if (buildingObject[d].value !== 1) {
+    const index = workerList.findIndex(va => va.post === d)
+    if (recipeList[i].value !== 1) {
       workerList[workerList.findIndex((va, idx) => {
-        return i < idx && va.post === d
-      })].timestamp -= (Date.now() - workerList[i].timestamp) / buildingObject[d].value
+        return index < idx && va.post === d
+      })].timestamp -= (Date.now() - workerList[index].timestamp) / recipeList[i].value
     }
-    buildingObject[d].value -= 1
+    recipeList[i].value -= 1
     jobObject[jobNameList[0]] += 1
-    setJob(workerList[i], jobNameList[0])
+    resetJob(workerList[index], jobNameList[0])
   })
   td.appendChild(minusButton)
   const valueSpan = document.createElement`span`
-  valueSpan.id = d
+  valueSpan.id = `building-value-${i}`
   valueSpan.textContent = v
   td.appendChild(valueSpan)
   const plusButton = document.createElement`button`
-  plusButton.id = `plus-${d}`
+  plusButton.id = `building-plus-${i}`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
     jobObject[jobNameList[0]] -= 1
-    buildingObject[d].value += 1
-    setJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
+    recipeList[i].value += 1
+    const worker = workerList[workerList.findIndex(va => va.post === jobNameList[0])]
+    worker.location = i
+    worker.post = d
+    worker.timestamp = 0
   })
   td.appendChild(plusButton)
   return tr
@@ -521,25 +528,13 @@ const appendBuildingTable = () => {
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
-  Object.keys(convertObject).forEach(v => {
-    buildingObject[v] = {}
-    buildingObject[v].value = 0
-    buildingObject[v].timestamp = 0
+  let index = 0
+  Object.keys(convertObject).forEach(k => {
+    convertObject[k].forEach((_v, i) => {
+      building.appendChild(createBuildingTableColumn(k, recipeList[i].value, index))
+      index++
+    })
   })
-  Object.entries(buildingObject).forEach(([k, v]) => {
-    building.appendChild(createBuildingTableColumn(k, v.value))
-  })
-}
-const buildingProgressUpdate = d => {
-  const progress = document.getElementById(`buildingProgress-${d}`)
-  if (buildingObject[d].value <= 0) {
-    progress.value = 0
-    return
-  }
-  progress.value = workerList.reduce((acc, cur) => {
-    if (cur.post === d && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
-    else return acc
-  }, 0) / buildingObject[d].value * Math.log2(1 + buildingObject[d].value)
 }
 const terrainList = ['Town']
 const terrainProductObject = {
@@ -743,8 +738,8 @@ const elementUpdate = () => {
   Object.entries(commoditiesObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
-  Object.entries(buildingObject).forEach(([k, v]) => {
-    document.getElementById(k).textContent = v.value
+  recipeList.forEach((v, i) => {
+    document.getElementById(`building-value-${i}`).textContent = v.value
   })
   Object.entries(jobObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
@@ -772,17 +767,25 @@ const elementUpdate = () => {
     } else document.getElementById(`plus-${v}`).disabled = false
   })
   workerList.forEach(v => personalViewUpdate(v))
-  Object.keys(convertObject).forEach(v => {
-    if (buildingObject[v].value <= 0) {
-      document.getElementById(`minus-${v}`).disabled = true
-    } else document.getElementById(`minus-${v}`).disabled = false
+  recipeList.forEach((v, i) => {
+    if (v.value <= 0) {
+      document.getElementById(`building-minus-${i}`).disabled = true
+    } else document.getElementById(`building-minus-${i}`).disabled = false
     if (jobObject['None'] <= workerList.reduce((acc, cur) => {
       if (cur.post === 'None' && cur.state === 'return') return ++acc
       else return acc
     }, 0)) {
-      document.getElementById(`plus-${v}`).disabled = true
-    } else document.getElementById(`plus-${v}`).disabled = false
-    buildingProgressUpdate(v)
+      document.getElementById(`building-plus-${i}`).disabled = true
+    } else document.getElementById(`building-plus-${i}`).disabled = false
+    const progress = document.getElementById(`building-progress-${i}`)
+    if (v.value <= 0) {
+      progress.value = 0
+      return
+    }
+    progress.value = workerList.reduce((acc, cur) => {
+      if (cur.post === v && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+      else return acc
+    }, 0) / v.value * Math.log2(1 + v.value)
   })
   Object.keys(tradeObject).forEach(v => {
     const order = document.getElementById(`trade-orders-${v}`).textContent
@@ -970,31 +973,31 @@ const main = () => {
     }
     if (k.fullness <= 0) {
       if (jobNameList.some(v => v === k.post)) jobObject[k.post]--
-      else if (Object.keys(convertObject).some(v => v === k.post)) buildingObject[k.post].value--
+      else if (Object.keys(convertObject).some(v => v === k.post)) recipeList[k.location].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
     }
     if (Object.keys(convertObject).some(ky => k.post === ky)) {
-      if (Object.entries(convertObject[k.post].in).every(([ky, vl]) => {
+      if (Object.entries(recipeList[k.location].in).every(([ky, vl]) => {
         return vl <= commoditiesObject[ky]
       })) {
-        if (buildingObject[k.post].timestamp === 0) buildingObject[k.post].timestamp = Date.now()
+        if (recipeList[k.location].timestamp === 0) recipeList[k.location].timestamp = Date.now()
         if (k.timestamp === 0) k.timestamp = Date.now()
         if (
           buildingWorkTime <= workerList.reduce((acc, cur) => {
             if (cur.post === k.post && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
             else return acc
-          }, 0) / buildingObject[k.post].value * Math.log2(1 + buildingObject[k.post].value)
+          }, 0) / recipeList[k.location].value * Math.log2(1 + recipeList[k.location].value)
         ) { // task completed
-          Object.entries(convertObject[k.post].in).forEach(([ky, vl]) => {
+          Object.entries(recipeList[k.location].in).forEach(([ky, vl]) => {
             commoditiesObject[ky] -= vl
           })
-          Object.entries(convertObject[k.post].out).forEach(([ky, vl]) => {
+          Object.entries(recipeList[k.location].out).forEach(([ky, vl]) => {
             commoditiesObject[ky] += vl
           })
           k.timestamp = 0
-          buildingObject[k.post].timestamp = 0
-          const number = buildingObject[k.post].value
+          recipeList[k.location].timestamp = 0
+          const number = recipeList[k.location].value
           const rate = 10
           workerList.forEach(v => {
             if (v.post === k.post) {
@@ -1004,7 +1007,7 @@ const main = () => {
           })
         }
       } else {
-        buildingObject[k.post].timestamp = 0
+        recipeList[k.location].timestamp = 0
         k.timestamp = 0
       }
     }
