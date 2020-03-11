@@ -378,41 +378,47 @@ const convertObject = {
       [resourcesNameList[1]]: 7,
       [resourcesNameList[2]]: 8,
     },
-    out: {[goodsNameList[0]]: 1e3}
-  }], 'Food Production': [{
+    out: {[goodsNameList[0]]: 1e3},
+  },], 'Food Production': [{
     in: {
       [resourcesNameList[0]]: 1,
       [resourcesNameList[1]]: 1,
       [resourcesNameList[2]]: 1
-    }, out: {[goodsNameList[1]]: 1}
-  }], 'Textile Mill': [{
+    }, out: {[goodsNameList[1]]: 1},
+  },], 'Textile Mill': [{
     in: {[resourcesNameList[3]]: 2},
-    out: {[materialsNameList[0]]: 1}
-  }], 'Clothing Factory': [{
+    out: {[materialsNameList[0]]: 1},
+  },], 'Clothing Factory': [{
     in: {[materialsNameList[0]]: 2},
-    out: {[goodsNameList[2]]: 1}
-  }], 'Lumber Mill': [{
+    out: {[goodsNameList[2]]: 1},
+  },], 'Lumber Mill': [{
     in: {[resourcesNameList[4]]: 2},
-    out: {[materialsNameList[2]]: 1}
-  }], 'Furniture Factory': [{
+    out: {[materialsNameList[2]]: 1},
+  }, {
+    in: {[resourcesNameList[4]]: 2},
+    out: {[materialsNameList[1]]: 1},
+  },], 'Furniture Factory': [{
     in: {[materialsNameList[2]]: 2},
-    out: {[goodsNameList[3]]: 1}
-  }], 'Paper Mill': [{
+    out: {[goodsNameList[3]]: 1},
+  },], 'Paper Mill': [{
     in: {[resourcesNameList[4]]: 2},
-    out: {[materialsNameList[1]]: 1}
-  }], 'Steel Mill': [{
+    out: {[materialsNameList[1]]: 1},
+  },], 'Steel Mill': [{
     in: {Coal: 1, Iron: 1},
-    out: {[materialsNameList[3]]: 1}
-  }], 'Blacksmith': [{
+    out: {[materialsNameList[3]]: 1},
+  },], 'Blacksmith': [{
     in: {[materialsNameList[3]]: 2},
-    out: {[goodsNameList[4]]: 1}
-  }], 'Armaments Factory': [{
+    out: {[goodsNameList[4]]: 1},
+  }, {
     in: {[materialsNameList[3]]: 2},
-    out: {[goodsNameList[5]]: 1}
-  }], 'Refinery': [{
+    out: {[goodsNameList[5]]: 1},
+  },], 'Armaments Factory': [{
+    in: {[materialsNameList[3]]: 2},
+    out: {[goodsNameList[5]]: 1},
+  },], 'Refinery': [{
     in: {[resourcesNameList[10]]: 2},
-    out: {[materialsNameList[4]]: 1}
-  }],
+    out: {[materialsNameList[4]]: 1},
+  },],
 }
 const recipeList = Object.values(convertObject).flat()
 recipeList.forEach(v => {
@@ -421,10 +427,10 @@ recipeList.forEach(v => {
 })
 const buildingWorkTime = 1e4
 const building = document.createElement`table`
-const createBuildingTableColumn = (d, v, i) => {
+const createBuildingTableColumn = (d, v, i, iC) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
-  item.textContent = d
+  if (iC === 0) item.textContent = d
   tr.appendChild(item)
   const leftSide = document.createElement`td`
   leftSide.className = 'value'
@@ -530,9 +536,11 @@ const appendBuildingTable = () => {
   tr.appendChild(value)
   let index = 0
   Object.keys(convertObject).forEach(k => {
+    let innerCount = 0
     convertObject[k].forEach((_v, i) => {
-      building.appendChild(createBuildingTableColumn(k, recipeList[i].value, index))
+      building.appendChild(createBuildingTableColumn(k, recipeList[i].value, index, innerCount))
       index++
+      innerCount++
     })
   })
 }
@@ -984,7 +992,7 @@ const main = () => {
         if (k.timestamp === 0) k.timestamp = Date.now()
         if (
           buildingWorkTime <= workerList.reduce((acc, cur) => {
-            if (cur.post === k.post && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+            if (cur.location === k.location && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
             else return acc
           }, 0) / recipeList[k.location].value * Math.log2(1 + recipeList[k.location].value)
         ) { // task completed
@@ -999,7 +1007,7 @@ const main = () => {
           const number = recipeList[k.location].value
           const rate = 10
           workerList.forEach(v => {
-            if (v.post === k.post) {
+            if (v.location === k.location) {
               v.fullness -= Math.floor(rate / number)
               v.timestamp = 0
             }
