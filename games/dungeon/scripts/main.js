@@ -778,14 +778,13 @@ const elementUpdate = () => {
       document.getElementById(`building-plus-${i}`).disabled = true
     } else document.getElementById(`building-plus-${i}`).disabled = false
     const progress = document.getElementById(`building-progress-${i}`)
-    if (v.value <= 0) {
-      progress.value = 0
-      return
+    if (v.value <= 0) progress.value = 0
+    else {
+      progress.value = workerList.reduce((acc, cur) => {
+        if (cur.location === i && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+        else return acc
+      }, 0) / v.value * Math.log2(1 + v.value)
     }
-    progress.value = workerList.reduce((acc, cur) => {
-      if (cur.post === v && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
-      else return acc
-    }, 0) / v.value * Math.log2(1 + v.value)
   })
   Object.keys(tradeObject).forEach(v => {
     const order = document.getElementById(`trade-orders-${v}`).textContent
