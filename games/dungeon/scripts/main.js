@@ -777,8 +777,8 @@ const elementUpdate = () => {
       if (cur.post === 'None' || cur.state === 'return') return ++acc
       else return acc
     }, 0) && Object.entries(recipeList[i].in).every(([k, v]) => {
-      console.log(commoditiesObject[k] , v)
-      return commoditiesObject[k] < v})) {
+      return commoditiesObject[k] < v})
+    ) {
       document.getElementById(`building-plus-${i}`).disabled = true
     } else document.getElementById(`building-plus-${i}`).disabled = false
     const progress = document.getElementById(`building-progress-${i}`)
