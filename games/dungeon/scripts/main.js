@@ -106,6 +106,9 @@ display.appendChild(secondPanel)
 const thirdPanel = document.createElement`div`
 display.appendChild(thirdPanel)
 thirdPanel.className = 'container'
+const labourPanel = document.createElement`div`
+display.appendChild(labourPanel)
+labourPanel.className = 'container'
 const fourthPanel = document.createElement`div`
 fourthPanel.className = 'container'
 display.appendChild(fourthPanel)
@@ -239,6 +242,7 @@ const jobNameList = [
   'Driller'
 ]
 let population = 5
+let labour = 0
 const workerList = []
 const fullnessMax = 100
 let workerId = -1
@@ -260,6 +264,7 @@ const resetJob = (worker, post) => {
 }
 for (let i = 0; i < population; i++) {
   workerList.push(createWorkerFirst(jobNameList[0]))
+  labour++
 }
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
@@ -323,7 +328,8 @@ const createWorkerTableColumn = (d, v) => {
   minusButton.addEventListener('click', () => {
     jobObject[d] -= 1
     jobObject[jobNameList[0]] += 1
-    workerList[workerList.findIndex(va => va.post === d)].post = 'None'
+    workerList[workerList.findIndex(va => va.post === d)].post = jobNameList[0]
+    labour++
   })
   if (d !== jobNameList[0]) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
@@ -338,7 +344,8 @@ const createWorkerTableColumn = (d, v) => {
       commoditiesObject['Canned Food']--
       commoditiesObject['Clothing']--
       commoditiesObject['Furniture']--
-      jobObject['None']++
+      jobObject[jobNameList[0]]++
+      labour++
       workerList.push(createWorkerFirst(jobNameList[0]))
       pushPersonalTable(workerList[workerList.length - 1])
     })
@@ -346,6 +353,7 @@ const createWorkerTableColumn = (d, v) => {
     jobObject[jobNameList[0]] -= 1
     jobObject[d] += 1
     resetJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
+    labour--
   })
   td.appendChild(plusButton)
   tr.appendChild(td)
@@ -489,6 +497,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
     recipeList[i].value -= 1
     jobObject[jobNameList[0]] += 1
     resetJob(workerList[index], jobNameList[0])
+    labour++
   })
   td.appendChild(minusButton)
   const valueSpan = document.createElement`span`
@@ -505,6 +514,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
     worker.location = i
     worker.post = d
     worker.timestamp = 0
+    labour--
   })
   td.appendChild(plusButton)
   return tr
@@ -586,6 +596,22 @@ const appendTerrainTable = () => {
     button.addEventListener('click', () => terrainListObject[canvasSerector].push(d))
   }
   Object.keys(terrainProductObject).forEach(v => createTableColumn(v))
+}
+const createLabourTableColumn = () => {
+  const table = document.createElement`table`
+  labourPanel.appendChild(table)
+  const tr = document.createElement`tr`
+  table.appendChild(tr)
+  const name = document.createElement`td`
+  name.textContent = 'Labour'
+  tr.appendChild(name)
+  const td = document.createElement`td`
+  td.id = 'labour'
+  td.textContent = labour
+  tr.appendChild(td)
+}
+const updateLabourTable = () => {
+  document.getElementById('labour').textContent = labour
 }
 const personalTable = document.createElement`table`
 const pushPersonalTable = d => {
@@ -748,7 +774,7 @@ const elementUpdate = () => {
   })
   document.getElementById(`money`).textContent = money
   jobNameList.forEach(v => {
-    if (v === 'None') {
+    if (v === jobNameList[0]) {
       if (
         0 < commoditiesObject['Canned Food'] &&
         0 < commoditiesObject['Clothing'] &&
@@ -761,20 +787,20 @@ const elementUpdate = () => {
     if (jobObject[v] <= 0) {
       document.getElementById(`minus-${v}`).disabled = true
     } else document.getElementById(`minus-${v}`).disabled = false
-    if (jobObject['None'] <= workerList.reduce((acc, cur) => {
-      if (cur.post === 'None' && cur.state === 'return') return ++acc
+    if (jobObject[jobNameList[0]] <= workerList.reduce((acc, cur) => {
+      if (cur.post === jobNameList[0] && cur.state === 'return') return ++acc
       else return acc
     }, 0)) {
       document.getElementById(`plus-${v}`).disabled = true
     } else document.getElementById(`plus-${v}`).disabled = false
   })
-  workerList.forEach(v => personalViewUpdate(v))
+  updateLabourTable()
   recipeList.forEach((v, i) => {
     if (v.value <= 0) {
       document.getElementById(`building-minus-${i}`).disabled = true
     } else document.getElementById(`building-minus-${i}`).disabled = false
     if (0 < workerList.reduce((acc, cur) => {
-      if (cur.post === 'None' && cur.state !== 'return') return ++acc
+      if (cur.post === jobNameList[0] && cur.state !== 'return') return ++acc
       else return acc
     }, 0) && Object.entries(recipeList[i].in).some(([k, v]) => {
       return v <= commoditiesObject[k]})
@@ -797,6 +823,7 @@ const elementUpdate = () => {
       }, 0))
     }
   })
+  workerList.forEach(v => personalViewUpdate(v))
   Object.keys(tradeObject).forEach(v => {
     const order = document.getElementById(`trade-orders-${v}`).textContent
     const range = document.getElementById(`trade-range-${v}`)
@@ -852,7 +879,7 @@ const pushCanvas = () => {
     workerList.forEach((v, i) => {
       if (Object.keys(convertObject).some(va => {return v.post === va})) return
       if (Date.now() - v.timestamp < moveTime + workTime && (
-        terrainListObject[canvas.id][v.location] === undefined || v.post === 'None')
+        terrainListObject[canvas.id][v.location] === undefined || v.post === jobNameList[0])
       ) {
         v.state = 'return'
         if (Date.now() - v.timestamp < moveTime * v.location) {
@@ -962,7 +989,8 @@ const main = () => {
     decreaseTime += hungerInterval
   }
   workerList.forEach((k, i) => {
-    if (k.timestamp === 0 &&
+    if (
+      k.timestamp === 0 &&
       k.fullness < fullnessMax &&
       0 < commoditiesObject['Cuisine']
     ) {
@@ -1018,7 +1046,6 @@ const main = () => {
           const rate = 10
           workerList.forEach(v => {
             if (v.post === k.post && v.location === k.location) {
-              console.log(k, v, rate, number)
               v.fullness -= Math.floor(rate / number)
               v.timestamp = 0
             }
@@ -1077,6 +1104,7 @@ const stream = async () => {
   appendTerrainTable()
   appendJobTable()
   pushCanvas()
+  createLabourTableColumn()
   appendBuildingTable()
   appendTradeTable()
   appendPersonalTable()
