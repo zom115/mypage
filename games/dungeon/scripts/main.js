@@ -480,7 +480,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   minusButton.id = `building-minus-${i}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
-    const index = workerList.findIndex(va => va.post === d)
+    const index = workerList.findIndex(va => va.location === i)
     if (recipeList[i].value !== 1) {
       workerList[workerList.findIndex((va, idx) => {
         return index < idx && va.post === d
@@ -784,10 +784,17 @@ const elementUpdate = () => {
     const progress = document.getElementById(`building-progress-${i}`)
     if (v.value <= 0) progress.value = 0
     else {
+      const job = workerList[workerList.findIndex(v => v.location === i)].post
       progress.value = workerList.reduce((acc, cur) => {
         if (cur.location === i && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
         else return acc
-      }, 0) / v.value * Math.log2(1 + v.value)
+      }, 0) / workerList.reduce((acc, cur) => {
+        if (cur.post === job) return ++acc
+        else return acc
+      }, 0) * Math.log2(1 + workerList.reduce((acc, cur) => {
+        if (cur.post === job) return ++acc
+        else return acc
+      }, 0))
     }
   })
   Object.keys(tradeObject).forEach(v => {
@@ -988,8 +995,9 @@ const main = () => {
         if (k.timestamp === 0) k.timestamp = Date.now()
         if (
           buildingWorkTime <= workerList.reduce((acc, cur) => {
-            if (cur.location === k.location && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
-            else return acc
+            if (cur.post === k.post && cur.location === k.location && cur.timestamp !== 0) {
+              return acc + Date.now() - cur.timestamp
+            } else return acc
           }, 0) / workerList.reduce((acc, cur) => {
             if (cur.post === k.post) return ++acc
             else return acc
@@ -1009,7 +1017,8 @@ const main = () => {
           const number = recipeList[k.location].value
           const rate = 10
           workerList.forEach(v => {
-            if (v.location === k.location) {
+            if (v.post === k.post && v.location === k.location) {
+              console.log(k, v, rate, number)
               v.fullness -= Math.floor(rate / number)
               v.timestamp = 0
             }
