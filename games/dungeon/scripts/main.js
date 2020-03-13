@@ -29,7 +29,7 @@ const goodsImageObject = {
   'Armaments':   '大砲アイコン2',
 }
 const commonImageObject = {
-  'People': '歩くアイコン',
+  'Untraining': '玉子のイラスト',
   'Money': 'コインのベクター素材',
 }
 const commoditiesObject = {}
@@ -255,9 +255,9 @@ const createWorkerTableColumn = (d, v) => {
     const span = document.createElement`span`
     span.textContent = ' = '
     img.push(span)
-    const people = new Image()
-    people.src = commonImageObject['People']
-    img.push(people)
+    const untraining = new Image()
+    untraining.src = commonImageObject['Untraining']
+    img.push(untraining)
   } else if (d === jobNameList[1]) {
     const grain = new Image()
     grain.src = imagePathObject['Grain']
