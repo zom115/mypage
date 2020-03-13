@@ -1,66 +1,38 @@
 {'use strict'
 let money = 0
-const resourcesNameList = [
-  'Grain',
-  'Livestock',
-  'Fruit',
-  'Wool',
-  'Timber',
-  'Horses',
-  'Iron',
-  'Coal',
-  'Gold',
-  'Gems',
-  'Oil',
-]
-const materialsNameList = [
-  'Fabric',
-  'Paper',
-  'Lumber',
-  'Steel',
-  'Fuel',
-]
-const goodsNameList = [
-  'Cuisine',
-  'Canned Food',
-  'Clothing',
-  'Furniture',
-  'Hardware',
-  'Armaments',
-]
+const resourcesImageObject = {
+  'Grain':     '小麦アイコン',
+  'Livestock': '肉の切り身のアイコン',
+  'Fruit':     'リンゴアイコン6',
+  'Wool':      'ヒツジアイコン',
+  'Timber':    '木アイコン',
+  'Horses':    '馬アイコン4',
+  'Iron':      'iron',
+  'Coal':      'coal',
+  'Gold':      'gold',
+  'Gems':      'gems',
+  'Oil':       '石油アイコン',
+}
+const materialsImageObject = {
+  'Fabric': 'fabric',
+  'Paper':  '白紙のドキュメントアイコン',
+  'Lumber': '丸太アイコン',
+  'Steel':  'steel',
+  'Fuel':   '石油のアイコン',
+}
+const goodsImageObject = {
+  'Cuisine':     'フォークとナイフのお食事アイコン素材',
+  'Canned Food': '空き缶アイコン2',
+  'Clothing':    'VネックTシャツの無料アイコン1',
+  'Furniture':   'イスのアイコン9',
+  'Hardware':    '金づちの無料アイコン',
+  'Armaments':   '大砲アイコン2',
+}
 const commoditiesObject = {}
-resourcesNameList.forEach(v => commoditiesObject[v] = 0)
-materialsNameList.forEach(v => commoditiesObject[v] = 0)
-goodsNameList.forEach(v => commoditiesObject[v] = 0)
-const resourcesImagePathList = [
-  '小麦アイコン',
-  '肉の切り身のアイコン',
-  'リンゴアイコン6',
-  'ヒツジアイコン',
-  '木アイコン',
-  '馬アイコン4',
-  'iron',
-  'coal',
-  'gold',
-  'gems',
-  '石油アイコン',
-]
-const materialsImagePathList = [
-  'fabric',
-  '白紙のドキュメントアイコン',
-  '丸太アイコン',
-  'steel',
-  '石油のアイコン',
-]
-const goodsImagePathList = [
-  'フォークとナイフのお食事アイコン素材',
-  '空き缶アイコン2',
-  'VネックTシャツの無料アイコン1',
-  'イスのアイコン9',
-  '金づちの無料アイコン',
-  '大砲アイコン2',
-]
-const commoditiesImagePathObject = {}
+Object.keys(resourcesImageObject).forEach(v => commoditiesObject[v] = 0)
+Object.keys(materialsImageObject).forEach(v => commoditiesObject[v] = 0)
+Object.keys(goodsImageObject).forEach(v => commoditiesObject[v] = 0)
+const imagePathObject = {}
 const nameList = ['people']
 const imagePathList = [
   '歩くアイコン',
@@ -69,16 +41,25 @@ const imagePathList = [
 const addPathList = list => {
   list.forEach((v, i) => list[i] = `images/${v}.png`)
 }
-addPathList(resourcesImagePathList)
-addPathList(materialsImagePathList)
-addPathList(goodsImagePathList)
-resourcesImagePathList.forEach((v, i) => commoditiesImagePathObject[resourcesNameList[i]] = v)
-materialsImagePathList.forEach((v, i) => commoditiesImagePathObject[materialsNameList[i]] = v)
-goodsImagePathList.forEach((v, i) => commoditiesImagePathObject[goodsNameList[i]] = v)
+const addPathObject = obj => {
+  Object.entries(obj).forEach(([k, v]) => obj[k] = `images/${v}.png`)
+}
+addPathObject(resourcesImageObject)
+addPathObject(materialsImageObject)
+addPathObject(goodsImageObject)
+Object.entries(resourcesImageObject).forEach(([k, v]) => {
+  imagePathObject[k] = v
+})
+Object.entries(materialsImageObject).forEach(([k, v]) => {
+  imagePathObject[k] = v
+})
+Object.entries(goodsImageObject).forEach(([k, v]) => {
+  imagePathObject[k] = v
+})
 addPathList(imagePathList)
-const resourcesImageList = []
-const materialsImageList = []
-const goodsImageList = []
+const resourcesImageDOMList = []
+const materialsImageDOMList = []
+const goodsImageDOMList = []
 const imageList = []
 const imgLoad = async (pathList, nameList, imageList) => {
   return new Promise(async resolve => {
@@ -87,6 +68,22 @@ const imgLoad = async (pathList, nameList, imageList) => {
         const imgPreload = new Image()
         imgPreload.src = path
         imgPreload.alt = nameList[i]
+        imgPreload.addEventListener('load', async e => {
+          imageList.push(e.path[0])
+          res()
+        })
+      })
+    }))
+    resolve()
+  })
+}
+const imageLoad = async (obj, imageList) => {
+  return new Promise(async resolve => {
+    await Promise.all(Object.entries(obj).map(async ([name, path], i) => {
+      return new Promise(async res => {
+        const imgPreload = new Image()
+        imgPreload.src = path
+        imgPreload.alt = name
         imgPreload.addEventListener('load', async e => {
           imageList.push(e.path[0])
           res()
@@ -119,12 +116,10 @@ const resourcesTable = document.createElement`table`
 const createResourcesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
-  resourcesNameList.forEach(vl => {
-    if (d === vl) {
-      item.appendChild(resourcesImageList[resourcesImageList.findIndex(val => d === val.alt)])
-    }
-  })
   tr.appendChild(item)
+  const img = new Image()
+  img.src = resourcesImageObject[d]
+  item.appendChild(img)
   const span = document.createElement`span`
   span.textContent = d
   item.appendChild(span)
@@ -145,7 +140,7 @@ const appendResourcesTable = () => {
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
-  resourcesNameList.forEach(v => {
+  Object.keys(resourcesImageObject).forEach(v => {
     resourcesTable.appendChild(createResourcesTableColumn(v, 0))
   })
 }
@@ -153,12 +148,10 @@ const materialsTable = document.createElement`table`
 const createMaterialsTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
-  materialsNameList.forEach(vl => {
-    if (d === vl) {
-      item.appendChild(materialsImageList[materialsImageList.findIndex(val => d === val.alt)])
-    }
-  })
   tr.appendChild(item)
+  const img = new Image()
+  img.src = materialsImageObject[d]
+  item.appendChild(img)
   const span = document.createElement`span`
   span.textContent = d
   item.appendChild(span)
@@ -179,7 +172,7 @@ const appendMaterialsTable = () => {
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
-  materialsNameList.forEach(v => {
+  Object.keys(materialsImageObject).forEach(v => {
     materialsTable.appendChild(createMaterialsTableColumn(v, 0))
   })
 }
@@ -187,12 +180,10 @@ const goodsTable = document.createElement`table`
 const createGoodsTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
-  goodsNameList.forEach(vl => {
-    if (d === vl) {
-      item.appendChild(goodsImageList[goodsImageList.findIndex(val => d === val.alt)])
-    }
-  })
   tr.appendChild(item)
+  const img = new Image()
+  img.src = goodsImageObject[d]
+  item.appendChild(img)
   const span = document.createElement`span`
   span.textContent = d
   item.appendChild(span)
@@ -213,7 +204,7 @@ const appendGoodsTable = () => {
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
-  goodsNameList.forEach(v => {
+  Object.keys(goodsImageObject).forEach(v => {
     goodsTable.appendChild(createGoodsTableColumn(v, 0))
   })
   const moneyTr = document.createElement`tr`
@@ -278,13 +269,13 @@ const createWorkerTableColumn = (d, v) => {
   const img = []
   if (d === jobNameList[0]) {
     const can = new Image()
-    can.src = goodsImagePathList[1]
+    can.src = imagePathObject['Canned Food']
     img.push(can)
     const clothing = new Image()
-    clothing.src = goodsImagePathList[2]
+    clothing.src = imagePathObject['Clothing']
     img.push(clothing)
     const furniture = new Image()
-    furniture.src = goodsImagePathList[3]
+    furniture.src = imagePathObject['Furniture']
     img.push(furniture)
     const span = document.createElement`span`
     span.textContent = ' = '
@@ -292,32 +283,32 @@ const createWorkerTableColumn = (d, v) => {
     img.push(imageList[0])
   } else if (d === jobNameList[1]) {
     const grain = new Image()
-    grain.src = resourcesImagePathList[0]
+    grain.src = imagePathObject['Grain']
     img.push(grain)
     const fruit = new Image()
-    fruit.src = resourcesImagePathList[2]
+    fruit.src = imagePathObject['Fruit']
     img.push(fruit)
   } else if (d === jobNameList[2]) {
     const livestock = new Image()
-    livestock.src = resourcesImagePathList[1]
+    livestock.src = imagePathObject['Livestock']
     img.push(livestock)
     const wool = new Image()
-    wool.src = resourcesImagePathList[3]
+    wool.src = imagePathObject['Wool']
     img.push(wool)
   } else if (d === jobNameList[3]) {
     const timber = new Image()
-    timber.src = resourcesImagePathList[4]
+    timber.src = imagePathObject['Timber']
     img.push(timber)
   } else if (d === jobNameList[4]) {
     const iron = new Image()
-    iron.src = resourcesImagePathList[6]
+    iron.src = imagePathObject['Iron']
     img.push(iron)
     const coal = new Image()
-    coal.src = resourcesImagePathList[7]
+    coal.src = imagePathObject['Coal']
     img.push(coal)
   } else if (d === jobNameList[5]) {
     const oil = new Image()
-    oil.src = resourcesImagePathList[10]
+    oil.src = imagePathObject['Oil']
     img.push(oil)
   }
   img.forEach(vl => productTd.appendChild(vl))
@@ -383,44 +374,44 @@ const appendJobTable = () => {
 const convertObject = {
   'Canteen': [{
     in: {
-      [resourcesNameList[0]]: 14,
-      [resourcesNameList[1]]: 7,
-      [resourcesNameList[2]]: 8,
+      'Grain': 14,
+      'Livestock': 7,
+      'Fruit': 8,
     },
-    out: {[goodsNameList[0]]: 1e3},
+    out: {'Cuisine': 1e3},
   },], 'Food Production': [{
     in: {
-      [resourcesNameList[0]]: 1,
-      [resourcesNameList[1]]: 1,
-      [resourcesNameList[2]]: 1
-    }, out: {[goodsNameList[1]]: 1},
+      'Grain': 1,
+      'Livestock': 1,
+      'Fruit': 1
+    }, out: {'Canned Food': 1},
   },], 'Textile Mill': [{
-    in: {[resourcesNameList[3]]: 2},
-    out: {[materialsNameList[0]]: 1},
+    in: {'Wool': 2},
+    out: {'Fabric': 1},
   },], 'Clothing Factory': [{
-    in: {[materialsNameList[0]]: 2},
-    out: {[goodsNameList[2]]: 1},
+    in: {'Fabric': 2},
+    out: {'Clothing': 1},
   },], 'Lumber Mill': [{
-    in: {[resourcesNameList[4]]: 2},
-    out: {[materialsNameList[2]]: 1},
+    in: {'Timber': 2},
+    out: {'Lumber': 1},
   }, {
-    in: {[resourcesNameList[4]]: 2},
-    out: {[materialsNameList[1]]: 1},
+    in: {'Timber': 2},
+    out: {'Paper': 1},
   },], 'Furniture Factory': [{
-    in: {[materialsNameList[2]]: 2},
-    out: {[goodsNameList[3]]: 1},
+    in: {'Lumber': 2},
+    out: {'Furniture': 1},
   },], 'Steel Mill': [{
     in: {Coal: 1, Iron: 1},
-    out: {[materialsNameList[3]]: 1},
+    out: {'Steel': 1},
   },], 'Blacksmith': [{
-    in: {[materialsNameList[3]]: 2},
-    out: {[goodsNameList[4]]: 1},
+    in: {'Steel': 2},
+    out: {'Hardware': 1},
   }, {
-    in: {[materialsNameList[3]]: 2},
-    out: {[goodsNameList[5]]: 1},
+    in: {'Steel': 2},
+    out: {'Armaments': 1},
   },], 'Refinery': [{
-    in: {[resourcesNameList[10]]: 2},
-    out: {[materialsNameList[4]]: 1},
+    in: {'Oil': 2},
+    out: {'Fuel': 1},
   },],
 }
 const recipeList = Object.values(convertObject).flat()
@@ -442,13 +433,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   tr.appendChild(rightSide)
   Object.entries(recipeList[i].in).forEach(([k, vl]) => {
     const img = new Image()
-    if (resourcesNameList.findIndex(va => va === k) !== -1) {
-      img.src = resourcesImagePathList[resourcesNameList.findIndex(va => va === k)]
-    } else if (materialsNameList.findIndex(va => va === k) !== -1) {
-      img.src = materialsImagePathList[materialsNameList.findIndex(va => va === k)]
-    } else if (goodsNameList.findIndex(va => va === k) !== -1) {
-      img.src = goodsImagePathList[goodsNameList.findIndex(va => va === k)]
-    }
+    img.src = imagePathObject[k]
     leftSide.appendChild(img)
     if (1 < vl) {
       const span = document.createElement`span`
@@ -461,13 +446,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   rightSide.appendChild(equalSpan)
   Object.entries(recipeList[i].out).forEach(([k, vl]) => {
     const img = new Image()
-    if (resourcesNameList.findIndex(va => va === k) !== -1) {
-      img.src = resourcesImagePathList[resourcesNameList.findIndex(va => va === k)]
-    } else if (materialsNameList.findIndex(va => va === k) !== -1) {
-      img.src = materialsImagePathList[materialsNameList.findIndex(va => va === k)]
-    } else if (goodsNameList.findIndex(va => va === k) !== -1) {
-      img.src = goodsImagePathList[goodsNameList.findIndex(va => va === k)]
-    }
+    img.src = imagePathObject[k]
     rightSide.appendChild(img)
     if (1 < vl) {
       const span = document.createElement`span`
@@ -586,7 +565,7 @@ const appendTerrainTable = () => {
     const productTd = document.createElement`td`
     tr.appendChild(productTd)
     const img = new Image()
-    img.src = commoditiesImagePathObject[terrainProductObject[d]]
+    img.src = imagePathObject[terrainProductObject[d]]
     productTd.appendChild(img)
     const addTd = document.createElement`td`
     addTd.className = 'value'
@@ -705,7 +684,7 @@ const appendTradeTable = () => {
     const item = document.createElement`td`
     tr.appendChild(item)
     const img = new Image()
-    img.src = commoditiesImagePathObject[k]
+    img.src = imagePathObject[k]
     item.appendChild(img)
     const name = document.createElement`span`
     name.textContent = k
@@ -1097,12 +1076,9 @@ const debugBonus = () => {
   commoditiesObject['Paper'] += 12
 }
 const stream = async () => {
-  await imgLoad(
-    resourcesImagePathList, resourcesNameList, resourcesImageList)
-  await imgLoad(
-    materialsImagePathList, materialsNameList, materialsImageList)
-  await imgLoad(
-    goodsImagePathList, goodsNameList, goodsImageList)
+  await imageLoad(resourcesImageObject, resourcesImageDOMList)
+  await imageLoad(materialsImageObject, materialsImageDOMList)
+  await imageLoad(goodsImageObject, goodsImageDOMList)
   await imgLoad(imagePathList, nameList, imageList)
   appendResourcesTable()
   appendMaterialsTable()
