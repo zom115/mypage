@@ -415,10 +415,10 @@ const convertObject = {
     out: {'Cuisine': 1e3},
   },], 'Food Production': [{
     in: {
-      'Grain': 1,
+      'Grain': 2,
       'Livestock': 1,
       'Fruit': 1
-    }, out: {'Canned Food': 1},
+    }, out: {'Canned Food': 2},
   },], 'Textile Mill': [{
     in: {'Wool': 2},
     out: {'Fabric': 1},
