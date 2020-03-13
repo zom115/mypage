@@ -28,55 +28,30 @@ const goodsImageObject = {
   'Hardware':    '金づちの無料アイコン',
   'Armaments':   '大砲アイコン2',
 }
+const commonImageObject = {
+  'People': '歩くアイコン',
+  'Money': 'コインのベクター素材',
+}
 const commoditiesObject = {}
 Object.keys(resourcesImageObject).forEach(v => commoditiesObject[v] = 0)
 Object.keys(materialsImageObject).forEach(v => commoditiesObject[v] = 0)
 Object.keys(goodsImageObject).forEach(v => commoditiesObject[v] = 0)
 const imagePathObject = {}
-const nameList = ['people']
-const imagePathList = [
-  '歩くアイコン',
-  'コインのベクター素材',
-]
-const addPathList = list => {
-  list.forEach((v, i) => list[i] = `images/${v}.png`)
-}
 const addPathObject = obj => {
   Object.entries(obj).forEach(([k, v]) => obj[k] = `images/${v}.png`)
 }
 addPathObject(resourcesImageObject)
 addPathObject(materialsImageObject)
 addPathObject(goodsImageObject)
-Object.entries(resourcesImageObject).forEach(([k, v]) => {
-  imagePathObject[k] = v
-})
-Object.entries(materialsImageObject).forEach(([k, v]) => {
-  imagePathObject[k] = v
-})
-Object.entries(goodsImageObject).forEach(([k, v]) => {
-  imagePathObject[k] = v
-})
-addPathList(imagePathList)
+addPathObject(commonImageObject)
+Object.entries(resourcesImageObject).forEach(([k, v]) => imagePathObject[k] = v)
+Object.entries(materialsImageObject).forEach(([k, v]) => imagePathObject[k] = v)
+Object.entries(goodsImageObject).forEach(([k, v]) => imagePathObject[k] = v)
+Object.entries(commonImageObject).forEach(([k, v]) => imagePathObject[k] = v)
 const resourcesImageDOMList = []
 const materialsImageDOMList = []
 const goodsImageDOMList = []
-const imageList = []
-const imgLoad = async (pathList, nameList, imageList) => {
-  return new Promise(async resolve => {
-    await Promise.all(pathList.map(async (path, i) => {
-      return new Promise(async res => {
-        const imgPreload = new Image()
-        imgPreload.src = path
-        imgPreload.alt = nameList[i]
-        imgPreload.addEventListener('load', async e => {
-          imageList.push(e.path[0])
-          res()
-        })
-      })
-    }))
-    resolve()
-  })
-}
+const commonImageDOMList = []
 const imageLoad = async (obj, imageList) => {
   return new Promise(async resolve => {
     await Promise.all(Object.entries(obj).map(async ([name, path], i) => {
@@ -212,7 +187,7 @@ const appendGoodsTable = () => {
   const moneyTh = document.createElement`th`
   moneyTr.appendChild(moneyTh)
   const img = new Image()
-  img.src = imagePathList[1]
+  img.src = commonImageObject['Money']
   moneyTh.appendChild(img)
   const span = document.createElement`span`
   span.textContent = 'Money'
@@ -280,7 +255,9 @@ const createWorkerTableColumn = (d, v) => {
     const span = document.createElement`span`
     span.textContent = ' = '
     img.push(span)
-    img.push(imageList[0])
+    const people = new Image()
+    people.src = commonImageObject['People']
+    img.push(people)
   } else if (d === jobNameList[1]) {
     const grain = new Image()
     grain.src = imagePathObject['Grain']
@@ -1079,7 +1056,7 @@ const stream = async () => {
   await imageLoad(resourcesImageObject, resourcesImageDOMList)
   await imageLoad(materialsImageObject, materialsImageDOMList)
   await imageLoad(goodsImageObject, goodsImageDOMList)
-  await imgLoad(imagePathList, nameList, imageList)
+  await imageLoad(commonImageObject, commonImageDOMList)
   appendResourcesTable()
   appendMaterialsTable()
   appendGoodsTable()
