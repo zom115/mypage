@@ -38,18 +38,24 @@ const entityObject = {}
 Object.keys(resourcesImageObject).forEach(v => entityObject[v] = 0)
 Object.keys(materialsImageObject).forEach(v => entityObject[v] = 0)
 Object.keys(goodsImageObject).forEach(v => entityObject[v] = 0)
-const commonList = [
-  'Money',
-  'Labour',
-  'Untrained',
-  'Trained',
-  'Expert',
+const labourObject = {
+  'Untrained': 1,
+  'Trained': 2,
+  'Expert': 4,
+}
+const unitList = [
   'Farmer',
   'Rancher',
   'Forester',
   'Miner',
   'Driller',
 ]
+const commonList = [
+  'Money',
+  'Labour',
+]
+Object.keys(labourObject).forEach(v => entityObject[v] = 0)
+unitList.forEach(v => entityObject[v] = 0)
 commonList.forEach(v => entityObject[v] = 0)
 const imagePathObject = {}
 const addPathObject = obj => {
@@ -290,8 +296,7 @@ const createWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const itemTd = document.createElement`td`
   tr.appendChild(itemTd)
-  const rewrireJobNameList = ['Untrained', 'Trained', 'Expert']
-  if (rewrireJobNameList.some(v => v === d)) {
+  if (Object.keys(labourObject).some(v => v === d)) {
     const img = new Image()
     img.src = imagePathObject[d]
     itemTd.appendChild(img)
@@ -342,7 +347,7 @@ const createWorkerTableColumn = (d, v) => {
     workerList[workerList.findIndex(va => va.post === d)].post = 'Expert'
     entityObject['Labour'] += 4
   })
-  if (rewrireJobNameList.every(v => v !== d)) td.appendChild(minusButton)
+  if (Object.keys(labourObject).every(v => v !== d)) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
   valuSpan.id = d
   valuSpan.textContent = v
@@ -776,11 +781,6 @@ const elementUpdate = () => {
   recipeList.forEach((v, i) => {
     document.getElementById(`building-value-${i}`).textContent = v.value
   })
-  const labourObject = {
-    'Untrained': 1,
-    'Trained': 2,
-    'Expert': 4,
-  }
   Object.entries(requirementObject).forEach(([k, v]) => { // job
     if (Object.entries(v).every(([ky, vl]) => vl <= entityObject[ky]) && (
       Object.keys(labourObject).every(v => v !== k) ||
@@ -788,7 +788,7 @@ const elementUpdate = () => {
     ) {
       document.getElementById(`plus-${k}`).disabled = false
     } else document.getElementById(`plus-${k}`).disabled = true
-    if (k !== 'Untrained' && k !== 'Trained' && k !== 'Expert') {
+    if (Object.keys(labourObject).every(v => v !== k)) {
       if (entityObject[k] <= 0) {
         document.getElementById(`minus-${k}`).disabled = true
       } else document.getElementById(`minus-${k}`).disabled = false
@@ -1099,22 +1099,10 @@ const debugBonusInit = () => {
   entityObject['Untrained'] += 12
   entityObject['Trained'] += 0
   entityObject['Expert'] += 0
-  Object.entries(entityObject).forEach(([k, v]) => {
-    if (k === 'Untrained') {
-      for (let i = 0; i < v; i++) {
-        workerList.push(createWorkerFirst('Untrained'))
-        entityObject['Labour']++
-      }
-    } else if (k === 'Trained') {
-      for (let i = 0; i < v; i++) {
-        workerList.push(createWorkerFirst('Trained'))
-        entityObject['Labour'] += 2
-      }
-    } else if (k === 'Expert') {
-      for (let i = 0; i < v; i++) {
-        workerList.push(createWorkerFirst('Expert'))
-        entityObject['Labour'] += 4
-      }
+  Object.entries(labourObject).forEach(([k, v]) => {
+    for (let i = 0; i < entityObject[k]; i++) {
+      workerList.push(createWorkerFirst(k))
+      entityObject['Labour'] += v
     }
   })
 }
