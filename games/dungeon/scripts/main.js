@@ -459,16 +459,25 @@ recipeList.forEach(v => {
   v.timestamp = 0
 })
 const building = document.createElement`table`
-const createBuildingTableColumn = (d, v, i, iC) => {
+const createBuildingTableColumn = (k, v, i, iC) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
-  if (iC === 0) item.textContent = d
+  if (iC === 0) item.textContent = k
   tr.appendChild(item)
   const level = document.createElement`td`
-  level.id = `building-level-${d}`
+  level.id = `building-level-${k}`
   level.className = 'value'
-  if (iC === 0) level.textContent = buildingObject[d].level
+  if (iC === 0) level.textContent = buildingObject[k].level
   tr.appendChild(level)
+  const upgradeTd = document.createElement`td`
+  tr.appendChild(upgradeTd)
+  if (iC === 0) {
+    const upgradeButton = document.createElement`button`
+    upgradeButton.id = `building-upgrade-${k}`
+    upgradeTd.appendChild(upgradeButton)
+    const img = new Image()
+    img.src = imagePathObject['Steel']
+  }
   const leftSide = document.createElement`td`
   leftSide.className = 'value'
   tr.appendChild(leftSide)
@@ -514,7 +523,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
     const index = labourList.findIndex(va => va.id === i)
     if (recipeList[i].value !== 1) {
       labourList[labourList.findIndex((va, idx) => {
-        return index < idx && va.building === d
+        return index < idx && va.building === k
       })].timestamp -= (Date.now() - labourList[index].timestamp) / recipeList[i].value
     }
     recipeList[i].value -= 1
@@ -533,7 +542,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
     recipeList[i].value += 1
     entityObject['Labour']--
     labourList.push({
-      building: d,
+      building: k,
       id: i,
       timestamp: 0,
     })
@@ -551,6 +560,9 @@ const appendBuildingTable = () => {
   const level = document.createElement`th`
   level.textContent = 'Level'
   tr.appendChild(level)
+  const upgrade = document.createElement`th`
+  upgrade.textContent = 'Upgrade'
+  tr.appendChild(upgrade)
   const product = document.createElement`th`
   product.textContent = 'Products'
   tr.appendChild(product)
