@@ -244,18 +244,6 @@ const jobNameList = [
 let population = 5
 let labour = 0
 const labourList = []
-const createLabourList = building => {
-  labour++
-  labourList.push({
-    building: building,
-    id: 0,
-    timestamp: 0,
-  })
-}
-const removeLabourList = () => {
-  labour--
-  labourList.findIndex(v => v.building === jobNameList[0])
-}
 const workerList = []
 const fullnessMax = 100
 let workerId = -1
@@ -277,7 +265,7 @@ const resetJob = (worker, post) => {
 }
 for (let i = 0; i < population; i++) {
   workerList.push(createWorkerFirst(jobNameList[0]))
-  createLabourList(jobNameList[0])
+  labour++
 }
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
@@ -342,7 +330,7 @@ const createWorkerTableColumn = (d, v) => {
     jobObject[d] -= 1
     jobObject[jobNameList[0]] += 1
     workerList[workerList.findIndex(va => va.post === d)].post = jobNameList[0]
-    createLabourList(jobNameList[0])
+    labour++
   })
   if (d !== jobNameList[0]) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
@@ -358,7 +346,7 @@ const createWorkerTableColumn = (d, v) => {
       commoditiesObject['Clothing']--
       commoditiesObject['Furniture']--
       jobObject[jobNameList[0]]++
-      createLabourList(jobNameList[0])
+      labour++
       workerList.push(createWorkerFirst(jobNameList[0]))
       pushPersonalTable(workerList[workerList.length - 1])
     })
@@ -366,7 +354,7 @@ const createWorkerTableColumn = (d, v) => {
     jobObject[jobNameList[0]] -= 1
     jobObject[d] += 1
     resetJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
-    removeLabourList()
+    labour--
   })
   td.appendChild(plusButton)
   tr.appendChild(td)
@@ -501,16 +489,16 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   minusButton.id = `building-minus-${i}`
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
-    const index = workerList.findIndex(va => va.location === i)
+    const index = labourList.findIndex(va => va.id === i)
     if (recipeList[i].value !== 1) {
-      workerList[workerList.findIndex((va, idx) => {
-        return index < idx && va.post === d
-      })].timestamp -= (Date.now() - workerList[index].timestamp) / recipeList[i].value
+      labourList[labourList.findIndex((va, idx) => {
+        return index < idx && va.building === d
+      })].timestamp -= (Date.now() - labourList[index].timestamp) / recipeList[i].value
     }
     recipeList[i].value -= 1
     jobObject[jobNameList[0]] += 1
-    resetJob(workerList[index], jobNameList[0])
-    createLabourList(jobNameList[0])
+    labour++
+    labourList.splice(labourList.findIndex(v => v.building === jobNameList[0]), 1)
   })
   td.appendChild(minusButton)
   const valueSpan = document.createElement`span`
@@ -523,11 +511,12 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   plusButton.addEventListener('click', () => {
     jobObject[jobNameList[0]] -= 1
     recipeList[i].value += 1
-    const worker = workerList[workerList.findIndex(va => va.post === jobNameList[0])]
-    worker.location = i
-    worker.post = d
-    worker.timestamp = 0
-    removeLabourList()
+    labour--
+    labourList.push({
+      building: d,
+      id: i,
+      timestamp: 0,
+    })
   })
   td.appendChild(plusButton)
   return tr
@@ -812,10 +801,7 @@ const elementUpdate = () => {
     if (v.value <= 0) {
       document.getElementById(`building-minus-${i}`).disabled = true
     } else document.getElementById(`building-minus-${i}`).disabled = false
-    if (0 < workerList.reduce((acc, cur) => {
-      if (cur.post === jobNameList[0] && cur.state !== 'return') return ++acc
-      else return acc
-    }, 0) && Object.entries(recipeList[i].in).some(([k, v]) => {
+    if (0 < labour && Object.entries(recipeList[i].in).some(([k, v]) => {
       return v <= commoditiesObject[k]})
     ) {
       document.getElementById(`building-plus-${i}`).disabled = false
@@ -823,15 +809,15 @@ const elementUpdate = () => {
     const progress = document.getElementById(`building-progress-${i}`)
     if (v.value <= 0) progress.value = 0
     else {
-      const job = workerList[workerList.findIndex(v => v.location === i)].post
-      progress.value = workerList.reduce((acc, cur) => {
-        if (cur.location === i && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+      const job = labourList[labourList.findIndex(v => v.id === i)].building
+      progress.value = labourList.reduce((acc, cur) => {
+        if (cur.id === i && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
         else return acc
-      }, 0) / workerList.reduce((acc, cur) => {
-        if (cur.post === job) return ++acc
+      }, 0) / labourList.reduce((acc, cur) => {
+        if (cur.building === job) return ++acc
         else return acc
-      }, 0) * Math.log2(1 + workerList.reduce((acc, cur) => {
-        if (cur.post === job) return ++acc
+      }, 0) * Math.log2(1 + labourList.reduce((acc, cur) => {
+        if (cur.building === job) return ++acc
         else return acc
       }, 0))
     }
@@ -1028,48 +1014,55 @@ const main = () => {
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
     }
-    // if (Object.keys(convertObject).some(ky => k.post === ky)) { // building function
-    //   if (Object.entries(recipeList[k.location].in).every(([ky, vl]) => {
-    //     return vl <= commoditiesObject[ky]
-    //   })) {
-    //     if (recipeList[k.location].timestamp === 0) recipeList[k.location].timestamp = Date.now()
-    //     if (k.timestamp === 0) k.timestamp = Date.now()
-    //     if (
-    //       buildingWorkTime <= workerList.reduce((acc, cur) => {
-    //         if (cur.post === k.post && cur.location === k.location && cur.timestamp !== 0) {
-    //           return acc + Date.now() - cur.timestamp
-    //         } else return acc
-    //       }, 0) / workerList.reduce((acc, cur) => {
-    //         if (cur.post === k.post) return ++acc
-    //         else return acc
-    //       }, 0) * Math.log2(1 + workerList.reduce((acc, cur) => {
-    //         if (cur.post === k.post) return ++acc
-    //         else return acc
-    //       }, 0))
-    //     ) { // task completed
-    //       Object.entries(recipeList[k.location].in).forEach(([ky, vl]) => {
-    //         commoditiesObject[ky] -= vl
-    //       })
-    //       Object.entries(recipeList[k.location].out).forEach(([ky, vl]) => {
-    //         commoditiesObject[ky] += vl
-    //       })
-    //       k.timestamp = 0
-    //       recipeList[k.location].timestamp = 0
-    //       const number = recipeList[k.location].value
-    //       const rate = 10
-    //       workerList.forEach(v => {
-    //         if (v.post === k.post && v.location === k.location) {
-    //           v.fullness -= Math.floor(rate / number)
-    //           v.timestamp = 0
-    //         }
-    //       })
-    //     }
-    //   } else {
-    //     recipeList[k.location].timestamp = 0
-    //     k.timestamp = 0
-    //   }
-    // }
   })
+  { // building function
+    labourList.forEach(k => {
+      if (Object.keys(convertObject).some(ky => k.building === ky)) { // building function
+        if (Object.entries(recipeList[k.id].in).every(([ky, vl]) => {
+          return vl <= commoditiesObject[ky]
+        })) {
+          if (recipeList[k.id].timestamp === 0) recipeList[k.id].timestamp = Date.now()
+          if (k.timestamp === 0) k.timestamp = Date.now()
+          if (
+            buildingWorkTime <= labourList.reduce((acc, cur) => {
+              if (cur.building === k.building && cur.id === k.id && cur.timestamp !== 0) {
+                return acc + Date.now() - cur.timestamp
+              } else return acc
+            }, 0) / labourList.reduce((acc, cur) => {
+              if (cur.building === k.building) return ++acc
+              else return acc
+            }, 0) * Math.log2(1 + labourList.reduce((acc, cur) => {
+              if (cur.building === k.building) return ++acc
+              else return acc
+            }, 0))
+          ) { // task completed
+            Object.entries(recipeList[k.id].in).forEach(([ky, vl]) => {
+              commoditiesObject[ky] -= vl
+            })
+            Object.entries(recipeList[k.id].out).forEach(([ky, vl]) => {
+              commoditiesObject[ky] += vl
+            })
+            // k.timestamp = 0
+            labourList.forEach(ky => {
+              if (k.id === ky.id) ky.timestamp = 0
+            })
+            recipeList[k.id].timestamp = 0
+            const number = recipeList[k.id].value
+            const rate = 10
+            for (let i; i < number; i++) {
+              const w = workerList.reduce((acu, cur) => {
+                cur.post === jobNameList[0] && acu.fullness < cur.fullness ? cur : acu
+              })
+              w.fullness -= Math.floor(rate / number)
+            }
+          }
+        } else {
+          recipeList[k.id].timestamp = 0
+          k.timestamp = 0
+        }
+      }
+    })
+  }
   { // trade
     payment = 0
     Object.entries(tradeObject).forEach(([k, v]) => {
