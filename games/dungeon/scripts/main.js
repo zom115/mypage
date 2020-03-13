@@ -885,8 +885,8 @@ const elementUpdate = () => {
   Object.entries(buildingObject).forEach(([ky, vl]) => {
     document.getElementById(`building-level-${ky}`).textContent = vl.level
     const button = document.getElementById(`building-upgrade-${ky}`)
-    if (vl.timestamp === 0 && Object.entries(vl[0].expand).every(([ky, vl]) => {
-      return vl * (1 + vl.level) <= entityObject[ky]
+    if (vl.timestamp === 0 && Object.entries(vl[0].expand).every(([k, v]) => {
+      return v * (1 + vl.level) <= entityObject[k]
     })) button.disabled = false
     else button.disabled = true
     vl.forEach(v => {
@@ -911,7 +911,7 @@ const elementUpdate = () => {
         }, 0) * Math.log2(1 + labourList.reduce((acc, cur) => {
           if (cur.building === job) return ++acc
           else return acc
-        }, 0))
+        }, 0) * vl.level)
       }
     })
   })
@@ -1174,7 +1174,7 @@ const main = () => {
             }, 0) * Math.log2(1 + labourList.reduce((acc, cur) => {
               if (cur.building === k.building) return ++acc
               else return acc
-            }, 0))
+            }, 0) * buildingObject[k.building].level)
           ) { // task completed
             Object.entries(recipeList[k.id].in).forEach(([ky, vl]) => {
               entityObject[ky] -= vl
