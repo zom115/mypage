@@ -1049,9 +1049,9 @@ const main = () => {
             recipeList[k.id].timestamp = 0
             const number = recipeList[k.id].value
             const rate = 10
-            for (let i; i < number; i++) {
-              const w = workerList.reduce((acu, cur) => {
-                cur.post === jobNameList[0] && acu.fullness < cur.fullness ? cur : acu
+            for (let i = 0; i < number; i++) {
+              const w = workerList.filter(v => v.post === jobNameList[0]).reduce((acu, cur) => {
+                return acu.fullness < cur.fullness ? cur : acu
               })
               w.fullness -= Math.floor(rate / number)
             }
