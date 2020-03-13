@@ -270,9 +270,8 @@ const requirementObject = {
     'Money': 1500,
   },
 }
-let labour = 0
-const labourList = []
 const workerList = []
+const labourList = []
 const fullnessMax = 100
 let workerId = -1
 const createWorkerFirst = p => {
@@ -341,7 +340,7 @@ const createWorkerTableColumn = (d, v) => {
     entityObject[d]--
     entityObject['Expert']++
     workerList[workerList.findIndex(va => va.post === d)].post = 'Expert'
-    labour += 4
+    entityObject['Labour'] += 4
   })
   if (rewrireJobNameList.every(v => v !== d)) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
@@ -356,18 +355,18 @@ const createWorkerTableColumn = (d, v) => {
       entityObject[k] -= v
     })
     if (d === 'Untrained') {
-      labour++
+      entityObject['Labour']++
       pushPersonalTable(workerList[workerList.length - 1])
     } else {
       let worker
       if (d === 'Trained') {
-        labour++
+        entityObject['Labour']++
         worker = workerList[workerList.findIndex(va => va.post === 'Untrained')]
       } else if (d === 'Expert') {
-        labour += 2
+        entityObject['Labour'] += 2
         worker = workerList[workerList.findIndex(va => va.post === 'Trained')]
       } else {
-        labour -= 4
+        entityObject['Labour'] -= 4
         worker = workerList[workerList.findIndex(va => va.post === 'Expert')]
       }
       worker.location = 0
@@ -504,7 +503,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
       })].timestamp -= (Date.now() - labourList[index].timestamp) / recipeList[i].value
     }
     recipeList[i].value -= 1
-    labour++
+    entityObject['Labour']++
     labourList.splice(labourList.findIndex(v => v.building === 'Untrained'), 1)
   })
   td.appendChild(minusButton)
@@ -517,7 +516,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
     recipeList[i].value += 1
-    labour--
+    entityObject['Labour']--
     labourList.push({
       building: d,
       id: i,
@@ -615,11 +614,11 @@ const createLabourTableColumn = () => {
   tr.appendChild(name)
   const td = document.createElement`td`
   td.id = 'Labour'
-  td.textContent = labour
+  td.textContent = entityObject['Labour']
   tr.appendChild(td)
 }
 const updateLabourTable = () => {
-  document.getElementById('Labour').textContent = labour
+  document.getElementById('Labour').textContent = entityObject['Labour']
 }
 const personalTable = document.createElement`table`
 const pushPersonalTable = d => {
@@ -777,10 +776,16 @@ const elementUpdate = () => {
   recipeList.forEach((v, i) => {
     document.getElementById(`building-value-${i}`).textContent = v.value
   })
-  Object.entries(requirementObject).forEach(([k, v]) => {
-    if (Object.entries(v).every(([ky, vl]) => {
-      return vl <= entityObject[ky]
-    })) {
+  const labourObject = {
+    'Untrained': 1,
+    'Trained': 2,
+    'Expert': 4,
+  }
+  Object.entries(requirementObject).forEach(([k, v]) => { // job
+    if (Object.entries(v).every(([ky, vl]) => vl <= entityObject[ky]) && (
+      Object.keys(labourObject).every(v => v !== k) ||
+      labourObject[k] <= entityObject['Labour'])
+    ) {
       document.getElementById(`plus-${k}`).disabled = false
     } else document.getElementById(`plus-${k}`).disabled = true
     if (k !== 'Untrained' && k !== 'Trained' && k !== 'Expert') {
@@ -794,7 +799,7 @@ const elementUpdate = () => {
     if (v.value <= 0) {
       document.getElementById(`building-minus-${i}`).disabled = true
     } else document.getElementById(`building-minus-${i}`).disabled = false
-    if (0 < labour && Object.entries(recipeList[i].in).some(([k, v]) => {
+    if (0 < entityObject['Labour'] && Object.entries(recipeList[i].in).some(([k, v]) => {
       return v <= entityObject[k]})
     ) {
       document.getElementById(`building-plus-${i}`).disabled = false
@@ -1098,17 +1103,17 @@ const debugBonusInit = () => {
     if (k === 'Untrained') {
       for (let i = 0; i < v; i++) {
         workerList.push(createWorkerFirst('Untrained'))
-        labour++
+        entityObject['Labour']++
       }
     } else if (k === 'Trained') {
       for (let i = 0; i < v; i++) {
         workerList.push(createWorkerFirst('Trained'))
-        labour += 2
+        entityObject['Labour'] += 2
       }
     } else if (k === 'Expert') {
       for (let i = 0; i < v; i++) {
         workerList.push(createWorkerFirst('Expert'))
-        labour += 4
+        entityObject['Labour'] += 4
       }
     }
   })
