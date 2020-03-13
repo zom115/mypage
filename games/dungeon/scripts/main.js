@@ -29,8 +29,11 @@ const goodsImageObject = {
   'Armaments':   '大砲アイコン2',
 }
 const commonImageObject = {
-  'Untraining': '玉子のイラスト',
-  'Money': 'コインのベクター素材',
+  'Labour':    'マッチョアイコン5',
+  'Untrained': '玉子のイラスト',
+  'Trained':   'ヒヨコのフリー素材',
+  'Expert':    'にわとりアイコン2',
+  'Money':     'コインのベクター素材',
 }
 const commoditiesObject = {}
 Object.keys(resourcesImageObject).forEach(v => commoditiesObject[v] = 0)
@@ -200,7 +203,7 @@ const appendGoodsTable = () => {
 }
 const jobObject = {}
 const jobNameList = [
-  'None',
+  'Untrained',
   'Farmer',
   'Rancher',
   'Forester',
@@ -256,7 +259,7 @@ const createWorkerTableColumn = (d, v) => {
     span.textContent = ' = '
     img.push(span)
     const untraining = new Image()
-    untraining.src = commonImageObject['Untraining']
+    untraining.src = commonImageObject['Untrained']
     img.push(untraining)
   } else if (d === jobNameList[1]) {
     const grain = new Image()
