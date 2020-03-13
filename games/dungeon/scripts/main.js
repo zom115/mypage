@@ -386,15 +386,15 @@ const appendJobTable = () => {
   secondPanel.appendChild(worker)
   const tr = document.createElement`tr`
   worker.appendChild(tr)
-  const jobTh = document.createElement`th`
-  jobTh.textContent = 'Job'
-  tr.appendChild(jobTh)
-  const productTh = document.createElement`th`
-  productTh.textContent = 'Products'
-  tr.appendChild(productTh)
-  const requirementTh = document.createElement`th`
-  requirementTh.textContent = 'Requirements'
-  tr.appendChild(requirementTh)
+  const name = document.createElement`th`
+  name.textContent = 'Job'
+  tr.appendChild(name)
+  const product = document.createElement`th`
+  product.textContent = 'Products'
+  tr.appendChild(product)
+  const requirement = document.createElement`th`
+  requirement.textContent = 'Requirements'
+  tr.appendChild(requirement)
   const progress = document.createElement`th`
   progress.textContent = 'Progress'
   tr.appendChild(progress)
@@ -538,15 +538,15 @@ const appendBuildingTable = () => {
   const buildingTh = document.createElement`th`
   buildingTh.textContent = 'Building'
   tr.appendChild(buildingTh)
-  const productTh = document.createElement`th`
-  productTh.textContent = 'Products'
-  productTh.className = 'value'
-  tr.appendChild(productTh)
-  const dummyTh = document.createElement`th`
-  tr.appendChild(dummyTh)
-  const progressTh = document.createElement`th`
-  progressTh.textContent = 'Progress'
-  tr.appendChild(progressTh)
+  const product = document.createElement`th`
+  product.textContent = 'Products'
+  product.className = 'value'
+  tr.appendChild(product)
+  const dummy = document.createElement`th`
+  tr.appendChild(dummy)
+  const progress = document.createElement`th`
+  progress.textContent = 'Progress'
+  tr.appendChild(progress)
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
@@ -581,9 +581,9 @@ const appendTerrainTable = () => {
   const th = document.createElement`th`
   th.textContent = 'Terrain'
   tr.appendChild(th)
-  const productTh = document.createElement`th`
-  productTh.textContent = 'Products'
-  tr.appendChild(productTh)
+  const product = document.createElement`th`
+  product.textContent = 'Products'
+  tr.appendChild(product)
   const value = document.createElement`th`
   value.textContent = 'Add'
   tr.appendChild(value)
