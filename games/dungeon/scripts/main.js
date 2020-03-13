@@ -347,6 +347,10 @@ const createWorkerTableColumn = (d, v) => {
   tr.appendChild(requirementTd)
   const progressTd = document.createElement`td`
   tr.appendChild(progressTd)
+  const progressValue = document.createElement`span`
+  progressValue.id = `job-progress-value-${d}`
+  progressValue.textContent = jobObject[d].value
+  progressTd.appendChild(progressValue)
   const progress = document.createElement`progress`
   progress.id = `job-progress-${d}`
   progress.max = intervalTime
@@ -779,6 +783,7 @@ const elementUpdate = () => {
     document.getElementById(`building-value-${i}`).textContent = v.value
   })
   Object.entries(jobObject).forEach(([k, v]) => { // job
+    document.getElementById(`job-progress-value-${k}`).textContent = v.value
     const progress = document.getElementById(`job-progress-${k}`)
     progress.max = v.max
     progress.value = v.timestamp === 0 ? 0 : Date.now() - v.timestamp
