@@ -202,16 +202,69 @@ const appendGoodsTable = () => {
   moneyTr.appendChild(moneyValue)
 }
 const jobObject = {}
-const jobNameList = [
-  'Untrained',
-  'Trained',
-  'Expert',
-  'Farmer',
-  'Rancher',
-  'Forester',
-  'Miner',
-  'Driller',
-]
+const jobProductObject = {
+  'Untrained': {
+    'Labour': 1,
+  }, 'Trained': {
+    'Labour': 2,
+  }, 'Expert': {
+    'Labour': 4,
+  },
+  'Farmer': {
+    'Grain': 1,
+    'Fruit': 1,
+  }, 'Rancher': {
+    'Livestock': 1,
+    'Wool': 1,
+  }, 'Forester': {
+    'Timber': 1,
+  },
+  'Miner': {
+    'Iron': 1,
+    'Coal': 1,
+  },
+  'Driller': {
+    'Oil': 1,
+  },
+}
+const requirementObject = {
+  'Untrained': {
+    'Canned Food': 1,
+    'Clothing': 1,
+    'Furniture': 1,
+  }, 'Trained': {
+    'Untrained': 1,
+    'Paper': 1,
+    'Money': 100,
+  }, 'Expert': {
+    'Trained': 1,
+    'Paper': 2,
+    'Money': 1000,
+  },
+  'Farmer': {
+    'Expert': 1,
+    'Paper': 2,
+    'Money': 1000,
+  }, 'Rancher': {
+    'Expert': 1,
+    'Paper': 2,
+    'Money': 1000,
+  }, 'Forester': {
+    'Expert': 1,
+    'Paper': 2,
+    'Money': 1000,
+  },
+  'Miner': {
+    'Expert': 1,
+    'Paper': 2,
+    'Money': 1500,
+  },
+  'Driller': {
+    'Expert': 1,
+    'Paper': 2,
+    'Money': 1500,
+  },
+}
 let labour = 0
 const labourList = []
 const workerList = []
@@ -232,58 +285,48 @@ const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const itemTd = document.createElement`td`
-  itemTd.textContent = d
   tr.appendChild(itemTd)
+  const rewrireJobNameList = ['Untrained', 'Trained', 'Expert']
+  if (rewrireJobNameList.some(v => v === d)) {
+    const img = new Image()
+    img.src = imagePathObject[d]
+    itemTd.appendChild(img)
+    const span = document.createElement`span`
+    span.textContent = d
+    itemTd.appendChild(span)
+  } else itemTd.textContent = d
   const productTd = document.createElement`td`
   tr.appendChild(productTd)
-  const img = []
-  if (d === 'Untrained') {
-    const can = new Image()
-    can.src = imagePathObject['Canned Food']
-    img.push(can)
-    const clothing = new Image()
-    clothing.src = imagePathObject['Clothing']
-    img.push(clothing)
-    const furniture = new Image()
-    furniture.src = imagePathObject['Furniture']
-    img.push(furniture)
-    const span = document.createElement`span`
-    span.textContent = ' = '
-    img.push(span)
-    const untraining = new Image()
-    untraining.src = commonImageObject['Untrained']
-    img.push(untraining)
-  } else if (d === 'Farmer') {
-    const grain = new Image()
-    grain.src = imagePathObject['Grain']
-    img.push(grain)
-    const fruit = new Image()
-    fruit.src = imagePathObject['Fruit']
-    img.push(fruit)
-  } else if (d === 'Rancher') {
-    const livestock = new Image()
-    livestock.src = imagePathObject['Livestock']
-    img.push(livestock)
-    const wool = new Image()
-    wool.src = imagePathObject['Wool']
-    img.push(wool)
-  } else if (d === 'Forester') {
-    const timber = new Image()
-    timber.src = imagePathObject['Timber']
-    img.push(timber)
-  } else if (d === 'Miner') {
-    const iron = new Image()
-    iron.src = imagePathObject['Iron']
-    img.push(iron)
-    const coal = new Image()
-    coal.src = imagePathObject['Coal']
-    img.push(coal)
-  } else if (d === 'Driller') {
-    const oil = new Image()
-    oil.src = imagePathObject['Oil']
-    img.push(oil)
-  }
-  img.forEach(vl => productTd.appendChild(vl))
+  Object.entries(jobProductObject).forEach(([k, v]) => {
+    if (k === d) {
+      Object.entries(v).forEach(([ky, vl]) => {
+        const img = new Image()
+        img.src = imagePathObject[ky]
+        productTd.appendChild(img)
+        if (1 < vl) {
+          const span = document.createElement`span`
+          span.textContent = `*${vl}`
+          productTd.appendChild(span)
+        }
+      })
+    }
+  })
+  const requirementTd = document.createElement`td`
+  Object.entries(requirementObject).forEach(([k, v]) => {
+    if (k === d) {
+      Object.entries(v).forEach(([ky, vl]) => {
+        const img = new Image()
+        img.src = imagePathObject[ky]
+        requirementTd.appendChild(img)
+        if (1 < vl) {
+          const span = document.createElement`span`
+          span.textContent = `*${vl}`
+          requirementTd.appendChild(span)
+        }
+      })
+    }
+  })
+  tr.appendChild(requirementTd)
   const td = document.createElement`td`
   td.className = 'value'
   const minusButton = document.createElement`button`
@@ -336,6 +379,9 @@ const appendJobTable = () => {
   const productTh = document.createElement`th`
   productTh.textContent = 'Products'
   tr.appendChild(productTh)
+  const requirementTh = document.createElement`th`
+  requirementTh.textContent = 'Requirements'
+  tr.appendChild(requirementTh)
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
@@ -726,7 +772,7 @@ const elementUpdate = () => {
     document.getElementById(k).textContent = v
   })
   document.getElementById(`money`).textContent = money
-  jobNameList.forEach(v => {
+  Object.keys(requirementObject).forEach(v => {
     if (v === 'Untrained') {
       if (
         0 < commoditiesObject['Canned Food'] &&
@@ -960,7 +1006,7 @@ const main = () => {
       }
     }
     if (k.fullness <= 0) { // death judgment
-      if (jobNameList.some(v => v === k.post)) jobObject[k.post]--
+      if (Object.keys(requirementObject).some(v => v === k.post)) jobObject[k.post]--
       else if (Object.keys(convertObject).some(v => v === k.post)) recipeList[k.location].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
@@ -1049,7 +1095,7 @@ const debugBonusInit = () => {
   const untrained = 5
   const trained = 0
   const expert = 0
-  jobNameList.forEach(v => {
+  Object.keys(requirementObject).forEach(v => {
     jobObject[v] = v === 'Untrained' ? untrained :
     'Trained' ? trained :
     'Expert' ? expert: 0
