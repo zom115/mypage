@@ -220,63 +220,78 @@ const appendGoodsTable = () => {
   moneyValue.textContent = entityObject['Money']
   moneyTr.appendChild(moneyValue)
 }
-const jobProductObject = {
+const jobObject = {
   'Untrained': {
-    'Labour': 1,
+    product: {'Labour': 1,},
+    requirement: {
+      'Canned Food': 1,
+      'Clothing': 1,
+      'Furniture': 1,
+    },
   }, 'Trained': {
-    'Labour': 2,
+    product: {'Labour': 2,},
+    requirement: {
+      'Untrained': 1,
+      'Paper': 1,
+      'Money': 100,
+    },
   }, 'Expert': {
-    'Labour': 4,
+    product: {'Labour': 4,},
+    requirement: {
+      'Trained': 1,
+      'Paper': 2,
+      'Money': 1000,
+    },
   }, 'Farmer': {
-    'Grain': 1,
-    'Fruit': 1,
+    product: {
+      'Grain': 1,
+      'Fruit': 1,
+    },
+    requirement: {
+      'Expert': 1,
+      'Paper': 2,
+      'Money': 1000,
+    },
   }, 'Rancher': {
-    'Livestock': 1,
-    'Wool': 1,
+    product: {
+      'Livestock': 1,
+      'Wool': 1,
+    },
+    requirement: {
+      'Expert': 1,
+      'Paper': 2,
+      'Money': 1000,
+    },
   }, 'Forester': {
-    'Timber': 1,
+    product: {'Timber': 1,},
+    requirement: {
+      'Expert': 1,
+      'Paper': 2,
+      'Money': 1000,
+    },
   }, 'Miner': {
-    'Iron': 1,
-    'Coal': 1,
+    product: {
+      'Iron': 1,
+      'Coal': 1,
+    },
+    requirement: {
+      'Expert': 1,
+      'Paper': 2,
+      'Money': 1500,
+    },
   }, 'Driller': {
-    'Oil': 1,
+    product: {'Oil': 1,},
+    requirement: {
+      'Expert': 1,
+      'Paper': 2,
+      'Money': 1500,
+    },
   },
 }
-const requirementObject = {
-  'Untrained': {
-    'Canned Food': 1,
-    'Clothing': 1,
-    'Furniture': 1,
-  }, 'Trained': {
-    'Untrained': 1,
-    'Paper': 1,
-    'Money': 100,
-  }, 'Expert': {
-    'Trained': 1,
-    'Paper': 2,
-    'Money': 1000,
-  }, 'Farmer': {
-    'Expert': 1,
-    'Paper': 2,
-    'Money': 1000,
-  }, 'Rancher': {
-    'Expert': 1,
-    'Paper': 2,
-    'Money': 1000,
-  }, 'Forester': {
-    'Expert': 1,
-    'Paper': 2,
-    'Money': 1000,
-  }, 'Miner': {
-    'Expert': 1,
-    'Paper': 2,
-    'Money': 1500,
-  }, 'Driller': {
-    'Expert': 1,
-    'Paper': 2,
-    'Money': 1500,
-  },
-}
+Object.keys(jobObject).forEach(v => {
+  jobObject[v].value = 0
+  jobObject[v].timestamp = 0
+})
 const workerList = []
 const labourList = []
 const fullnessMax = 100
@@ -307,36 +322,35 @@ const createWorkerTableColumn = (d, v) => {
   } else itemTd.textContent = d
   const productTd = document.createElement`td`
   tr.appendChild(productTd)
-  Object.entries(jobProductObject).forEach(([k, v]) => {
-    if (k === d) {
-      Object.entries(v).forEach(([ky, vl]) => {
-        const img = new Image()
-        img.src = imagePathObject[ky]
-        productTd.appendChild(img)
-        if (1 < vl) {
-          const span = document.createElement`span`
-          span.textContent = `*${vl}`
-          productTd.appendChild(span)
-        }
-      })
+  Object.entries(jobObject[d].product).forEach(([k, v]) => {
+    const img = new Image()
+    img.src = imagePathObject[k]
+    productTd.appendChild(img)
+    if (1 < v) {
+      const span = document.createElement`span`
+      span.textContent = `*${v}`
+      productTd.appendChild(span)
     }
   })
   const requirementTd = document.createElement`td`
-  Object.entries(requirementObject).forEach(([k, v]) => {
-    if (k === d) {
-      Object.entries(v).forEach(([ky, vl]) => {
-        const img = new Image()
-        img.src = imagePathObject[ky]
-        requirementTd.appendChild(img)
-        if (1 < vl) {
-          const span = document.createElement`span`
-          span.textContent = `*${vl}`
-          requirementTd.appendChild(span)
-        }
-      })
+  Object.entries(jobObject[d].requirement).forEach(([k, v]) => {
+    const img = new Image()
+    img.src = imagePathObject[k]
+    requirementTd.appendChild(img)
+    if (1 < v) {
+      const span = document.createElement`span`
+      span.textContent = `*${v}`
+      requirementTd.appendChild(span)
     }
   })
   tr.appendChild(requirementTd)
+  const progressTd = document.createElement`td`
+  tr.appendChild(progressTd)
+  const progress = document.createElement`progress`
+  progress.id = `job-progress-${d}`
+  progress.max = intervalTime
+  progress.value = 0
+  progressTd.appendChild(progress)
   const td = document.createElement`td`
   td.className = 'value'
   const minusButton = document.createElement`button`
@@ -357,29 +371,11 @@ const createWorkerTableColumn = (d, v) => {
   plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
-    Object.entries(requirementObject[d]).forEach(([k, v]) => {
+    jobObject[d].value++
+    if (jobObject[d].timestamp === 0) jobObject[d].timestamp = Date.now()
+    Object.entries(jobObject[d].requirement).forEach(([k, v]) => {
       entityObject[k] -= v
     })
-    if (d === 'Untrained') {
-      entityObject['Labour']++
-      pushPersonalTable(workerList[workerList.length - 1])
-    } else {
-      let worker
-      if (d === 'Trained') {
-        entityObject['Labour']++
-        worker = workerList[workerList.findIndex(va => va.post === 'Untrained')]
-      } else if (d === 'Expert') {
-        entityObject['Labour'] += 2
-        worker = workerList[workerList.findIndex(va => va.post === 'Trained')]
-      } else {
-        entityObject['Labour'] -= 4
-        worker = workerList[workerList.findIndex(va => va.post === 'Expert')]
-      }
-      worker.location = 0
-      worker.post = d
-      worker.timestamp = 0
-    }
-    entityObject[d]++
   })
   td.appendChild(plusButton)
   tr.appendChild(td)
@@ -398,11 +394,14 @@ const appendJobTable = () => {
   const requirementTh = document.createElement`th`
   requirementTh.textContent = 'Requirements'
   tr.appendChild(requirementTh)
+  const progress = document.createElement`th`
+  progress.textContent = 'Progress'
+  tr.appendChild(progress)
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
   Object.entries(entityObject).filter(([k, _v]) => {
-    return Object.keys(requirementObject).some(vl => k === vl)
+    return Object.keys(jobObject).some(vl => k === vl)
   }).forEach(([k, v]) => worker.appendChild(createWorkerTableColumn(k, v)))
 }
 const convertObject = {
@@ -778,8 +777,8 @@ const elementUpdate = () => {
   recipeList.forEach((v, i) => {
     document.getElementById(`building-value-${i}`).textContent = v.value
   })
-  Object.entries(requirementObject).forEach(([k, v]) => { // job
-    if (Object.entries(v).every(([ky, vl]) => vl <= entityObject[ky]) && (
+  Object.keys(jobObject).forEach(k => { // job
+    if (Object.entries(jobObject[k].requirement).every(([ky, vl]) => vl <= entityObject[ky]) && (
       Object.keys(labourObject).every(v => v !== k) ||
       labourObject[k] <= entityObject['Labour'])
     ) {
@@ -1004,12 +1003,45 @@ const main = () => {
       }
     }
     if (k.fullness <= 0) { // death judgment
-      if (Object.keys(requirementObject).some(v => v === k.post)) entityObject[k.post]--
+      if (Object.keys(jobObject).some(v => v === k.post)) entityObject[k.post]--
       else if (Object.keys(convertObject).some(v => v === k.post)) recipeList[k.location].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
     }
   })
+  { // job function
+    Object.entries(jobObject).forEach(([k, v]) => {
+      const population = Object.entries(entityObject).filter(([ky, _vl]) => {
+        return Object.keys(labourObject).some(key => ky === key)
+      }).reduce((acu, [_ck, cv]) => acu + cv, 0)
+      const studyTime = k === 'Untrained' ? intervalTime / Math.ceil(population / 4) :
+      intervalTime
+      if (0 < v.value && v.timestamp + studyTime <= Date.now()) {
+        if (k === 'Untrained') {
+          entityObject['Labour']++
+          pushPersonalTable(workerList[workerList.length - 1])
+        } else {
+          let worker
+          if (k === 'Trained') {
+            entityObject['Labour']++
+            worker = workerList[workerList.findIndex(va => va.post === 'Untrained')]
+          } else if (k === 'Expert') {
+            entityObject['Labour'] += 2
+            worker = workerList[workerList.findIndex(va => va.post === 'Trained')]
+          } else {
+            entityObject['Labour'] -= 4
+            worker = workerList[workerList.findIndex(va => va.post === 'Expert')]
+          }
+          worker.location = 0
+          worker.post = k
+          worker.timestamp = 0
+        }
+        entityObject[k]++
+        v.value--
+        v.timestamp = 0 < v.value ? Date.now() : 0
+      }
+    })
+  }
   { // building function
     labourList.forEach(k => {
       if (Object.keys(convertObject).some(ky => k.building === ky)) { // building function
