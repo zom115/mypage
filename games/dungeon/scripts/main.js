@@ -204,13 +204,14 @@ const appendGoodsTable = () => {
 const jobObject = {}
 const jobNameList = [
   'Untrained',
+  'Trained',
+  'Expert',
   'Farmer',
   'Rancher',
   'Forester',
   'Miner',
-  'Driller'
+  'Driller',
 ]
-let population = 5
 let labour = 0
 const labourList = []
 const workerList = []
@@ -232,10 +233,6 @@ const resetJob = (worker, post) => {
   worker.post = post
   worker.timestamp = 0
 }
-for (let i = 0; i < population; i++) {
-  workerList.push(createWorkerFirst(jobNameList[0]))
-  labour++
-}
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -245,7 +242,7 @@ const createWorkerTableColumn = (d, v) => {
   const productTd = document.createElement`td`
   tr.appendChild(productTd)
   const img = []
-  if (d === jobNameList[0]) {
+  if (d === 'Untrained') {
     const can = new Image()
     can.src = imagePathObject['Canned Food']
     img.push(can)
@@ -261,32 +258,32 @@ const createWorkerTableColumn = (d, v) => {
     const untraining = new Image()
     untraining.src = commonImageObject['Untrained']
     img.push(untraining)
-  } else if (d === jobNameList[1]) {
+  } else if (d === 'Farmer') {
     const grain = new Image()
     grain.src = imagePathObject['Grain']
     img.push(grain)
     const fruit = new Image()
     fruit.src = imagePathObject['Fruit']
     img.push(fruit)
-  } else if (d === jobNameList[2]) {
+  } else if (d === 'Rancher') {
     const livestock = new Image()
     livestock.src = imagePathObject['Livestock']
     img.push(livestock)
     const wool = new Image()
     wool.src = imagePathObject['Wool']
     img.push(wool)
-  } else if (d === jobNameList[3]) {
+  } else if (d === 'Forester') {
     const timber = new Image()
     timber.src = imagePathObject['Timber']
     img.push(timber)
-  } else if (d === jobNameList[4]) {
+  } else if (d === 'Miner') {
     const iron = new Image()
     iron.src = imagePathObject['Iron']
     img.push(iron)
     const coal = new Image()
     coal.src = imagePathObject['Coal']
     img.push(coal)
-  } else if (d === jobNameList[5]) {
+  } else if (d === 'Driller') {
     const oil = new Image()
     oil.src = imagePathObject['Oil']
     img.push(oil)
@@ -299,11 +296,11 @@ const createWorkerTableColumn = (d, v) => {
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
     jobObject[d] -= 1
-    jobObject[jobNameList[0]] += 1
-    workerList[workerList.findIndex(va => va.post === d)].post = jobNameList[0]
+    jobObject['Untrained'] += 1
+    workerList[workerList.findIndex(va => va.post === d)].post = 'Untrained'
     labour++
   })
-  if (d !== jobNameList[0]) td.appendChild(minusButton)
+  if (d !== 'Untrained') td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
   valuSpan.id = d
   valuSpan.textContent = v
@@ -311,20 +308,20 @@ const createWorkerTableColumn = (d, v) => {
   const plusButton = document.createElement`button`
   plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
-  if (d === jobNameList[0]) {
+  if (d === 'Untrained') {
     plusButton.addEventListener('click', () => {
       commoditiesObject['Canned Food']--
       commoditiesObject['Clothing']--
       commoditiesObject['Furniture']--
-      jobObject[jobNameList[0]]++
+      jobObject['Untrained']++
       labour++
-      workerList.push(createWorkerFirst(jobNameList[0]))
+      workerList.push(createWorkerFirst())
       pushPersonalTable(workerList[workerList.length - 1])
     })
   } else plusButton.addEventListener('click', () => {
-    jobObject[jobNameList[0]] -= 1
+    jobObject['Untrained'] -= 1
     jobObject[d] += 1
-    resetJob(workerList[workerList.findIndex(va => va.post === jobNameList[0])], d)
+    resetJob(workerList[workerList.findIndex(va => va.post === 'Untrained')], d)
     labour--
   })
   td.appendChild(plusButton)
@@ -344,9 +341,6 @@ const appendJobTable = () => {
   const value = document.createElement`th`
   value.textContent = 'Value'
   tr.appendChild(value)
-  jobNameList.forEach(v => {
-    jobObject[v] = v === jobNameList[0] ? population : 0
-  })
   Object.entries(jobObject).forEach(([k, v]) => {
     worker.appendChild(createWorkerTableColumn(k, v))
   })
@@ -455,9 +449,9 @@ const createBuildingTableColumn = (d, v, i, iC) => {
       })].timestamp -= (Date.now() - labourList[index].timestamp) / recipeList[i].value
     }
     recipeList[i].value -= 1
-    jobObject[jobNameList[0]] += 1
+    jobObject['Untrained'] += 1
     labour++
-    labourList.splice(labourList.findIndex(v => v.building === jobNameList[0]), 1)
+    labourList.splice(labourList.findIndex(v => v.building === 'Untrained'), 1)
   })
   td.appendChild(minusButton)
   const valueSpan = document.createElement`span`
@@ -468,7 +462,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   plusButton.id = `building-plus-${i}`
   plusButton.textContent = '+'
   plusButton.addEventListener('click', () => {
-    jobObject[jobNameList[0]] -= 1
+    jobObject['Untrained'] -= 1
     recipeList[i].value += 1
     labour--
     labourList.push({
@@ -735,7 +729,7 @@ const elementUpdate = () => {
   })
   document.getElementById(`money`).textContent = money
   jobNameList.forEach(v => {
-    if (v === jobNameList[0]) {
+    if (v === 'Untrained') {
       if (
         0 < commoditiesObject['Canned Food'] &&
         0 < commoditiesObject['Clothing'] &&
@@ -748,8 +742,8 @@ const elementUpdate = () => {
     if (jobObject[v] <= 0) {
       document.getElementById(`minus-${v}`).disabled = true
     } else document.getElementById(`minus-${v}`).disabled = false
-    if (jobObject[jobNameList[0]] <= workerList.reduce((acc, cur) => {
-      if (cur.post === jobNameList[0] && cur.state === 'return') return ++acc
+    if (jobObject['Untrained'] <= workerList.reduce((acc, cur) => {
+      if (cur.post === 'Untrained' && cur.state === 'return') return ++acc
       else return acc
     }, 0)) {
       document.getElementById(`plus-${v}`).disabled = true
@@ -837,7 +831,7 @@ const pushCanvas = () => {
     workerList.forEach((v, i) => {
       if (Object.keys(convertObject).some(va => {return v.post === va})) return
       if (Date.now() - v.timestamp < moveTime + workTime && (
-        terrainListObject[canvas.id][v.location] === undefined || v.post === jobNameList[0])
+        terrainListObject[canvas.id][v.location] === undefined || v.post === 'Untrained')
       ) {
         v.state = 'return'
         if (Date.now() - v.timestamp < moveTime * v.location) {
@@ -865,23 +859,23 @@ const pushCanvas = () => {
         } else v.state = null
         // set location
         let n
-        if (v.post === jobNameList[1]) {
+        if (v.post === 'Farmer') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Farm' || va === 'Orchard')
           })
-        } else if (v.post === jobNameList[2]) {
+        } else if (v.post === 'Rancher') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Open Range' || va === 'Fertile Hills')
           })
-        } else if (v.post === jobNameList[3]) {
+        } else if (v.post === 'Forester') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Forest')
           })
-        } else if (v.post === jobNameList[4]) {
+        } else if (v.post === 'Miner') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Iron Mines' || va === 'Coal Mines')
           })
-        } else if (v.post === jobNameList[5]) {
+        } else if (v.post === 'Driller') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Desert')
           })
@@ -1009,7 +1003,7 @@ const main = () => {
             const number = recipeList[k.id].value
             const rate = 10
             for (let i = 0; i < number; i++) {
-              const w = workerList.filter(v => v.post === jobNameList[0]).reduce((acu, cur) => {
+              const w = workerList.filter(v => v.post === 'Untrained').reduce((acu, cur) => {
                 return acu.fullness < cur.fullness ? cur : acu
               })
               w.fullness -= Math.floor(rate / number)
@@ -1051,10 +1045,23 @@ const main = () => {
   elementUpdate()
   window.requestAnimationFrame(main)
 }
-const debugBonus = () => {
+const debugBonusInit = () => {
   money += 1e4
   commoditiesObject['Paper'] += 12
+  const untrained = 5
+  const trained = 0
+  const expert = 0
+  jobNameList.forEach(v => {
+    jobObject[v] = v === 'Untrained' ? untrained :
+    'Trained' ? trained :
+    'Expert' ? expert: 0
+  })
+  for (let i = 0; i < untrained; i++) {
+    workerList.push(createWorkerFirst())
+    labour++
+  }
 }
+debugBonusInit()
 const stream = async () => {
   await imageLoad(resourcesImageObject, resourcesImageDOMList)
   await imageLoad(materialsImageObject, materialsImageDOMList)
@@ -1072,7 +1079,6 @@ const stream = async () => {
   appendPersonalTable()
   decreaseTime = Date.now()
   tradeTimestamp = Date.now()
-  debugBonus()
   main()
 }
 stream()
