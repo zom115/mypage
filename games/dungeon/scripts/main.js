@@ -409,7 +409,7 @@ const appendJobTable = () => {
     return Object.keys(jobObject).some(vl => k === vl)
   }).forEach(([k, v]) => worker.appendChild(createWorkerTableColumn(k, v)))
 }
-const convertObject = {
+const buildingObject = {
   'Canteen': [{
     in: {
       'Grain': 14,
@@ -452,7 +452,7 @@ const convertObject = {
     out: {'Fuel': 1},
   },],
 }
-const recipeList = Object.values(convertObject).flat()
+const recipeList = Object.values(buildingObject).flat()
 recipeList.forEach(v => {
   v.value = 0
   v.timestamp = 0
@@ -561,9 +561,9 @@ const appendBuildingTable = () => {
   value.textContent = 'Value'
   tr.appendChild(value)
   let index = 0
-  Object.keys(convertObject).forEach(k => {
+  Object.keys(buildingObject).forEach(k => {
     let innerCount = 0
-    convertObject[k].forEach((_v, i) => {
+    buildingObject[k].forEach((_v, i) => {
       building.appendChild(createBuildingTableColumn(k, recipeList[i].value, index, innerCount))
       index++
       innerCount++
@@ -885,7 +885,7 @@ const pushCanvas = () => {
   const workTime = intervalTime * 2 / 5
   const fn = () => {
     workerList.forEach((v, i) => {
-      if (Object.keys(convertObject).some(va => {return v.post === va})) return
+      if (Object.keys(buildingObject).some(va => {return v.post === va})) return
       if (Date.now() - v.timestamp < moveTime + workTime && (
         terrainListObject[canvas.id][v.location] === undefined || v.post === 'Untrained')
       ) {
@@ -966,7 +966,7 @@ const pushCanvas = () => {
       context.fillRect(0, 0, size / 2, size / 2)
     }
     workerList.forEach(v => {
-      if (v.timestamp === 0 || Object.keys(convertObject).some(vl => vl === v.post) ||
+      if (v.timestamp === 0 || Object.keys(buildingObject).some(vl => vl === v.post) ||
         v.state === 'eat') return
       context.fillStyle = 'cyan'
       const elapsedTime = Date.now() - v.timestamp
@@ -1019,7 +1019,7 @@ const main = () => {
     }
     if (k.fullness <= 0) { // death judgment
       if (Object.keys(jobObject).some(v => v === k.post)) entityObject[k.post]--
-      else if (Object.keys(convertObject).some(v => v === k.post)) recipeList[k.location].value--
+      else if (Object.keys(buildingObject).some(v => v === k.post)) recipeList[k.location].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
     }
@@ -1063,7 +1063,7 @@ const main = () => {
   }
   { // building function
     labourList.forEach(k => {
-      if (Object.keys(convertObject).some(ky => k.building === ky)) { // building function
+      if (Object.keys(buildingObject).some(ky => k.building === ky)) { // building function
         if (Object.entries(recipeList[k.id].in).every(([ky, vl]) => {
           return vl <= entityObject[ky]
         })) {
