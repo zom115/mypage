@@ -496,13 +496,29 @@ const builtList = [
 ]
 Object.keys(buildingObject).forEach(v => {
   buildingObject[v].level = builtList.some(vl => v === vl) ? 1 : 0
+  buildingObject[v].timestamp = 0
 })
 const recipeList = Object.values(buildingObject).flat()
-recipeList.forEach(v => {
+recipeList.forEach((v, i) => {
+  v.id = i
   v.value = 0
   v.timestamp = 0
 })
 const building = document.createElement`table`
+const rewriteExpandButton = (name, element) => {
+  element.textContent = null
+  Object.entries(buildingObject[name][0].expand).forEach(([ky, vl]) => {
+    const img = new Image()
+    img.src = imagePathObject[ky]
+    element.appendChild(img)
+    const amount = vl * (1 + buildingObject[name].level)
+    if (1 < amount) {
+      const span = document.createElement`span`
+      span.textContent = `*${amount}`
+      element.appendChild(span)
+    }
+  })
+}
 const createBuildingTableColumn = (k, v, i, iC) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
@@ -519,18 +535,9 @@ const createBuildingTableColumn = (k, v, i, iC) => {
     const upgradeButton = document.createElement`button`
     upgradeButton.id = `building-upgrade-${k}`
     upgradeTd.appendChild(upgradeButton)
-    const img = new Image()
-    img.src = imagePathObject['Steel']
-    Object.entries(buildingObject[k][0].expand).forEach(([ky, vl]) => {
-      const img = new Image()
-      img.src = imagePathObject[ky]
-      upgradeButton.appendChild(img)
-      const amount = vl * (1 + buildingObject[k].level)
-      if (1 < amount) {
-        const span = document.createElement`span`
-        span.textContent = `*${amount}`
-        upgradeButton.appendChild(span)
-      }
+    rewriteExpandButton(k, upgradeButton)
+    upgradeButton.addEventListener('click', () => {
+      buildingObject[k].timestamp = Date.now()
     })
   }
   const leftSide = document.createElement`td`
@@ -875,33 +882,38 @@ const elementUpdate = () => {
     }
   })
   updateLabourTable()
-  Object.entries(buildingObject).forEach(([k, v]) => {
-    document.getElementById(`building-level-${k}`).textContent = v.level
-  })
-  recipeList.forEach((v, i) => {
-    if (v.value <= 0) {
-      document.getElementById(`building-minus-${i}`).disabled = true
-    } else document.getElementById(`building-minus-${i}`).disabled = false
-    if (0 < entityObject['Labour'] && Object.entries(recipeList[i].in).some(([k, v]) => {
-      return v <= entityObject[k]})
-    ) {
-      document.getElementById(`building-plus-${i}`).disabled = false
-    } else document.getElementById(`building-plus-${i}`).disabled = true
-    const progress = document.getElementById(`building-progress-${i}`)
-    if (v.value <= 0) progress.value = 0
-    else {
-      const job = labourList[labourList.findIndex(v => v.id === i)].building
-      progress.value = labourList.reduce((acc, cur) => {
-        if (cur.id === i && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
-        else return acc
-      }, 0) / labourList.reduce((acc, cur) => {
-        if (cur.building === job) return ++acc
-        else return acc
-      }, 0) * Math.log2(1 + labourList.reduce((acc, cur) => {
-        if (cur.building === job) return ++acc
-        else return acc
-      }, 0))
-    }
+  Object.entries(buildingObject).forEach(([ky, vl]) => {
+    document.getElementById(`building-level-${ky}`).textContent = vl.level
+    const button = document.getElementById(`building-upgrade-${ky}`)
+    if (vl.timestamp === 0 && Object.entries(vl[0].expand).every(([ky, vl]) => {
+      return vl * (1 + vl.level) <= entityObject[ky]
+    })) button.disabled = false
+    else button.disabled = true
+    vl.forEach(v => {
+      if (v.value <= 0) {
+        document.getElementById(`building-minus-${v.id}`).disabled = true
+      } else document.getElementById(`building-minus-${v.id}`).disabled = false
+      if (0 < entityObject['Labour'] && Object.entries(recipeList[v.id].in).some(([k, v]) => {
+        return v <= entityObject[k]}) && 0 < vl.level
+      ) {
+        document.getElementById(`building-plus-${v.id}`).disabled = false
+      } else document.getElementById(`building-plus-${v.id}`).disabled = true
+      const progress = document.getElementById(`building-progress-${v.id}`)
+      if (v.value <= 0) progress.value = 0
+      else {
+        const job = labourList[labourList.findIndex(v => v.id === v.id)].building
+        progress.value = labourList.reduce((acc, cur) => {
+          if (cur.id === v.id && cur.timestamp !== 0) return acc + Date.now() - cur.timestamp
+          else return acc
+        }, 0) / labourList.reduce((acc, cur) => {
+          if (cur.building === job) return ++acc
+          else return acc
+        }, 0) * Math.log2(1 + labourList.reduce((acc, cur) => {
+          if (cur.building === job) return ++acc
+          else return acc
+        }, 0))
+      }
+    })
   })
   workerList.forEach(v => personalViewUpdate(v))
   Object.keys(tradeObject).forEach(v => {
@@ -1134,8 +1146,18 @@ const main = () => {
     })
   }
   { // building function
+    Object.entries(buildingObject).forEach(([k, v]) => {
+      if (v.timestamp !==0 && v.timestamp + intervalTime <= Date.now()) {
+        Object.entries(v[0].expand).forEach(([ky, vl]) => {
+          entityObject[ky] -= vl * (1 + v.level)
+        })
+        v.level++
+        v.timestamp = 0
+        rewriteExpandButton(k, document.getElementById(`building-upgrade-${k}`))
+      }
+    })
     labourList.forEach(k => {
-      if (Object.keys(buildingObject).some(ky => k.building === ky)) { // building function
+      if (Object.keys(buildingObject).some(ky => k.building === ky)) {
         if (Object.entries(recipeList[k.id].in).every(([ky, vl]) => {
           return vl <= entityObject[ky]
         })) {
@@ -1160,7 +1182,6 @@ const main = () => {
             Object.entries(recipeList[k.id].out).forEach(([ky, vl]) => {
               entityObject[ky] += vl
             })
-            // k.timestamp = 0
             labourList.forEach(ky => {
               if (k.id === ky.id) ky.timestamp = 0
             })
@@ -1213,13 +1234,15 @@ const main = () => {
 const debugBonusInit = () => {
   intervalTime = 1e4
   entityObject['Money'] += 1e4
-  entityObject['Paper'] += 12
-  entityObject['Canned Food'] += 12
+  entityObject['Paper'] += 8
+  entityObject['Lumber'] += 24
+  entityObject['Steel'] += 19
+  entityObject['Canned Food'] += 20
   entityObject['Clothing'] += 5
   entityObject['Furniture'] += 5
-  entityObject['Untrained'] += 12
-  entityObject['Trained'] += 0
-  entityObject['Expert'] += 0
+  entityObject['Untrained'] += 4
+  entityObject['Trained'] += 2
+  entityObject['Expert'] += 1
   Object.entries(labourObject).forEach(([k, v]) => {
     for (let i = 0; i < entityObject[k]; i++) {
       workerList.push(createWorkerFirst(k))
