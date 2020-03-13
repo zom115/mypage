@@ -1018,8 +1018,12 @@ const main = () => {
       const population = Object.entries(entityObject).filter(([ky, _vl]) => {
         return Object.keys(labourObject).some(key => ky === key)
       }).reduce((acu, [_ck, cv]) => acu + cv, 0)
+      const possible = Object.entries(v.requirement).reduce((acu, [ck, cv]) => {
+        const divide = entityObject[ck] / cv
+        return divide < acu ? divide : acu
+      }, Infinity)
       v.max = k === 'Untrained' ? intervalTime / Math.ceil(population / 4) :
-      intervalTime
+      possible === 0 ? intervalTime : intervalTime / possible
       if (0 < v.value && v.timestamp + v.max <= Date.now()) {
         if (k === 'Untrained') {
           entityObject['Labour']++
