@@ -1,4 +1,5 @@
 {'use strict'
+let intervalTime = 1e4
 const resourcesImageObject = {
   'Grain':     '小麦アイコン',
   'Livestock': '肉の切り身のアイコン',
@@ -75,7 +76,7 @@ const goodsImageDOMList = []
 const commonImageDOMList = []
 const imageLoad = async (obj, imageList) => {
   return new Promise(async resolve => {
-    await Promise.all(Object.entries(obj).map(async ([name, path], i) => {
+    await Promise.all(Object.entries(obj).map(async ([name, path]) => {
       return new Promise(async res => {
         const imgPreload = new Image()
         imgPreload.src = path
@@ -452,7 +453,6 @@ recipeList.forEach(v => {
   v.value = 0
   v.timestamp = 0
 })
-const buildingWorkTime = 1e4
 const building = document.createElement`table`
 const createBuildingTableColumn = (d, v, i, iC) => {
   const tr = document.createElement`tr`
@@ -491,7 +491,7 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   tr.appendChild(progressTd)
   const progress = document.createElement`progress`
   progress.id = `building-progress-${i}`
-  progress.max = buildingWorkTime
+  progress.max = intervalTime
   progress.value = 0
   progressTd.appendChild(progress)
   const td = document.createElement`td`
@@ -660,30 +660,27 @@ const appendPersonalTable = () => {
   workerList.forEach(v => pushPersonalTable(v))
 }
 const tradeObject = {
-  'Grain': 100,
-  'Livestock': 100,
-  'Fruit': 100,
-  'Wool': 100,
-  'Timber': 100,
-  'Iron': 100,
-  'Coal': 100,
-  'Gold': 200,
-  'Gems': 500,
-  'Oil': 100,
-  'Fabric': 200,
-  'Paper': 200,
-  'Lumber': 200,
-  'Steel': 200,
-  'Fuel': 200,
-  'Canned Food': 400,
-  'Clothing': 900,
-  'Furniture': 900,
-  'Hardware': 900,
+  'Wool':        100,
+  'Timber':      100,
+  'Iron':        100,
+  'Coal':        100,
+  'Gold':        200,
+  'Gems':        500,
+  'Oil':         100,
+  'Fabric':      300,
+  'Paper':       300,
+  'Lumber':      300,
+  'Steel':       300,
+  'Fuel':        300,
+  'Canned Food': 100,
+  'Clothing':    900,
+  'Furniture':   900,
+  'Hardware':    900,
+  'Armaments':   900,
 }
 const tradeBidObject = {}
 Object.keys(tradeObject).forEach(v => tradeBidObject[v] = 0)
 let payment = 0
-const tradeInterval = 3e4
 let tradeTimestamp = 0
 const tradeTable = document.createElement`table`
 const appendTradeTable = () => {
@@ -837,7 +834,7 @@ const elementUpdate = () => {
     } else document.getElementById(`trade-plus-${v}`).disabled = false
   })
   document.getElementById('trade-interval').textContent = tradeTimestamp === 0 ? '00000' :
-  ('00000' + (tradeInterval - Date.now() + tradeTimestamp)).slice(-5)
+  ('00000' + (intervalTime - Date.now() + tradeTimestamp)).slice(-5)
 }
 const size = 16
 let canvasId = 0
@@ -870,8 +867,8 @@ const pushCanvas = () => {
       terrainListObject[canvas.id].splice(value, 1)
     }
   })
-  const moveTime = 3e3
-  const workTime = 4e3
+  const moveTime = intervalTime * 3 / 10
+  const workTime = intervalTime * 2 / 5
   const fn = () => {
     workerList.forEach((v, i) => {
       if (Object.keys(convertObject).some(va => {return v.post === va})) return
@@ -979,8 +976,8 @@ const pushCanvas = () => {
 }
 let decreaseTime = 0
 const main = () => {
-  const hungerInterval = 6e3
-  const eatInterval = 200
+  const hungerInterval = intervalTime / 2
+  const eatInterval = intervalTime / 50
   if (hungerInterval <= Date.now() - decreaseTime) {
     workerList.forEach(v => v.fullness--)
     decreaseTime += hungerInterval
@@ -1022,7 +1019,7 @@ const main = () => {
           if (recipeList[k.id].timestamp === 0) recipeList[k.id].timestamp = Date.now()
           if (k.timestamp === 0) k.timestamp = Date.now()
           if (
-            buildingWorkTime <= labourList.reduce((acc, cur) => {
+            intervalTime <= labourList.reduce((acc, cur) => {
               if (cur.building === k.building && cur.id === k.id && cur.timestamp !== 0) {
                 return acc + Date.now() - cur.timestamp
               } else return acc
@@ -1067,7 +1064,7 @@ const main = () => {
       const range = document.getElementById(`trade-range-${k}`)
       const order = document.getElementById(`trade-orders-${k}`).textContent
       if (order === 'Bid') payment += tradeObject[k] * range.value
-      if (tradeInterval <= Date.now() - tradeTimestamp) {
+      if (intervalTime <= Date.now() - tradeTimestamp) {
         if (order === 'Offer' && 0 < +range.value) {
           const number = Math.round(Math.random() * range.value)
           range.value -= number
@@ -1085,12 +1082,13 @@ const main = () => {
         tradeBidObject[k] + number < 0 ? 0 : tradeBidObject[k] += number
       }
     })
-    if (tradeInterval <= Date.now() - tradeTimestamp) tradeTimestamp = Date.now()
+    if (intervalTime <= Date.now() - tradeTimestamp) tradeTimestamp = Date.now()
   }
   elementUpdate()
   window.requestAnimationFrame(main)
 }
 const debugBonusInit = () => {
+  intervalTime = 1e4
   entityObject['Money'] += 1e4
   entityObject['Paper'] += 12
   entityObject['Canned Food'] += 12
