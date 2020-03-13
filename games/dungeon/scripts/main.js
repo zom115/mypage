@@ -1022,8 +1022,8 @@ const main = () => {
         const divide = entityObject[ck] / cv
         return divide < acu ? divide : acu
       }, Infinity)
-      v.max = k === 'Untrained' ? intervalTime / Math.ceil(population / 4) :
-      possible === 0 ? intervalTime : intervalTime / possible
+      v.max = k === 'Untrained' && 0 < population ? intervalTime / Math.ceil(population / 4) :
+      possible !== 0 ? intervalTime / possible : intervalTime
       if (0 < v.value && v.timestamp + v.max <= Date.now()) {
         if (k === 'Untrained') {
           entityObject['Labour']++
