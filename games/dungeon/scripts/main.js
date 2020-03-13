@@ -448,13 +448,13 @@ const buildingObject = {
   },], 'Lumber Mill': [{
     in: {'Timber': 2},
     out: {'Lumber': 1},
-  }, {
-    in: {'Timber': 2},
-    out: {'Paper': 1},
     expand: {
       'Lumber': 2,
       'Steel': 2,
     },
+  }, {
+    in: {'Timber': 2},
+    out: {'Paper': 1},
   },], 'Furniture Factory': [{
     in: {'Lumber': 2},
     out: {'Furniture': 1},
@@ -474,13 +474,13 @@ const buildingObject = {
   },], 'Metalworks': [{
     in: {'Steel': 2},
     out: {'Hardware': 1},
-  }, {
-    in: {'Steel': 2},
-    out: {'Armaments': 1},
     expand: {
       'Lumber': 1,
       'Steel': 1,
     },
+  }, {
+    in: {'Steel': 2},
+    out: {'Armaments': 1},
   },], 'Refinery': [{
     in: {'Oil': 2},
     out: {'Fuel': 1},
@@ -490,7 +490,13 @@ const buildingObject = {
     },
   },],
 }
-Object.keys(buildingObject).forEach(v => buildingObject[v].level = 0)
+const builtList = [
+  'Canteen',
+  'Food Production',
+]
+Object.keys(buildingObject).forEach(v => {
+  buildingObject[v].level = builtList.some(vl => v === vl) ? 1 : 0
+})
 const recipeList = Object.values(buildingObject).flat()
 recipeList.forEach(v => {
   v.value = 0
@@ -515,6 +521,17 @@ const createBuildingTableColumn = (k, v, i, iC) => {
     upgradeTd.appendChild(upgradeButton)
     const img = new Image()
     img.src = imagePathObject['Steel']
+    Object.entries(buildingObject[k][0].expand).forEach(([ky, vl]) => {
+      const img = new Image()
+      img.src = imagePathObject[ky]
+      upgradeButton.appendChild(img)
+      const amount = vl * (1 + buildingObject[k].level)
+      if (1 < amount) {
+        const span = document.createElement`span`
+        span.textContent = `*${amount}`
+        upgradeButton.appendChild(span)
+      }
+    })
   }
   const leftSide = document.createElement`td`
   leftSide.className = 'value'
