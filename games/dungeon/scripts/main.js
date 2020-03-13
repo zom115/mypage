@@ -228,11 +228,6 @@ const createWorkerFirst = p => {
     timestamp: 0,
   }
 }
-const resetJob = (worker, post) => {
-  worker.location = 0
-  worker.post = post
-  worker.timestamp = 0
-}
 const worker = document.createElement`table`
 const createWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -315,13 +310,16 @@ const createWorkerTableColumn = (d, v) => {
       commoditiesObject['Furniture']--
       jobObject['Untrained']++
       labour++
-      workerList.push(createWorkerFirst())
+      workerList.push(createWorkerFirst('Untrained'))
       pushPersonalTable(workerList[workerList.length - 1])
     })
   } else plusButton.addEventListener('click', () => {
     jobObject['Untrained'] -= 1
     jobObject[d] += 1
-    resetJob(workerList[workerList.findIndex(va => va.post === 'Untrained')], d)
+    const worker = workerList[workerList.findIndex(va => va.post === 'Untrained')]
+    worker.location = 0
+    worker.post = d
+    worker.timestamp = 0
     labour--
   })
   td.appendChild(plusButton)
@@ -1056,10 +1054,24 @@ const debugBonusInit = () => {
     'Trained' ? trained :
     'Expert' ? expert: 0
   })
-  for (let i = 0; i < untrained; i++) {
-    workerList.push(createWorkerFirst())
-    labour++
-  }
+  Object.entries(jobObject).forEach(([k, v]) => {
+    if (k === 'Untrained') {
+      for (let i = 0; i < v; i++) {
+        workerList.push(createWorkerFirst('Untrained'))
+        labour++
+      }
+    } else if (k === 'Trained') {
+      for (let i = 0; i < v; i++) {
+        workerList.push(createWorkerFirst('Trained'))
+        labour += 2
+      }
+    } else if (k === 'Expert') {
+      for (let i = 0; i < v; i++) {
+        workerList.push(createWorkerFirst('Expert'))
+        labour += 4
+      }
+    }
+  })
 }
 debugBonusInit()
 const stream = async () => {
