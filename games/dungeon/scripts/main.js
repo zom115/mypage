@@ -452,6 +452,7 @@ const buildingObject = {
     out: {'Fuel': 1},
   },],
 }
+Object.keys(buildingObject).forEach(v => buildingObject[v].level = 0)
 const recipeList = Object.values(buildingObject).flat()
 recipeList.forEach(v => {
   v.value = 0
@@ -464,8 +465,9 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   if (iC === 0) item.textContent = d
   tr.appendChild(item)
   const level = document.createElement`td`
+  level.id = `building-level-${d}`
   level.className = 'value'
-  if (iC === 0) level.textContent = 0
+  if (iC === 0) level.textContent = buildingObject[d].level
   tr.appendChild(level)
   const leftSide = document.createElement`td`
   leftSide.className = 'value'
@@ -806,6 +808,9 @@ const elementUpdate = () => {
     }
   })
   updateLabourTable()
+  Object.entries(buildingObject).forEach(([k, v]) => {
+    document.getElementById(`building-level-${k}`).textContent = v.level
+  })
   recipeList.forEach((v, i) => {
     if (v.value <= 0) {
       document.getElementById(`building-minus-${i}`).disabled = true
