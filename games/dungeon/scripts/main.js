@@ -463,6 +463,10 @@ const createBuildingTableColumn = (d, v, i, iC) => {
   const item = document.createElement`td`
   if (iC === 0) item.textContent = d
   tr.appendChild(item)
+  const level = document.createElement`td`
+  level.className = 'value'
+  if (iC === 0) level.textContent = 0
+  tr.appendChild(level)
   const leftSide = document.createElement`td`
   leftSide.className = 'value'
   tr.appendChild(leftSide)
@@ -542,9 +546,11 @@ const appendBuildingTable = () => {
   const buildingTh = document.createElement`th`
   buildingTh.textContent = 'Building'
   tr.appendChild(buildingTh)
+  const level = document.createElement`th`
+  level.textContent = 'Level'
+  tr.appendChild(level)
   const product = document.createElement`th`
   product.textContent = 'Products'
-  product.className = 'value'
   tr.appendChild(product)
   const dummy = document.createElement`th`
   tr.appendChild(dummy)
