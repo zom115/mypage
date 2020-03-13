@@ -291,6 +291,7 @@ const jobObject = {
 Object.keys(jobObject).forEach(v => {
   jobObject[v].value = 0
   jobObject[v].timestamp = 0
+  jobObject[v].max = intervalTime
 })
 const workerList = []
 const labourList = []
@@ -777,7 +778,10 @@ const elementUpdate = () => {
   recipeList.forEach((v, i) => {
     document.getElementById(`building-value-${i}`).textContent = v.value
   })
-  Object.keys(jobObject).forEach(k => { // job
+  Object.entries(jobObject).forEach(([k, v]) => { // job
+    const progress = document.getElementById(`job-progress-${k}`)
+    progress.max = v.max
+    progress.value = v.timestamp === 0 ? 0 : Date.now() - v.timestamp
     if (Object.entries(jobObject[k].requirement).every(([ky, vl]) => vl <= entityObject[ky]) && (
       Object.keys(labourObject).every(v => v !== k) ||
       labourObject[k] <= entityObject['Labour'])
@@ -1014,9 +1018,9 @@ const main = () => {
       const population = Object.entries(entityObject).filter(([ky, _vl]) => {
         return Object.keys(labourObject).some(key => ky === key)
       }).reduce((acu, [_ck, cv]) => acu + cv, 0)
-      const studyTime = k === 'Untrained' ? intervalTime / Math.ceil(population / 4) :
+      v.max = k === 'Untrained' ? intervalTime / Math.ceil(population / 4) :
       intervalTime
-      if (0 < v.value && v.timestamp + studyTime <= Date.now()) {
+      if (0 < v.value && v.timestamp + v.max <= Date.now()) {
         if (k === 'Untrained') {
           entityObject['Labour']++
           pushPersonalTable(workerList[workerList.length - 1])
