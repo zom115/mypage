@@ -417,39 +417,77 @@ const buildingObject = {
       'Fruit': 8,
     },
     out: {'Cuisine': 1e3},
+    expand: {
+      'Lumber': 1,
+      'Steel': 1,
+    },
   },], 'Food Production': [{
     in: {
       'Grain': 2,
       'Livestock': 1,
-      'Fruit': 1
+      'Fruit': 1,
     }, out: {'Canned Food': 2},
+    expand: {
+      'Lumber': 1,
+      'Steel': 1,
+    },
   },], 'Textile Mill': [{
     in: {'Wool': 2},
     out: {'Fabric': 1},
+    expand: {
+      'Lumber': 2,
+      'Steel': 2,
+    },
   },], 'Clothing Factory': [{
     in: {'Fabric': 2},
     out: {'Clothing': 1},
+    expand: {
+      'Lumber': 1,
+      'Steel': 1,
+    },
   },], 'Lumber Mill': [{
     in: {'Timber': 2},
     out: {'Lumber': 1},
   }, {
     in: {'Timber': 2},
     out: {'Paper': 1},
+    expand: {
+      'Lumber': 2,
+      'Steel': 2,
+    },
   },], 'Furniture Factory': [{
     in: {'Lumber': 2},
     out: {'Furniture': 1},
+    expand: {
+      'Lumber': 1,
+      'Steel': 1,
+    },
   },], 'Steel Mill': [{
-    in: {Coal: 1, Iron: 1},
-    out: {'Steel': 1},
-  },], 'Blacksmith': [{
+    in: {
+      'Coal': 1,
+      'Iron': 1,
+    }, out: {'Steel': 1},
+    expand: {
+      'Lumber': 2,
+      'Steel': 2,
+    },
+  },], 'Metalworks': [{
     in: {'Steel': 2},
     out: {'Hardware': 1},
   }, {
     in: {'Steel': 2},
     out: {'Armaments': 1},
+    expand: {
+      'Lumber': 1,
+      'Steel': 1,
+    },
   },], 'Refinery': [{
     in: {'Oil': 2},
     out: {'Fuel': 1},
+    expand: {
+      'Lumber': 2,
+      'Steel': 2,
+    },
   },],
 }
 Object.keys(buildingObject).forEach(v => buildingObject[v].level = 0)
