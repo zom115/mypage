@@ -1,5 +1,4 @@
 {'use strict'
-let money = 0
 const resourcesImageObject = {
   'Grain':     '小麦アイコン',
   'Livestock': '肉の切り身のアイコン',
@@ -35,10 +34,15 @@ const commonImageObject = {
   'Expert':    'にわとりアイコン2',
   'Money':     'コインのベクター素材',
 }
-const commoditiesObject = {}
-Object.keys(resourcesImageObject).forEach(v => commoditiesObject[v] = 0)
-Object.keys(materialsImageObject).forEach(v => commoditiesObject[v] = 0)
-Object.keys(goodsImageObject).forEach(v => commoditiesObject[v] = 0)
+const entityObject = {}
+Object.keys(resourcesImageObject).forEach(v => entityObject[v] = 0)
+Object.keys(materialsImageObject).forEach(v => entityObject[v] = 0)
+Object.keys(goodsImageObject).forEach(v => entityObject[v] = 0)
+entityObject['Money'] = 0
+entityObject['Labour'] = 0
+entityObject['Untrained'] = 0
+entityObject['Trained'] = 0
+entityObject['Expert'] = 0
 const imagePathObject = {}
 const addPathObject = obj => {
   Object.entries(obj).forEach(([k, v]) => obj[k] = `images/${v}.png`)
@@ -196,9 +200,9 @@ const appendGoodsTable = () => {
   span.textContent = 'Money'
   moneyTh.appendChild(span)
   const moneyValue = document.createElement`td`
-  moneyValue.id = 'money'
+  moneyValue.id = 'Money'
   moneyValue.className = 'value'
-  moneyValue.textContent = money
+  moneyValue.textContent = entityObject['Money']
   moneyTr.appendChild(moneyValue)
 }
 const jobObject = {}
@@ -334,11 +338,13 @@ const createWorkerTableColumn = (d, v) => {
   minusButton.textContent = '-'
   minusButton.addEventListener('click', () => {
     jobObject[d] -= 1
-    jobObject['Untrained'] += 1
-    workerList[workerList.findIndex(va => va.post === d)].post = 'Untrained'
-    labour++
+    jobObject['Expert'] += 1
+    entityObject[d]--
+    entityObject['Expert']++
+    workerList[workerList.findIndex(va => va.post === d)].post = 'Expert'
+    labour += 4
   })
-  if (d !== 'Untrained') td.appendChild(minusButton)
+  if (rewrireJobNameList.every(v => v !== d)) td.appendChild(minusButton)
   const valuSpan = document.createElement`span`
   valuSpan.id = d
   valuSpan.textContent = v
@@ -346,25 +352,54 @@ const createWorkerTableColumn = (d, v) => {
   const plusButton = document.createElement`button`
   plusButton.id = `plus-${d}`
   plusButton.textContent = '+'
-  if (d === 'Untrained') {
-    plusButton.addEventListener('click', () => {
-      commoditiesObject['Canned Food']--
-      commoditiesObject['Clothing']--
-      commoditiesObject['Furniture']--
-      jobObject['Untrained']++
-      labour++
-      workerList.push(createWorkerFirst('Untrained'))
-      pushPersonalTable(workerList[workerList.length - 1])
+  plusButton.addEventListener('click', () => {
+    Object.entries(requirementObject[d]).forEach(([k, v]) => {
+      entityObject[k] -= v
     })
-  } else plusButton.addEventListener('click', () => {
-    jobObject['Untrained'] -= 1
-    jobObject[d] += 1
-    const worker = workerList[workerList.findIndex(va => va.post === 'Untrained')]
-    worker.location = 0
-    worker.post = d
-    worker.timestamp = 0
-    labour--
+    if (d === 'Untrained') {
+      labour++
+      pushPersonalTable(workerList[workerList.length - 1])
+    } else {
+      let worker
+      if (d === 'Trained') {
+        labour++
+        worker = workerList[workerList.findIndex(va => va.post === 'Untrained')]
+        jobObject['Untrained']--
+      } else if (d === 'Expert') {
+        labour += 2
+        worker = workerList[workerList.findIndex(va => va.post === 'Trained')]
+        jobObject['Trained']--
+      } else {
+        labour -= 4
+        worker = workerList[workerList.findIndex(va => va.post === 'Expert')]
+        jobObject['Expert']--
+      }
+      worker.location = 0
+      worker.post = d
+      worker.timestamp = 0
+    }
+    jobObject[d]++
+    entityObject[d]++
   })
+  // if (d === 'Untrained') {
+  //   plusButton.addEventListener('click', () => {
+  //     entityObject['Canned Food']--
+  //     entityObject['Clothing']--
+  //     entityObject['Furniture']--
+  //     jobObject['Untrained']++
+  //     labour++
+  //     workerList.push(createWorkerFirst('Untrained'))
+  //     pushPersonalTable(workerList[workerList.length - 1])
+  //   })
+  // } else plusButton.addEventListener('click', () => {
+  //   jobObject['Untrained'] -= 1
+  //   jobObject[d] += 1
+  //   const worker = workerList[workerList.findIndex(va => va.post === 'Untrained')]
+  //   worker.location = 0
+  //   worker.post = d
+  //   worker.timestamp = 0
+  //   labour--
+  // })
   td.appendChild(plusButton)
   tr.appendChild(td)
   return tr
@@ -605,12 +640,12 @@ const createLabourTableColumn = () => {
   name.textContent = 'Labour'
   tr.appendChild(name)
   const td = document.createElement`td`
-  td.id = 'labour'
+  td.id = 'Labour'
   td.textContent = labour
   tr.appendChild(td)
 }
 const updateLabourTable = () => {
-  document.getElementById('labour').textContent = labour
+  document.getElementById('Labour').textContent = labour
 }
 const personalTable = document.createElement`table`
 const pushPersonalTable = d => {
@@ -720,7 +755,7 @@ const appendTradeTable = () => {
     const available = document.createElement`td`
     available.id = `trade-available-${k}`
     available.className = 'value'
-    available.textContent = commoditiesObject[k]
+    available.textContent = entityObject[k]
     tr.appendChild(available)
     const td = document.createElement`td`
     tr.appendChild(td)
@@ -737,7 +772,7 @@ const appendTradeTable = () => {
     toggle.addEventListener('click', e => {
       if (e.target.textContent === 'Bid') {
         e.target.textContent = 'Offer'
-        input.max = commoditiesObject[k]
+        input.max = entityObject[k]
       } else {
         e.target.textContent = 'Bid'
         input.max = tradeBidObject[k]
@@ -762,7 +797,7 @@ const appendTradeTable = () => {
   Object.entries(tradeObject).forEach(([k, v]) => createTradeTr(k, v))
 }
 const elementUpdate = () => {
-  Object.entries(commoditiesObject).forEach(([k, v]) => {
+  Object.entries(entityObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
   recipeList.forEach((v, i) => {
@@ -771,27 +806,17 @@ const elementUpdate = () => {
   Object.entries(jobObject).forEach(([k, v]) => {
     document.getElementById(k).textContent = v
   })
-  document.getElementById(`money`).textContent = money
-  Object.keys(requirementObject).forEach(v => {
-    if (v === 'Untrained') {
-      if (
-        0 < commoditiesObject['Canned Food'] &&
-        0 < commoditiesObject['Clothing'] &&
-        0 < commoditiesObject['Furniture']
-      ) {
-        document.getElementById(`plus-${v}`).disabled = false
-      } else document.getElementById(`plus-${v}`).disabled = true
-      return
+  Object.entries(requirementObject).forEach(([k, v]) => {
+    if (Object.entries(v).every(([ky, vl]) => {
+      return vl <= entityObject[ky]
+    })) {
+      document.getElementById(`plus-${k}`).disabled = false
+    } else document.getElementById(`plus-${k}`).disabled = true
+    if (k !== 'Untrained' && k !== 'Trained' && k !== 'Expert') {
+      if (jobObject[k] <= 0) {
+        document.getElementById(`minus-${k}`).disabled = true
+      } else document.getElementById(`minus-${k}`).disabled = false
     }
-    if (jobObject[v] <= 0) {
-      document.getElementById(`minus-${v}`).disabled = true
-    } else document.getElementById(`minus-${v}`).disabled = false
-    if (jobObject['Untrained'] <= workerList.reduce((acc, cur) => {
-      if (cur.post === 'Untrained' && cur.state === 'return') return ++acc
-      else return acc
-    }, 0)) {
-      document.getElementById(`plus-${v}`).disabled = true
-    } else document.getElementById(`plus-${v}`).disabled = false
   })
   updateLabourTable()
   recipeList.forEach((v, i) => {
@@ -799,7 +824,7 @@ const elementUpdate = () => {
       document.getElementById(`building-minus-${i}`).disabled = true
     } else document.getElementById(`building-minus-${i}`).disabled = false
     if (0 < labour && Object.entries(recipeList[i].in).some(([k, v]) => {
-      return v <= commoditiesObject[k]})
+      return v <= entityObject[k]})
     ) {
       document.getElementById(`building-plus-${i}`).disabled = false
     } else document.getElementById(`building-plus-${i}`).disabled = true
@@ -824,14 +849,14 @@ const elementUpdate = () => {
     const order = document.getElementById(`trade-orders-${v}`).textContent
     const range = document.getElementById(`trade-range-${v}`)
     const available = document.getElementById(`trade-available-${v}`)
-    const value = order === 'Offer' ? commoditiesObject[v] : tradeBidObject[v]
+    const value = order === 'Offer' ? entityObject[v] : tradeBidObject[v]
     available.textContent = value
     range.max = value
     if (+range.value === 0) {
       document.getElementById(`trade-minus-${v}`).disabled = true
     } else document.getElementById(`trade-minus-${v}`).disabled = false
     document.getElementById(`trade-value-${v}`).textContent = range.value
-    if (value === +range.value || (order === 'Bid' && money < payment + tradeObject[v])) {
+    if (value === +range.value || (order === 'Bid' && entityObject['Money'] < payment + tradeObject[v])) {
       document.getElementById(`trade-plus-${v}`).disabled = true
     } else document.getElementById(`trade-plus-${v}`).disabled = false
   })
@@ -893,10 +918,10 @@ const pushCanvas = () => {
               if (terrainProductObject[val] === 'Iron' || terrainProductObject[val] === 'Coal') {
                 const goldDropRate = 1 / 2 ** 7
                 const gemsDropRate = 1 / 2 ** 9
-                if (1 / goldDropRate < Math.random()) commoditiesObject['Gold']++
-                if (1 / gemsDropRate < Math.random()) commoditiesObject['Gems']++
+                if (1 / goldDropRate < Math.random()) entityObject['Gold']++
+                if (1 / gemsDropRate < Math.random()) entityObject['Gems']++
               }
-              commoditiesObject[terrainProductObject[val]]++
+              entityObject[terrainProductObject[val]]++
               v.fullness -= v.location
             }
           })
@@ -988,15 +1013,15 @@ const main = () => {
     if (
       k.timestamp === 0 &&
       k.fullness < fullnessMax &&
-      0 < commoditiesObject['Cuisine']
+      0 < entityObject['Cuisine']
     ) {
       k.state = 'eat'
       k.timestamp = Date.now()
     }
     if (k.state === 'eat') {
       if (Date.now() - k.timestamp <= eatInterval) return
-      if (k.fullness < 100 && 0 < commoditiesObject['Cuisine']) {
-        commoditiesObject['Cuisine']--
+      if (k.fullness < 100 && 0 < entityObject['Cuisine']) {
+        entityObject['Cuisine']--
         k.fullness++
         k.timestamp += eatInterval
         return
@@ -1016,7 +1041,7 @@ const main = () => {
     labourList.forEach(k => {
       if (Object.keys(convertObject).some(ky => k.building === ky)) { // building function
         if (Object.entries(recipeList[k.id].in).every(([ky, vl]) => {
-          return vl <= commoditiesObject[ky]
+          return vl <= entityObject[ky]
         })) {
           if (recipeList[k.id].timestamp === 0) recipeList[k.id].timestamp = Date.now()
           if (k.timestamp === 0) k.timestamp = Date.now()
@@ -1034,10 +1059,10 @@ const main = () => {
             }, 0))
           ) { // task completed
             Object.entries(recipeList[k.id].in).forEach(([ky, vl]) => {
-              commoditiesObject[ky] -= vl
+              entityObject[ky] -= vl
             })
             Object.entries(recipeList[k.id].out).forEach(([ky, vl]) => {
-              commoditiesObject[ky] += vl
+              entityObject[ky] += vl
             })
             // k.timestamp = 0
             labourList.forEach(ky => {
@@ -1070,12 +1095,12 @@ const main = () => {
         if (order === 'Offer' && 0 < +range.value) {
           const number = Math.round(Math.random() * range.value)
           range.value -= number
-          commoditiesObject[k] -= number
-          range.max = commoditiesObject[k]
-          money += v * number
+          entityObject[k] -= number
+          range.max = entityObject[k]
+          entityObject['Money'] += v * number
         } else if (0 < +range.value) { // bid
-          money -= v * range.value
-          commoditiesObject[k] += +range.value
+          entityObject['Money'] -= v * range.value
+          entityObject[k] += +range.value
           tradeBidObject[k] -= +range.value
           range.max = tradeBidObject[k]
           range.value = 0
@@ -1090,15 +1115,18 @@ const main = () => {
   window.requestAnimationFrame(main)
 }
 const debugBonusInit = () => {
-  money += 1e4
-  commoditiesObject['Paper'] += 12
-  const untrained = 5
-  const trained = 0
-  const expert = 0
+  entityObject['Money'] += 1e4
+  entityObject['Paper'] += 12
+  entityObject['Canned Food'] += 12
+  entityObject['Clothing'] += 12
+  entityObject['Furniture'] += 12
+  entityObject['Untrained'] += 12
+  entityObject['Trained'] += 0
+  entityObject['Expert'] += 0
   Object.keys(requirementObject).forEach(v => {
-    jobObject[v] = v === 'Untrained' ? untrained :
-    'Trained' ? trained :
-    'Expert' ? expert: 0
+    jobObject[v] = v === 'Untrained' ? entityObject['Untrained'] :
+    'Trained' ? entityObject['Trained'] :
+    'Expert' ? entityObject['Expert'] : 0
   })
   Object.entries(jobObject).forEach(([k, v]) => {
     if (k === 'Untrained') {
