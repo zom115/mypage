@@ -46,6 +46,8 @@ const labourObject = {
   'Expert': 4,
 }
 const unitList = [
+  'Prospector',
+  // 'Engineer',
   'Farmer',
   'Rancher',
   'Forester',
@@ -225,6 +227,19 @@ const jobObject = {
       'Trained': 1,
       'Paper': 10,
       'Money': 1000,
+    },
+  }, 'Prospector': {
+    product: {
+      'Iron': 1,
+      'Coal': 1,
+      'Gold': 1,
+      'Gems': 1,
+      'Oil': 1,
+    },
+    requirement: {
+      'Expert': 1,
+      'Paper': 10,
+      'Money': 500,
     },
   }, 'Farmer': {
     product: {
@@ -638,14 +653,13 @@ const appendBuildingTable = () => {
 }
 const terrainList = ['Town']
 const terrainProductObject = {
-  'Farm': 'Grain',
-  'Open Range': 'Livestock',
-  'Orchard': 'Fruit',
-  'Fertile Hills': 'Wool',
-  'Forest': 'Timber',
-  'Iron Mines': 'Iron',
-  'Coal Mines': 'Coal',
-  'Desert': 'Oil',
+  'Farm': ['Grain'],
+  'Open Range': ['Livestock'],
+  'Orchard': ['Fruit'],
+  'Fertile Hills': ['Wool'],
+  'Forest': ['Timber'],
+  'Mountains': ['Iron', 'Coal', 'Oil'],
+  'Desert': ['Oil'],
 }
 let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
@@ -671,9 +685,11 @@ const appendTerrainTable = () => {
     tr.appendChild(nameTd)
     const productTd = document.createElement`td`
     tr.appendChild(productTd)
-    const img = new Image()
-    img.src = imagePathObject[terrainProductObject[d]]
-    productTd.appendChild(img)
+    terrainProductObject[d].forEach(v => {
+      const img = new Image()
+      img.src = imagePathObject[v]
+      productTd.appendChild(img)
+    })
     const addTd = document.createElement`td`
     addTd.className = 'value'
     tr.appendChild(addTd)
@@ -997,7 +1013,11 @@ const pushCanvas = () => {
         } else v.state = null
         // set location
         let n
-        if (v.post === 'Farmer') {
+        if (v.post === 'Prospector') {
+          n = terrainListObject[canvas.id].findIndex((va, ind) => {
+            return v.location < ind && (va === 'Mountains')
+          })
+        } else if (v.post === 'Farmer') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (va === 'Farm' || va === 'Orchard')
           })
@@ -1011,7 +1031,7 @@ const pushCanvas = () => {
           })
         } else if (v.post === 'Miner') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === 'Iron Mines' || va === 'Coal Mines')
+            return v.location < ind && (va === 'Mountains')
           })
         } else if (v.post === 'Driller') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
