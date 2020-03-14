@@ -658,11 +658,11 @@ const terrainProductObject = {
   'Orchard': ['Fruit'],
   'Fertile Hills': ['Wool'],
   'Forest': ['Timber'],
-  'Mountains': ['Iron', 'Coal', 'Oil'],
-  'Desert': ['Oil'],
+  'Mountains': ['Iron', 'Coal', 'Gold', 'Gems', 'Oil'],
+  'Desert': ['Oil', 'Gold', 'Gems'],
 }
 let canvasSerector = '0'
-const terrainListObject = {[canvasSerector]: [{location: terrainList[0]}]}
+const terrainListObject = {[canvasSerector]: [{terrain: terrainList[0]}]}
 const appendTerrainTable = () => {
   const terrainTable = document.createElement`table`
   display.appendChild(terrainTable)
@@ -697,7 +697,7 @@ const appendTerrainTable = () => {
     button.id = d
     button.textContent = '+'
     addTd.appendChild(button)
-    button.addEventListener('click', () => terrainListObject[canvasSerector].push({location: d}))
+    button.addEventListener('click', () => terrainListObject[canvasSerector].push({terrain: d}))
   }
   Object.keys(terrainProductObject).forEach(v => createTableColumn(v))
 }
@@ -954,7 +954,7 @@ const pushCanvas = () => {
   canvas.id = canvasId
   canvas.className = 'max-wide-column'
   canvas.width = size * 16 * 3
-  canvas.height = size * 4
+  canvas.height = size * 6
   const context = canvas.getContext`2d`
   display.appendChild(canvas)
   const rect = canvas.getBoundingClientRect()
@@ -984,58 +984,37 @@ const pushCanvas = () => {
   const fn = () => {
     workerList.forEach((v, i) => {
       if (Object.keys(buildingObject).some(va => {return v.post === va})) return
-      if (Date.now() - v.timestamp < moveTime + workTime && (
-        terrainListObject[canvas.id][v.location] === undefined)
-      ) {
-        v.state = 'return'
-        if (Date.now() - v.timestamp < moveTime * v.location) {
-          v.timestamp -= workTime + (moveTime * v.location - Date.now() + v.timestamp) * 2
-        } else v.timestamp -= moveTime * v.location + workTime - Date.now() + v.timestamp
-      }
-      if (
-        v.timestamp === 0 ||
-        v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
-      ) {
-        // get resources
-        if (v.state !== 'return') {
-          Object.keys(terrainProductObject).forEach(val => {
-            if (terrainListObject[canvas.id][v.location].location === val) {
-              if (terrainProductObject[val] === 'Iron' || terrainProductObject[val] === 'Coal') {
-                const goldDropRate = 1 / 2 ** 7
-                const gemsDropRate = 1 / 2 ** 9
-                if (1 / goldDropRate < Math.random()) entityObject['Gold']++
-                if (1 / gemsDropRate < Math.random()) entityObject['Gems']++
-              }
-              entityObject[terrainProductObject[val]]++
-              v.fullness -= v.location
-            }
-          })
-        } else v.state = null
-        // set location
+      const locate = terrainListObject[canvas.id][v.location]
+      if (v.timestamp === 0) { // set location
         let n
         if (v.post === 'Prospector') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.location === 'Mountains')
+            return v.location < ind && (
+              va.terrain === 'Mountains' || va.terrain === 'Desert') && (
+              va.progress === undefined || va.progress < 1
+            )
           })
         } else if (v.post === 'Farmer') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.location === 'Farm' || va === 'Orchard')
+            return v.location < ind && (
+              va.terrain === 'Farm' || va.terrain === 'Orchard')
           })
         } else if (v.post === 'Rancher') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.location === 'Open Range' || va === 'Fertile Hills')
+            return v.location < ind && (
+              va.terrain === 'Open Range' || va.terrain === 'Fertile Hills')
           })
         } else if (v.post === 'Forester') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.location === 'Forest')
+            return v.location < ind && (va.terrain === 'Forest')
           })
         } else if (v.post === 'Miner') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.location === 'Mountains')
+            return v.location < ind && (va.terrain === 'Mountains')
           })
         } else if (v.post === 'Driller') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.location === 'Desert')
+            return v.location < ind && (va.terrain === 'Desert')
           })
         }
         if (n === undefined || n === -1) {
@@ -1045,6 +1024,43 @@ const pushCanvas = () => {
           workerList[i].location = n
           workerList[i].timestamp = Date.now()
         }
+      } else if (Date.now() - v.timestamp < moveTime + workTime && locate === undefined) {
+        v.state = 'return'
+        if (Date.now() - v.timestamp < moveTime * v.location) {
+          v.timestamp -= workTime + (moveTime * v.location - Date.now() + v.timestamp) * 2
+        } else v.timestamp -= moveTime * v.location + workTime - Date.now() + v.timestamp
+      } else if (
+        v.timestamp !== 0 &&
+        v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
+      ) {
+        if (v.state !== 'return') {
+          const resource = terrainProductObject[locate.terrain]
+          if (1 < resource.length) { // get resources
+            if (v.post === 'Prospector') {
+              const rateObject = locate.terrain === 'Mountains' ? {
+                'Iron': 4,
+                'Coal': 4,
+                'Gold': 1,
+                'Gems': .25,
+                'Oil': .5,
+              } : {
+                'Oil': 4,
+                'Gold': .5,
+                'Gems': .25,
+              }
+              resource.forEach(vl => {
+                if (locate[vl] === undefined) locate[vl] = 0
+                locate[vl] += Math.round(rateObject[vl] * (1.5 - Math.random()))
+              })
+              if (locate.progress === undefined) locate.progress = 0
+              locate.progress += .25 - .15 * Math.random()
+            }
+          } else if (resource.length === 1) {
+            entityObject[resource[0]]++
+          }
+          v.fullness -= v.location
+        } else v.state = null
+        v.timestamp = 0
       }
     })
   }
@@ -1058,7 +1074,7 @@ const pushCanvas = () => {
         context.font = `bold ${size}px sans-serif`
       }
       context.fillStyle = 'black'
-      context.fillText(v.location, size * 3 + i * size * 6, size)
+      context.fillText(v.terrain, size * 3 + i * size * 6, size)
       context.font = `normal ${size}px sans-serif`
       context.fillStyle = 'gray'
       context.fillRect(size * 1.5 + i * size * 6, size, size * 3, size * 3)
@@ -1262,10 +1278,16 @@ const debugBonusInit = () => {
   entityObject['Untrained'] += 4
   entityObject['Trained'] += 2
   entityObject['Expert'] += 1
+  entityObject['Prospector'] += 1
   Object.entries(labourObject).forEach(([k, v]) => {
     for (let i = 0; i < entityObject[k]; i++) {
       workerList.push(createWorkerFirst(k))
       entityObject['Labour'] += v
+    }
+  })
+  unitList.forEach(v => {
+    for (let i = 0; i < entityObject[v]; i++) {
+      workerList.push(createWorkerFirst(v))
     }
   })
 }
