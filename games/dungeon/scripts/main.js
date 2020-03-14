@@ -1,5 +1,6 @@
 {'use strict'
 let intervalTime = 1e4
+const fullnessMax = 45
 const resourcesImageObject = {
   'Grain':     '小麦アイコン',
   'Livestock': '肉の切り身のアイコン',
@@ -274,11 +275,10 @@ const jobObject = {
 Object.keys(jobObject).forEach(v => {
   jobObject[v].value = 0
   jobObject[v].timestamp = 0
-  jobObject[v].max = intervalTime
+  jobObject[v].max = intervalTime * 5
 })
 const workerList = []
 const labourList = []
-const fullnessMax = 100
 let workerId = -1
 const createWorkerFirst = p => {
   workerId++
@@ -339,7 +339,7 @@ const createWorkerTableColumn = (d, v) => {
   progressTd.appendChild(progressValue)
   const progress = document.createElement`progress`
   progress.id = `job-progress-${d}`
-  progress.max = intervalTime
+  progress.max = intervalTime * 5
   progress.value = 0
   progressTd.appendChild(progress)
   const td = document.createElement`td`
@@ -402,10 +402,10 @@ const buildingObject = {
       'Livestock': 7,
       'Fruit': 8,
     },
-    out: {'Cuisine': 1e3},
+    out: {'Cuisine': 300},
     expand: {
-      'Lumber': 1,
-      'Steel': 1,
+      'Lumber': 5,
+      'Steel': 5,
     },
   },], 'Food Production': [{
     in: {
@@ -414,29 +414,29 @@ const buildingObject = {
       'Fruit': 1,
     }, out: {'Canned Food': 2},
     expand: {
-      'Lumber': 1,
-      'Steel': 1,
+      'Lumber': 5,
+      'Steel': 5,
     },
   },], 'Textile Mill': [{
     in: {'Wool': 2},
     out: {'Fabric': 1},
     expand: {
-      'Lumber': 2,
-      'Steel': 2,
+      'Lumber': 10,
+      'Steel': 10,
     },
   },], 'Clothing Factory': [{
     in: {'Fabric': 2},
     out: {'Clothing': 1},
     expand: {
-      'Lumber': 1,
-      'Steel': 1,
+      'Lumber': 5,
+      'Steel': 5,
     },
   },], 'Lumber Mill': [{
     in: {'Timber': 2},
     out: {'Lumber': 1},
     expand: {
-      'Lumber': 2,
-      'Steel': 2,
+      'Lumber': 10,
+      'Steel': 10,
     },
   }, {
     in: {'Timber': 2},
@@ -445,8 +445,8 @@ const buildingObject = {
     in: {'Lumber': 2},
     out: {'Furniture': 1},
     expand: {
-      'Lumber': 1,
-      'Steel': 1,
+      'Lumber': 5,
+      'Steel': 5,
     },
   },], 'Steel Mill': [{
     in: {
@@ -454,15 +454,15 @@ const buildingObject = {
       'Iron': 1,
     }, out: {'Steel': 1},
     expand: {
-      'Lumber': 2,
-      'Steel': 2,
+      'Lumber': 10,
+      'Steel': 10,
     },
   },], 'Metalworks': [{
     in: {'Steel': 2},
     out: {'Hardware': 1},
     expand: {
-      'Lumber': 1,
-      'Steel': 1,
+      'Lumber': 5,
+      'Steel': 5,
     },
   }, {
     in: {'Steel': 2},
@@ -471,8 +471,8 @@ const buildingObject = {
     in: {'Oil': 2},
     out: {'Fuel': 1},
     expand: {
-      'Lumber': 2,
-      'Steel': 2,
+      'Lumber': 10,
+      'Steel': 10,
     },
   },],
 }
@@ -562,7 +562,7 @@ const createBuildingTableColumn = (k, v, i, iC) => {
   tr.appendChild(progressTd)
   const progress = document.createElement`progress`
   progress.id = `building-progress-${i}`
-  progress.max = intervalTime
+  progress.max = Math.floor(intervalTime * .9)
   progress.value = 0
   progressTd.appendChild(progress)
   const td = document.createElement`td`
@@ -721,7 +721,7 @@ const pushPersonalTable = d => {
   tr.appendChild(fullness)
   const progress = document.createElement`progress`
   progress.id = `progress-${d.id}`
-  progress.max = 100
+  progress.max = fullnessMax
   progress.value = d.fullness
   fullness.appendChild(progress)
 }
@@ -742,23 +742,23 @@ const appendPersonalTable = () => {
   workerList.forEach(v => pushPersonalTable(v))
 }
 const tradeObject = {
-  'Wool':        100,
-  'Timber':      100,
-  'Iron':        100,
-  'Coal':        100,
-  'Gold':        200,
-  'Gems':        500,
-  'Oil':         100,
-  'Fabric':      300,
-  'Paper':       300,
-  'Lumber':      300,
-  'Steel':       300,
-  'Fuel':        300,
-  'Canned Food': 100,
-  'Clothing':    900,
-  'Furniture':   900,
-  'Hardware':    900,
-  'Armaments':   900,
+  'Wool':        100 / 5,
+  'Timber':      100 / 5,
+  'Iron':        100 / 5,
+  'Coal':        100 / 5,
+  'Gold':        200 / 5,
+  'Gems':        500 / 5,
+  'Oil':         100 / 5,
+  'Fabric':      300 / 5,
+  'Paper':       300 / 5,
+  'Lumber':      300 / 5,
+  'Steel':       300 / 5,
+  'Fuel':        300 / 5,
+  'Canned Food': 100 / 5,
+  'Clothing':    900 / 5,
+  'Furniture':   900 / 5,
+  'Hardware':    900 / 5,
+  'Armaments':   900 / 5,
 }
 const tradeBidObject = {}
 Object.keys(tradeObject).forEach(v => tradeBidObject[v] = 0)
@@ -969,7 +969,7 @@ const pushCanvas = () => {
     workerList.forEach((v, i) => {
       if (Object.keys(buildingObject).some(va => {return v.post === va})) return
       if (Date.now() - v.timestamp < moveTime + workTime && (
-        terrainListObject[canvas.id][v.location] === undefined || v.post === 'Untrained')
+        terrainListObject[canvas.id][v.location] === undefined)
       ) {
         v.state = 'return'
         if (Date.now() - v.timestamp < moveTime * v.location) {
@@ -1089,7 +1089,7 @@ const main = () => {
     }
     if (k.state === 'eat') {
       if (Date.now() - k.timestamp <= eatInterval) return
-      if (k.fullness < 100 && 0 < entityObject['Cuisine']) {
+      if (k.fullness < fullnessMax && 0 < entityObject['Cuisine']) {
         entityObject['Cuisine']--
         k.fullness++
         k.timestamp += eatInterval
@@ -1115,8 +1115,8 @@ const main = () => {
         const divide = entityObject[ck] / cv
         return divide < acu ? divide : acu
       }, Infinity)
-      v.max = k === 'Untrained' && 0 < population ? intervalTime / Math.ceil(population / 4) :
-      possible !== 0 ? intervalTime / possible : intervalTime
+      v.max = k === 'Untrained' && 0 < population ? intervalTime * 5 / Math.ceil(population / 4) :
+      possible !== 0 ? intervalTime * 5 / possible : intervalTime * 5
       if (0 < v.value && v.timestamp + v.max <= Date.now()) {
         if (k === 'Untrained') {
           entityObject['Labour']++
@@ -1145,7 +1145,7 @@ const main = () => {
   }
   { // building function
     Object.entries(buildingObject).forEach(([k, v]) => {
-      if (v.timestamp !==0 && v.timestamp + intervalTime <= Date.now()) {
+      if (v.timestamp !==0 && v.timestamp + Math.floor(intervalTime * .9) <= Date.now()) {
         Object.entries(v[0].expand).forEach(([ky, vl]) => {
           entityObject[ky] -= vl * (1 + v.level)
         })
@@ -1162,7 +1162,7 @@ const main = () => {
           if (recipeList[k.id].timestamp === 0) recipeList[k.id].timestamp = Date.now()
           if (k.timestamp === 0) k.timestamp = Date.now()
           if (
-            intervalTime <= labourList.reduce((acc, cur) => {
+            Math.floor(intervalTime * .9) <= labourList.reduce((acc, cur) => {
               if (cur.building === k.building && cur.id === k.id && cur.timestamp !== 0) {
                 return acc + Date.now() - cur.timestamp
               } else return acc
@@ -1232,12 +1232,13 @@ const main = () => {
 const debugBonusInit = () => {
   intervalTime = 1e4
   entityObject['Money'] += 1e4
-  entityObject['Paper'] += 8
-  entityObject['Lumber'] += 24
-  entityObject['Steel'] += 19
-  entityObject['Canned Food'] += 20
-  entityObject['Clothing'] += 5
-  entityObject['Furniture'] += 5
+  entityObject['Paper'] += 8 * 5
+  entityObject['Lumber'] += 24 * 5
+  entityObject['Steel'] += 19 * 5
+  entityObject['Cuisine'] += 300
+  entityObject['Canned Food'] += 20 * 5
+  entityObject['Clothing'] += 5 * 5
+  entityObject['Furniture'] += 5 * 5
   entityObject['Untrained'] += 4
   entityObject['Trained'] += 2
   entityObject['Expert'] += 1
