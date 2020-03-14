@@ -1,6 +1,6 @@
 {'use strict'
 let intervalTime = 1e4
-const fullnessMax = 45
+const fullnessMax = 90
 const resourcesImageObject = {
   'Grain':     '小麦アイコン',
   'Livestock': '肉の切り身のアイコン',
@@ -208,22 +208,22 @@ const jobObject = {
   'Untrained': {
     product: {'Labour': 1,},
     requirement: {
-      'Canned Food': 1,
-      'Clothing': 1,
-      'Furniture': 1,
+      'Canned Food': 5,
+      'Clothing': 5,
+      'Furniture': 5,
     },
   }, 'Trained': {
     product: {'Labour': 2,},
     requirement: {
       'Untrained': 1,
-      'Paper': 1,
+      'Paper': 5,
       'Money': 100,
     },
   }, 'Expert': {
     product: {'Labour': 4,},
     requirement: {
       'Trained': 1,
-      'Paper': 2,
+      'Paper': 10,
       'Money': 1000,
     },
   }, 'Farmer': {
@@ -233,7 +233,7 @@ const jobObject = {
     },
     requirement: {
       'Expert': 1,
-      'Paper': 2,
+      'Paper': 10,
       'Money': 1000,
     },
   }, 'Rancher': {
@@ -243,14 +243,14 @@ const jobObject = {
     },
     requirement: {
       'Expert': 1,
-      'Paper': 2,
+      'Paper': 10,
       'Money': 1000,
     },
   }, 'Forester': {
     product: {'Timber': 1,},
     requirement: {
       'Expert': 1,
-      'Paper': 2,
+      'Paper': 10,
       'Money': 1000,
     },
   }, 'Miner': {
@@ -260,14 +260,14 @@ const jobObject = {
     },
     requirement: {
       'Expert': 1,
-      'Paper': 2,
+      'Paper': 10,
       'Money': 1500,
     },
   }, 'Driller': {
     product: {'Oil': 1,},
     requirement: {
       'Expert': 1,
-      'Paper': 2,
+      'Paper': 10,
       'Money': 1500,
     },
   },
@@ -402,7 +402,7 @@ const buildingObject = {
       'Livestock': 7,
       'Fruit': 8,
     },
-    out: {'Cuisine': 300},
+    out: {'Cuisine': 500},
     expand: {
       'Lumber': 5,
       'Steel': 5,
@@ -1072,7 +1072,7 @@ const pushCanvas = () => {
 }
 let decreaseTime = 0
 const main = () => {
-  const hungerInterval = intervalTime / 2
+  const hungerInterval = Math.floor(intervalTime * .1)
   const eatInterval = intervalTime / 50
   if (hungerInterval <= Date.now() - decreaseTime) {
     workerList.forEach(v => v.fullness--)
@@ -1235,7 +1235,7 @@ const debugBonusInit = () => {
   entityObject['Paper'] += 8 * 5
   entityObject['Lumber'] += 24 * 5
   entityObject['Steel'] += 19 * 5
-  entityObject['Cuisine'] += 300
+  entityObject['Cuisine'] += 1e3
   entityObject['Canned Food'] += 20 * 5
   entityObject['Clothing'] += 5 * 5
   entityObject['Furniture'] += 5 * 5
