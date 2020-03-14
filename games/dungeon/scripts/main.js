@@ -692,8 +692,13 @@ const createLabourTableColumn = () => {
   const tr = document.createElement`tr`
   table.appendChild(tr)
   const name = document.createElement`td`
-  name.textContent = 'Labour'
   tr.appendChild(name)
+  const img = new Image()
+  img.src = imagePathObject['Labour']
+  name.appendChild(img)
+  const span = document.createElement`span`
+  span.textContent = 'Labour'
+  name.appendChild(span)
   const td = document.createElement`td`
   td.id = 'Labour'
   td.textContent = entityObject['Labour']
