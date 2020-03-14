@@ -662,7 +662,7 @@ const terrainProductObject = {
   'Desert': ['Oil'],
 }
 let canvasSerector = '0'
-const terrainListObject = {[canvasSerector]: terrainList}
+const terrainListObject = {[canvasSerector]: [{location: terrainList[0]}]}
 const appendTerrainTable = () => {
   const terrainTable = document.createElement`table`
   display.appendChild(terrainTable)
@@ -697,7 +697,7 @@ const appendTerrainTable = () => {
     button.id = d
     button.textContent = '+'
     addTd.appendChild(button)
-    button.addEventListener('click', () => terrainListObject[canvasSerector].push(d))
+    button.addEventListener('click', () => terrainListObject[canvasSerector].push({location: d}))
   }
   Object.keys(terrainProductObject).forEach(v => createTableColumn(v))
 }
@@ -965,13 +965,13 @@ const pushCanvas = () => {
     x = e.clientX - rect.left
     y = e.clientY - rect.top
   }, false)
-  canvas.addEventListener('mousedown', e => {
+  canvas.addEventListener('mousedown', () => {
     if (canvas.offsetWidth - size * 3 < x && x < canvas.offsetWidth - size &&
       size < y && y < size * 3) {
       // pushCanvas()
     }
   })
-  canvas.addEventListener('mouseup', e => {
+  canvas.addEventListener('mouseup', () => {
     canvasSerector = canvas.id
     let value = ((x - size * 1.5) / (size * 6))
     value = .5 < value % 1 ? 0 : Math.floor(value)
@@ -999,7 +999,7 @@ const pushCanvas = () => {
         // get resources
         if (v.state !== 'return') {
           Object.keys(terrainProductObject).forEach(val => {
-            if (terrainListObject[canvas.id][v.location] === val) {
+            if (terrainListObject[canvas.id][v.location].location === val) {
               if (terrainProductObject[val] === 'Iron' || terrainProductObject[val] === 'Coal') {
                 const goldDropRate = 1 / 2 ** 7
                 const gemsDropRate = 1 / 2 ** 9
@@ -1015,27 +1015,27 @@ const pushCanvas = () => {
         let n
         if (v.post === 'Prospector') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === 'Mountains')
+            return v.location < ind && (va.location === 'Mountains')
           })
         } else if (v.post === 'Farmer') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === 'Farm' || va === 'Orchard')
+            return v.location < ind && (va.location === 'Farm' || va === 'Orchard')
           })
         } else if (v.post === 'Rancher') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === 'Open Range' || va === 'Fertile Hills')
+            return v.location < ind && (va.location === 'Open Range' || va === 'Fertile Hills')
           })
         } else if (v.post === 'Forester') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === 'Forest')
+            return v.location < ind && (va.location === 'Forest')
           })
         } else if (v.post === 'Miner') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === 'Mountains')
+            return v.location < ind && (va.location === 'Mountains')
           })
         } else if (v.post === 'Driller') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va === 'Desert')
+            return v.location < ind && (va.location === 'Desert')
           })
         }
         if (n === undefined || n === -1) {
@@ -1058,7 +1058,7 @@ const pushCanvas = () => {
         context.font = `bold ${size}px sans-serif`
       }
       context.fillStyle = 'black'
-      context.fillText(v, size * 3 + i * size * 6, size)
+      context.fillText(v.location, size * 3 + i * size * 6, size)
       context.font = `normal ${size}px sans-serif`
       context.fillStyle = 'gray'
       context.fillRect(size * 1.5 + i * size * 6, size, size * 3, size * 3)
