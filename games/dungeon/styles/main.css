@@ -2,5 +2,20 @@ button:disabled {
   background-color: #737373;
   color: #d9d9d9; }
 
+.grid-container {
+  display: grid;
+  grid: minmax(16rem, auto)/repeat(3, 18rem);
+  justify-content: center;
+  justify-items: center; }
+
+.max-wide-column {
+  grid-column: span 3; }
+
+.nowrap {
+  white-space: nowrap; }
+
 .value {
   text-align: right; }
+
+.wide-column {
+  grid-column: span 2; }

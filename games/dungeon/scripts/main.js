@@ -91,24 +91,7 @@ const imageLoad = async (obj, imageList) => {
   })
 }
 const display = document.getElementById`display`
-const firstPanel = document.createElement`div`
-firstPanel.className = 'container'
-display.appendChild(firstPanel)
-const secondPanel = document.createElement`div`
-secondPanel.className = 'container'
-display.appendChild(secondPanel)
-const thirdPanel = document.createElement`div`
-display.appendChild(thirdPanel)
-thirdPanel.className = 'container'
-const labourPanel = document.createElement`div`
-display.appendChild(labourPanel)
-labourPanel.className = 'container'
-const fourthPanel = document.createElement`div`
-fourthPanel.className = 'container'
-display.appendChild(fourthPanel)
-const fifthPanel = document.createElement`div`
-fifthPanel.className = 'container'
-display.appendChild(fifthPanel)
+display.className = 'grid-container'
 const resourcesTable = document.createElement`table`
 const createResourcesTableColumn = (d, v) => {
   const tr = document.createElement`tr`
@@ -128,7 +111,7 @@ const createResourcesTableColumn = (d, v) => {
   return tr
 }
 const appendResourcesTable = () => {
-  firstPanel.appendChild(resourcesTable)
+  display.appendChild(resourcesTable)
   const tr = document.createElement`tr`
   resourcesTable.appendChild(tr)
   const th = document.createElement`th`
@@ -160,7 +143,7 @@ const createMaterialsTableColumn = (d, v) => {
   return tr
 }
 const appendMaterialsTable = () => {
-  firstPanel.appendChild(materialsTable)
+  display.appendChild(materialsTable)
   const tr = document.createElement`tr`
   materialsTable.appendChild(tr)
   const th = document.createElement`th`
@@ -192,7 +175,7 @@ const createGoodsTableColumn = (d, v) => {
   return tr
 }
 const appendGoodsTable = () => {
-  firstPanel.appendChild(goodsTable)
+  display.appendChild(goodsTable)
   const tr = document.createElement`tr`
   goodsTable.appendChild(tr)
   const th = document.createElement`th`
@@ -309,9 +292,11 @@ const createWorkerFirst = p => {
   }
 }
 const worker = document.createElement`table`
+worker.className = 'wide-column'
 const createWorkerTableColumn = (d, v) => {
   const tr = document.createElement`tr`
   const itemTd = document.createElement`td`
+  itemTd.className = 'nowrap'
   tr.appendChild(itemTd)
   if (Object.keys(labourObject).some(v => v === d)) {
     const img = new Image()
@@ -346,6 +331,7 @@ const createWorkerTableColumn = (d, v) => {
   })
   tr.appendChild(requirementTd)
   const progressTd = document.createElement`td`
+  progressTd.className = 'nowrap'
   tr.appendChild(progressTd)
   const progressValue = document.createElement`span`
   progressValue.id = `job-progress-value-${d}`
@@ -357,7 +343,7 @@ const createWorkerTableColumn = (d, v) => {
   progress.value = 0
   progressTd.appendChild(progress)
   const td = document.createElement`td`
-  td.className = 'value'
+  td.classList.add('nowrap', 'value')
   const minusButton = document.createElement`button`
   minusButton.id = `minus-${d}`
   minusButton.textContent = '-'
@@ -387,7 +373,7 @@ const createWorkerTableColumn = (d, v) => {
   return tr
 }
 const appendJobTable = () => {
-  secondPanel.appendChild(worker)
+  display.appendChild(worker)
   const tr = document.createElement`tr`
   worker.appendChild(tr)
   const name = document.createElement`th`
@@ -505,6 +491,7 @@ recipeList.forEach((v, i) => {
   v.timestamp = 0
 })
 const building = document.createElement`table`
+building.className = 'max-wide-column'
 const rewriteExpandButton = (name, element) => {
   element.textContent = null
   Object.entries(buildingObject[name][0].expand).forEach(([ky, vl]) => {
@@ -522,6 +509,7 @@ const rewriteExpandButton = (name, element) => {
 const createBuildingTableColumn = (k, v, i, iC) => {
   const tr = document.createElement`tr`
   const item = document.createElement`td`
+  item.className = 'nowrap'
   if (iC === 0) item.textContent = k
   tr.appendChild(item)
   const level = document.createElement`td`
@@ -530,6 +518,7 @@ const createBuildingTableColumn = (k, v, i, iC) => {
   if (iC === 0) level.textContent = buildingObject[k].level
   tr.appendChild(level)
   const upgradeTd = document.createElement`td`
+  upgradeTd.className = 'nowrap'
   tr.appendChild(upgradeTd)
   if (iC === 0) {
     const upgradeButton = document.createElement`button`
@@ -541,9 +530,10 @@ const createBuildingTableColumn = (k, v, i, iC) => {
     })
   }
   const leftSide = document.createElement`td`
-  leftSide.className = 'value'
+  leftSide.classList.add('value', 'nowrap')
   tr.appendChild(leftSide)
   const rightSide = document.createElement`td`
+  rightSide.className = 'nowrap'
   tr.appendChild(rightSide)
   Object.entries(recipeList[i].in).forEach(([k, vl]) => {
     const img = new Image()
@@ -576,7 +566,7 @@ const createBuildingTableColumn = (k, v, i, iC) => {
   progress.value = 0
   progressTd.appendChild(progress)
   const td = document.createElement`td`
-  td.className = 'value'
+  td.classList.add('value', 'wide-column')
   tr.appendChild(td)
   const minusButton = document.createElement`button`
   minusButton.id = `building-minus-${i}`
@@ -613,7 +603,7 @@ const createBuildingTableColumn = (k, v, i, iC) => {
   return tr
 }
 const appendBuildingTable = () => {
-  fourthPanel.appendChild(building)
+  display.appendChild(building)
   const tr = document.createElement`tr`
   building.appendChild(tr)
   const buildingTh = document.createElement`th`
@@ -661,7 +651,7 @@ let canvasSerector = '0'
 const terrainListObject = {[canvasSerector]: terrainList}
 const appendTerrainTable = () => {
   const terrainTable = document.createElement`table`
-  secondPanel.appendChild(terrainTable)
+  display.appendChild(terrainTable)
   const tr = document.createElement`tr`
   terrainTable.appendChild(tr)
   const th = document.createElement`th`
@@ -697,7 +687,8 @@ const appendTerrainTable = () => {
 }
 const createLabourTableColumn = () => {
   const table = document.createElement`table`
-  labourPanel.appendChild(table)
+  table.className = 'max-wide-column'
+  display.appendChild(table)
   const tr = document.createElement`tr`
   table.appendChild(tr)
   const name = document.createElement`td`
@@ -734,7 +725,7 @@ const personalViewUpdate = d => {
   document.getElementById(`progress-${d.id}`).value = d.fullness
 }
 const appendPersonalTable = () => {
-  fifthPanel.appendChild(personalTable)
+  display.appendChild(personalTable)
   const tr = document.createElement`tr`
   personalTable.appendChild(tr)
   const post = document.createElement`th`
@@ -769,8 +760,9 @@ Object.keys(tradeObject).forEach(v => tradeBidObject[v] = 0)
 let payment = 0
 let tradeTimestamp = 0
 const tradeTable = document.createElement`table`
+tradeTable.className = 'wide-column'
 const appendTradeTable = () => {
-  fifthPanel.appendChild(tradeTable)
+  display.appendChild(tradeTable)
   const tr = document.createElement`tr`
   tradeTable.appendChild(tr)
   const th = document.createElement`th`
@@ -939,10 +931,11 @@ let canvasId = 0
 const pushCanvas = () => {
   const canvas = document.createElement`canvas`
   canvas.id = canvasId
+  canvas.className = 'max-wide-column'
   canvas.width = size * 16 * 3
   canvas.height = size * 4
   const context = canvas.getContext`2d`
-  thirdPanel.appendChild(canvas)
+  display.appendChild(canvas)
   const rect = canvas.getBoundingClientRect()
   canvasId++
   let x = 0
