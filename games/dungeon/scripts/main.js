@@ -1146,12 +1146,18 @@ const pushCanvas = () => {
         v.state === 'eat') return
       context.fillStyle = 'cyan'
       const elapsedTime = Date.now() - v.timestamp
-      const rate = elapsedTime < moveTime * v.location ?
-      elapsedTime / moveTime :
-      moveTime * v.location <= elapsedTime &&
-      elapsedTime < moveTime * v.location + workTime ?
-      v.location :
-      (moveTime * v.location * 2 + workTime - elapsedTime) / moveTime
+      // const progress = moveTime * (layingIndex - 1) < elapsedTime ?
+      //   (elapsedTime - moveTime * (layingIndex - 1)) / (moveTime + workTime) : 0
+      const rate = v.post === 'Engineer' &&
+        moveTime * (v.location - 1) < elapsedTime &&
+        elapsedTime < moveTime * v.location + workTime ?
+        v.location - 1 + (elapsedTime - moveTime * (v.location - 1)) / (moveTime + workTime) :
+        elapsedTime < moveTime * v.location ?
+        elapsedTime / moveTime :
+        moveTime * v.location <= elapsedTime &&
+        elapsedTime < moveTime * v.location + workTime ?
+        v.location :
+        (moveTime * v.location * 2 + workTime - elapsedTime) / moveTime
       const progress = rate * size * 6
       context.fillRect(size * 2.5 + progress, size * 3, size, size)
     })
