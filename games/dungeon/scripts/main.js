@@ -35,6 +35,7 @@ const commonImageObject = {
   'Trained':   'ヒヨコのフリー素材',
   'Expert':    'にわとりアイコン2',
   'Money':     'コインのベクター素材',
+  'Rail':      'SLのアイコン',
 }
 const entityObject = {}
 Object.keys(resourcesImageObject).forEach(v => entityObject[v] = 0)
@@ -53,6 +54,7 @@ const unitList = [
   'Forester',
   'Miner',
   'Driller',
+  'Railyard',
 ]
 const commonList = [
   'Money',
@@ -292,6 +294,12 @@ const jobObject = {
       'Expert': 1,
       'Paper': 10,
       'Money': 1500,
+    },
+  }, 'Railyard': {
+    product: {'Rail': 1,},
+    requirement: {
+      'Steel': 5,
+      'Lumber': 5,
     },
   },
 }
