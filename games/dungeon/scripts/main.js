@@ -47,7 +47,7 @@ const labourObject = {
 }
 const unitList = [
   'Prospector',
-  // 'Engineer',
+  'Engineer',
   'Farmer',
   'Rancher',
   'Forester',
@@ -240,6 +240,14 @@ const jobObject = {
       'Expert': 1,
       'Paper': 10,
       'Money': 500,
+    },
+  }, 'Engineer': {
+    product: {
+    },
+    requirement: {
+      'Expert': 1,
+      'Paper': 10,
+      'Money': 2000,
     },
   }, 'Farmer': {
     product: {
@@ -1091,6 +1099,8 @@ const pushCanvas = () => {
         context.fillText(`*${vl}`, size * 5.5 + i * size * 6, size * 2 + size * idx)
       })
     })
+    context.fillStyle = 'gray'
+    context.fillRect(0, size * 4, canvas.offsetWidth, 1)
     context.fillStyle = 'black'
     if (canvasSerector === canvas.id) {
       context.fillRect(0, 0, size / 2, size / 2)
@@ -1291,6 +1301,7 @@ const debugBonusInit = () => {
   entityObject['Trained'] += 2
   entityObject['Expert'] += 1
   entityObject['Prospector'] += 1
+  entityObject['Engineer'] += 1
   Object.entries(labourObject).forEach(([k, v]) => {
     for (let i = 0; i < entityObject[k]; i++) {
       workerList.push(createWorkerFirst(k))
