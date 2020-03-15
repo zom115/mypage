@@ -1,4 +1,6 @@
 {'use strict'
+let currentTime = Date.now()
+let globalElapsedTime = 1
 let intervalTime = 1e4
 const fullnessMax = 90
 const railSpeed = 2
@@ -316,7 +318,8 @@ const createWorkerFirst = p => {
   return {
     fullness: fullnessMax,
     id: workerId,
-    location: 0,
+    destinate: 0,
+    position: 0,
     post: p,
     state: null,
     timestamp: 0,
@@ -1000,114 +1003,137 @@ const pushCanvas = () => {
   const fn = () => {
     workerList.forEach((v, i) => {
       if (Object.keys(buildingObject).some(va => {return v.post === va})) return
-      const locate = terrainListObject[canvas.id][v.location]
-      if (v.timestamp === 0) { // set location
+      const destination = terrainListObject[canvas.id][v.destinate]
+      const locate = terrainListObject[canvas.id][v.position]
+      const shiftingTime = locate === undefined || locate.rail !== 1 ?
+      moveTime : moveTime / railSpeed
+      if (v.timestamp === 0) { // set destinate
         let n
         if (v.post === 'Prospector') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (
+            return v.destinate < ind && (
               va.terrain === 'Mountains' || va.terrain === 'Desert') && (
               va.progress === undefined || va.progress < 1
             )
           })
         } else if (v.post === 'Engineer') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (
+            return v.destinate < ind && (
               va.rail === undefined || va.rail < 1) &&
             0 < jobObject['Railyard'].value
           })
         } else if (v.post === 'Farmer') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (
+            return v.destinate < ind && (
               va.terrain === 'Farm' || va.terrain === 'Orchard')
           })
         } else if (v.post === 'Rancher') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (
+            return v.destinate < ind && (
               va.terrain === 'Open Range' || va.terrain === 'Fertile Hills')
           })
         } else if (v.post === 'Forester') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.terrain === 'Forest')
+            return v.destinate < ind && (va.terrain === 'Forest')
           })
         } else if (v.post === 'Miner') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.terrain === 'Mountains')
+            return v.destinate < ind && (va.terrain === 'Mountains')
           })
         } else if (v.post === 'Driller') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
-            return v.location < ind && (va.terrain === 'Desert')
+            return v.destinate < ind && (va.terrain === 'Desert')
           })
         }
         if (n === undefined || n === -1) {
-          workerList[i].location = 0
+          workerList[i].destinate = 0
           workerList[i].timestamp = 0
         } else {
-          workerList[i].location = n
+          workerList[i].destinate = n
           workerList[i].timestamp = Date.now()
         }
-      } else if (Date.now() - v.timestamp < moveTime + workTime && locate === undefined) {
-        v.state = 'return'
-        if (Date.now() - v.timestamp < moveTime * v.location) {
-          v.timestamp -= workTime + (moveTime * v.location - Date.now() + v.timestamp) * 2
-        } else v.timestamp -= moveTime * v.location + workTime - Date.now() + v.timestamp
-      } else if (
-        v.post === 'Engineer' && v.state !== 'return'
-      ) {
-        if (0 < jobObject['Railyard'].value) {
+      } else if (v.timestamp !== 0 && v.state !== 'return') {
+        if (v.post === 'Engineer' && 0 < jobObject['Railyard'].value) {
           const layingIndex = terrainListObject[canvas.id].findIndex(vl => {
             return terrainList.some(val => val !== vl.terrain) && (
               vl.rail === undefined || vl.rail < 1)
           })
-          console.log(layingIndex)
           if (layingIndex === -1) return // temporary
-          const layingLocate = terrainListObject[canvas.id][layingIndex]
-          if (layingLocate.rail === undefined) layingLocate.rail = 0
-          const elapsedTime = Date.now() - v.timestamp
-          const progress = moveTime * (layingIndex - 1) < elapsedTime ?
-          (elapsedTime - moveTime * (layingIndex - 1)) / (moveTime + workTime) : 0
-          layingLocate.rail = progress
-          if (1 <= layingLocate.rail) {
-            layingLocate.rail = 1
-            jobObject['Railyard'].value--
-            jobObject['Railyard'].timestamp = 0
-            workerList.filter(v => v.post === 'Engineer').forEach(v => {
-              v.state = 'return'})
-          }
-        }
-      } else if (
-        v.timestamp !== 0 &&
-        v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
-      ) {
-        if (v.state !== 'return') {
-          const resource = terrainProductObject[locate.terrain]
-          console.log(resource)
-          if (1 < resource.length) { // get resources
-            if (v.post === 'Prospector') {
-              const rateObject = locate.terrain === 'Mountains' ? {
-                'Iron': 4,
-                'Coal': 4,
-                'Gold': 1,
-                'Gems': .25,
-                'Oil': .5,
-              } : {
-                'Oil': 4,
-                'Gold': .5,
-                'Gems': .25,
-              }
-              resource.forEach(vl => {
-                if (locate[vl] === undefined) locate[vl] = 0
-                locate[vl] += Math.round(rateObject[vl] * (1.5 - Math.random()))
+          if (v.state === 'work') {
+            v.position += globalElapsedTime / (moveTime + workTime)
+            const layingLocate = terrainListObject[canvas.id][layingIndex]
+            if (layingLocate.rail === undefined) layingLocate.rail = 0
+            layingLocate.rail += globalElapsedTime / (moveTime + workTime)
+            if (1 <= layingLocate.rail) {
+              layingLocate.rail = 1
+              jobObject['Railyard'].value--
+              jobObject['Railyard'].timestamp = 0
+              workerList.filter(v => v.post === 'Engineer').forEach(v => {
+                v.state = 'return'
               })
-              if (locate.progress === undefined) locate.progress = 0
-              locate.progress += .25 - .15 * Math.random()
             }
-          } else if (resource.length === 1) {
-            entityObject[resource[0]]++
+          } else if (v.destinate - 1 <= v.position) {
+            if (v.state === null) {
+              v.state = 'work'
+              v.position = v.destinate - 1
+              v.timestamp = Date.now()
+            }
+          } else v.position += globalElapsedTime / shiftingTime
+          console.log(shiftingTime)
+        } else {
+          if (v.state === 'work') {
+            if (workTime <= Date.now() - v.timestamp) {
+              v.position -= globalElapsedTime / shiftingTime
+            }
+            if (v.position <= 0) v.state = 'completed'
+          } else if (v.destinate <= v.position) {
+            if (v.state === null) {
+              v.state = 'work'
+              v.position = v.destinate
+              v.timestamp = Date.now()
+            }
+          } else v.position += globalElapsedTime / shiftingTime
+        }
+      } else if (Date.now() - v.timestamp < moveTime + workTime && destination === undefined) {
+        v.state = 'return'
+        if (Date.now() - v.timestamp < moveTime * v.destinate) {
+          v.timestamp -= workTime + (moveTime * v.destinate - Date.now() + v.timestamp) * 2
+        } else v.timestamp -= moveTime * v.destinate + workTime - Date.now() + v.timestamp
+      }
+      if (v.state === 'completed') {
+        const resource = terrainProductObject[destination.terrain]
+        if (1 < resource.length) { // get resources
+          if (v.post === 'Prospector') {
+            const rateObject = destination.terrain === 'Mountains' ? {
+              'Iron': 4,
+              'Coal': 4,
+              'Gold': 1,
+              'Gems': .25,
+              'Oil': .5,
+            } : {
+              'Oil': 4,
+              'Gold': .5,
+              'Gems': .25,
+            }
+            resource.forEach(vl => {
+              if (destination[vl] === undefined) destination[vl] = 0
+              destination[vl] += Math.round(rateObject[vl] * (1.5 - Math.random()))
+            })
+            if (destination.progress === undefined) destination.progress = 0
+            destination.progress += .25 - .15 * Math.random()
           }
-          v.fullness -= v.location
-        } else v.state = null
+        } else if (resource.length === 1) entityObject[resource[0]]++
+        v.fullness -= v.destinate
+        v.state = null
         v.timestamp = 0
+      }
+      if (v.state === 'return') {
+        v.position -= globalElapsedTime / shiftingTime
+        if (v.position <= 0) {
+          v.position = 0
+          v.state = null
+          v.timestamp = 0
+        }
       }
     })
   }
@@ -1147,24 +1173,14 @@ const pushCanvas = () => {
       if (v.timestamp === 0 || Object.keys(buildingObject).some(vl => vl === v.post) ||
         v.state === 'eat') return
       context.fillStyle = 'cyan'
-      const elapsedTime = Date.now() - v.timestamp
-      const rate = v.post === 'Engineer' &&
-        moveTime * (v.location - 1) < elapsedTime &&
-        elapsedTime < moveTime * v.location + workTime ?
-        v.location - 1 + (elapsedTime - moveTime * (v.location - 1)) / (moveTime + workTime) :
-        elapsedTime < moveTime * v.location ?
-        elapsedTime / moveTime :
-        moveTime * v.location <= elapsedTime &&
-        elapsedTime < moveTime * v.location + workTime ?
-        v.location :
-        (moveTime * v.location * 2 + workTime - elapsedTime) / moveTime
-      const progress = rate * size * 6
-      context.fillRect(size * 2.5 + progress, size * 3, size, size)
-      if (terrainListObject[canvas.id][v.location].rail === 1) {
+      context.fillRect(size * 2.5 + v.position * size * 6, size * 3, size, size)
+      if (terrainListObject[canvas.id][v.destinate].rail === 1) {
         context.fillStyle = 'black'
-        context.fillRect(size * 2 + progress, size * 3.5, size * 2, size / 2)
+        context.fillRect(size * 2 + v.position * size * 6, size * 3.5, size * 2, size / 2)
       }
     })
+    // context.fillStyle = 'gray'
+    // context.fillRect(size * 2, size * 3, size * 2, size)
     context.restore()
   }
   const camvasMain = () => {
@@ -1205,7 +1221,7 @@ const main = () => {
     }
     if (k.fullness <= 0) { // death judgment
       if (Object.keys(jobObject).some(v => v === k.post)) entityObject[k.post]--
-      else if (Object.keys(buildingObject).some(v => v === k.post)) recipeList[k.location].value--
+      else if (Object.keys(buildingObject).some(v => v === k.post)) recipeList[k.destinate].value--
       document.getElementById(`tr-${k.id}`).remove()
       workerList.splice(i, 1)
     }
@@ -1239,7 +1255,7 @@ const main = () => {
             entityObject['Labour'] -= 4
             worker = workerList[workerList.findIndex(va => va.post === 'Expert')]
           }
-          worker.location = 0
+          worker.destinate = 0
           worker.post = k
           worker.timestamp = 0
         }
@@ -1381,6 +1397,12 @@ const stream = async () => {
   decreaseTime = Date.now()
   tradeTimestamp = Date.now()
   main()
+  const tick = () => {
+    requestAnimationFrame(tick)
+    globalElapsedTime = Date.now() - currentTime
+    currentTime = Date.now()
+  }
+  tick()
 }
 stream()
 }
