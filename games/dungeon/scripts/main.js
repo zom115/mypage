@@ -1081,6 +1081,7 @@ const pushCanvas = () => {
       ) {
         if (v.state !== 'return') {
           const resource = terrainProductObject[locate.terrain]
+          console.log(resource)
           if (1 < resource.length) { // get resources
             if (v.post === 'Prospector') {
               const rateObject = locate.terrain === 'Mountains' ? {
@@ -1224,6 +1225,7 @@ const main = () => {
       if (0 < v.value && v.timestamp + v.max <= Date.now()) {
         if (k === 'Untrained') {
           entityObject['Labour']++
+          workerList.push(createWorkerFirst(k))
           pushPersonalTable(workerList[workerList.length - 1])
         } else {
           let worker
@@ -1339,7 +1341,7 @@ const debugBonusInit = () => {
   entityObject['Paper'] += 8 * 5
   entityObject['Lumber'] += 24 * 5
   entityObject['Steel'] += 19 * 5
-  entityObject['Cuisine'] += 1e3
+  entityObject['Cuisine'] += 0
   entityObject['Canned Food'] += 20 * 5
   entityObject['Clothing'] += 5 * 5
   entityObject['Furniture'] += 5 * 5
