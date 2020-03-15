@@ -73,11 +73,11 @@ Object.entries(resourcesImageObject).forEach(([k, v]) => imagePathObject[k] = v)
 Object.entries(materialsImageObject).forEach(([k, v]) => imagePathObject[k] = v)
 Object.entries(goodsImageObject).forEach(([k, v]) => imagePathObject[k] = v)
 Object.entries(commonImageObject).forEach(([k, v]) => imagePathObject[k] = v)
-const resourcesImageDOMList = []
-const materialsImageDOMList = []
-const goodsImageDOMList = []
-const commonImageDOMList = []
-const imageLoad = async (obj, imageList) => {
+const resourcesImageDOMObject = {}
+const materialsImageDOMObject = {}
+const goodsImageDOMObject = {}
+const commonImageDOMObject = {}
+const imageLoad = async (obj, imageObject) => {
   return new Promise(async resolve => {
     await Promise.all(Object.entries(obj).map(async ([name, path]) => {
       return new Promise(async res => {
@@ -85,7 +85,7 @@ const imageLoad = async (obj, imageList) => {
         imgPreload.src = path
         imgPreload.alt = name
         imgPreload.addEventListener('load', async e => {
-          imageList.push(e.path[0])
+          imageObject[name] = e.path[0]
           res()
         })
       })
@@ -1073,11 +1073,23 @@ const pushCanvas = () => {
       if (size * 1.5 + i * size * 6 <= x && x <= size * 4.5 + i * size * 6) {
         context.font = `bold ${size}px sans-serif`
       }
+      context.textAlign = 'center'
       context.fillStyle = 'black'
       context.fillText(v.terrain, size * 3 + i * size * 6, size)
       context.font = `normal ${size}px sans-serif`
       context.fillStyle = 'gray'
       context.fillRect(size * 1.5 + i * size * 6, size, size * 3, size * 3)
+      context.textAlign = 'left'
+      context.fillStyle = 'black'
+      const progress = v.progress === undefined ? 0 : 1 < v.progress ? 1 : v.progress
+      context.fillRect(size * 1.5 + i * size * 6, size, 1, size * 3 * progress)
+      Object.entries(v).filter(([ky, _vl]) => {
+        return Object.keys(entityObject).some(key => key === ky)}
+      ).forEach(([ky, vl], idx) => {
+        context.drawImage(
+          resourcesImageDOMObject[ky], size * 4.5 + i * size * 6, size + size * idx)
+        context.fillText(`*${vl}`, size * 5.5 + i * size * 6, size * 2 + size * idx)
+      })
     })
     context.fillStyle = 'black'
     if (canvasSerector === canvas.id) {
@@ -1293,10 +1305,10 @@ const debugBonusInit = () => {
 }
 debugBonusInit()
 const stream = async () => {
-  await imageLoad(resourcesImageObject, resourcesImageDOMList)
-  await imageLoad(materialsImageObject, materialsImageDOMList)
-  await imageLoad(goodsImageObject, goodsImageDOMList)
-  await imageLoad(commonImageObject, commonImageDOMList)
+  await imageLoad(resourcesImageObject, resourcesImageDOMObject)
+  await imageLoad(materialsImageObject, materialsImageDOMObject)
+  await imageLoad(goodsImageObject, goodsImageDOMObject)
+  await imageLoad(commonImageObject, commonImageDOMObject)
   appendResourcesTable()
   appendMaterialsTable()
   appendGoodsTable()
