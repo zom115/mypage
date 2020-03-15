@@ -1004,7 +1004,7 @@ const pushCanvas = () => {
     workerList.forEach((v, i) => {
       if (Object.keys(buildingObject).some(va => {return v.post === va})) return
       const destination = terrainListObject[canvas.id][v.destinate]
-      const locate = terrainListObject[canvas.id][v.position]
+      const locate = terrainListObject[canvas.id][Math.ceil(v.position)]
       const shiftingTime = locate === undefined || locate.rail !== 1 ?
       moveTime : moveTime / railSpeed
       if (v.timestamp === 0) { // set destinate
@@ -1079,7 +1079,6 @@ const pushCanvas = () => {
               v.timestamp = Date.now()
             }
           } else v.position += globalElapsedTime / shiftingTime
-          console.log(shiftingTime)
         } else {
           if (v.state === 'work') {
             if (workTime <= Date.now() - v.timestamp) {
