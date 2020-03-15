@@ -1,6 +1,7 @@
 {'use strict'
 let intervalTime = 1e4
 const fullnessMax = 90
+const railSpeed = 2
 const resourcesImageObject = {
   'Grain':     '小麦アイコン',
   'Livestock': '肉の切り身のアイコン',
@@ -1146,8 +1147,6 @@ const pushCanvas = () => {
         v.state === 'eat') return
       context.fillStyle = 'cyan'
       const elapsedTime = Date.now() - v.timestamp
-      // const progress = moveTime * (layingIndex - 1) < elapsedTime ?
-      //   (elapsedTime - moveTime * (layingIndex - 1)) / (moveTime + workTime) : 0
       const rate = v.post === 'Engineer' &&
         moveTime * (v.location - 1) < elapsedTime &&
         elapsedTime < moveTime * v.location + workTime ?
@@ -1160,6 +1159,10 @@ const pushCanvas = () => {
         (moveTime * v.location * 2 + workTime - elapsedTime) / moveTime
       const progress = rate * size * 6
       context.fillRect(size * 2.5 + progress, size * 3, size, size)
+      if (terrainListObject[canvas.id][v.location].rail === 1) {
+        context.fillStyle = 'black'
+        context.fillRect(size * 2 + progress, size * 3.5, size * 2, size / 2)
+      }
     })
     context.restore()
   }
