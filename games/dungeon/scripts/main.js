@@ -244,8 +244,7 @@ const jobObject = {
       'Money': 500,
     },
   }, 'Engineer': {
-    product: {
-    },
+    product: {'Rail': 1,},
     requirement: {
       'Expert': 1,
       'Paper': 10,
@@ -1010,6 +1009,12 @@ const pushCanvas = () => {
               va.progress === undefined || va.progress < 1
             )
           })
+        } else if (v.post === 'Engineer') {
+          n = terrainListObject[canvas.id].findIndex((va, ind) => {
+            return v.location < ind && (
+              va.rail === undefined || va.rail < 1) &&
+            0 < jobObject['Railyard'].value
+          })
         } else if (v.post === 'Farmer') {
           n = terrainListObject[canvas.id].findIndex((va, ind) => {
             return v.location < ind && (
@@ -1045,6 +1050,30 @@ const pushCanvas = () => {
         if (Date.now() - v.timestamp < moveTime * v.location) {
           v.timestamp -= workTime + (moveTime * v.location - Date.now() + v.timestamp) * 2
         } else v.timestamp -= moveTime * v.location + workTime - Date.now() + v.timestamp
+      } else if (
+        v.post === 'Engineer' && v.state !== 'return'
+      ) {
+        if (0 < jobObject['Railyard'].value) {
+          const layingIndex = terrainListObject[canvas.id].findIndex(vl => {
+            return terrainList.some(val => val !== vl.terrain) && (
+              vl.rail === undefined || vl.rail < 1)
+          })
+          console.log(layingIndex)
+          if (layingIndex === -1) return // temporary
+          const layingLocate = terrainListObject[canvas.id][layingIndex]
+          if (layingLocate.rail === undefined) layingLocate.rail = 0
+          const elapsedTime = Date.now() - v.timestamp
+          const progress = moveTime * (layingIndex - 1) < elapsedTime ?
+          (elapsedTime - moveTime * (layingIndex - 1)) / (moveTime + workTime) : 0
+          layingLocate.rail = progress
+          if (1 <= layingLocate.rail) {
+            layingLocate.rail = 1
+            jobObject['Railyard'].value--
+            jobObject['Railyard'].timestamp = 0
+            workerList.filter(v => v.post === 'Engineer').forEach(v => {
+              v.state = 'return'})
+          }
+        }
       } else if (
         v.timestamp !== 0 &&
         v.timestamp + moveTime * v.location * 2 + workTime < Date.now()
@@ -1083,22 +1112,23 @@ const pushCanvas = () => {
   const draw = () => {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
     context.save()
-    context.font = `normal ${size}px sans-serif`
-    context.textAlign = 'center'
+    context.fillStyle = 'gray'
+    context.fillRect(0, size * 4, canvas.offsetWidth, 1)
     terrainListObject[canvas.id].forEach((v, i) => {
-      if (size * 1.5 + i * size * 6 <= x && x <= size * 4.5 + i * size * 6) {
-        context.font = `bold ${size}px sans-serif`
-      }
+      context.font = size * 1.5 + i * size * 6 <= x && x <= size * 4.5 + i * size * 6 ?
+      `bold ${size}px sans-serif` : `normal ${size}px sans-serif`
       context.textAlign = 'center'
       context.fillStyle = 'black'
       context.fillText(v.terrain, size * 3 + i * size * 6, size)
       context.font = `normal ${size}px sans-serif`
       context.fillStyle = 'gray'
       context.fillRect(size * 1.5 + i * size * 6, size, size * 3, size * 3)
-      context.textAlign = 'left'
       context.fillStyle = 'black'
+      const rail = v.rail === undefined ? 0 : 1 < v.rail ? 1 : v.rail
+      context.fillRect(-size * 3 + i * size * 6, size * 4, size * 6 * rail, size / 8)
       const progress = v.progress === undefined ? 0 : 1 < v.progress ? 1 : v.progress
       context.fillRect(size * 1.5 + i * size * 6, size, 1, size * 3 * progress)
+      context.textAlign = 'left'
       Object.entries(v).filter(([ky, _vl]) => {
         return Object.keys(entityObject).some(key => key === ky)}
       ).forEach(([ky, vl], idx) => {
@@ -1107,8 +1137,6 @@ const pushCanvas = () => {
         context.fillText(`*${vl}`, size * 5.5 + i * size * 6, size * 2 + size * idx)
       })
     })
-    context.fillStyle = 'gray'
-    context.fillRect(0, size * 4, canvas.offsetWidth, 1)
     context.fillStyle = 'black'
     if (canvasSerector === canvas.id) {
       context.fillRect(0, 0, size / 2, size / 2)
@@ -1174,6 +1202,7 @@ const main = () => {
   })
   { // job function
     Object.entries(jobObject).forEach(([k, v]) => {
+      if (k === 'Railyard') return
       const population = Object.entries(entityObject).filter(([ky, _vl]) => {
         return Object.keys(labourObject).some(key => ky === key)
       }).reduce((acu, [_ck, cv]) => acu + cv, 0)
