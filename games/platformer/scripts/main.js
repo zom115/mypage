@@ -112,8 +112,8 @@ const input = () => {
   ownCondition.dy += gravityConstant
 }
 const collisionDetect = () => {
+  let flag = false
   do {
-    let flag = false
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
         if (y[iX] === '1') {
