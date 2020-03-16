@@ -1,21 +1,21 @@
 {'use strict'
+let currentTime = Date.now()
+let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
-// y: terrainList.length,
-// x: terrainList[0].length
 let ownCondition = {
   x: canvas.offsetWidth * 1 / 8,
   y: canvas.offsetHeight * 7 / 8,
   dx: 0,
   dy: 0
 }
-const moveAcceleration = .05
-let moveConstant = 1
+const moveAcceleration = .5
+let moveConstant = 2
 const normalConstant = 1
 const dashConstant = 10
 const stopConstant = .1
-const brakeConstant = .98
+const brakeConstant = .5
 const gravityConstant = .5
 const elasticModulus = 0
 const jumpConstant = size
@@ -49,7 +49,7 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000111111110000000000000000000000000000000000001',
-  '100000000001100000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '111111111111111111111111111111111111111111111111111111',
@@ -73,8 +73,16 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 87) key.w = false
 }, false)
 const input = () => {
-  if (key.a && -moveConstant < ownCondition.dx) ownCondition.dx -= moveAcceleration
-  if (key.d && ownCondition.dx < moveConstant) ownCondition.dx += moveAcceleration
+  if (key.a) {
+    if (-moveConstant < ownCondition.dx - moveAcceleration) {
+      ownCondition.dx -= moveAcceleration
+    } else ownCondition.dx = -moveConstant
+  }
+  if (key.d) {
+    if (ownCondition.dx + moveAcceleration < moveConstant) {
+      ownCondition.dx += moveAcceleration
+    } else ownCondition.dx = moveConstant
+  }
   if (key.w && -moveConstant < ownCondition.dy) {
     ownCondition.dy -= moveAcceleration * 20
   } // temporary
@@ -113,7 +121,7 @@ const input = () => {
 }
 const collisionDetect = () => {
   let flag = false
-  do {
+  {
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
         if (y[iX] === '1') {
@@ -290,7 +298,7 @@ const collisionDetect = () => {
     })
     ownCondition.x += ownCondition.dx
     ownCondition.y += ownCondition.dy
-  } while (flag)
+  }
 }
 const draw = () => {
   context.fillStyle = 'hsl(0, 100%, 50%)'
@@ -316,13 +324,19 @@ const draw = () => {
   context.fillText(`dy: ${ownCondition.dy}`,size, size * 5)
 }
 const main = () => {
+  window.requestAnimationFrame(main)
   // internal process
   input()
   collisionDetect()
   // draw process
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
-  window.requestAnimationFrame(main)
 }
+const tick = () => {
+  requestAnimationFrame(tick)
+  globalElapsedTime = Date.now() - currentTime
+  currentTime = Date.now()
+}
+tick()
 main()
 }
