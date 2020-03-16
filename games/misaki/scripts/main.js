@@ -1094,8 +1094,8 @@ const modelUpdate = () => {
   }
   let aerialFlag = true
   if (player.dx !== 0) player.wallFlag = false
+  let flag = false // TODO: implementation ASAP
   do {
-    let flag = false // TODO: implementation ASAP
     fieldArray.forEach((y, iY) => {
       for (let iX = 0; iX < fieldArray[0].length; iX++) {
         if (y[iX] === '1') {
