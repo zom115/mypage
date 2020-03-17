@@ -4,23 +4,27 @@ let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
-let ownCondition = {
+const ownCondition = {
   x: canvas.offsetWidth * 1 / 8,
   y: canvas.offsetHeight * 7 / 8,
   dx: 0,
-  dy: 0
+  dy: 0,
+  jumpFlag: false,
 }
-const moveAcceleration = .5
-let moveConstant = 2
-const normalConstant = 1
-const dashConstant = 10
-const stopConstant = .1
-const brakeConstant = .5
-const gravityConstant = .5
-const elasticModulus = 0
-const jumpConstant = size
-let jumpFlag = false
-let jumpTime = 0
+const moveAcceleration = 2.1
+let moveConstant = 3.5
+const brakeConstant = .75 / (1000 / 60)
+let brake = .75
+// gravitational acceleration = 9.80665 m / s ** 2
+// m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
+// 1 dot === 40 mm, 1000 mm === 25 * 40 mm
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
+let coefficient = 17
+// 17 ???
+console.log(9.80665 * 1000 / 25 / 1000 ** 2)
+console.log(9.80665 * 1000 / 25 / 1000 ** 2 * 17)
+const elasticModulus = {x: 0, y: 0,}
+const jumpConstant = 3
 let jumpChargeTime = 0
 const terrainList = [
   '000000000000000000000000000000000000000000000000000000',
@@ -36,19 +40,19 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000111111111110000000001',
+  '111000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000111000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000011100000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100011100111100000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000111111110000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
@@ -84,16 +88,16 @@ const input = () => {
     } else ownCondition.dx = moveConstant
   }
   if (key.w && -moveConstant < ownCondition.dy) {
-    ownCondition.dy -= moveAcceleration * 20
+    ownCondition.dy -= moveAcceleration * 10
   } // temporary
   if (key.s && ownCondition.dy < moveConstant) ownCondition.dy += moveAcceleration // temporary
-  // if (key.j) {
-  //     jumpTime += 1
-  //   if (!jumpFlag) {
-  //     ownCondition.dy -= jumpConstant
-  //     jumpFlag = true
-  //   }
-  // } else {
+  if (key.j) {
+    if (!ownCondition.jumpFlag) {
+      elasticModulus.y = 1
+      ownCondition.jumpFlag = true
+    }
+  }
+  // else {
   //   if (jumpConstant < jumpTime) jumpTime = 0
   //   if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
   //   jumpTime = 0
@@ -117,7 +121,7 @@ const input = () => {
   //     jumpFlag = true
   //   }
   // }
-  ownCondition.dy += gravityConstant
+  ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const collisionDetect = () => {
   let flag = false
@@ -155,9 +159,10 @@ const collisionDetect = () => {
               ) {
                 // console.log('detect floor', ownCondition.y, ownCondition.dy)
                 // ownCondition.y = ay - r
-                ownCondition.dy = -ownCondition.dy * elasticModulus
+                ownCondition.dy = -(ownCondition.dy + jumpConstant) * elasticModulus.y
                 //  - gravityConstant * (1 - t)
-                ownCondition.dx *= brakeConstant
+                ownCondition.dx *= brake
+                ownCondition.jumpFlag = false
                 flag = true
               }
               // else if (
@@ -207,7 +212,7 @@ const collisionDetect = () => {
                 console.log('detect ceil')
                 // ownCondition.dy = -ownCondition.dy * elasticModulus
                 // ownCondition.y = ay + r
-                ownCondition.dy = -ownCondition.dy * elasticModulus
+                ownCondition.dy = -ownCondition.dy * elasticModulus.y
                 //  - gravityConstant * (1 - t)
                 // ownCondition.dx *= brakeConstant
                 flag = true
@@ -248,7 +253,7 @@ const collisionDetect = () => {
                 console.log('detect right wall')
                 // ownCondition.dx = -ownCondition.dx * elasticModulus
                 // ownCondition.x = ax - r
-                ownCondition.dx = -ownCondition.dx * elasticModulus
+                ownCondition.dx = -ownCondition.dx * elasticModulus.x
                 flag = true
               }
             }
@@ -287,7 +292,7 @@ const collisionDetect = () => {
                 console.log('detect left wall')
                 // ownCondition.dx = -ownCondition.dx * elasticModulus
                 // ownCondition.x = ax + r
-                ownCondition.dx = -ownCondition.dx * elasticModulus
+                ownCondition.dx = -ownCondition.dx * elasticModulus.x
                 // ownCondition.dy *= brakeConstant
                 flag = true
               }
@@ -298,6 +303,11 @@ const collisionDetect = () => {
     })
     ownCondition.x += ownCondition.dx
     ownCondition.y += ownCondition.dy
+    elasticModulus.x = 0
+    elasticModulus.y = 0
+    console.log(measure)
+    if (!flag) measure += globalElapsedTime
+    else measure = 0
   }
 }
 const draw = () => {
@@ -318,13 +328,23 @@ const draw = () => {
     }
   })
   context.fillStyle = 'hsl(0, 0%, 0%)'
-  context.fillText(`x: ${ownCondition.x}`,size, size * 2)
-  context.fillText(`y: ${ownCondition.y}`,size, size * 3)
-  context.fillText(`dx: ${ownCondition.dx}`,size, size * 4)
-  context.fillText(`dy: ${ownCondition.dy}`,size, size * 5)
+  const list = [
+    `x: ${ownCondition.x}`,
+    `y: ${ownCondition.y}`,
+    `y(m): ${(((terrainList.length - 3) * size) - ownCondition.y) * .04}`,
+    `coefficient: ${coefficient}`,
+    `dx: ${ownCondition.dx}`,
+    `dy: ${ownCondition.dy}`,
+  ]
+  list.forEach((v, i) => {
+    context.fillText(v, size * 2, size * (3 + i))
+  })
 }
+let measure = 0
 const main = () => {
   window.requestAnimationFrame(main)
+  globalElapsedTime = Date.now() - currentTime
+  currentTime = Date.now()
   // internal process
   input()
   collisionDetect()
@@ -332,11 +352,5 @@ const main = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
 }
-const tick = () => {
-  requestAnimationFrame(tick)
-  globalElapsedTime = Date.now() - currentTime
-  currentTime = Date.now()
-}
-tick()
 main()
 }
