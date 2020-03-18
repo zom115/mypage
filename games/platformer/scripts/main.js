@@ -121,6 +121,7 @@ const input = () => {
   // }
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
+const ownBox = {w: size / 8, h: size / 8}
 const collisionDetect = () => {
   let count = 0
   let flag
@@ -133,7 +134,6 @@ const collisionDetect = () => {
     flag = false
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
-        const ownBox = {w: size / 8, h: size / 8}
         const tileWidth = size
         if (y[iX] === '1') {
           if (0 < ownCondition.dy && terrainList[iY - 1][iX] === '0') { // floor
@@ -142,9 +142,9 @@ const collisionDetect = () => {
             const dx = ownCondition.dx
             const dy = ownCondition.dy
             const ax = iX * size - ownBox.w
-            const ay = iY * size
+            const ay = iY * size - ownBox.h
             const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size
+            const by = iY * size - ownBox.h
             const abx = bx - ax
             const aby = by - ay
             let nx = -aby
@@ -173,9 +173,9 @@ const collisionDetect = () => {
           }
           if (ownCondition.dy < 0 && terrainList[iY + 1][iX] === '0') { // ceil
             const ax = iX * size - ownBox.w
-            const ay = iY * size + tileWidth
+            const ay = iY * size + tileWidth + ownBox.h
             const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size + tileWidth
+            const by = iY * size + tileWidth + ownBox.h
             const abx = bx - ax
             let ny = abx
             let length = (ny ** 2) ** .5
@@ -199,9 +199,9 @@ const collisionDetect = () => {
             }
           }
           if (0 < ownCondition.dx && y[iX - 1] === '0') { // right wall
-            const ax = iX * size
+            const ax = iX * size - ownBox.w
             const ay = iY * size - ownBox.h
-            const bx = iX * size
+            const bx = iX * size - ownBox.w
             const by = iY * size + tileWidth + ownBox.h
             const aby = by - ay
             let nx = -aby
@@ -226,9 +226,9 @@ const collisionDetect = () => {
             }
           }
           if (ownCondition.dx < 0 && y[iX + 1] === '0') { // left wall
-            const ax = iX * size + tileWidth
+            const ax = iX * size + tileWidth + ownBox.w
             const ay = iY * size - ownBox.h
-            const bx = iX * size + tileWidth
+            const bx = iX * size + tileWidth + ownBox.w
             const by = iY * size + tileWidth + ownBox.h
             const aby = by - ay
             let nx = -aby
@@ -263,8 +263,8 @@ const collisionDetect = () => {
             const dx = ownCondition.dx
             const dy = ownCondition.dy
             const ax = iX * size - ownBox.w
-            const ay = iY * size + tileWidth + ownBox.h
-            const bx = iX * size + tileWidth + ownBox.w
+            const ay = iY * size + tileWidth - ownBox.h
+            const bx = iX * size + tileWidth - ownBox.w
             const by = iY * size - ownBox.h
             const abx = bx - ax
             const aby = by - ay
@@ -292,11 +292,11 @@ const collisionDetect = () => {
               }
             }
           }
-          if (ownCondition.dy < 0 && terrainList[iY + 1][iX] !== '1') { // ceil
+          if (ownCondition.dy < 0 && terrainList[iY + 1][iX] === '0') { // ceil
             const ax = iX * size - ownBox.w
-            const ay = iY * size + tileWidth
+            const ay = iY * size + tileWidth + ownBox.h
             const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size + tileWidth
+            const by = iY * size + tileWidth + ownBox.h
             const abx = bx - ax
             let ny = abx
             let length = (ny ** 2) ** .5
@@ -333,10 +333,10 @@ const collisionDetect = () => {
               }
             }
           }
-          if (ownCondition.dx < 0 && y[iX + 1] !== '1') { // left wall
-            const ax = iX * size + tileWidth
+          if (ownCondition.dx < 0 && y[iX + 1] === '0') { // left wall
+            const ax = iX * size + tileWidth + ownBox.w
             const ay = iY * size - ownBox.h
-            const bx = iX * size + tileWidth
+            const bx = iX * size + tileWidth + ownBox.w
             const by = iY * size + tileWidth + ownBox.h
             const aby = by - ay
             let nx = -aby
@@ -385,15 +385,17 @@ const collisionDetect = () => {
 const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = 'hsl(0, 100%, 50%)'
+  context.fillRect(ownCondition.x - ownBox.w, ownCondition.y - ownBox.h,
+    ownBox.w * 2, ownBox.h * 2)
   // context.fillRect(ownCondition.x - size, ownCondition.y - size, size * 2, size * 2)
   // context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
   // context.beginPath()
   // context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size, 0, Math.PI * 2, false)
   // context.fill()
-  context.fillStyle = context.strokeStyle = 'hsl(300, 100%, 60%)'
-  context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 4, 0, Math.PI * 2, false)
-  context.fill()
+  // context.fillStyle = context.strokeStyle = 'hsl(300, 100%, 60%)'
+  // context.beginPath()
+  // context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 4, 0, Math.PI * 2, false)
+  // context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
