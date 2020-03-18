@@ -18,7 +18,8 @@ let brake = .75
 // gravitational acceleration = 9.80665 m / s ** 2
 // m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
-const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
+const gravitationalAcceleration =
+9.80665 * 1000 / 25 / 1000 ** 2
 // 17 ???
 let coefficient = 17
 const elasticModulus = {x: 0, y: 0,}
@@ -75,6 +76,10 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 87) key.w = false
 }, false)
 const input = () => {
+  { // temporary
+    ownCondition.dx = 0
+    ownCondition.dy = 0
+  }
   if (key.a) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
       ownCondition.dx -= moveAcceleration
@@ -86,7 +91,7 @@ const input = () => {
     } else ownCondition.dx = moveConstant
   }
   if (key.w && -moveConstant < ownCondition.dy) {
-    ownCondition.dy -= moveAcceleration * 10
+    ownCondition.dy -= moveAcceleration
   } // temporary
   if (key.s && ownCondition.dy < moveConstant) ownCondition.dy += moveAcceleration // temporary
   if (key.j) {
@@ -254,7 +259,7 @@ const collisionDetect = () => {
           }
         } else if (y[iX] === '2') {
           if ( // floor & right wall = slope
-            0 < ownCondition.dy &&
+            (0 < ownCondition.dy || 0 < ownCondition.dx) &&
             terrainList[iY - 1][iX] === '0' &&
             y[iX - 1] === '0'
           ) {
@@ -385,17 +390,23 @@ const collisionDetect = () => {
 const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = 'hsl(0, 100%, 50%)'
-  context.fillRect(ownCondition.x - ownBox.w, ownCondition.y - ownBox.h,
-    ownBox.w * 2, ownBox.h * 2)
-  // context.fillRect(ownCondition.x - size, ownCondition.y - size, size * 2, size * 2)
-  // context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
-  // context.beginPath()
-  // context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size, 0, Math.PI * 2, false)
-  // context.fill()
-  // context.fillStyle = context.strokeStyle = 'hsl(300, 100%, 60%)'
-  // context.beginPath()
-  // context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 4, 0, Math.PI * 2, false)
-  // context.fill()
+  context.beginPath()
+  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 32, 0, Math.PI * 2, false)
+  context.fill()
+  // context.strokeStyle = 'hsl(100, 100%, 50%)'
+  // context.strokeRect(
+  //   ownCondition.x - ownBox.w, ownCondition.y - ownBox.h,
+  //   ownBox.w * 2, ownBox.h * 2)
+  context.fillRect(
+    ownCondition.x, ownCondition.y,
+    ownCondition.dx * size + ownCondition.dy * 1,
+    ownCondition.dy * size + ownCondition.dx * 1)
+  context.beginPath()
+  context.moveTo(ownCondition.x, ownCondition.y)
+  context.lineTo(ownCondition.x + ownCondition.dx, ownCondition.y)
+  context.lineTo(ownCondition.x + ownCondition.dx - ownCondition.dy, ownCondition.y)
+  context.lineTo(ownCondition.x + ownCondition.dx - ownCondition.dy, ownCondition.y)
+  context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
