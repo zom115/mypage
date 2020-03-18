@@ -3,7 +3,7 @@ let currentTime = Date.now()
 let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const size = 16
+const size = 48
 const ownCondition = {
   x: canvas.offsetWidth * 1 / 8,
   y: canvas.offsetHeight * 7 / 8,
@@ -11,18 +11,16 @@ const ownCondition = {
   dy: 0,
   jumpFlag: false,
 }
-const moveAcceleration = 2.1
-let moveConstant = 3.5
+const moveAcceleration = 1
+let moveConstant = 1
 const brakeConstant = .75 / (1000 / 60)
 let brake = .75
 // gravitational acceleration = 9.80665 m / s ** 2
 // m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
-let coefficient = 17
 // 17 ???
-console.log(9.80665 * 1000 / 25 / 1000 ** 2)
-console.log(9.80665 * 1000 / 25 / 1000 ** 2 * 17)
+let coefficient = 17
 const elasticModulus = {x: 0, y: 0,}
 const jumpConstant = 3
 let jumpChargeTime = 0
@@ -34,10 +32,10 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
+  '100020000000000000000000000000000000000000000000000001',
+  '100210000000000000000000000000000000000000000000000001',
+  '111000000000000000000000000000000000000000000000000001',
+  '100111100000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000111111111110000000001',
@@ -47,15 +45,15 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000021111100000000000000000000000000001',
+  '100000000000000000210000000000000000000000000000000001',
+  '100000000000000002100000000000000000000000000000000001',
+  '100000000000000021000000000000000000000000000000000001',
+  '100000000000000210000000000000000000000000000000000001',
+  '100000000000002103000000000000000000000000000000000001',
+  '100000000000021000300000000000000000000000000000000001',
+  '100000000000210000030000000000000000000000000000000001',
+  '100000000002100000003000000000000000000000000000000001',
   '111111111111111111111111111111111111111111111111111111',
   '000000000000000000000000000000000000000000000000000000',
 ]
@@ -124,25 +122,67 @@ const input = () => {
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const collisionDetect = () => {
-  let flag = false
-  {
+  let count = 0
+  let flag
+  do {
+    count++
+    if (10 < count) {
+      ownCondition.x = canvas.offsetWidth * 1 / 8
+      ownCondition.y = canvas.offsetHeight * 7 / 8
+    }
+    flag = false
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
+        const ownBox = {w: size / 8, h: size / 8}
+        const tileWidth = size
         if (y[iX] === '1') {
-          let r = size
-          const tileWidth = size
-          if (0 < ownCondition.dy && terrainList[iY - 1][iX] !== '1') { // floor
-            const ax = iX * size - r
+          if (0 < ownCondition.dy && terrainList[iY - 1][iX] === '0') { // floor
+            const x = ownCondition.x
+            const y = ownCondition.y
+            const dx = ownCondition.dx
+            const dy = ownCondition.dy
+            const ax = iX * size - ownBox.w
             const ay = iY * size
-            const bx = iX * size + tileWidth + r
+            const bx = iX * size + tileWidth + ownBox.w
             const by = iY * size
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            const d = -(ax * nx + ay * ny)
+            const t = -(nx * x + ny * y + d) / (nx * dx + ny * dy)
+            if (0 <= t && t <= 1) {
+              const cx = x + dx * t
+              const cy = y + dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc <= 0) {
+                ownCondition.dy = -(ownCondition.dy + jumpConstant) * elasticModulus.y
+                ownCondition.dx *= brake
+                ownCondition.jumpFlag = false
+                flag = true
+              }
+            }
+          }
+          if (ownCondition.dy < 0 && terrainList[iY + 1][iX] === '0') { // ceil
+            const ax = iX * size - ownBox.w
+            const ay = iY * size + tileWidth
+            const bx = iX * size + tileWidth + ownBox.w
+            const by = iY * size + tileWidth
             const abx = bx - ax
             let ny = abx
             let length = (ny ** 2) ** .5
             if (0 < length) length = 1 / length
             ny *= length
             const d = -(ay * ny)
-            const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy + r))
+            const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy))
             if (0 <= t && t <= 1) {
               const cx = ownCondition.x + ownCondition.dx * t
               const cy = ownCondition.y + ownCondition.dy * t
@@ -151,37 +191,111 @@ const collisionDetect = () => {
               const bcx = cx - bx
               const bcy = cy - by
               const doc = acx * bcx + acy * bcy
-              // const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
-              // bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
-              if (
-                doc <= 0
-                //  && ax + r <= ownCondition.x && ownCondition.x <= bx - r
-              ) {
-                // console.log('detect floor', ownCondition.y, ownCondition.dy)
-                // ownCondition.y = ay - r
-                ownCondition.dy = -(ownCondition.dy + jumpConstant) * elasticModulus.y
-                //  - gravityConstant * (1 - t)
-                ownCondition.dx *= brake
+              if (doc < 0) {
+                console.log('detect ceil')
+                ownCondition.dy = -ownCondition.dy * elasticModulus.y
+                flag = true
+              }
+            }
+          }
+          if (0 < ownCondition.dx && y[iX - 1] === '0') { // right wall
+            const ax = iX * size
+            const ay = iY * size - ownBox.h
+            const bx = iX * size
+            const by = iY * size + tileWidth + ownBox.h
+            const aby = by - ay
+            let nx = -aby
+            let length = (nx ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            const d = -(ax * nx)
+            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
+            if (0 <= t && t <= 1) {
+              const cx = ownCondition.x + ownCondition.dx * t
+              const cy = ownCondition.y + ownCondition.dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc < 0) {
+                console.log('detect right wall')
+                ownCondition.dx = -ownCondition.dx * elasticModulus.x
+                flag = true
+              }
+            }
+          }
+          if (ownCondition.dx < 0 && y[iX + 1] === '0') { // left wall
+            const ax = iX * size + tileWidth
+            const ay = iY * size - ownBox.h
+            const bx = iX * size + tileWidth
+            const by = iY * size + tileWidth + ownBox.h
+            const aby = by - ay
+            let nx = -aby
+            let length = (nx ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            const d = -(ax * nx)
+            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
+            if (0 <= t && t <= 1) {
+              const cx = ownCondition.x + ownCondition.dx * t
+              const cy = ownCondition.y + ownCondition.dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc < 0) {
+                console.log('detect left wall 1', iX, iY)
+                ownCondition.dx = -ownCondition.dx * elasticModulus.x
+                // ownCondition.dy *= brakeConstantflag = true
+              }
+            }
+          }
+        } else if (y[iX] === '2') {
+          if ( // floor & right wall = slope
+            0 < ownCondition.dy &&
+            terrainList[iY - 1][iX] === '0' &&
+            y[iX - 1] === '0'
+          ) {
+            const x = ownCondition.x
+            const y = ownCondition.y
+            const dx = ownCondition.dx
+            const dy = ownCondition.dy
+            const ax = iX * size - ownBox.w
+            const ay = iY * size + tileWidth + ownBox.h
+            const bx = iX * size + tileWidth + ownBox.w
+            const by = iY * size - ownBox.h
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            const d = -(ax * nx + ay * ny)
+            const t = -(nx * x + ny * y + d) / (nx * dx + ny * dy)
+            if (0 <= t && t <= 1) {
+              const cx = x + dx * t
+              const cy = y + dy * t
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc <= 0) {
+                console.log('detect slope', iX, iY)
+                ;[ownCondition.dx, ownCondition.dy] = [-ownCondition.dy, -ownCondition.dx]
                 ownCondition.jumpFlag = false
                 flag = true
               }
-              // else if (
-              //   ((ax < ownCondition.x && ownCondition.x < ax + r) ||
-              //   (bx - r < ownCondition.x && ownCondition.x < bx)) &&
-              //   ay - ownCondition.y - ownCondition.dy <
-              //   r * Math.cos((diff / r) * (Math.PI / 2))
-              // ) {
-              //   console.log('detect floor corner', count, diff)
-              //   // ownCondition.dy = -ownCondition.dy * elasticModulus
-              //   // ownCondition.dx += diff * (1 / size)
-              //   flag = true
-              // }
             }
           }
           if (ownCondition.dy < 0 && terrainList[iY + 1][iX] !== '1') { // ceil
-            const ax = iX * size - r
+            const ax = iX * size - ownBox.w
             const ay = iY * size + tileWidth
-            const bx = iX * size + tileWidth + r
+            const bx = iX * size + tileWidth + ownBox.w
             const by = iY * size + tileWidth
             const abx = bx - ax
             let ny = abx
@@ -189,7 +303,7 @@ const collisionDetect = () => {
             if (0 < length) length = 1 / length
             ny *= length
             const d = -(ay * ny)
-            const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy - r))
+            const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy))
             if (0 <= t && t <= 1) {
               const cx = ownCondition.x + ownCondition.dx * t
               const cy = ownCondition.y + ownCondition.dy * t
@@ -219,57 +333,18 @@ const collisionDetect = () => {
               }
             }
           }
-          if (0 < ownCondition.dx && y[iX - 1] !== '1') { // right wall
-            const ax = iX * size
-            const ay = iY * size - r
-            const bx = iX * size
-            const by = iY * size + tileWidth + r
-            const aby = by - ay
-            let nx = -aby
-            let length = (nx ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            const d = -(ax * nx)
-            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx + r))
-            if (0 <= t && t <= 1) {
-              const cx = ownCondition.x + ownCondition.dx * t
-              const cy = ownCondition.y + ownCondition.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              // const diff = ownCondition.y < ay + r ? ownCondition.y - ay - r :
-              // by - r < ownCondition.y ? ownCondition.y - by + r : 0
-              if (
-                (doc < 0
-                //   && ay + r <= ownCondition.y && ownCondition.y <= by - r) ||
-                // ((ay < ownCondition.y && ownCondition.y < ay + r) ||
-                // (by - r < ownCondition.y && ownCondition.y < by)) &&
-                //   ax - ownCondition.x - ownCondition.dx <
-                //   r * Math.cos((diff / r) * (Math.PI / 2)
-                  )
-              ) {
-                console.log('detect right wall')
-                // ownCondition.dx = -ownCondition.dx * elasticModulus
-                // ownCondition.x = ax - r
-                ownCondition.dx = -ownCondition.dx * elasticModulus.x
-                flag = true
-              }
-            }
-          }
           if (ownCondition.dx < 0 && y[iX + 1] !== '1') { // left wall
             const ax = iX * size + tileWidth
-            const ay = iY * size - r
+            const ay = iY * size - ownBox.h
             const bx = iX * size + tileWidth
-            const by = iY * size + tileWidth + r
+            const by = iY * size + tileWidth + ownBox.h
             const aby = by - ay
             let nx = -aby
             let length = (nx ** 2) ** .5
             if (0 < length) length = 1 / length
             nx *= length
             const d = -(ax * nx)
-            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx - r))
+            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
             if (0 <= t && t <= 1) {
               const cx = ownCondition.x + ownCondition.dx * t
               const cy = ownCondition.y + ownCondition.dy * t
@@ -305,26 +380,39 @@ const collisionDetect = () => {
     ownCondition.y += ownCondition.dy
     elasticModulus.x = 0
     elasticModulus.y = 0
-    console.log(measure)
-    if (!flag) measure += globalElapsedTime
-    else measure = 0
-  }
+  } while(flag)
 }
 const draw = () => {
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = 'hsl(0, 100%, 50%)'
-  context.fillRect(ownCondition.x - size, ownCondition.y - size, size * 2, size * 2)
-  context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
-  context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size, 0, Math.PI * 2, false)
-  context.fill()
+  // context.fillRect(ownCondition.x - size, ownCondition.y - size, size * 2, size * 2)
+  // context.fillStyle = context.strokeStyle = 'hsl(30, 100%, 60%)'
+  // context.beginPath()
+  // context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size, 0, Math.PI * 2, false)
+  // context.fill()
   context.fillStyle = context.strokeStyle = 'hsl(300, 100%, 60%)'
   context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 8, 0, Math.PI * 2, false)
+  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 4, 0, Math.PI * 2, false)
   context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
       if (y[iX] === '1') context.fillRect(iX * size, iY * size, size, size)
+      else if (y[iX] === '2') {
+        const relativeCooldinates = {x: iX * size,y: iY * size}
+        context.beginPath()
+        context.moveTo(relativeCooldinates.x, relativeCooldinates.y + size)
+        context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
+        context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y)
+        context.fill()
+      } else if (y[iX] === '3') {
+        const relativeCooldinates = {x: iX * size,y: iY * size}
+        context.beginPath()
+        context.moveTo(relativeCooldinates.x, relativeCooldinates.y)
+        context.lineTo(relativeCooldinates.x, relativeCooldinates.y + size)
+        context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
+        context.fill()
+      }
     }
   })
   context.fillStyle = 'hsl(0, 0%, 0%)'
@@ -340,7 +428,6 @@ const draw = () => {
     context.fillText(v, size * 2, size * (3 + i))
   })
 }
-let measure = 0
 const main = () => {
   window.requestAnimationFrame(main)
   globalElapsedTime = Date.now() - currentTime
@@ -349,7 +436,6 @@ const main = () => {
   input()
   collisionDetect()
   // draw process
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   draw()
 }
 main()
