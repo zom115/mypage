@@ -25,6 +25,12 @@ let coefficient = 17
 const elasticModulus = {x: 0, y: 0,}
 const jumpConstant = 3
 let jumpChargeTime = 0
+const terrainObject = {
+  '0': [[]],
+  '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
+  '2': [[0, 1], [1, 1], [1, 0],], // triangle
+  '3': [[0, 0], [0, 1], [1, 1],],
+}
 const terrainList = [
   '000000000000000000000000000000000000000000000000000000',
   '111111111111111111111111111111111111111111111111111111',
@@ -393,39 +399,47 @@ const draw = () => {
   context.beginPath()
   context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 32, 0, Math.PI * 2, false)
   context.fill()
-  // context.strokeStyle = 'hsl(100, 100%, 50%)'
-  // context.strokeRect(
-  //   ownCondition.x - ownBox.w, ownCondition.y - ownBox.h,
-  //   ownBox.w * 2, ownBox.h * 2)
-  context.fillRect(
-    ownCondition.x, ownCondition.y,
-    ownCondition.dx * size + ownCondition.dy * 1,
-    ownCondition.dy * size + ownCondition.dx * 1)
   context.beginPath()
   context.moveTo(ownCondition.x, ownCondition.y)
-  context.lineTo(ownCondition.x + ownCondition.dx, ownCondition.y)
-  context.lineTo(ownCondition.x + ownCondition.dx - ownCondition.dy, ownCondition.y)
-  context.lineTo(ownCondition.x + ownCondition.dx - ownCondition.dy, ownCondition.y)
+  context.lineTo(ownCondition.x + ownCondition.dx * size, ownCondition.y)
+  context.lineTo(ownCondition.x + ownCondition.dx * size, ownCondition.y + 1)
+  context.lineTo(ownCondition.x, ownCondition.y + 1)
+  context.fill()
+  context.beginPath()
+  context.moveTo(ownCondition.x, ownCondition.y)
+  context.lineTo(ownCondition.x, ownCondition.y + ownCondition.dy * size)
+  context.lineTo(ownCondition.x + 1, ownCondition.y + ownCondition.dy * size)
+  context.lineTo(ownCondition.x + 1, ownCondition.y)
   context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
   terrainList.forEach((y, iY) => {
     for (let iX = 0; iX < terrainList[0].length; iX++) {
-      if (y[iX] === '1') context.fillRect(iX * size, iY * size, size, size)
-      else if (y[iX] === '2') {
-        const relativeCooldinates = {x: iX * size,y: iY * size}
-        context.beginPath()
-        context.moveTo(relativeCooldinates.x, relativeCooldinates.y + size)
-        context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
-        context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y)
-        context.fill()
-      } else if (y[iX] === '3') {
-        const relativeCooldinates = {x: iX * size,y: iY * size}
-        context.beginPath()
-        context.moveTo(relativeCooldinates.x, relativeCooldinates.y)
-        context.lineTo(relativeCooldinates.x, relativeCooldinates.y + size)
-        context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
-        context.fill()
-      }
+      const relativeCooldinates = {x: iX * size,y: iY * size}
+      context.beginPath()
+      terrainObject[y[iX]].forEach((v, i) => {
+        i === 0 ?
+        context.moveTo(
+          relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
+          context.lineTo(
+            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+      })
+      context.fill()
+      // if (y[iX] === '1') context.fillRect(iX * size, iY * size, size, size)
+      // else if (y[iX] === '2') {
+      //   const relativeCooldinates = {x: iX * size,y: iY * size}
+      //   context.beginPath()
+      //   context.moveTo(relativeCooldinates.x, relativeCooldinates.y + size)
+      //   context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
+      //   context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y)
+      //   context.fill()
+      // } else if (y[iX] === '3') {
+      //   const relativeCooldinates = {x: iX * size,y: iY * size}
+      //   context.beginPath()
+      //   context.moveTo(relativeCooldinates.x, relativeCooldinates.y)
+      //   context.lineTo(relativeCooldinates.x, relativeCooldinates.y + size)
+      //   context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
+      //   context.fill()
+      // }
     }
   })
   context.fillStyle = 'hsl(0, 0%, 0%)'
