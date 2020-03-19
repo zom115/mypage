@@ -3,7 +3,7 @@ let currentTime = Date.now()
 let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const size = 48
+const size = 64
 const ownCondition = {
   x: canvas.offsetWidth * 1 / 8,
   y: canvas.offsetHeight * 7 / 8,
@@ -37,10 +37,10 @@ const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
   '100004000000000000000000000000000000000000000000000001',
+  '100100000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '100020000000000000000000000000000000000000000000000001',
+  '100200000000000000000000000000000000000000000000000001',
+  '111020000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
   '100111100000000000000000000000000000000000000000000001',
@@ -173,19 +173,19 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           ny *= length
-          ax -= nx * ownBox.w
-          ay -= ny * ownBox.h
-          bx -= nx * ownBox.w
-          by -= ny * ownBox.h
-          const d = -(ax * nx + ay * ny)
+          let nax = ax - nx * ownBox.w
+          let nay = ay - ny * ownBox.h
+          let nbx = bx - nx * ownBox.w
+          let nby = by - ny * ownBox.h
+          const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
           if (0 <= t && t <= 1) {
             const cx = ox + dx * t
             const cy = oy + dy * t
-            const acx = cx - ax
-            const acy = cy - ay
-            const bcx = cx - bx
-            const bcy = cy - by
+            const acx = cx - nax
+            const acy = cy - nay
+            const bcx = cx - nbx
+            const bcy = cy - nby
             const doc = acx * bcx + acy * bcy
             if (doc <= 0) { // collision response
               ownCondition.dx = -ownCondition.dx * elasticModulus.x
@@ -194,6 +194,12 @@ const collisionDetect = () => {
               // ownCondition.jumpFlag = false
               // flag = true
             }
+          } else if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
+            console.log('start vertex')
+            ownCondition.dx = -ownCondition.dx * elasticModulus.x
+            ownCondition.dy = -ownCondition.dy * elasticModulus.y
+          } else if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
+            console.log('end vertex')
           }
         })
         // if (y[iX] === '1') {
