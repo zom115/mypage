@@ -30,12 +30,13 @@ const terrainObject = {
   '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
   '2': [[0, 1], [1, 1], [1, 0],], // triangle
   '3': [[0, 0], [0, 1], [1, 1],],
+  '4': [[0, 0], [0, 1], [1, 1],],
 }
 const terrainList = [
   '000000000000000000000000000000000000000000000000000000',
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
+  '100004000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
@@ -145,246 +146,293 @@ const collisionDetect = () => {
     flag = false
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
+        // if (y[iX] === '0') return
         const tileWidth = size
-        if (y[iX] === '1') {
-          if (0 < ownCondition.dy && terrainList[iY - 1][iX] === '0') { // floor
-            const x = ownCondition.x
-            const y = ownCondition.y
-            const dx = ownCondition.dx
-            const dy = ownCondition.dy
-            const ax = iX * size - ownBox.w
-            const ay = iY * size - ownBox.h
-            const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size - ownBox.h
-            const abx = bx - ax
-            const aby = by - ay
-            let nx = -aby
-            let ny = abx
-            let length = (nx ** 2 + ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            ny *= length
-            const d = -(ax * nx + ay * ny)
-            const t = -(nx * x + ny * y + d) / (nx * dx + ny * dy)
-            if (0 <= t && t <= 1) {
-              const cx = x + dx * t
-              const cy = y + dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc <= 0) {
-                ownCondition.dy = -(ownCondition.dy + jumpConstant) * elasticModulus.y
-                ownCondition.dx *= brake
-                ownCondition.jumpFlag = false
-                flag = true
-              }
+        terrainObject[y[iX]].forEach((v, i) => {
+          if (y[iX] === '0') return
+          const ox = ownCondition.x
+          const oy = ownCondition.y
+          const dx = ownCondition.dx
+          const dy = ownCondition.dy
+          const rp = terrainObject[y[iX]].slice(i - 2)[0] // relative previous
+          const ro = terrainObject[y[iX]].slice(i - 1)[0] // relative origin
+          if (y[iX] === '4')console.log(
+            // terrainObject[y[iX]].slice(i - 2)[0],
+            // terrainObject[y[iX]].slice(i - 1)[0],
+            // v === terrainObject[y[iX]].slice(i)[0],
+            )
+          const rn = v // relative next
+          const ax = iX * size + ro[0] * size
+          const ay = iY * size + ro[1] * size
+          const bx = iX * size + rn[0] * size
+          const by = iY * size + rn[1] * size
+          const abx = bx - ax
+          const aby = by - ay
+          let nx = -aby
+          let ny = abx
+          let length = (nx ** 2 + ny ** 2) ** .5
+          if (0 < length) length = 1 / length
+          nx *= length
+          ny *= length
+          const d = -(ax * nx + ay * ny)
+          const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
+          if (0 <= t && t <= 1) {
+            const cx = ox + dx * t
+            const cy = oy + dy * t
+            const acx = cx - ax
+            const acy = cy - ay
+            const bcx = cx - bx
+            const bcy = cy - by
+            const doc = acx * bcx + acy * bcy
+            if (doc <= 0) {
+              ownCondition.dx = -ownCondition.dx * elasticModulus.x
+              ownCondition.dy = -ownCondition.dy * elasticModulus.y
+              // ownCondition.dx *= brake
+              // ownCondition.jumpFlag = false
+              // flag = true
             }
           }
-          if (ownCondition.dy < 0 && terrainList[iY + 1][iX] === '0') { // ceil
-            const ax = iX * size - ownBox.w
-            const ay = iY * size + tileWidth + ownBox.h
-            const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size + tileWidth + ownBox.h
-            const abx = bx - ax
-            let ny = abx
-            let length = (ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            ny *= length
-            const d = -(ay * ny)
-            const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy))
-            if (0 <= t && t <= 1) {
-              const cx = ownCondition.x + ownCondition.dx * t
-              const cy = ownCondition.y + ownCondition.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
-                console.log('detect ceil')
-                ownCondition.dy = -ownCondition.dy * elasticModulus.y
-                flag = true
-              }
-            }
-          }
-          if (0 < ownCondition.dx && y[iX - 1] === '0') { // right wall
-            const ax = iX * size - ownBox.w
-            const ay = iY * size - ownBox.h
-            const bx = iX * size - ownBox.w
-            const by = iY * size + tileWidth + ownBox.h
-            const aby = by - ay
-            let nx = -aby
-            let length = (nx ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            const d = -(ax * nx)
-            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
-            if (0 <= t && t <= 1) {
-              const cx = ownCondition.x + ownCondition.dx * t
-              const cy = ownCondition.y + ownCondition.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
-                console.log('detect right wall')
-                ownCondition.dx = -ownCondition.dx * elasticModulus.x
-                flag = true
-              }
-            }
-          }
-          if (ownCondition.dx < 0 && y[iX + 1] === '0') { // left wall
-            const ax = iX * size + tileWidth + ownBox.w
-            const ay = iY * size - ownBox.h
-            const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size + tileWidth + ownBox.h
-            const aby = by - ay
-            let nx = -aby
-            let length = (nx ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            const d = -(ax * nx)
-            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
-            if (0 <= t && t <= 1) {
-              const cx = ownCondition.x + ownCondition.dx * t
-              const cy = ownCondition.y + ownCondition.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
-                console.log('detect left wall 1', iX, iY)
-                ownCondition.dx = -ownCondition.dx * elasticModulus.x
-                // ownCondition.dy *= brakeConstantflag = true
-              }
-            }
-          }
-        } else if (y[iX] === '2') {
-          if ( // floor & right wall = slope
-            (0 < ownCondition.dy || 0 < ownCondition.dx) &&
-            terrainList[iY - 1][iX] === '0' &&
-            y[iX - 1] === '0'
-          ) {
-            const x = ownCondition.x
-            const y = ownCondition.y
-            const dx = ownCondition.dx
-            const dy = ownCondition.dy
-            const ax = iX * size - ownBox.w
-            const ay = iY * size + tileWidth - ownBox.h
-            const bx = iX * size + tileWidth - ownBox.w
-            const by = iY * size - ownBox.h
-            const abx = bx - ax
-            const aby = by - ay
-            let nx = -aby
-            let ny = abx
-            let length = (nx ** 2 + ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            ny *= length
-            const d = -(ax * nx + ay * ny)
-            const t = -(nx * x + ny * y + d) / (nx * dx + ny * dy)
-            if (0 <= t && t <= 1) {
-              const cx = x + dx * t
-              const cy = y + dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc <= 0) {
-                console.log('detect slope', iX, iY)
-                ;[ownCondition.dx, ownCondition.dy] = [-ownCondition.dy, -ownCondition.dx]
-                ownCondition.jumpFlag = false
-                flag = true
-              }
-            }
-          }
-          if (ownCondition.dy < 0 && terrainList[iY + 1][iX] === '0') { // ceil
-            const ax = iX * size - ownBox.w
-            const ay = iY * size + tileWidth + ownBox.h
-            const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size + tileWidth + ownBox.h
-            const abx = bx - ax
-            let ny = abx
-            let length = (ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            ny *= length
-            const d = -(ay * ny)
-            const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy))
-            if (0 <= t && t <= 1) {
-              const cx = ownCondition.x + ownCondition.dx * t
-              const cy = ownCondition.y + ownCondition.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              // const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
-              // bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
-              if (
-                (doc < 0
-                //   && ax + r <= ownCondition.x && ownCondition.x <= bx - r) ||
-                // ((ax < ownCondition.x && ownCondition.x < ax + r) ||
-                // (bx - r < ownCondition.x && ownCondition.x < bx)) &&
-                // -(ay - ownCondition.y - ownCondition.dy) <
-                // r * Math.cos((diff / r) * (Math.PI / 2)
-                )
-              ) {
-                console.log('detect ceil')
-                // ownCondition.dy = -ownCondition.dy * elasticModulus
-                // ownCondition.y = ay + r
-                ownCondition.dy = -ownCondition.dy * elasticModulus.y
-                //  - gravityConstant * (1 - t)
-                // ownCondition.dx *= brakeConstant
-                flag = true
-              }
-            }
-          }
-          if (ownCondition.dx < 0 && y[iX + 1] === '0') { // left wall
-            const ax = iX * size + tileWidth + ownBox.w
-            const ay = iY * size - ownBox.h
-            const bx = iX * size + tileWidth + ownBox.w
-            const by = iY * size + tileWidth + ownBox.h
-            const aby = by - ay
-            let nx = -aby
-            let length = (nx ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            const d = -(ax * nx)
-            const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
-            if (0 <= t && t <= 1) {
-              const cx = ownCondition.x + ownCondition.dx * t
-              const cy = ownCondition.y + ownCondition.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              // const diff = ownCondition.y < ay + r ? ownCondition.y - ay - r :
-              // by - r < ownCondition.y ? ownCondition.y - by + r : 0
-              if (
-                (doc < 0
-                //   && ay + r <= ownCondition.y && ownCondition.y <= by - r) ||
-                // ((ay < ownCondition.y && ownCondition.y < ay + r) ||
-                // (by - r < ownCondition.y && ownCondition.y < by)) &&
-                // -(ax - ownCondition.x - ownCondition.dx) <
-                // r * Math.cos((diff / r) * (Math.PI / 2)
-                )
-              ) {
-                console.log('detect left wall')
-                // ownCondition.dx = -ownCondition.dx * elasticModulus
-                // ownCondition.x = ax + r
-                ownCondition.dx = -ownCondition.dx * elasticModulus.x
-                // ownCondition.dy *= brakeConstant
-                flag = true
-              }
-            }
-          }
-        }
+        })
+        // if (y[iX] === '1') {
+        //   if (0 < ownCondition.dy && terrainList[iY - 1][iX] === '0') { // floor
+        //     const x = ownCondition.x
+        //     const y = ownCondition.y
+        //     const dx = ownCondition.dx
+        //     const dy = ownCondition.dy
+        //     const ax = iX * size - ownBox.w
+        //     const ay = iY * size - ownBox.h
+        //     const bx = iX * size + tileWidth + ownBox.w
+        //     const by = iY * size - ownBox.h
+        //     const abx = bx - ax
+        //     const aby = by - ay
+        //     let nx = -aby
+        //     let ny = abx
+        //     let length = (nx ** 2 + ny ** 2) ** .5
+        //     if (0 < length) length = 1 / length
+        //     nx *= length
+        //     ny *= length
+        //     const d = -(ax * nx + ay * ny)
+        //     const t = -(nx * x + ny * y + d) / (nx * dx + ny * dy)
+        //     if (0 <= t && t <= 1) {
+        //       const cx = x + dx * t
+        //       const cy = y + dy * t
+        //       const acx = cx - ax
+        //       const acy = cy - ay
+        //       const bcx = cx - bx
+        //       const bcy = cy - by
+        //       const doc = acx * bcx + acy * bcy
+        //       if (doc <= 0) {
+        //         ownCondition.dy = -(ownCondition.dy + jumpConstant) * elasticModulus.y
+        //         ownCondition.dx *= brake
+        //         ownCondition.jumpFlag = false
+        //         flag = true
+        //       }
+        //     }
+        //   }
+        //   if (ownCondition.dy < 0 && terrainList[iY + 1][iX] === '0') { // ceil
+        //     const ax = iX * size - ownBox.w
+        //     const ay = iY * size + tileWidth + ownBox.h
+        //     const bx = iX * size + tileWidth + ownBox.w
+        //     const by = iY * size + tileWidth + ownBox.h
+        //     const abx = bx - ax
+        //     let ny = abx
+        //     let length = (ny ** 2) ** .5
+        //     if (0 < length) length = 1 / length
+        //     ny *= length
+        //     const d = -(ay * ny)
+        //     const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy))
+        //     if (0 <= t && t <= 1) {
+        //       const cx = ownCondition.x + ownCondition.dx * t
+        //       const cy = ownCondition.y + ownCondition.dy * t
+        //       const acx = cx - ax
+        //       const acy = cy - ay
+        //       const bcx = cx - bx
+        //       const bcy = cy - by
+        //       const doc = acx * bcx + acy * bcy
+        //       if (doc < 0) {
+        //         console.log('detect ceil')
+        //         ownCondition.dy = -ownCondition.dy * elasticModulus.y
+        //         flag = true
+        //       }
+        //     }
+        //   }
+        //   if (0 < ownCondition.dx && y[iX - 1] === '0') { // right wall
+        //     const ax = iX * size - ownBox.w
+        //     const ay = iY * size - ownBox.h
+        //     const bx = iX * size - ownBox.w
+        //     const by = iY * size + tileWidth + ownBox.h
+        //     const aby = by - ay
+        //     let nx = -aby
+        //     let length = (nx ** 2) ** .5
+        //     if (0 < length) length = 1 / length
+        //     nx *= length
+        //     const d = -(ax * nx)
+        //     const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
+        //     if (0 <= t && t <= 1) {
+        //       const cx = ownCondition.x + ownCondition.dx * t
+        //       const cy = ownCondition.y + ownCondition.dy * t
+        //       const acx = cx - ax
+        //       const acy = cy - ay
+        //       const bcx = cx - bx
+        //       const bcy = cy - by
+        //       const doc = acx * bcx + acy * bcy
+        //       if (doc < 0) {
+        //         console.log('detect right wall')
+        //         ownCondition.dx = -ownCondition.dx * elasticModulus.x
+        //         flag = true
+        //       }
+        //     }
+        //   }
+        //   if (ownCondition.dx < 0 && y[iX + 1] === '0') { // left wall
+        //     const ax = iX * size + tileWidth + ownBox.w
+        //     const ay = iY * size - ownBox.h
+        //     const bx = iX * size + tileWidth + ownBox.w
+        //     const by = iY * size + tileWidth + ownBox.h
+        //     const aby = by - ay
+        //     let nx = -aby
+        //     let length = (nx ** 2) ** .5
+        //     if (0 < length) length = 1 / length
+        //     nx *= length
+        //     const d = -(ax * nx)
+        //     const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
+        //     if (0 <= t && t <= 1) {
+        //       const cx = ownCondition.x + ownCondition.dx * t
+        //       const cy = ownCondition.y + ownCondition.dy * t
+        //       const acx = cx - ax
+        //       const acy = cy - ay
+        //       const bcx = cx - bx
+        //       const bcy = cy - by
+        //       const doc = acx * bcx + acy * bcy
+        //       if (doc < 0) {
+        //         console.log('detect left wall 1', iX, iY)
+        //         ownCondition.dx = -ownCondition.dx * elasticModulus.x
+        //         // ownCondition.dy *= brakeConstantflag = true
+        //       }
+        //     }
+        //   }
+        // } else
+        // if (y[iX] === '2') {
+        //   if ( // floor & right wall = slope
+        //     (0 < ownCondition.dy || 0 < ownCondition.dx) &&
+        //     terrainList[iY - 1][iX] === '0' &&
+        //     y[iX - 1] === '0'
+        //   ) {
+        //     const x = ownCondition.x
+        //     const y = ownCondition.y
+        //     const dx = ownCondition.dx
+        //     const dy = ownCondition.dy
+        //     const ax = iX * size - ownBox.w
+        //     const ay = iY * size + tileWidth - ownBox.h
+        //     const bx = iX * size + tileWidth - ownBox.w
+        //     const by = iY * size - ownBox.h
+        //     const abx = bx - ax
+        //     const aby = by - ay
+        //     let nx = -aby
+        //     let ny = abx
+        //     let length = (nx ** 2 + ny ** 2) ** .5
+        //     if (0 < length) length = 1 / length
+        //     nx *= length
+        //     ny *= length
+        //     const d = -(ax * nx + ay * ny)
+        //     const t = -(nx * x + ny * y + d) / (nx * dx + ny * dy)
+        //     if (0 <= t && t <= 1) {
+        //       const cx = x + dx * t
+        //       const cy = y + dy * t
+        //       const acx = cx - ax
+        //       const acy = cy - ay
+        //       const bcx = cx - bx
+        //       const bcy = cy - by
+        //       const doc = acx * bcx + acy * bcy
+        //       if (doc <= 0) {
+        //         console.log('detect slope', iX, iY)
+        //         ;[ownCondition.dx, ownCondition.dy] = [-ownCondition.dy, -ownCondition.dx]
+        //         ownCondition.jumpFlag = false
+        //         flag = true
+        //       }
+        //     }
+        //   }
+        //   if (ownCondition.dy < 0 && terrainList[iY + 1][iX] === '0') { // ceil
+        //     const ax = iX * size - ownBox.w
+        //     const ay = iY * size + tileWidth + ownBox.h
+        //     const bx = iX * size + tileWidth + ownBox.w
+        //     const by = iY * size + tileWidth + ownBox.h
+        //     const abx = bx - ax
+        //     let ny = abx
+        //     let length = (ny ** 2) ** .5
+        //     if (0 < length) length = 1 / length
+        //     ny *= length
+        //     const d = -(ay * ny)
+        //     const t = -(ny * ownCondition.y + d) / (ny * (ownCondition.dy))
+        //     if (0 <= t && t <= 1) {
+        //       const cx = ownCondition.x + ownCondition.dx * t
+        //       const cy = ownCondition.y + ownCondition.dy * t
+        //       const acx = cx - ax
+        //       const acy = cy - ay
+        //       const bcx = cx - bx
+        //       const bcy = cy - by
+        //       const doc = acx * bcx + acy * bcy
+        //       // const diff = ownCondition.x < ax + r ? ownCondition.x - ax - r :
+        //       // bx - r < ownCondition.x ? ownCondition.x - bx + r : 0
+        //       if (
+        //         (doc < 0
+        //         //   && ax + r <= ownCondition.x && ownCondition.x <= bx - r) ||
+        //         // ((ax < ownCondition.x && ownCondition.x < ax + r) ||
+        //         // (bx - r < ownCondition.x && ownCondition.x < bx)) &&
+        //         // -(ay - ownCondition.y - ownCondition.dy) <
+        //         // r * Math.cos((diff / r) * (Math.PI / 2)
+        //         )
+        //       ) {
+        //         console.log('detect ceil')
+        //         // ownCondition.dy = -ownCondition.dy * elasticModulus
+        //         // ownCondition.y = ay + r
+        //         ownCondition.dy = -ownCondition.dy * elasticModulus.y
+        //         //  - gravityConstant * (1 - t)
+        //         // ownCondition.dx *= brakeConstant
+        //         flag = true
+        //       }
+        //     }
+        //   }
+        //   if (ownCondition.dx < 0 && y[iX + 1] === '0') { // left wall
+        //     const ax = iX * size + tileWidth + ownBox.w
+        //     const ay = iY * size - ownBox.h
+        //     const bx = iX * size + tileWidth + ownBox.w
+        //     const by = iY * size + tileWidth + ownBox.h
+        //     const aby = by - ay
+        //     let nx = -aby
+        //     let length = (nx ** 2) ** .5
+        //     if (0 < length) length = 1 / length
+        //     nx *= length
+        //     const d = -(ax * nx)
+        //     const t = -(nx * ownCondition.x + d) / (nx * (ownCondition.dx))
+        //     if (0 <= t && t <= 1) {
+        //       const cx = ownCondition.x + ownCondition.dx * t
+        //       const cy = ownCondition.y + ownCondition.dy * t
+        //       const acx = cx - ax
+        //       const acy = cy - ay
+        //       const bcx = cx - bx
+        //       const bcy = cy - by
+        //       const doc = acx * bcx + acy * bcy
+        //       // const diff = ownCondition.y < ay + r ? ownCondition.y - ay - r :
+        //       // by - r < ownCondition.y ? ownCondition.y - by + r : 0
+        //       if (
+        //         (doc < 0
+        //         //   && ay + r <= ownCondition.y && ownCondition.y <= by - r) ||
+        //         // ((ay < ownCondition.y && ownCondition.y < ay + r) ||
+        //         // (by - r < ownCondition.y && ownCondition.y < by)) &&
+        //         // -(ax - ownCondition.x - ownCondition.dx) <
+        //         // r * Math.cos((diff / r) * (Math.PI / 2)
+        //         )
+        //       ) {
+        //         console.log('detect left wall')
+        //         // ownCondition.dx = -ownCondition.dx * elasticModulus
+        //         // ownCondition.x = ax + r
+        //         ownCondition.dx = -ownCondition.dx * elasticModulus.x
+        //         // ownCondition.dy *= brakeConstant
+        //         flag = true
+        //       }
+        //     }
+        //   }
+        // }
       }
     })
     ownCondition.x += ownCondition.dx
