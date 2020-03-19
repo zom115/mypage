@@ -28,7 +28,7 @@ let jumpChargeTime = 0
 const terrainObject = {
   '0': [[]],
   '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
-  '2': [[0, 1], [1, 1], [1, 0],], // triangle
+  '2': [[1, 0], [1, 1], [0, 1],], // triangle
   '3': [[0, 0], [0, 1], [1, 1],],
   '4': [[0, 0], [0, 1], [1, 1],],
 }
@@ -146,7 +146,6 @@ const collisionDetect = () => {
     flag = false
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
-        // if (y[iX] === '0') return
         const tileWidth = size
         terrainObject[y[iX]].forEach((v, i) => {
           if (y[iX] === '0') return
@@ -162,10 +161,10 @@ const collisionDetect = () => {
             // v === terrainObject[y[iX]].slice(i)[0],
             )
           const rn = v // relative next
-          const ax = iX * size + ro[0] * size
-          const ay = iY * size + ro[1] * size
-          const bx = iX * size + rn[0] * size
-          const by = iY * size + rn[1] * size
+          let ax = iX * size + ro[0] * size
+          let ay = iY * size + ro[1] * size
+          let bx = iX * size + rn[0] * size
+          let by = iY * size + rn[1] * size
           const abx = bx - ax
           const aby = by - ay
           let nx = -aby
@@ -174,6 +173,10 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           ny *= length
+          ax -= nx * ownBox.w
+          ay -= ny * ownBox.h
+          bx -= nx * ownBox.w
+          by -= ny * ownBox.h
           const d = -(ax * nx + ay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
           if (0 <= t && t <= 1) {
@@ -184,7 +187,7 @@ const collisionDetect = () => {
             const bcx = cx - bx
             const bcy = cy - by
             const doc = acx * bcx + acy * bcy
-            if (doc <= 0) {
+            if (doc <= 0) { // collision response
               ownCondition.dx = -ownCondition.dx * elasticModulus.x
               ownCondition.dy = -ownCondition.dy * elasticModulus.y
               // ownCondition.dx *= brake
@@ -445,8 +448,15 @@ const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y + jumpChargeTime, size / 32, 0, Math.PI * 2, false)
+  context.arc(
+    ownCondition.x, ownCondition.y + jumpChargeTime, size / 32, 0, Math.PI * 2, false)
   context.fill()
+  context.strokeStyle = 'hsl(0, 100%, 50%)'
+  context.beginPath()
+  context.arc(
+    ownCondition.x, ownCondition.y + jumpChargeTime, ownBox.w, 0, Math.PI * 2, false)
+  context.closePath()
+  context.stroke()
   context.beginPath()
   context.moveTo(ownCondition.x, ownCondition.y)
   context.lineTo(ownCondition.x + ownCondition.dx * size, ownCondition.y)
@@ -472,22 +482,6 @@ const draw = () => {
             relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
       })
       context.fill()
-      // if (y[iX] === '1') context.fillRect(iX * size, iY * size, size, size)
-      // else if (y[iX] === '2') {
-      //   const relativeCooldinates = {x: iX * size,y: iY * size}
-      //   context.beginPath()
-      //   context.moveTo(relativeCooldinates.x, relativeCooldinates.y + size)
-      //   context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
-      //   context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y)
-      //   context.fill()
-      // } else if (y[iX] === '3') {
-      //   const relativeCooldinates = {x: iX * size,y: iY * size}
-      //   context.beginPath()
-      //   context.moveTo(relativeCooldinates.x, relativeCooldinates.y)
-      //   context.lineTo(relativeCooldinates.x, relativeCooldinates.y + size)
-      //   context.lineTo(relativeCooldinates.x + size, relativeCooldinates.y + size)
-      //   context.fill()
-      // }
     }
   })
   context.fillStyle = 'hsl(0, 0%, 0%)'
