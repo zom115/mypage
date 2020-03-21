@@ -191,22 +191,23 @@ const collisionDetect = () => {
               // flag = true
             }
           } else if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-            const ox = ro[0]
-            const oy = ro[1]
-            const ax = rn[0]
-            const ay = rn[1]
-            const oax = ax - ox
-            const oay = ay - oy
-            const bx = rp[0]
-            const by = rp[1]
-            const obx = bx - ox
-            const oby = by - oy
-            const oa = ((ax - ox) ** 2 + (ay - oy) ** 2)
-            const ob = ((bx - ox) ** 2 + (by - oy) ** 2)
-            const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
-            let degree = (oa + ob - ab) / (2 * oa ** .5 * ob ** .5)
+            const vox = ro[0]
+            const voy = ro[1]
+            const vax = rn[0]
+            const vay = rn[1]
+            const voax = vax - vox
+            const voay = vay - voy
+            const vbx = rp[0]
+            const vby = rp[1]
+            const vobx = vbx - vox
+            const voby = vby - voy
+            const voa = ((vax - vox) ** 2 + (vay - voy) ** 2)
+            const vob = ((vbx - vox) ** 2 + (vby - voy) ** 2)
+            const vab = ((vbx - vax) ** 2 + (vby - vay) ** 2)
+            let degree = (voa + vob - vab) / (2 * voa ** .5 * vob ** .5)
+            degree = Math.acos(degree) / Math.PI
             // 判定する線分の傾き
-            const a = Math.atan2(oay, oax) / Math.PI
+            const a = Math.atan2(voay, voax) / Math.PI
             let vertexFlag = true
             // ここ4分岐するの鬱陶しいなあ
             // arctan使う以上仕方ないか
@@ -248,7 +249,7 @@ const collisionDetect = () => {
             if (vertexFlag) {
               // 自機とvertexの位置、角の当たりどころで、
               // どこまでをこの線分としての判定とするか
-              const b = Math.atan2(oby, obx) / Math.PI // こいつが矩形に沿ってなかったら角度決定
+              const b = Math.atan2(voby, vobx) / Math.PI // こいつが矩形に沿ってなかったら角度決定
               // 沿っていれば隣を調べる
               if (b === 0) { // floor
                 const index = Object.values(
@@ -280,7 +281,7 @@ const collisionDetect = () => {
                       const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
                       const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
                       console.log(`d: ${d}`)
-                      degree += d
+                      degree += Math.acos(d) / Math.PI
                     } else { // soa が隣接していなければ角度決定
                       console.log('decision degree 2')
                     }
@@ -309,7 +310,7 @@ const collisionDetect = () => {
                       const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
                       const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
                       console.log(`d: ${d}`)
-                      degree += d
+                      degree += Math.acos(d) / Math.PI
                     }
                   }
                 }
@@ -336,7 +337,7 @@ const collisionDetect = () => {
                       const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
                       const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
                       console.log(`d: ${d}`)
-                      degree += d
+                      degree += Math.acos(d) / Math.PI
                     }
                   }
                 }
@@ -363,29 +364,23 @@ const collisionDetect = () => {
                       const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
                       const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
                       console.log(`d: ${d}`)
-                      degree += d
+                      degree += Math.acos(d) / Math.PI
                     }
                   }
                 }
               } else { // 沿ってないから角度決まりでやんす
                 console.log('decision degree 4')
               }
-              console.log(`degree: ${degree}`)
             }
-            // console.log('start vertex','\n',
-            // `(${ax}, ${ay}), (${bx}, ${by})`, dx, dy, '\n',
-            // Math.atan2(dy, dx) / Math.PI, '\n',
-            // //         y /  x
-            // Math.atan2( 0 ,  1) / Math.PI,'\n', //       0
-            // Math.atan2( 1 ,  1) / Math.PI,'\n', //  pi / 4
-            // Math.atan2( 1 ,  0) / Math.PI,'\n', //  pi / 2
-            // Math.atan2( 1 , -1) / Math.PI,'\n', //  pi * 3 / 4
-            // Math.atan2( 0 , -1) / Math.PI,'\n', //  pi
-            // Math.atan2(-1 , -1) / Math.PI,'\n', // -pi * 3 / 4
-            // Math.atan2(-1 ,  0) / Math.PI,'\n', // -pi / 2
-            // Math.atan2(-1 ,  1) / Math.PI,'\n', // -pi / 4
-            // Math.atan2( 0 ,  1) / Math.PI,
-            // )
+            degree = (2 - degree) / 2 // (2pi - x) / 2
+            abx
+            aby
+            const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
+            const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
+            const ob = ((bx - ox) ** 2 + (by - oy) ** 2)
+            let cDegree = (ab + ao - ob) / (2 * ab ** .5 * ao ** .5)
+            cDegree = Math.acos(cDegree) / Math.PI
+            console.log(cDegree < degree)
             ownCondition.dx = -ownCondition.dx * elasticModulus.x
             ownCondition.dy = -ownCondition.dy * elasticModulus.y
           } else if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
