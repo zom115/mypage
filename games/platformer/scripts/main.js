@@ -38,7 +38,7 @@ const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100102000000000000000000000000000000000000000000000001',
+  '100103000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
@@ -157,10 +157,10 @@ const collisionDetect = () => {
           const rp = terrainObject[y[iX]].slice(i - 2)[0] // relative previous
           const ro = terrainObject[y[iX]].slice(i - 1)[0] // relative origin
           const rn = v // relative next
-          let ax = iX * size + ro[0] * size
-          let ay = iY * size + ro[1] * size
-          let bx = iX * size + rn[0] * size
-          let by = iY * size + rn[1] * size
+          const ax = iX * size + ro[0] * size
+          const ay = iY * size + ro[1] * size
+          const bx = iX * size + rn[0] * size
+          const by = iY * size + rn[1] * size
           const abx = bx - ax
           const aby = by - ay
           let nx = -aby
@@ -373,14 +373,20 @@ const collisionDetect = () => {
               }
             }
             degree = (2 - degree) / 2 // (2pi - x) / 2
-            abx
-            aby
             const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
             const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
             const ob = ((bx - ox) ** 2 + (by - oy) ** 2)
             let cDegree = (ab + ao - ob) / (2 * ab ** .5 * ao ** .5)
             cDegree = Math.acos(cDegree) / Math.PI
-            console.log(cDegree < degree)
+            // t 線分より内側か、法線ベクトルとってやってるけど
+            // なんか思ってる値と符号が逆。本当は0 < tにしたい
+            // まあいいや、どうせすぐ直す
+
+            // cDegreeが180 degrees以内(tで判定)で
+            // degree内ならこの線分の判定を返す
+            if (t < 0 && cDegree < degree) {
+              console.log('inner')
+            }
             ownCondition.dx = -ownCondition.dx * elasticModulus.x
             ownCondition.dy = -ownCondition.dy * elasticModulus.y
           } else if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
