@@ -5,7 +5,7 @@ const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 64
 const ownCondition = {
-  x: canvas.offsetWidth * 1 / 8,
+  x: canvas.offsetWidth * 2 / 8,
   y: canvas.offsetHeight * 7 / 8,
   dx: 0,
   dy: 0,
@@ -38,8 +38,8 @@ const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100103000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
+  '100003000000000000000000000000000000000000000000000001',
+  '101000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
@@ -66,6 +66,193 @@ const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '000000000000000000000000000000000000000000000000000000',
 ]
+terrainList.forEach((v, i) => {
+  terrainList[i] = '0' + v + '0'
+})
+let terrainVertexList = []
+const storeDegree = () => {
+  terrainVertexList = []
+  terrainList.forEach((y, iY) => {
+    terrainVertexList.push([])
+    for (let iX = 0; iX < terrainList[0].length; iX++) {
+      terrainVertexList[iY].push([])
+      terrainObject[y[iX]].forEach((v, i) => {
+        if (y[iX] === '0') return
+        const rp = terrainObject[y[iX]].slice(i - 1)[0] // relative previous
+        const ro = v // relative origin
+        const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
+        terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
+        const vox = ro[0]
+        const voy = ro[1]
+        const vax = rn[0]
+        const vay = rn[1]
+        const voax = vax - vox
+        const voay = vay - voy
+        const vbx = rp[0]
+        const vby = rp[1]
+        const vobx = vbx - vox
+        const voby = vby - voy
+        const voa = ((vax - vox) ** 2 + (vay - voy) ** 2)
+        const vob = ((vbx - vox) ** 2 + (vby - voy) ** 2)
+        const vab = ((vbx - vax) ** 2 + (vby - vay) ** 2)
+        let degree = (voa + vob - vab) / (2 * voa ** .5 * vob ** .5)
+        degree = Math.acos(degree) / Math.PI // 判定する線分の傾き
+        const a = Math.atan2(voay, voax) / Math.PI
+        let vertexFlag = true
+        // ここ4分岐するの鬱陶しいなあ
+        // arctan使う以上仕方ないか
+        if (a === 0) { // 0 degree search ceil
+          const index = Object.values( // こいつがいたら頂点の判定は無効
+            terrainObject[terrainList[iY - 1][iX]]).findIndex(v => {
+              return v === ro
+            })
+          if (index !== -1 && index !== 0) { // 隣に同じ線分があったら、この線分の判定は無効
+            vertexFlag = false
+            if (rn === terrainObject[terrainList[iY - 1][iX]][index - 1]) return
+          }
+        } else if (a === .5) { // 90 degrees search right
+          const index = Object.values(terrainObject[y[iX + 1]]).findIndex(v => {
+              return v === ro
+            })
+          if (index !== -1 && index !== 0) {
+            vertexFlag = false
+            if (rn === terrainObject[y[iX + 1]][index - 1]) return
+          }
+        } else if (a === 1) { // 180 degrees search floor
+          const index = Object.values(
+            terrainObject[terrainList[iY + 1][iX]]).findIndex(v => {
+              return v === ro
+            })
+          if (index !== -1 && index !== 0) {
+            vertexFlag = false
+            if (rn === terrainObject[terrainList[iY + 1][iX]][index - 1]) return
+          }
+        } else if (a === -.5) { // 270 degrees search left
+          const index = Object.values(terrainObject[y[iX - 1]]).findIndex(v => {
+            return v === ro
+          })
+          if (index !== -1 && index !== 0) {
+            vertexFlag = false
+            if (rn === terrainObject[y[iX - 1]][index - 1]) return
+          }
+        }
+        if (vertexFlag) {
+          // 自機とvertexの位置、角の当たりどころで、
+          // どこまでをこの線分としての判定とするか
+          const b = Math.atan2(voby, vobx) / Math.PI // こいつが矩形に沿ってなかったら角度決定
+          // 沿っていれば隣を調べる
+          if (b === 0) { // floor
+            const index = Object.values(
+              terrainObject[terrainList[iY + 1][iX]].findIndex(v => {
+                return v === ro
+              })
+            )
+            if (index === -1) { // 角度決定
+            } else {
+              // お隣は0ですか？
+              if (terrainList[iY + 1][iX] === '0') { // 角度決定
+              } else {
+                let sa
+                // index + 1ができるか
+                if (index < terrainObject[terrainList[iY + 1][iX]].length) {
+                  sa = terrainObject[terrainList[iY + 1][iX]].slice(index + 1)[0]
+                } else sa = terrainObject[terrainList[iY + 1][iX]][0]
+                const so = terrainObject[terrainList[iY + 1][iX]].slice(index)[0]
+                const soax = sa[0] - so[0]
+                const soay = sa[1] - so[1]
+                const soa = Math.atan2(soay, soax) / Math.PI
+                if (soa === b) { // 唯一角度が変わるよ
+                  const sb = terrainObject[terrainList[iY + 1][iX]].slice(index - 1)[0]
+                  const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
+                  const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
+                  const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
+                  const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
+                  console.log(`d: ${d}`)
+                  degree += Math.acos(d) / Math.PI
+                } else {} // soa が隣接していなければ角度決定
+              }
+            }
+          } else if (b === .5) { // left
+            const index = Object.values(
+              terrainObject[y[iX - 1]].findIndex(v => {
+                return v === ro
+              })
+            )
+            if (index !== -1 && y[iX - 1] !== '0') {
+              let sa
+              if (index < terrainObject[y[iX - 1]].length) {
+                sa = terrainObject[y[iX - 1]].slice(index + 1)[0]
+              } else sa = terrainObject[y[iX - 1]][0]
+              const so = terrainObject[y[iX - 1]].slice(index)[0]
+              const soax = sa[0] - so[0]
+              const soay = sa[1] - so[1]
+              const soa = Math.atan2(soay, soax) / Math.PI
+              if (soa === b) {
+                const sb = terrainObject[y[iX - 1]].slice(index - 1)[0]
+                const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
+                const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
+                const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
+                const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
+                degree += Math.acos(d) / Math.PI
+              }
+            }
+          } else if (b === 1) { // ceil
+            const index = Object.values(
+              terrainObject[terrainList[iY - 1][iX]].findIndex(v => {
+                return v === ro
+              })
+            )
+            if (index !== -1 && terrainList[iY - 1][iX] !== '0') {
+              let sa
+              if (index < terrainObject[terrainList[iY - 1][iX]].length) {
+                sa = terrainObject[terrainList[iY - 1][iX]].slice(index + 1)[0]
+              } else sa = terrainObject[terrainList[iY - 1][iX]][0]
+              const so = terrainObject[terrainList[iY - 1][iX]].slice(index)[0]
+              const soax = sa[0] - so[0]
+              const soay = sa[1] - so[1]
+              const soa = Math.atan2(soay, soax) / Math.PI
+              if (soa === b) {
+                const sb = terrainObject[terrainList[iY - 1][iX]].slice(index - 1)[0]
+                const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
+                const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
+                const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
+                const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
+                degree += Math.acos(d) / Math.PI
+              }
+            }
+          } else if (b === -.5) { // right
+            const index = Object.values(
+              terrainObject[y[iX + 1]].findIndex(v => {
+                return v === ro
+              })
+            )
+            if (index !== -1 && y[iX + 1] !== '0') {
+              let sa
+              if (index < terrainObject[y[iX + 1]].length) {
+                sa = terrainObject[y[iX + 1]].slice(index + 1)[0]
+              } else sa = terrainObject[y[iX + 1]][0]
+              const so = terrainObject[y[iX + 1]].slice(index)[0]
+              const soax = sa[0] - so[0]
+              const soay = sa[1] - so[1]
+              const soa = Math.atan2(soay, soax) / Math.PI
+              if (soa === b) {
+                const sb = terrainObject[y[iX + 1]].slice(index - 1)[0]
+                const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
+                const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
+                const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
+                const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
+                degree += Math.acos(d) / Math.PI
+              }
+            }
+          }
+        }
+        degree = (2 - degree) / 2 // (2pi - x) / 2
+        terrainVertexList[iY][iX].push(degree)
+      })
+    }
+  })
+}
+storeDegree()
 let key = {a: false, d: false, j: false, k: false, s: false, w: false}
 document.addEventListener('keydown', e => {
   if (e.keyCode === 65) key.a = true
@@ -135,6 +322,11 @@ const input = () => {
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const ownBox = {w: size / 8, h: size / 8}
+const collisionResponse = () => {
+  ownCondition.dx = -ownCondition.dx * elasticModulus.x
+  ownCondition.dy = -ownCondition.dy * elasticModulus.y
+  flag = true
+}
 const collisionDetect = () => {
   let count = 0
   let flag
@@ -154,9 +346,9 @@ const collisionDetect = () => {
           const oy = ownCondition.y
           const dx = ownCondition.dx
           const dy = ownCondition.dy
-          const rp = terrainObject[y[iX]].slice(i - 2)[0] // relative previous
-          const ro = terrainObject[y[iX]].slice(i - 1)[0] // relative origin
-          const rn = v // relative next
+          const ro = v // relative origin
+          const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
+            terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
           const ax = iX * size + ro[0] * size
           const ay = iY * size + ro[1] * size
           const bx = iX * size + rn[0] * size
@@ -175,6 +367,9 @@ const collisionDetect = () => {
           let nby = by - ny * ownBox.h
           const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
+          const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
+          const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
+          const bo = ((ox - bx) ** 2 + (oy - by) ** 2)
           if (0 <= t && t <= 1) {
             const cx = ox + dx * t
             const cy = oy + dy * t
@@ -183,13 +378,7 @@ const collisionDetect = () => {
             const bcx = cx - nbx
             const bcy = cy - nby
             const doc = acx * bcx + acy * bcy
-            if (doc <= 0) { // collision response
-              ownCondition.dx = -ownCondition.dx * elasticModulus.x
-              ownCondition.dy = -ownCondition.dy * elasticModulus.y
-              // ownCondition.dx *= brake
-              // ownCondition.jumpFlag = false
-              // flag = true
-            }
+            if (doc <= 0) collisionResponse()
           } else if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
             const vox = ro[0]
             const voy = ro[1]
@@ -197,18 +386,7 @@ const collisionDetect = () => {
             const vay = rn[1]
             const voax = vax - vox
             const voay = vay - voy
-            const vbx = rp[0]
-            const vby = rp[1]
-            const vobx = vbx - vox
-            const voby = vby - voy
-            const voa = ((vax - vox) ** 2 + (vay - voy) ** 2)
-            const vob = ((vbx - vox) ** 2 + (vby - voy) ** 2)
-            const vab = ((vbx - vax) ** 2 + (vby - vay) ** 2)
-            let degree = (voa + vob - vab) / (2 * voa ** .5 * vob ** .5)
-            degree = Math.acos(degree) / Math.PI
-            // 判定する線分の傾き
-            const a = Math.atan2(voay, voax) / Math.PI
-            let vertexFlag = true
+            const a = Math.atan2(voay, voax) / Math.PI // 判定する線分の傾き
             // ここ4分岐するの鬱陶しいなあ
             // arctan使う以上仕方ないか
             if (a === 0) { // 0 degree search ceil
@@ -217,7 +395,6 @@ const collisionDetect = () => {
                   return v === ro
                 })
               if (index !== -1 && index !== 0) { // 隣に同じ線分があったら、この線分の判定は無効
-                vertexFlag = false
                 if (rn === terrainObject[terrainList[iY - 1][iX]][index - 1]) return
               }
             } else if (a === .5) { // 90 degrees search right
@@ -225,7 +402,6 @@ const collisionDetect = () => {
                   return v === ro
                 })
               if (index !== -1 && index !== 0) {
-                vertexFlag = false
                 if (rn === terrainObject[y[iX + 1]][index - 1]) return
               }
             } else if (a === 1) { // 180 degrees search floor
@@ -234,7 +410,6 @@ const collisionDetect = () => {
                   return v === ro
                 })
               if (index !== -1 && index !== 0) {
-                vertexFlag = false
                 if (rn === terrainObject[terrainList[iY + 1][iX]][index - 1]) return
               }
             } else if (a === -.5) { // 270 degrees search left
@@ -242,155 +417,30 @@ const collisionDetect = () => {
                 return v === ro
               })
               if (index !== -1 && index !== 0) {
-                vertexFlag = false
                 if (rn === terrainObject[y[iX - 1]][index - 1]) return
               }
             }
-            if (vertexFlag) {
-              // 自機とvertexの位置、角の当たりどころで、
-              // どこまでをこの線分としての判定とするか
-              const b = Math.atan2(voby, vobx) / Math.PI // こいつが矩形に沿ってなかったら角度決定
-              // 沿っていれば隣を調べる
-              if (b === 0) { // floor
-                const index = Object.values(
-                  terrainObject[terrainList[iY + 1][iX]].findIndex(v => {
-                    return v === ro
-                  })
-                )
-                if (index === -1) { // 角度決定
-                  console.log('decision degree 0')
-                }
-                else {
-                  // お隣は0ですか？
-                  if (terrainList[iY + 1][iX] === '0') { // 角度決定
-                    console.log('decision degree 1')
-                  } else {
-                    let sa
-                    // index + 1ができるか
-                    if (index < terrainObject[terrainList[iY + 1][iX]].length) {
-                      sa = terrainObject[terrainList[iY + 1][iX]].slice(index + 1)[0]
-                    } else sa = terrainObject[terrainList[iY + 1][iX]][0]
-                    const so = terrainObject[terrainList[iY + 1][iX]].slice(index)[0]
-                    const soax = sa[0] - so[0]
-                    const soay = sa[1] - so[1]
-                    const soa = Math.atan2(soay, soax) / Math.PI
-                    if (soa === b) { // 唯一角度が変わるよ
-                      const sb = terrainObject[terrainList[iY + 1][iX]].slice(index - 1)[0]
-                      const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
-                      const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
-                      const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
-                      const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
-                      console.log(`d: ${d}`)
-                      degree += Math.acos(d) / Math.PI
-                    } else { // soa が隣接していなければ角度決定
-                      console.log('decision degree 2')
-                    }
-                  }
-                }
-              } else if (b === .5) { // left
-                const index = Object.values(
-                  terrainObject[y[iX - 1]].findIndex(v => {
-                    return v === ro
-                  })
-                )
-                if (index !== -1) { // 角度決定
-                  if (y[iX - 1] !== '0') { // 角度決定
-                    let sa
-                    if (index < terrainObject[y[iX - 1]].length) {
-                      sa = terrainObject[y[iX - 1]].slice(index + 1)[0]
-                    } else sa = terrainObject[y[iX - 1]][0]
-                    const so = terrainObject[y[iX - 1]].slice(index)[0]
-                    const soax = sa[0] - so[0]
-                    const soay = sa[1] - so[1]
-                    const soa = Math.atan2(soay, soax) / Math.PI
-                    if (soa === b) { // 唯一角度が変わるよ
-                      const sb = terrainObject[y[iX - 1]].slice(index - 1)[0]
-                      const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
-                      const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
-                      const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
-                      const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
-                      console.log(`d: ${d}`)
-                      degree += Math.acos(d) / Math.PI
-                    }
-                  }
-                }
-              } else if (b === 1) { // ceil
-                const index = Object.values(
-                  terrainObject[terrainList[iY - 1][iX]].findIndex(v => {
-                    return v === ro
-                  })
-                )
-                if (index !== -1) { // 角度決定
-                  if (terrainList[iY - 1][iX] !== '0') { // 角度決定
-                    let sa
-                    if (index < terrainObject[terrainList[iY - 1][iX]].length) {
-                      sa = terrainObject[terrainList[iY - 1][iX]].slice(index + 1)[0]
-                    } else sa = terrainObject[terrainList[iY - 1][iX]][0]
-                    const so = terrainObject[terrainList[iY - 1][iX]].slice(index)[0]
-                    const soax = sa[0] - so[0]
-                    const soay = sa[1] - so[1]
-                    const soa = Math.atan2(soay, soax) / Math.PI
-                    if (soa === b) { // 唯一角度が変わるよ
-                      const sb = terrainObject[terrainList[iY - 1][iX]].slice(index - 1)[0]
-                      const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
-                      const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
-                      const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
-                      const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
-                      console.log(`d: ${d}`)
-                      degree += Math.acos(d) / Math.PI
-                    }
-                  }
-                }
-              } else if (b === -.5) { // right
-                const index = Object.values(
-                  terrainObject[y[iX + 1]].findIndex(v => {
-                    return v === ro
-                  })
-                )
-                if (index !== -1) { // 角度決定
-                  if (y[iX + 1] !== '0') { // 角度決定
-                    let sa
-                    if (index < terrainObject[y[iX + 1]].length) {
-                      sa = terrainObject[y[iX + 1]].slice(index + 1)[0]
-                    } else sa = terrainObject[y[iX + 1]][0]
-                    const so = terrainObject[y[iX + 1]].slice(index)[0]
-                    const soax = sa[0] - so[0]
-                    const soay = sa[1] - so[1]
-                    const soa = Math.atan2(soay, soax) / Math.PI
-                    if (soa === b) { // 唯一角度が変わるよ
-                      const sb = terrainObject[y[iX + 1]].slice(index - 1)[0]
-                      const soa = ((sa[0] - so[0]) ** 2 + (sa[1] - so[1]) ** 2)
-                      const sob = ((sb[0] - so[0]) ** 2 + (sb[1] - so[1]) ** 2)
-                      const sab = ((sb[0] - sa[0]) ** 2 + (sb[1] - sa[1]) ** 2)
-                      const d = (soa + sob - sab) / (2 * soa ** .5 * sob ** .5)
-                      console.log(`d: ${d}`)
-                      degree += Math.acos(d) / Math.PI
-                    }
-                  }
-                }
-              } else { // 沿ってないから角度決まりでやんす
-                console.log('decision degree 4')
-              }
-            }
-            degree = (2 - degree) / 2 // (2pi - x) / 2
-            const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
-            const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
-            const ob = ((bx - ox) ** 2 + (by - oy) ** 2)
-            let cDegree = (ab + ao - ob) / (2 * ab ** .5 * ao ** .5)
-            cDegree = Math.acos(cDegree) / Math.PI
             // t 線分より内側か、法線ベクトルとってやってるけど
             // なんか思ってる値と符号が逆。本当は0 < tにしたい
             // まあいいや、どうせすぐ直す
 
             // cDegreeが180 degrees以内(tで判定)で
             // degree内ならこの線分の判定を返す
-            if (t < 0 && cDegree < degree) {
-              console.log('inner')
+            let cDegree = (ab + ao - bo) / (2 * ab ** .5 * ao ** .5)
+            cDegree = Math.acos(cDegree) / Math.PI
+            if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i]) {
+              console.log('start', terrainVertexList[iY][iX][i])
+              // この線分のcollision response
+              collisionResponse()
             }
-            ownCondition.dx = -ownCondition.dx * elasticModulus.x
-            ownCondition.dy = -ownCondition.dy * elasticModulus.y
           } else if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-            // console.log('end vertex')
+            // こっちもcDegreeとtの判定せな使えへん
+            let cDegree = (ab + bo - ao) / (2 * ab ** .5 * bo ** .5)
+            cDegree = Math.acos(cDegree) / Math.PI
+            if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i]) {
+              console.log('end', terrainVertexList[iY][iX][i])
+              collisionResponse()
+            }
           }
         })
         // if (y[iX] === '1') {
