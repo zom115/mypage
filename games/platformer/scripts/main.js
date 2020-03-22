@@ -36,10 +36,10 @@ const terrainList = [
   '000000000000000000000000000000000000000000000000000000',
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '104503000000000000000000000000000000000000000000000001',
-  '103200000000000000000000000000000000000000000000000001',
-  '100001300000000000000000000000000000000000000000000001',
+  '101100000000000000000000000000000000000000000000000001',
+  '100003010000000000000000000000000000000000000000000001',
+  '103000000000000000000000000000000000000000000000000001',
+  '100501300000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
@@ -368,17 +368,24 @@ const collisionDetect = () => {
             [1, 1, [0, 1]],
           ]
           let returnFlag = false
-          let vertexFlag = false
-          // x, y それぞれ0, 1が含まれている隣を調べて重複する頂点があれば無効
-          findVertexList.forEach(vl => {
+          findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
-              const target = terrainObject[terrainList[iY + vl[2][0]][iX + vl[2][1]]]
-              if (target.includes(val => ro === val)) { // こいつがいたら頂点の判定は無効
-                vertexFlag = true
-                if (target.includes(val => { // 隣に同じ線分があったら、この線分の判定は無効
-                  return val.length === i ? target[0] === rn : target[i + 1] === rn})
-                ) returnFlag = true
-              }
+              const target = terrainObject[terrainList[iY + vl[2][1]][iX + vl[2][0]]]
+              const vertex = i === 0 ? [1, ro[1]] :
+              i === 1 ? [0, ro[1]] :
+              i === 2 ? [ro[0], 1] : [ro[0], 0]
+              // x, y それぞれ0, 1が含まれている隣を調べる
+              const index = target.findIndex(val => {
+                return val[0] === vertex[0] && val[1] === vertex[1]
+              })
+              if (index === -1) return
+              const previousIndex = index === 0 ? target.length - 1 : index - 1
+              const compareVertex = i === 0 ? [1, rn[1]] :
+              i === 1 ? [0, rn[1]] :
+              i === 2 ? [rn[0], 1] : [rn[0], 0]
+              if (target[previousIndex][0] === compareVertex[0] &&
+              target[previousIndex][1] === compareVertex[1]) returnFlag = true
+              // 隣に同じ線分があったら、この線分の判定は無効
             }
           })
           if (returnFlag) return
@@ -414,10 +421,6 @@ const collisionDetect = () => {
             const bcy = cy - nby
             const doc = acx * bcx + acy * bcy
             if (doc <= 0) detectFlag = true
-          }
-          if (vertexFlag) {
-            console.log('hello')
-            return
           }
           const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
           const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
@@ -508,7 +511,7 @@ const draw = () => {
     `dy: ${ownCondition.dy}`,
   ]
   list.forEach((v, i) => {
-    context.fillText(v, size * 2, size * (3 + i))
+    context.fillText(v, size * 11, size * (1 + i))
   })
 }
 const main = () => {
