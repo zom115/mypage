@@ -38,9 +38,9 @@ const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100003000000000000000000000000000000000000000000000001',
-  '145000000000000000000000000000000000000000000000000001',
-  '100210000000000000000000000000000000000000000000000001',
+  '104503000000000000000000000000000000000000000000000001',
+  '103200000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
@@ -351,38 +351,29 @@ const collisionDetect = () => {
     repeatFlag = false
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
-        const tileWidth = size
-        terrainObject[y[iX]].forEach((v, i) => {
-          if (y[iX] === '0') return
-          const ro = v // relative origin
+        terrainObject[y[iX]].forEach((ro, i) => { // relative origin
+          if (terrainObject[y[iX]].length === 0) return
           const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
             terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
-          const vox = ro[0]
-          const voy = ro[1]
-          const vax = rn[0]
-          const vay = rn[1]
-          const voax = vax - vox
-          const voay = vay - voy
+          const voax = rn[0] - ro[0]
+          const voay = rn[1] - ro[1]
           const tilt = Math.atan2(voay, voax) / Math.PI // 判定する線分の傾き
-          const tiltList = [0, .5, 1, -.5]
-          const indexDiffList = [[-1, 0], [0, 1], [1, 0], [0, -1]]
-          let vertexFlag = true
+          const findVertexList = [
+            [0, 0, [-1, 0]],
+            [0, 1, [1, 0]],
+            [1, 0, [0, -1]],
+            [1, 1, [0, 1]],
+          ]
           let returnFlag = false
-          tiltList.forEach((v, i) => {
-            if (tilt === v) {
-              // TODO:
-              // x, y それぞれ0, 1が含まれている隣を調べて
-              // 重複する頂点があれば無効にしないといけない
-              const index = Object.values( // こいつがいたら頂点の判定は無効
-                terrainObject[terrainList[
-                  iY + indexDiffList[i][0]][iX + indexDiffList[i][1]]]).findIndex(vl => {
-                  return vl === ro
-                })
-              if (index !== -1 &&  index !== 0) {
-                vertexFlag = false // 隣に同じ線分があったら、この線分の判定は無効
-                if (
-                  rn === terrainList[
-                    iY + indexDiffList[i][0]][iX + indexDiffList[i][1]][index - 1]
+          let vertexFlag = false
+          // x, y それぞれ0, 1が含まれている隣を調べて重複する頂点があれば無効
+          findVertexList.forEach(vl => {
+            if (ro[vl[0]] === vl[1]) {
+              const target = terrainObject[terrainList[iY + vl[2][0]][iX + vl[2][1]]]
+              if (target.includes(val => ro === val)) { // こいつがいたら頂点の判定は無効
+                vertexFlag = true
+                if (target.includes(val => { // 隣に同じ線分があったら、この線分の判定は無効
+                  return val.length === i ? target[0] === rn : target[i + 1] === rn})
                 ) returnFlag = true
               }
             }
@@ -421,7 +412,7 @@ const collisionDetect = () => {
             const doc = acx * bcx + acy * bcy
             if (doc <= 0) detectFlag = true
           }
-          if (!vertexFlag) return
+          if (vertexFlag) return
           const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
           const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
           const bo = ((ox - bx) ** 2 + (oy - by) ** 2)
@@ -438,8 +429,10 @@ const collisionDetect = () => {
           if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
             let cDegree = (ab + bo - ao) / (2 * ab ** .5 * bo ** .5)
             cDegree = Math.acos(cDegree) / Math.PI
-            if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i - 1]) {
-              console.log('end', terrainVertexList[iY][iX][i - 1], cDegree, t)
+            const target = terrainVertexList[iY][iX]
+            const index = i === 0 ? target.length - 2 : i - 1
+            console.log('end', target[index], cDegree, t)
+            if (t <= 0 && cDegree <= target[index]) {
               detectFlag = true
             }
           }
