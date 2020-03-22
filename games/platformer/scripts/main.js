@@ -22,7 +22,7 @@ const gravitationalAcceleration =
 9.80665 * 1000 / 25 / 1000 ** 2
 // 17 ???
 let coefficient = 17
-const elasticModulus = {x: 0, y: 0,}
+const elasticModulus = {x: .01, y: .01,}
 const jumpConstant = 3
 let jumpChargeTime = 0
 const terrainObject = {
@@ -39,7 +39,7 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100003000000000000000000000000000000000000000000000001',
-  '101000000000000000000000000000000000000000000000000001',
+  '145000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
@@ -322,10 +322,24 @@ const input = () => {
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const ownBox = {w: size / 8, h: size / 8}
-const collisionResponse = () => {
-  ownCondition.dx = -ownCondition.dx * elasticModulus.x
-  ownCondition.dy = -ownCondition.dy * elasticModulus.y
-  flag = true
+const collisionResponse = tilt => {
+  if (tilt === 0) { // 0 degree, floor
+    ownCondition.dy = -ownCondition.dy * elasticModulus.y
+  } else if (tilt === .25) { // 45 degree
+    ;[ownCondition.dx, ownCondition.dy] = [ownCondition.dy, ownCondition.dx]
+  } else if (tilt === .5) { // 90 degree, left wall
+    ownCondition.dx = -ownCondition.dx * elasticModulus.x
+  } else if (tilt === .75) { // 135 degree
+    ;[ownCondition.dx, ownCondition.dy] = [-ownCondition.dy, -ownCondition.dx]
+  } else if (tilt === 1) { // 180 degree, ceil
+    ownCondition.dy = -ownCondition.dy * elasticModulus.y
+  } else if (tilt === -.75) { // 225 degree
+    ;[ownCondition.dx, ownCondition.dy] = [ownCondition.dy, ownCondition.dx]
+  } else if (tilt === -.5) { // 270 degree, right wall
+    ownCondition.dx = -ownCondition.dx * elasticModulus.x
+  } else if (tilt === -.25) { // 315 degree
+    ;[ownCondition.dx, ownCondition.dy] = [-ownCondition.dy, -ownCondition.dx]
+  }
 }
 const collisionDetect = () => {
   let count = 0
@@ -333,7 +347,7 @@ const collisionDetect = () => {
   do {
     count++
     if (10 < count) {
-      ownCondition.x = canvas.offsetWidth * 1 / 8
+      ownCondition.x = canvas.offsetWidth * 2 / 8
       ownCondition.y = canvas.offsetHeight * 7 / 8
     }
     flag = false
@@ -439,7 +453,10 @@ const collisionDetect = () => {
               detectFlag = true
             }
           }
-          if (detectFlag) collisionResponse()
+          if (detectFlag) {
+            collisionResponse(tilt)
+            flag = true
+          }
         })
         // if (y[iX] === '1') {
         //   if (0 < ownCondition.dy && terrainList[iY - 1][iX] === '0') { // floor
