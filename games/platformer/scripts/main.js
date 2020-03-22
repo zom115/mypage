@@ -18,8 +18,7 @@ let brake = .75
 // gravitational acceleration = 9.80665 m / s ** 2
 // m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
-const gravitationalAcceleration =
-9.80665 * 1000 / 25 / 1000 ** 2
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 // 17 ???
 let coefficient = 17
 const elasticModulus = {x: .01, y: .01,}
@@ -337,6 +336,10 @@ const collisionResponse = tilt => {
     ownCondition.dx = -ownCondition.dx * elasticModulus.x
   } else if (tilt === -.25) { // 315 degree
     ;[ownCondition.dx, ownCondition.dy] = [-ownCondition.dy, -ownCondition.dx]
+  } else {
+    const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
+    ownCondition.dx = r * Math.cos(tilt * Math.PI)
+    ownCondition.dy = r * Math.sin(tilt * Math.PI)
   }
 }
 const collisionDetect = () => {
@@ -357,7 +360,7 @@ const collisionDetect = () => {
             terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
           const voax = rn[0] - ro[0]
           const voay = rn[1] - ro[1]
-          const tilt = Math.atan2(voay, voax) / Math.PI // 判定する線分の傾き
+          let tilt = Math.atan2(voay, voax) / Math.PI // 判定する線分の傾き
           const findVertexList = [
             [0, 0, [-1, 0]],
             [0, 1, [1, 0]],
@@ -422,8 +425,9 @@ const collisionDetect = () => {
             let cDegree = (ab + ao - bo) / (2 * ab ** .5 * ao ** .5)
             cDegree = Math.acos(cDegree) / Math.PI
             if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i]) {
-              console.log('start', terrainVertexList[iY][iX][i], cDegree, t)
+              tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
               detectFlag = true
+              console.log('start', oy - ay, ox - ax,tilt)
             }
           }
           if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
@@ -431,9 +435,10 @@ const collisionDetect = () => {
             cDegree = Math.acos(cDegree) / Math.PI
             const target = terrainVertexList[iY][iX]
             const index = i === 0 ? target.length - 2 : i - 1
-            console.log('end', target[index], cDegree, t)
             if (t <= 0 && cDegree <= target[index]) {
+              tilt = Math.atan2(oy - by, ox - bx) / Math.PI
               detectFlag = true
+              console.log('end', oy - by, ox - bx,tilt)
             }
           }
           if (detectFlag) {
