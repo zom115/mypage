@@ -18,7 +18,7 @@ let brake = .75
 // gravitational acceleration = 9.80665 m / s ** 2
 // m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
-const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2 * .5
 // 17 ???
 let coefficient = 17
 const elasticModulus = {x: .01, y: .01,}
@@ -39,7 +39,7 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '104503000000000000000000000000000000000000000000000001',
   '103200000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
+  '100001300000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
@@ -415,30 +415,35 @@ const collisionDetect = () => {
             const doc = acx * bcx + acy * bcy
             if (doc <= 0) detectFlag = true
           }
-          if (vertexFlag) return
+          if (vertexFlag) {
+            console.log('hello')
+            return
+          }
           const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
           const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
           const bo = ((ox - bx) ** 2 + (oy - by) ** 2)
           // cDegreeが180 degrees以内(tで判定)で
           // degree内ならこの線分の判定を返す
-          if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-            let cDegree = (ab + ao - bo) / (2 * ab ** .5 * ao ** .5)
-            cDegree = Math.acos(cDegree) / Math.PI
-            if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i]) {
-              tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-              detectFlag = true
-              console.log('start', oy - ay, ox - ax,tilt)
+          if (!detectFlag) {
+            if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
+              let cDegree = (ab + ao - bo) / (2 * ab ** .5 * ao ** .5)
+              cDegree = Math.acos(cDegree) / Math.PI
+              if (cDegree <= terrainVertexList[iY][iX][i]) {
+                tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
+                detectFlag = true
+                console.log('start', oy - ay, ox - ax,tilt)
+              }
             }
-          }
-          if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-            let cDegree = (ab + bo - ao) / (2 * ab ** .5 * bo ** .5)
-            cDegree = Math.acos(cDegree) / Math.PI
-            const target = terrainVertexList[iY][iX]
-            const index = i === 0 ? target.length - 2 : i - 1
-            if (t <= 0 && cDegree <= target[index]) {
-              tilt = Math.atan2(oy - by, ox - bx) / Math.PI
-              detectFlag = true
-              console.log('end', oy - by, ox - bx,tilt)
+            if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
+              let cDegree = (ab + bo - ao) / (2 * ab ** .5 * bo ** .5)
+              cDegree = Math.acos(cDegree) / Math.PI
+              const target = terrainVertexList[iY][iX]
+              const index = i === 0 ? target.length - 2 : i - 1
+              if (cDegree <= target[index]) {
+                tilt = Math.atan2(oy - by, ox - bx) / Math.PI
+                detectFlag = true
+                console.log('end', oy - by, ox - bx,tilt)
+              }
             }
           }
           if (detectFlag) {
@@ -467,17 +472,16 @@ const draw = () => {
     ownCondition.x, ownCondition.y + jumpChargeTime, ownBox.w, 0, Math.PI * 2, false)
   context.closePath()
   context.stroke()
+  const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
   context.beginPath()
   context.moveTo(ownCondition.x, ownCondition.y)
-  context.lineTo(ownCondition.x + ownCondition.dx * size, ownCondition.y)
-  context.lineTo(ownCondition.x + ownCondition.dx * size, ownCondition.y + 1)
-  context.lineTo(ownCondition.x, ownCondition.y + 1)
-  context.fill()
-  context.beginPath()
-  context.moveTo(ownCondition.x, ownCondition.y)
-  context.lineTo(ownCondition.x, ownCondition.y + ownCondition.dy * size)
-  context.lineTo(ownCondition.x + 1, ownCondition.y + ownCondition.dy * size)
-  context.lineTo(ownCondition.x + 1, ownCondition.y)
+  context.lineTo(
+    ownCondition.x + size * r * ownCondition.dx / r,
+    ownCondition.y + size * r * ownCondition.dy / r)
+  context.lineTo(
+    ownCondition.x + size * r * ownCondition.dx / r + 1,
+    ownCondition.y + size * r * ownCondition.dy / r + 1)
+    context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
   context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
   terrainList.forEach((y, iY) => {
