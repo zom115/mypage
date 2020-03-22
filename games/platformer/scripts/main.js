@@ -342,13 +342,53 @@ const collisionDetect = () => {
         const tileWidth = size
         terrainObject[y[iX]].forEach((v, i) => {
           if (y[iX] === '0') return
+          const ro = v // relative origin
+          const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
+            terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
+          const vox = ro[0]
+          const voy = ro[1]
+          const vax = rn[0]
+          const vay = rn[1]
+          const voax = vax - vox
+          const voay = vay - voy
+          const tilt = Math.atan2(voay, voax) / Math.PI // 判定する線分の傾き
+          // ここ4分岐するの鬱陶しいなあ
+          // arctan使う以上仕方ないか
+          if (tilt === 0) { // 0 degree search ceil
+            const index = Object.values( // こいつがいたら頂点の判定は無効
+              terrainObject[terrainList[iY - 1][iX]]).findIndex(v => {
+                return v === ro
+              })
+            if (index !== -1 && index !== 0) { // 隣に同じ線分があったら、この線分の判定は無効
+              if (rn === terrainObject[terrainList[iY - 1][iX]][index - 1]) return
+            }
+          } else if (tilt === .5) { // 90 degrees search right
+            const index = Object.values(terrainObject[y[iX + 1]]).findIndex(v => {
+                return v === ro
+              })
+            if (index !== -1 && index !== 0) {
+              if (rn === terrainObject[y[iX + 1]][index - 1]) return
+            }
+          } else if (tilt === 1) { // 180 degrees search floor
+            const index = Object.values(
+              terrainObject[terrainList[iY + 1][iX]]).findIndex(v => {
+                return v === ro
+              })
+            if (index !== -1 && index !== 0) {
+              if (rn === terrainObject[terrainList[iY + 1][iX]][index - 1]) return
+            }
+          } else if (tilt === -.5) { // 270 degrees search left
+            const index = Object.values(terrainObject[y[iX - 1]]).findIndex(v => {
+              return v === ro
+            })
+            if (index !== -1 && index !== 0) {
+              if (rn === terrainObject[y[iX - 1]][index - 1]) return
+            }
+          }
           const ox = ownCondition.x
           const oy = ownCondition.y
           const dx = ownCondition.dx
           const dy = ownCondition.dy
-          const ro = v // relative origin
-          const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
-            terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
           const ax = iX * size + ro[0] * size
           const ay = iY * size + ro[1] * size
           const bx = iX * size + rn[0] * size
@@ -367,9 +407,7 @@ const collisionDetect = () => {
           let nby = by - ny * ownBox.h
           const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
-          const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
-          const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
-          const bo = ((ox - bx) ** 2 + (oy - by) ** 2)
+          let detectFlag = false
           if (0 <= t && t <= 1) {
             const cx = ox + dx * t
             const cy = oy + dy * t
@@ -378,70 +416,30 @@ const collisionDetect = () => {
             const bcx = cx - nbx
             const bcy = cy - nby
             const doc = acx * bcx + acy * bcy
-            if (doc <= 0) collisionResponse()
-          } else if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-            const vox = ro[0]
-            const voy = ro[1]
-            const vax = rn[0]
-            const vay = rn[1]
-            const voax = vax - vox
-            const voay = vay - voy
-            const a = Math.atan2(voay, voax) / Math.PI // 判定する線分の傾き
-            // ここ4分岐するの鬱陶しいなあ
-            // arctan使う以上仕方ないか
-            if (a === 0) { // 0 degree search ceil
-              const index = Object.values( // こいつがいたら頂点の判定は無効
-                terrainObject[terrainList[iY - 1][iX]]).findIndex(v => {
-                  return v === ro
-                })
-              if (index !== -1 && index !== 0) { // 隣に同じ線分があったら、この線分の判定は無効
-                if (rn === terrainObject[terrainList[iY - 1][iX]][index - 1]) return
-              }
-            } else if (a === .5) { // 90 degrees search right
-              const index = Object.values(terrainObject[y[iX + 1]]).findIndex(v => {
-                  return v === ro
-                })
-              if (index !== -1 && index !== 0) {
-                if (rn === terrainObject[y[iX + 1]][index - 1]) return
-              }
-            } else if (a === 1) { // 180 degrees search floor
-              const index = Object.values(
-                terrainObject[terrainList[iY + 1][iX]]).findIndex(v => {
-                  return v === ro
-                })
-              if (index !== -1 && index !== 0) {
-                if (rn === terrainObject[terrainList[iY + 1][iX]][index - 1]) return
-              }
-            } else if (a === -.5) { // 270 degrees search left
-              const index = Object.values(terrainObject[y[iX - 1]]).findIndex(v => {
-                return v === ro
-              })
-              if (index !== -1 && index !== 0) {
-                if (rn === terrainObject[y[iX - 1]][index - 1]) return
-              }
-            }
-            // t 線分より内側か、法線ベクトルとってやってるけど
-            // なんか思ってる値と符号が逆。本当は0 < tにしたい
-            // まあいいや、どうせすぐ直す
-
-            // cDegreeが180 degrees以内(tで判定)で
-            // degree内ならこの線分の判定を返す
+            if (doc <= 0) detectFlag = true
+          }
+          const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
+          const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
+          const bo = ((ox - bx) ** 2 + (oy - by) ** 2)
+          // cDegreeが180 degrees以内(tで判定)で
+          // degree内ならこの線分の判定を返す
+          if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
             let cDegree = (ab + ao - bo) / (2 * ab ** .5 * ao ** .5)
             cDegree = Math.acos(cDegree) / Math.PI
             if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i]) {
-              console.log('start', terrainVertexList[iY][iX][i])
-              // この線分のcollision response
-              collisionResponse()
-            }
-          } else if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-            // こっちもcDegreeとtの判定せな使えへん
-            let cDegree = (ab + bo - ao) / (2 * ab ** .5 * bo ** .5)
-            cDegree = Math.acos(cDegree) / Math.PI
-            if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i]) {
-              console.log('end', terrainVertexList[iY][iX][i])
-              collisionResponse()
+              console.log('start', terrainVertexList[iY][iX][i], cDegree, t)
+              detectFlag = true
             }
           }
+          if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
+            let cDegree = (ab + bo - ao) / (2 * ab ** .5 * bo ** .5)
+            cDegree = Math.acos(cDegree) / Math.PI
+            if (t <= 0 && cDegree <= terrainVertexList[iY][iX][i - 1]) {
+              console.log('end', terrainVertexList[iY][iX][i - 1], cDegree, t)
+              detectFlag = true
+            }
+          }
+          if (detectFlag) collisionResponse()
         })
         // if (y[iX] === '1') {
         //   if (0 < ownCondition.dy && terrainList[iY - 1][iX] === '0') { // floor
