@@ -19,7 +19,7 @@ let moveConstant = 1
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 // 17 ???
 let coefficient = 17
-const elasticModulus = .5
+const elasticModulus = .9
 const jumpConstant = 3
 let jumpChargeTime = 0
 const terrainObject = {
@@ -33,13 +33,14 @@ const terrainObject = {
   '7': [[1, 0], [1, 1], [.5, 1],],
   '8': [[1, 1], [0, 1], [0, .5],],
   '9': [[0, 1], [0, 0], [.5, 0],],
+  'a': [[0, 0], [1, 0],],
 }
 const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
-  '102300001000000000000000000000000000000000000000000001',
-  '105400010000000000000000000000000000000000000000000001',
-  '100000006700000000000000000000000000000000000000000001',
+  '100000001000000000000000000000000000000000000000000001',
+  '100000010000000000000000000000000000000000000000000001',
+  '10aa00006700000000000000000000000000000000000000000001',
   '180023209800000000000000000000000000000000000000000001',
   '111100000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
@@ -89,8 +90,8 @@ document.addEventListener('keyup', e => {
 }, false)
 const input = () => {
   { // temporary
-    // ownCondition.dx = 0
-    // ownCondition.dy = 0
+    ownCondition.dx = 0
+    ownCondition.dy = 0
   }
   if (key.a) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
@@ -145,7 +146,7 @@ const collisionDetect = () => {
   let repeatFlag
   do {
     count++
-    if (10 < count) {
+    if (100 < count) {
       ownCondition.x = canvas.offsetWidth * 2 / 8
       ownCondition.y = canvas.offsetHeight * 7 / 8
     }
@@ -153,7 +154,7 @@ const collisionDetect = () => {
     terrainList.forEach((y, iY) => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
         terrainObject[y[iX]].forEach((ro, i) => { // relative origin
-          if (terrainObject[y[iX]].length === 0) return
+          if (terrainObject[y[iX]].length === 1) return
           const rp = terrainObject[y[iX]].slice(i - 1)[0]
           const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
             terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
@@ -253,7 +254,7 @@ const collisionDetect = () => {
           const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
           let detectFlag = false
-          if (0 <= t && t <= 1) {
+          if (0 < t && t <= 1) {
             const cx = ox + dx * t
             const cy = oy + dy * t
             const acx = cx - nax
@@ -262,16 +263,19 @@ const collisionDetect = () => {
             const bcy = cy - nby
             const doc = acx * bcx + acy * bcy
             if (doc <= 0) {
+              console.log(i)
               detectFlag = true
               tilt += tilt < .5 ? 1.5 : -.5
             }
           }
+          if (terrainObject[y[iX]].length === 2 && (dy < 0 || i === 1)) return // temporary
+          if (terrainObject[y[iX]].length === 2) vertexFlag = true
           if (
             !detectFlag &&
             !vertexFlag &&
             (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2
           ) {
-            console.log('vertex')
+            // console.log('vertex')
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
             detectFlag = true
           }
@@ -321,8 +325,14 @@ const draw = () => {
         i === 0 ?
         context.moveTo(
           relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
-          context.lineTo(
-            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+        context.lineTo(
+          relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+        if (terrainObject[y[iX]].length === 2) {
+        context.lineTo(
+          relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
+        // context.lineTo(
+        //   relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+        }
       })
       context.fill()
     }
