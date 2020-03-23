@@ -21,7 +21,7 @@ let brake = .75
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 // 17 ???
 let coefficient = 17
-const elasticModulus = {x: 1, y: 1,}
+const elasticModulus = {x: .75, y: .75,}
 const jumpConstant = 3
 let jumpChargeTime = 0
 const terrainObject = {
@@ -31,14 +31,18 @@ const terrainObject = {
   '3': [[1, 1], [0, 1], [0, 0],],
   '4': [[0, 1], [0, 0], [1, 0],],
   '5': [[0, 0], [1, 0], [1, 1],],
+  '6': [[0, 0], [1, 0], [1, .5],], // 22.5 low
+  '7': [[1, 0], [1, 1], [.5, 1],],
+  '8': [[1, 1], [0, 1], [0, .5],],
+  '9': [[0, 1], [0, 0], [.5, 0],],
 }
 const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
-  '100400001000000000000000000000000000000000000000000001',
-  '103150010000000000000000000000000000000000000000000001',
-  '100202000000000000000000000000000000000000000000000001',
-  '100020000000000000000000000000000000000000000000000001',
+  '102300001000000000000000000000000000000000000000000001',
+  '105400010000000000000000000000000000000000000000000001',
+  '100000006700000000000000000000000000000000000000000001',
+  '180020009800000000000000000000000000000000000000000001',
   '111100000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
@@ -138,31 +142,10 @@ const input = () => {
 }
 const ownBox = {w: size / 8, h: size / 8}
 const collisionResponse = tilt => {
-  if (tilt === 0) { // 0 degree, floor
-    ownCondition.dy = -ownCondition.dy * elasticModulus.y
-  } else if (tilt === .25) { // 45 degree
-    ;[ownCondition.dx, ownCondition.dy] =
-    [ownCondition.dy * elasticModulus.y, ownCondition.dx * elasticModulus.x]
-  } else if (tilt === .5) { // 90 degree, left wall
-    ownCondition.dx = -ownCondition.dx * elasticModulus.x
-  } else if (tilt === .75) { // 135 degree
-    ;[ownCondition.dx, ownCondition.dy] =
-    [-ownCondition.dy * elasticModulus.y, -ownCondition.dx * elasticModulus.x]
-  } else if (tilt === 1) { // 180 degree, ceil
-    ownCondition.dy = -ownCondition.dy * elasticModulus.y
-  } else if (tilt === -.75) { // 225 degree
-    ;[ownCondition.dx, ownCondition.dy] =
-    [ownCondition.dy * elasticModulus.y, ownCondition.dx * elasticModulus.x]
-  } else if (tilt === -.5) { // 270 degree, right wall
-    ownCondition.dx = -ownCondition.dx * elasticModulus.x
-  } else if (tilt === -.25) { // 315 degree
-    ;[ownCondition.dx, ownCondition.dy] =
-    [-ownCondition.dy * elasticModulus.y, -ownCondition.dx * elasticModulus.x]
-  } else {
-    const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
-    ownCondition.dx = r * Math.cos(tilt * Math.PI) * elasticModulus.x
-    ownCondition.dy = r * Math.sin(tilt * Math.PI) * elasticModulus.y
-  }
+  const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
+  console.log(tilt)
+  ownCondition.dx = r * Math.cos(tilt * Math.PI) * elasticModulus.x
+  ownCondition.dy = r * Math.sin(tilt * Math.PI) * elasticModulus.y
 }
 const collisionDetect = () => {
   let count = 0
@@ -285,7 +268,10 @@ const collisionDetect = () => {
             const bcx = cx - nbx
             const bcy = cy - nby
             const doc = acx * bcx + acy * bcy
-            if (doc <= 0) detectFlag = true
+            if (doc <= 0) {
+              detectFlag = true
+              tilt += tilt < .5 ? 1.5 : -.5
+            }
           }
           if (
             !detectFlag &&
