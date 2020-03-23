@@ -37,9 +37,9 @@ const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
   '101100000000000000000000000000000000000000000000000001',
-  '100003010000000000000000000000000000000000000000000001',
-  '103000000000000000000000000000000000000000000000000001',
-  '100501300000000000000000000000000000000000000000000001',
+  '103003010000000000000000000000000000000000000000000001',
+  '100000200000000000000000000000000000000000000000000001',
+  '100032300000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
   '100210000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
@@ -356,6 +356,7 @@ const collisionDetect = () => {
       for (let iX = 0; iX < terrainList[0].length; iX++) {
         terrainObject[y[iX]].forEach((ro, i) => { // relative origin
           if (terrainObject[y[iX]].length === 0) return
+          const rp = terrainObject[y[iX]].slice(i - 1)[0]
           const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
             terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
           const voax = rn[0] - ro[0]
@@ -367,6 +368,7 @@ const collisionDetect = () => {
             [1, 0, [0, -1]],
             [1, 1, [0, 1]],
           ]
+          let vertexFlag = false
           let returnFlag = false
           findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
@@ -383,9 +385,17 @@ const collisionDetect = () => {
               const compareVertex = i === 0 ? [1, rn[1]] :
               i === 1 ? [0, rn[1]] :
               i === 2 ? [rn[0], 1] : [rn[0], 0]
-              if (target[previousIndex][0] === compareVertex[0] &&
-              target[previousIndex][1] === compareVertex[1]) returnFlag = true
               // 隣に同じ線分があったら、この線分の判定は無効
+              if (
+                (ro[0] === rn[0] || ro[1] === rn[1]) &&
+                target[previousIndex][0] === compareVertex[0] &&
+                target[previousIndex][1] === compareVertex[1]
+              ) returnFlag = true
+              const previousTilt = Math.atan2(rp[1] - ro[1], rp[0] - ro[0]) / Math.PI
+              const compareTilt = Math.atan2(
+                target[index][1] - target[previousIndex][1],
+                target[index][0] - target[previousIndex][0]) / Math.PI
+              if (tilt === compareTilt || previousTilt === compareTilt) vertexFlag = true
             }
           })
           if (returnFlag) return
@@ -422,32 +432,13 @@ const collisionDetect = () => {
             const doc = acx * bcx + acy * bcy
             if (doc <= 0) detectFlag = true
           }
-          const ab = ((bx - ax) ** 2 + (by - ay) ** 2)
-          const ao = ((ox - ax) ** 2 + (oy - ay) ** 2)
-          const bo = ((ox - bx) ** 2 + (oy - by) ** 2)
-          // cDegreeが180 degrees以内(tで判定)で
-          // degree内ならこの線分の判定を返す
-          if (!detectFlag) {
-            if ((ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-              let cDegree = (ab + ao - bo) / (2 * ab ** .5 * ao ** .5)
-              cDegree = Math.acos(cDegree) / Math.PI
-              if (cDegree <= terrainVertexList[iY][iX][i]) {
-                tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-                detectFlag = true
-                console.log('start', oy - ay, ox - ax,tilt)
-              }
-            }
-            if ((bx - (ox + dx)) ** 2 + (by - (oy + dy)) ** 2 <= ownBox.w ** 2) {
-              let cDegree = (ab + bo - ao) / (2 * ab ** .5 * bo ** .5)
-              cDegree = Math.acos(cDegree) / Math.PI
-              const target = terrainVertexList[iY][iX]
-              const index = i === 0 ? target.length - 2 : i - 1
-              if (cDegree <= target[index]) {
-                tilt = Math.atan2(oy - by, ox - bx) / Math.PI
-                detectFlag = true
-                console.log('end', oy - by, ox - bx,tilt)
-              }
-            }
+          if (
+            !detectFlag &&
+            !vertexFlag &&
+            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2
+          ) {
+            tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
+            detectFlag = true
           }
           if (detectFlag) {
             collisionResponse(tilt)
