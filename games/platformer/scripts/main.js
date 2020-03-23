@@ -43,8 +43,8 @@ const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
   '140000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '1070d8000000000000000000000000000000000000000000000001',
-  '10c000000000000000000000000000000000000000000000000001',
+  '107ad8000000000000000000000000000000000000000000000001',
+  '10ca00000000000000000000000000000000000000000000000001',
   '180000000000000000000000000000000000000000000000000001',
   '111100000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
@@ -92,8 +92,9 @@ document.addEventListener('keyup', e => {
   if (e.keyCode === 83) key.s = false
   if (e.keyCode === 87) key.w = false
 }, false)
+let gravityFlag = false // temporary
 const input = () => {
-  { // temporary
+  if (!gravityFlag) { // temporary
     ownCondition.dx = 0
     ownCondition.dy = 0
   }
@@ -135,6 +136,7 @@ const input = () => {
   //     jumpFlag = true
   //   }
   // }
+  if (key.k) gravityFlag = !gravityFlag
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const ownBox = {w: size / 8, h: size / 8}
@@ -206,14 +208,13 @@ const collisionDetect = () => {
               }
             }
           })
-          // diagonally
           const cornerList = [
             [[0, 0], [-1, -1], [1, 1]],
             [[1, 0], [1, -1], [0, 1]],
             [[1, 1], [1, 1], [0, 0]],
             [[0, 1], [-1, 1], [1, 0]],
           ]
-          cornerList.forEach(vl => {
+          cornerList.forEach(vl => { // diagonally
             if (vl[0][0] !== ro[0] || vl[0][1] !== ro[1]) return
             const dTarget = terrainObject[terrainList[iY + vl[1][1]][iX + vl[1][0]]]
             const dVertex = vl[2]
@@ -267,7 +268,6 @@ const collisionDetect = () => {
             const bcy = cy - nby
             const doc = acx * bcx + acy * bcy
             if (doc <= 0) {
-              console.log(i)
               detectFlag = true
               tilt += tilt < .5 ? 1.5 : -.5
             }
@@ -279,7 +279,6 @@ const collisionDetect = () => {
             !vertexFlag &&
             (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2
           ) {
-            // console.log('vertex')
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
             detectFlag = true
           }
@@ -334,8 +333,6 @@ const draw = () => {
         if (terrainObject[y[iX]].length === 2) {
         context.lineTo(
           relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
-        // context.lineTo(
-        //   relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
         }
       })
       context.fill()
@@ -349,6 +346,7 @@ const draw = () => {
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx}`,
     `dy: ${ownCondition.dy}`,
+    `[K]gravity: ${gravityFlag}`,
   ]
   list.forEach((v, i) => {
     context.fillText(v, size * 11, size * (1 + i))
