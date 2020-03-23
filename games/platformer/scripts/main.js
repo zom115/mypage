@@ -303,11 +303,11 @@ const collisionDetect = () => {
         })
       }
     })
-    ownCondition.x += ownCondition.dx
-    ownCondition.y += ownCondition.dy
-    // elasticModulus.x = 0
-    // elasticModulus.y = 0
   } while(repeatFlag)
+  ownCondition.x += ownCondition.dx
+  ownCondition.y += ownCondition.dy
+  // elasticModulus.x = 0
+  // elasticModulus.y = 0
 }
 const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
