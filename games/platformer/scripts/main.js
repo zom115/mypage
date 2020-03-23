@@ -13,15 +13,13 @@ const ownCondition = {
 }
 const moveAcceleration = 1
 let moveConstant = 1
-const brakeConstant = .75 / (1000 / 60)
-let brake = .75
 // gravitational acceleration = 9.80665 m / s ** 2
 // m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 // 17 ???
 let coefficient = 17
-const elasticModulus = {x: .75, y: .75,}
+const elasticModulus = .5
 const jumpConstant = 3
 let jumpChargeTime = 0
 const terrainObject = {
@@ -42,7 +40,7 @@ const terrainList = [
   '102300001000000000000000000000000000000000000000000001',
   '105400010000000000000000000000000000000000000000000001',
   '100000006700000000000000000000000000000000000000000001',
-  '180020009800000000000000000000000000000000000000000001',
+  '180023209800000000000000000000000000000000000000000001',
   '111100000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '111000000000000000000000000000000000000000000000000001',
@@ -91,8 +89,8 @@ document.addEventListener('keyup', e => {
 }, false)
 const input = () => {
   { // temporary
-    ownCondition.dx = 0
-    ownCondition.dy = 0
+    // ownCondition.dx = 0
+    // ownCondition.dy = 0
   }
   if (key.a) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
@@ -108,12 +106,6 @@ const input = () => {
     ownCondition.dy -= moveAcceleration
   } // temporary
   if (key.s && ownCondition.dy < moveConstant) ownCondition.dy += moveAcceleration // temporary
-  if (key.j) {
-    if (!ownCondition.jumpFlag) {
-      elasticModulus.y = 1
-      ownCondition.jumpFlag = true
-    }
-  }
   // else {
   //   if (jumpConstant < jumpTime) jumpTime = 0
   //   if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
@@ -143,9 +135,10 @@ const input = () => {
 const ownBox = {w: size / 8, h: size / 8}
 const collisionResponse = tilt => {
   const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
-  console.log(tilt)
-  ownCondition.dx = r * Math.cos(tilt * Math.PI) * elasticModulus.x
-  ownCondition.dy = r * Math.sin(tilt * Math.PI) * elasticModulus.y
+  ownCondition.dx += r * Math.cos(tilt * Math.PI)
+  ownCondition.dy += r * Math.sin(tilt * Math.PI)
+  ownCondition.dx *= elasticModulus
+  ownCondition.dy *= elasticModulus
 }
 const collisionDetect = () => {
   let count = 0
