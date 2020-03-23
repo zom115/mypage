@@ -18,7 +18,7 @@ let brake = .75
 // gravitational acceleration = 9.80665 m / s ** 2
 // m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
-const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2 * .5
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 // 17 ???
 let coefficient = 17
 const elasticModulus = {x: 1, y: 1,}
@@ -36,8 +36,8 @@ const terrainList = [
   '000000000000000000000000000000000000000000000000000000',
   '111111111111111111111111111111111111111111111111111111',
   '100000000000000000000000000000000000000000000000000001',
-  '100400000000000000000000000000000000000000000000000001',
-  '103150000000000000000000000000000000000000000000000001',
+  '100400001000000000000000000000000000000000000000000001',
+  '103150010000000000000000000000000000000000000000000001',
   '100202000000000000000000000000000000000000000000000001',
   '100020000000000000000000000000000000000000000000000001',
   '111100000000000000000000000000000000000000000000000001',
@@ -364,6 +364,7 @@ const collisionDetect = () => {
           const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
             terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
           let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
+          const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
           const findVertexList = [
             [0, 0, [-1, 0], [-1, -1]],
             [0, 1, [1, 0], [1, 1]],
@@ -382,7 +383,6 @@ const collisionDetect = () => {
               const index = target.findIndex(val => {
                 return val[0] === vertex[0] && val[1] === vertex[1]
               })
-              const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
               if (index !== -1) {
                 const previousIndex = index === 0 ? target.length - 1 : index - 1
                 const nextIndex = index === target.length - 1 ? 0 : index + 1
@@ -405,28 +405,35 @@ const collisionDetect = () => {
                   tilt === cNextTilt || previousTilt === cNextTilt
                 ) vertexFlag = true
               }
-              // diagonally
-              const dTarget = terrainObject[terrainList[iY + vl[3][1]][iX + vl[3][0]]]
-              const dVertex = i === 0 ? [1, 1] :
-              i === 1 ? [0, 0] :
-              i === 2 ? [0, 1] : [1, 0]
-              const dIndex = dTarget.findIndex(val => {
-                return val[0] === dVertex[0] && val[1] === dVertex[1]
-              })
-              if (dIndex === -1) return
-              const dPreviousIndex = dIndex === 0 ? dTarget.length - 1 : dIndex - 1
-              const dNextIndex = dIndex === dTarget.length - 1 ? 0 : dIndex + 1
-              const dPreviousTilt = Math.atan2(
-                dTarget[dIndex][1] - dTarget[dPreviousIndex][1],
-                 dTarget[dIndex][0] - dTarget[dPreviousIndex][0]) / Math.PI
-              const dNextTilt = Math.atan2(
-                dTarget[dNextIndex][1] - dTarget[dIndex][1],
-                dTarget[dNextIndex][0] - dTarget[dIndex][0]) / Math.PI
-              if (
-                  tilt === dPreviousTilt || previousTilt === dPreviousTilt ||
-                  tilt === dNextTilt || previousTilt === dNextTilt
-              ) vertexFlag = true
             }
+          })
+          // diagonally
+          const cornerList = [
+            [[0, 0], [-1, -1], [1, 1]],
+            [[1, 0], [1, -1], [0, 1]],
+            [[1, 1], [1, 1], [0, 0]],
+            [[0, 1], [-1, 1], [1, 0]],
+          ]
+          cornerList.forEach(vl => {
+            if (vl[0][0] !== ro[0] || vl[0][1] !== ro[1]) return
+            const dTarget = terrainObject[terrainList[iY + vl[1][1]][iX + vl[1][0]]]
+            const dVertex = vl[2]
+            const dIndex = dTarget.findIndex(val => {
+              return val[0] === dVertex[0] && val[1] === dVertex[1]
+            })
+            if (dIndex === -1) return
+            const dPreviousIndex = dIndex === 0 ? dTarget.length - 1 : dIndex - 1
+            const dNextIndex = dIndex === dTarget.length - 1 ? 0 : dIndex + 1
+            const dPreviousTilt = Math.atan2(
+              dTarget[dIndex][1] - dTarget[dPreviousIndex][1],
+                dTarget[dIndex][0] - dTarget[dPreviousIndex][0]) / Math.PI
+            const dNextTilt = Math.atan2(
+              dTarget[dNextIndex][1] - dTarget[dIndex][1],
+              dTarget[dNextIndex][0] - dTarget[dIndex][0]) / Math.PI
+            if (
+                tilt === dPreviousTilt || previousTilt === dPreviousTilt ||
+                tilt === dNextTilt || previousTilt === dNextTilt
+            ) vertexFlag = true
           })
           if (returnFlag) return
           const ox = ownCondition.x
