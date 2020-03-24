@@ -31,6 +31,8 @@ const horizonLimit = 2e3
 let internalCount = 0
 const interval = 100
 const listWidth = 50
+let sign = 'plus'
+let position = .5
 const frameCounter = list => {
   const now = Date.now()
   list.push(now)
@@ -42,7 +44,20 @@ const frameCounter = list => {
 }
 setInterval(() => {
   if (Object.values(key).some(v => v.flag && v.timestamp === globalTimestamp)) {
-    console.log('a')
+    sign = sign === 'plus' ? 'minus' : 'plus'
+  }
+  position += sign === 'plus' ? .001 : -.001
+  if (position < 0) {
+    position++
+    horizonList.forEach((_v, i) => {
+      horizonList[i][0].push(horizonList[i][0].splice(0, 1))
+    })
+  }
+  if (1 < position) {
+    position--
+    horizonList.forEach((_v, i) => {
+      horizonList[i][0].unshift(horizonList[i][0].splice(-1, 1))
+    })
   }
   internalCount++
   const contents = new Array(listWidth).fill(0)
@@ -60,6 +75,7 @@ setInterval(() => {
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const draw = () => {
+  context.save()
   context.fillStyle = 'hsl(0, 0%, 50%)'
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = 'hsl(0, 0%, 0%)'
@@ -69,6 +85,9 @@ const draw = () => {
   context.fillText(`internal FPS: ${timestampList.length}`, canvas.offsetWidth * .85, 10)
   context.fillText(`screen FPS: ${frameList.length}`, canvas.offsetWidth * .85, 20)
   context.fillText(`${horizonList.length}`, canvas.offsetWidth * .85, 30)
+  context.textAlign = 'center'
+  context.fillText(sign, canvas.offsetWidth / 2, canvas.offsetHeight * .85)
+  context.fillText(position, canvas.offsetWidth / 2, canvas.offsetHeight * .9)
   context.strokeStyle = 'hsl(0, 0%, 0%)'
   context.lineWidth = 1
   const frontWall = 9
@@ -85,32 +104,32 @@ const draw = () => {
             canvas.offsetWidth / 2 +
             canvas.offsetWidth / 2 *
             (i / horizonLimit) *
-            (ind - Math.floor(listWidth / 2)) / wallCalc -
-            wallWidth / 2 * (i / horizonLimit) -
+            (ind - Math.floor(listWidth / 2) + position) / wallCalc -
+            (wallWidth / 2) * (i / horizonLimit) -
             .5,
             canvas.offsetHeight * 4 / 9 + .5 - i * i * multiple)
           context.lineTo(
             canvas.offsetWidth / 2 +
             canvas.offsetWidth / 2 *
             (i / horizonLimit) *
-            (ind - Math.floor(listWidth / 2)) / wallCalc +
-            wallWidth / 2 * (i / horizonLimit) +
+            (ind - Math.floor(listWidth / 2) + position) / wallCalc +
+            (wallWidth / 2) * (i / horizonLimit) +
             .5,
             canvas.offsetHeight * 4 / 9 + .5 - i * i * multiple)
           context.lineTo(
             canvas.offsetWidth / 2 +
             canvas.offsetWidth / 2 *
             (i / horizonLimit) *
-            (ind - Math.floor(listWidth / 2)) / wallCalc +
-            wallWidth / 2 * (i / horizonLimit) +
+            (ind - Math.floor(listWidth / 2) + position) / wallCalc +
+            (wallWidth / 2) * (i / horizonLimit) +
             .5,
             canvas.offsetHeight * 5 / 9 - .5 + i * i * multiple)
           context.lineTo(
             canvas.offsetWidth / 2 +
             canvas.offsetWidth / 2 *
             (i / horizonLimit) *
-            (ind - Math.floor(listWidth / 2)) / wallCalc -
-            wallWidth / 2 * (i / horizonLimit) -
+            (ind - Math.floor(listWidth / 2) + position) / wallCalc -
+            (wallWidth / 2) * (i / horizonLimit) -
             .5,
             canvas.offsetHeight * 5 / 9 - .5 + i * i * multiple)
           context.closePath()
@@ -119,6 +138,7 @@ const draw = () => {
       })
     })
   })
+  context.restore()
 }
 const main = () => {
   window.requestAnimationFrame(main)
