@@ -1,5 +1,4 @@
-!(_ = () => {'use strict'
-
+import {key} from '../../../modules/key.mjs'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const storage = localStorage
@@ -53,10 +52,10 @@ records.append(table)
 let tr = [document.createElement`tr`]
 tr[0].setAttribute('align', 'right')
 let td = [{
-  stage: document.createElement('td'),
-  count: document.createElement('td'),
-  death: document.createElement('td'),
-  time: document.createElement('td')
+  stage: document.createElement`td`,
+  count: document.createElement`td`,
+  death: document.createElement`td`,
+  time: document.createElement`td`
 }]
 td[0].stage.textContent = 'Stage'
 td[0].count.textContent = 'Count'
@@ -70,10 +69,10 @@ const toTable = () => {
       tr.push(document.createElement`tr`)
       tr[index + 1].setAttribute('align', 'right')
       td.push({
-        stage: document.createElement('td'),
-        count: document.createElement('td'),
-        death: document.createElement('td'),
-        time: document.createElement('td')
+        stage: document.createElement`td`,
+        count: document.createElement`td`,
+        death: document.createElement`td`,
+        time: document.createElement`td`
       })
       const button = document.createElement`button`
       button.textContent = value[0]
@@ -124,7 +123,9 @@ const operation = () => {
   if (currentRecord.timeStamp === 0) currentRecord.timeStamp = Date.now()
   if (total.time === 0) total.time = Date.now()
 }
-document.addEventListener('keydown', operation, false)
+setInterval(() => {
+  if (Object.values(key).some(v => v.isFirst())) operation()
+}, 0)
 const press = (window.ontouchstart === undefined) ? 'mousedown' : 'touchstart'
 canvas.addEventListener(press, operation, false)
 canvas.addEventListener('contextmenu', e => e.preventDefault(), false)
@@ -696,5 +697,3 @@ const main = () => {
   window.requestAnimationFrame(main)
 }
 main()
-
-})()
