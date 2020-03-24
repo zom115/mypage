@@ -12,37 +12,37 @@ const resetField = () => {
   const row = new Array(height).fill(0)
   for (let i = 0; i < width; i++) {field.unshift(row.concat())}
 }
-resetField()
 let ownPositionList = []
-let time = 0
-let speed = 50
-let speedObject = {}
-let itemSpeed = 15 * speed
+let intervalTime = 200
+const itemObject = {timestamp: 0, createTime: 0}
+const speedObject = {timestamp: 0, limit: 0}
 let getItemFlag = false
 let direction = 'up'
 let exectionFlag = false
 const input = () => {
-  const current = direction
+  const currentDirection = direction
   direction = exectionFlag ? direction :
   key.a.flag && direction !== 'right' ? 'left' :
   key.d.flag && direction !== 'left' ? 'right' :
   key.s.flag && direction !== 'up' ? 'down' :
-  key.w.flag && direction !== 'down' ? 'up' :
-  direction
-  if (current !== direction) exectionFlag = true
+  key.w.flag && direction !== 'down' ? 'up' : direction
+  if (currentDirection !== direction) exectionFlag = true
 }
 const reset = () => {
+  if (highscore < score) highscore = score
+  score = 0
   resetField()
   ownPositionList = [{x: (width / 2)|0, y: height - 1}]
   direction = 'up'
-  time = 0
-  if (highscore < score) highscore = score
-  score = 0
-  speedObject = {timestamp: 0, limit: speed}
+  const currentTime = Date.now()
+  itemObject.timestamp = currentTime
+  itemObject.createTime = 15 * intervalTime
+  speedObject.timestamp = currentTime
+  speedObject.limit = intervalTime
 }
 reset()
 const move = () => {
-  speedObject.timestamp = time
+  speedObject.timestamp += speedObject.limit
   if (direction === 'left') ownPositionList.unshift({x: ownPositionList[0].x - 1, y: ownPositionList[0].y})
   else if (direction === 'right') ownPositionList.unshift({x: ownPositionList[0].x + 1, y: ownPositionList[0].y})
   else if (direction === 'down') ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y + 1})
@@ -50,15 +50,17 @@ const move = () => {
   if (getItemFlag) getItemFlag = false
   else ownPositionList.pop(ownPositionList.length - 1)
   exectionFlag = false
-  if ((
+  if (
     ownPositionList[0].x < 0 || width <= ownPositionList[0].x ||
-    ownPositionList[0].y < 0 || height <= ownPositionList[0].y) ||
+    ownPositionList[0].y < 0 || height <= ownPositionList[0].y ||
     ownPositionList.some((v, i) => {
-    if (i === 0) return
-    return v.x === ownPositionList[0].x && v.y === ownPositionList[0].y
-  })) reset()
+      if (i === 0) return
+      return v.x === ownPositionList[0].x && v.y === ownPositionList[0].y
+    })
+  ) reset()
 }
 const createItem = () => {
+  itemObject.timestamp += itemObject.createTime
   const position = {x: (Math.random() * width)|0, y: (Math.random() * height)|0}
   field[position.x][position.y] = field[position.x][position.y] === 0 ? 1 :
   field[position.x][position.y]
@@ -68,10 +70,7 @@ const getItem = () => {
     field[ownPositionList[0].x][ownPositionList[0].y] = 0
     getItemFlag = true
     score += 10
-    if (score % 50 === 0 && 1 < speedObject.limit) {
-      speedObject.limit -= 1
-      speedObject.current = time
-    }
+    if (score % 50 === 0) speedObject.limit *= .9
   }
 }
 const drawIndicator = () => {
@@ -116,15 +115,15 @@ const drawCell = () => {
             size*.9
           )
       }
-    });
+    })
   })
 }
 setInterval(() => {
+  const currentTime = Date.now()
   input()
-  time += 1
-  if (time === speedObject.timestamp + speedObject.limit) move()
+  if (speedObject.timestamp + speedObject.limit <= currentTime) move()
   getItem()
-  if (time % itemSpeed === 0) createItem()
+  if (itemObject.timestamp + itemObject.createTime <= currentTime) createItem()
 }, 0)
 const draw = () => {
   window.requestAnimationFrame(draw)
