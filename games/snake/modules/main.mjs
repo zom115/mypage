@@ -1,5 +1,4 @@
-!(x = x => {'use strict'
-
+import {key} from '../../../modules/key.mjs'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
@@ -19,30 +18,15 @@ let time = 0
 let speed = {timestamp: 0, limit: 15}
 let itemSpeed = 300
 let getItemFlag = false
-let key = {a: false, d: false, s: false, w: false}
-const onKeyDown = e => {
-  if (e.keyCode === 65) key.a = true
-  if (e.keyCode === 68) key.d = true
-  if (e.keyCode === 83) key.s = true
-  if (e.keyCode === 87) key.w = true
-}
-document.addEventListener('keydown', onKeyDown, false)
-const onKeyUp = e => {
-  if (e.keyCode === 65) key.a = false
-  if (e.keyCode === 68) key.d = false
-  if (e.keyCode === 83) key.s = false
-  if (e.keyCode === 87) key.w = false
-}
-document.addEventListener('keyup', onKeyUp, false)
 let direction = 'up'
 let exectionFlag = false
 const input = () => {
   const current = direction
   direction = (exectionFlag) ? direction
-  : (key.a && direction !== 'right') ? 'left'
-  : (key.d && direction !== 'left') ? 'right'
-  : (key.s && direction !== 'up') ? 'down'
-  : (key.w && direction !== 'down') ? 'up'
+  : (key.a.flag && direction !== 'right') ? 'left'
+  : (key.d.flag && direction !== 'left') ? 'right'
+  : (key.s.flag && direction !== 'up') ? 'down'
+  : (key.w.flag && direction !== 'down') ? 'up'
   : direction
   if (current !== direction) exectionFlag = true
 }
@@ -68,7 +52,6 @@ const move = () => {
     ownPosition[0].x < 0 || width <= ownPosition[0].x ||
     ownPosition[0].y < 0 || height <= ownPosition[0].y) ||
     ownPosition.some((v, i) => {
-      console.log(v, ownPosition[0], v.x, v.y)
     if (i === 0) return
     return v.x === ownPosition[0].x && v.y === ownPosition[0].y
   })) reset()
@@ -152,5 +135,3 @@ const main = () => {
   window.requestAnimationFrame(main)
 }
 main()
-
-})()
