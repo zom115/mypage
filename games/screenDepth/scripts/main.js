@@ -30,11 +30,12 @@ const horizonList = []
 const horizonLimit = 2e3
 let internalCount = 0
 const interval = 100
-const listWidth = 50
+const listWidth = 25
 let sign = 'plus'
 let position = .5
 let accel = 0
 const brake = .995
+let detectFlag = false
 const frameCounter = list => {
   const now = Date.now()
   list.push(now)
@@ -67,6 +68,11 @@ setInterval(() => {
   const contents = new Array(listWidth).fill(0)
   if (internalCount % interval === 0) contents[Math.floor(Math.random() * listWidth)] = 1
   horizonList.unshift([contents])
+  const index = horizonList[horizonList.length - 1][0].findIndex(v => v === 1)
+  const detectNumber = Math.floor(listWidth / 2)
+  if (detectNumber - 1 <= index && index <= detectNumber) {
+    detectFlag = true
+  }
   if (horizonLimit < horizonList.length) horizonList.pop()
   {
     document.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}))
@@ -92,6 +98,7 @@ const draw = () => {
   context.textAlign = 'center'
   context.fillText(sign, canvas.offsetWidth / 2, canvas.offsetHeight * .85)
   context.fillText(position, canvas.offsetWidth / 2, canvas.offsetHeight * .9)
+  context.fillText(`detect: ${detectFlag}`, canvas.offsetWidth / 2, canvas.offsetHeight * .95)
   context.strokeStyle = 'hsl(0, 0%, 0%)'
   context.lineWidth = 1
   const frontWall = 9
@@ -142,6 +149,11 @@ const draw = () => {
       })
     })
   })
+  context.fillStyle = 'hsl(0, 0%, 25%)'
+  context.beginPath()
+  context.arc(
+    canvas.offsetWidth / 2, canvas.offsetHeight * .7, wallWidth / 2, 0, Math.PI * 2, false)
+  context.fill()
   context.restore()
 }
 const main = () => {
