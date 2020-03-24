@@ -13,10 +13,11 @@ const resetField = () => {
   for (let i = 0; i < width; i++) {field.unshift(row.concat())}
 }
 resetField()
-let ownPositionList = [{x: (width / 2)|0, y: height - 1}]
+let ownPositionList = []
 let time = 0
-let speedObject = {timestamp: 0, limit: 50}
-let itemSpeed = 300
+let speed = 50
+let speedObject = {}
+let itemSpeed = 15 * speed
 let getItemFlag = false
 let direction = 'up'
 let exectionFlag = false
@@ -30,6 +31,16 @@ const input = () => {
   direction
   if (current !== direction) exectionFlag = true
 }
+const reset = () => {
+  resetField()
+  ownPositionList = [{x: (width / 2)|0, y: height - 1}]
+  direction = 'up'
+  time = 0
+  if (highscore < score) highscore = score
+  score = 0
+  speedObject = {timestamp: 0, limit: speed}
+}
+reset()
 const move = () => {
   speedObject.timestamp = time
   if (direction === 'left') ownPositionList.unshift({x: ownPositionList[0].x - 1, y: ownPositionList[0].y})
@@ -39,16 +50,6 @@ const move = () => {
   if (getItemFlag) getItemFlag = false
   else ownPositionList.pop(ownPositionList.length - 1)
   exectionFlag = false
-  const reset = () => {
-    resetField()
-    ownPositionList.length = 0
-    ownPositionList = [{x: (width / 2)|0, y: height - 1}]
-    direction = 'up'
-    time = 0
-    if (highscore < score) highscore = score
-    score = 0
-    speedObject = {timestamp: 0, limit: 15}
-  }
   if ((
     ownPositionList[0].x < 0 || width <= ownPositionList[0].x ||
     ownPositionList[0].y < 0 || height <= ownPositionList[0].y) ||
