@@ -1,5 +1,4 @@
-!(_ = () => {'use strict'
-
+import {key} from '../../../modules/key.mjs'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 2
@@ -31,16 +30,14 @@ const setInitValue = () => {
   score = 0
 }
 setInitValue()
-let key = false
-document.addEventListener('keydown', () => key = true, false)
-document.addEventListener('keyup', () => key = false, false)
+let flag = false
 const press = (window.ontouchstart === undefined) ? 'mousedown' : 'touchstart'
 const release = (window.ontouchstart === undefined) ? 'mouseup' : 'touchend'
-canvas.addEventListener(press, () => key = true, false)
-canvas.addEventListener(release, () => key = false, false)
+canvas.addEventListener(press, () => flag = true, false)
+canvas.addEventListener(release, () => flag = false, false)
 canvas.addEventListener('contextmenu', e => e.preventDefault(), false)
 const input = () => {
-  if (key) {
+  if (flag || Object.values(key).some(v => v.flag)) {
     if(-dyMax < ownCondition.dy) ownCondition.dy += -dy
   } else if (ownCondition.dy < dyMax) ownCondition.dy += dy
 }
@@ -141,5 +138,3 @@ const main = () => {
   window.requestAnimationFrame(main)
 }
 main()
-
-})()
