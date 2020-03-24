@@ -13,62 +13,63 @@ const resetField = () => {
   for (let i = 0; i < width; i++) {field.unshift(row.concat())}
 }
 resetField()
-let ownPosition = [{x: (width / 2)|0, y: height - 1}]
+let ownPositionList = [{x: (width / 2)|0, y: height - 1}]
 let time = 0
-let speed = {timestamp: 0, limit: 15}
+let speedObject = {timestamp: 0, limit: 50}
 let itemSpeed = 300
 let getItemFlag = false
 let direction = 'up'
 let exectionFlag = false
 const input = () => {
   const current = direction
-  direction = (exectionFlag) ? direction
-  : (key.a.flag && direction !== 'right') ? 'left'
-  : (key.d.flag && direction !== 'left') ? 'right'
-  : (key.s.flag && direction !== 'up') ? 'down'
-  : (key.w.flag && direction !== 'down') ? 'up'
-  : direction
+  direction = exectionFlag ? direction :
+  key.a.flag && direction !== 'right' ? 'left' :
+  key.d.flag && direction !== 'left' ? 'right' :
+  key.s.flag && direction !== 'up' ? 'down' :
+  key.w.flag && direction !== 'down' ? 'up' :
+  direction
   if (current !== direction) exectionFlag = true
 }
 const move = () => {
-  speed.timestamp = time
-  if (direction === 'left') ownPosition.unshift({x: ownPosition[0].x - 1, y: ownPosition[0].y})
-  else if (direction === 'right') ownPosition.unshift({x: ownPosition[0].x + 1, y: ownPosition[0].y})
-  else if (direction === 'down') ownPosition.unshift({x: ownPosition[0].x, y: ownPosition[0].y + 1})
-  else if (direction === 'up') ownPosition.unshift({x: ownPosition[0].x, y: ownPosition[0].y - 1})
+  speedObject.timestamp = time
+  if (direction === 'left') ownPositionList.unshift({x: ownPositionList[0].x - 1, y: ownPositionList[0].y})
+  else if (direction === 'right') ownPositionList.unshift({x: ownPositionList[0].x + 1, y: ownPositionList[0].y})
+  else if (direction === 'down') ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y + 1})
+  else if (direction === 'up') ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y - 1})
   if (getItemFlag) getItemFlag = false
-  else ownPosition.pop(ownPosition.length - 1)
+  else ownPositionList.pop(ownPositionList.length - 1)
   exectionFlag = false
   const reset = () => {
     resetField()
-    ownPosition = [{x: (width / 2)|0, y: height - 1}]
+    ownPositionList.length = 0
+    ownPositionList = [{x: (width / 2)|0, y: height - 1}]
     direction = 'up'
     time = 0
     if (highscore < score) highscore = score
     score = 0
-    speed = {timestamp: 0, limit: 15}
+    speedObject = {timestamp: 0, limit: 15}
   }
   if ((
-    ownPosition[0].x < 0 || width <= ownPosition[0].x ||
-    ownPosition[0].y < 0 || height <= ownPosition[0].y) ||
-    ownPosition.some((v, i) => {
+    ownPositionList[0].x < 0 || width <= ownPositionList[0].x ||
+    ownPositionList[0].y < 0 || height <= ownPositionList[0].y) ||
+    ownPositionList.some((v, i) => {
     if (i === 0) return
-    return v.x === ownPosition[0].x && v.y === ownPosition[0].y
+    return v.x === ownPositionList[0].x && v.y === ownPositionList[0].y
   })) reset()
 }
 const createItem = () => {
   const position = {x: (Math.random() * width)|0, y: (Math.random() * height)|0}
-  field[position.x][position.y] = (field[position.x][position.y] === 0) ? 1
-  : field[position.x][position.y]
+  field[position.x][position.y] = field[position.x][position.y] === 0 ? 1 :
+  field[position.x][position.y]
 }
 const getItem = () => {
-  if (field[ownPosition[0].x][ownPosition[0].y] === 1) {
-    field[ownPosition[0].x][ownPosition[0].y] = 0
+  if (field[ownPositionList[0].x][ownPositionList[0].y] === 1) {
+    field[ownPositionList[0].x][ownPositionList[0].y] = 0
     getItemFlag = true
     score += 10
-    if (score % 50 === 0 && 1 < speed.limit) {
-      speed.limit -= 1
-      speed.current = time
+    if (score % 50 === 0 && 1 < speedObject.limit) {
+      speedObject.limit -= 1
+      speedObject.current = time
     }
   }
 }
@@ -96,7 +97,7 @@ const drawCell = () => {
         context.fill()
       }
     })
-    ownPosition.forEach((value, index) => {
+    ownPositionList.forEach((value, index) => {
       if (index !== 0) {
         context.fillStyle = 'hsl(0, 0%, 80%)'
         context.fillRect(
@@ -117,21 +118,17 @@ const drawCell = () => {
     });
   })
 }
-const main = () => {
-  const internalProcess = () => {
-    input()
-    time += 1
-    if (time === speed.timestamp + speed.limit) move()
-    getItem()
-    if (time % itemSpeed === 0) createItem()
-  }
-  internalProcess()
-  const draw = () => {
-    context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-    drawIndicator()
-    drawCell()
-  }
-  draw()
-  window.requestAnimationFrame(main)
+setInterval(() => {
+  input()
+  time += 1
+  if (time === speedObject.timestamp + speedObject.limit) move()
+  getItem()
+  if (time % itemSpeed === 0) createItem()
+}, 0)
+const draw = () => {
+  window.requestAnimationFrame(draw)
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  drawIndicator()
+  drawCell()
 }
-main()
+draw()
