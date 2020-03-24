@@ -92,9 +92,8 @@ const draw = () => {
   Object.entries(key).forEach(([k, v], i) => {
     context.fillText(`${k}: ${v.flag}, ${v.timestamp}, ${v.holdtime}`, 5, 10 + 10 * i)
   })
-  context.fillText(`internal FPS: ${timestampList.length}`, canvas.offsetWidth * .85, 10)
-  context.fillText(`screen FPS: ${frameList.length}`, canvas.offsetWidth * .85, 20)
-  context.fillText(`${horizonList.length}`, canvas.offsetWidth * .85, 30)
+  context.fillText(`internal FPS: ${timestampList.length - 1}`, canvas.offsetWidth * .85, 10)
+  context.fillText(`screen FPS: ${frameList.length - 1}`, canvas.offsetWidth * .85, 20)
   context.textAlign = 'center'
   context.fillText(sign, canvas.offsetWidth / 2, canvas.offsetHeight * .85)
   context.fillText(position, canvas.offsetWidth / 2, canvas.offsetHeight * .9)
@@ -105,13 +104,13 @@ const draw = () => {
   const wallWidth = canvas.offsetWidth / frontWall
   const multiple = .0001
   const wallCalc = Math.floor(frontWall / 2)
+  context.fillStyle = 'hsl(0, 0%, 10%)'
   horizonList.forEach((v, i) => {
     v.forEach(vl => {
       vl.forEach((val, ind) => {
         if (val === 1) {
           context.beginPath()
           context.moveTo(
-            // offset
             canvas.offsetWidth / 2 +
             canvas.offsetWidth / 2 *
             (i / horizonLimit) *
@@ -143,8 +142,7 @@ const draw = () => {
             (wallWidth / 2) * (i / horizonLimit) -
             .5,
             canvas.offsetHeight * 5 / 9 - .5 + i * i * multiple)
-          context.closePath()
-          context.stroke()
+          context.fill()
         }
       })
     })
