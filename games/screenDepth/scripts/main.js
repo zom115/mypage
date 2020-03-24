@@ -33,6 +33,8 @@ const interval = 100
 const listWidth = 50
 let sign = 'plus'
 let position = .5
+let accel = 0
+const brake = .995
 const frameCounter = list => {
   const now = Date.now()
   list.push(now)
@@ -45,8 +47,10 @@ const frameCounter = list => {
 setInterval(() => {
   if (Object.values(key).some(v => v.flag && v.timestamp === globalTimestamp)) {
     sign = sign === 'plus' ? 'minus' : 'plus'
+    accel = .02
   }
-  position += sign === 'plus' ? .001 : -.001
+  position += sign === 'plus' ? accel : -accel
+  accel *= brake
   if (position < 0) {
     position++
     horizonList.forEach((_v, i) => {
