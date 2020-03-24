@@ -16,6 +16,17 @@ let ownPositionList = []
 let intervalTime = 200
 const itemObject = {timestamp: 0, createTime: 0}
 const speedObject = {timestamp: 0, limit: 0}
+let hiddenTimestamp = 0
+const timeUpdate = () => {
+  const diffTime = Date.now() - hiddenTimestamp
+  itemObject.timestamp += diffTime
+  speedObject.timestamp += diffTime
+  hiddenTimestamp = 0
+}
+document.addEventListener('visibilitychange', e => {
+  if (document.hidden) hiddenTimestamp = Date.now()
+  else timeUpdate()
+})
 let getItemFlag = false
 let direction = 'up'
 let exectionFlag = false
