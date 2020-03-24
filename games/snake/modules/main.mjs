@@ -23,13 +23,23 @@ const timeUpdate = () => {
   speedObject.timestamp += diffTime
   hiddenTimestamp = 0
 }
-document.addEventListener('visibilitychange', e => {
-  if (document.hidden) hiddenTimestamp = Date.now()
-  else timeUpdate()
+document.addEventListener('visibilitychange', () => {
+  document.hidden ? hiddenTimestamp = Date.now() : timeUpdate()
 })
-let getItemFlag = false
 let direction = 'up'
 let exectionFlag = false
+const reset = () => {
+  if (highscore < score) highscore = score
+  score = 0
+  resetField()
+  ownPositionList = [{x: (width / 2)|0, y: height - 1}]
+  direction = 'up'
+  itemObject.timestamp = Date.now()
+  itemObject.createTime = 15 * intervalTime
+  speedObject.timestamp = Date.now()
+  speedObject.limit = intervalTime
+}
+reset()
 const input = () => {
   const currentDirection = direction
   direction = exectionFlag ? direction :
@@ -39,27 +49,22 @@ const input = () => {
   key.w.flag && direction !== 'down' ? 'up' : direction
   if (currentDirection !== direction) exectionFlag = true
 }
-const reset = () => {
-  if (highscore < score) highscore = score
-  score = 0
-  resetField()
-  ownPositionList = [{x: (width / 2)|0, y: height - 1}]
-  direction = 'up'
-  const currentTime = Date.now()
-  itemObject.timestamp = currentTime
-  itemObject.createTime = 15 * intervalTime
-  speedObject.timestamp = currentTime
-  speedObject.limit = intervalTime
-}
-reset()
 const move = () => {
   speedObject.timestamp += speedObject.limit
-  if (direction === 'left') ownPositionList.unshift({x: ownPositionList[0].x - 1, y: ownPositionList[0].y})
-  else if (direction === 'right') ownPositionList.unshift({x: ownPositionList[0].x + 1, y: ownPositionList[0].y})
-  else if (direction === 'down') ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y + 1})
-  else if (direction === 'up') ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y - 1})
-  if (getItemFlag) getItemFlag = false
-  else ownPositionList.pop(ownPositionList.length - 1)
+  if (direction === 'left') {
+    ownPositionList.unshift({x: ownPositionList[0].x - 1, y: ownPositionList[0].y})
+  } else if (direction === 'right') {
+    ownPositionList.unshift({x: ownPositionList[0].x + 1, y: ownPositionList[0].y})
+  } else if (direction === 'down') {
+    ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y + 1})
+  } else if (direction === 'up') {
+    ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y - 1})
+  }
+  if (field[ownPositionList[0].x][ownPositionList[0].y] === 1) { // getItem
+    field[ownPositionList[0].x][ownPositionList[0].y] = 0
+    score += 10
+    if (score % 50 === 0) speedObject.limit *= .9
+  } else ownPositionList.pop(ownPositionList.length - 1)
   exectionFlag = false
   if (
     ownPositionList[0].x < 0 || width <= ownPositionList[0].x ||
@@ -76,14 +81,6 @@ const createItem = () => {
   field[position.x][position.y] = field[position.x][position.y] === 0 ? 1 :
   field[position.x][position.y]
 }
-const getItem = () => {
-  if (field[ownPositionList[0].x][ownPositionList[0].y] === 1) {
-    field[ownPositionList[0].x][ownPositionList[0].y] = 0
-    getItemFlag = true
-    score += 10
-    if (score % 50 === 0) speedObject.limit *= .9
-  }
-}
 const drawIndicator = () => {
   context.font = `${size}px sans-serif`
   context.fillStyle = 'hsl(0, 0%, 100%)'
@@ -97,7 +94,11 @@ const drawCell = () => {
     x.forEach((y, iY) => {
       context.strokeStyle = 'hsl(0, 0%, 50%)'
       if (y === 0) {
-        context.strokeRect(size * 2.5 + size * iX, size * 2 + size * iY, size*.9, size*.9)
+        context.strokeRect(
+          size * 2.5 + size * iX,
+          size * 2 + size * iY,
+          size*.9,
+          size*.9)
       } else if (y === 1) {
         context.fillStyle = 'hsl(0, 0%, 100%)'
         context.beginPath()
@@ -115,26 +116,22 @@ const drawCell = () => {
           size * 2.5 + size * value.x,
           size * 2 + size * value.y,
           size*.9,
-          size*.9
-          )
-        } else {
-          context.fillStyle = 'hsl(0, 0%, 100%)'
-          context.fillRect(
-            size * 2.5 + size * value.x,
-            size * 2 + size * value.y,
-            size*.9,
-            size*.9
-          )
+          size*.9)
+      } else {
+        context.fillStyle = 'hsl(0, 0%, 100%)'
+        context.fillRect(
+          size * 2.5 + size * value.x,
+          size * 2 + size * value.y,
+          size*.9,
+          size*.9)
       }
     })
   })
 }
 setInterval(() => {
-  const currentTime = Date.now()
   input()
-  if (speedObject.timestamp + speedObject.limit <= currentTime) move()
-  getItem()
-  if (itemObject.timestamp + itemObject.createTime <= currentTime) createItem()
+  if (speedObject.timestamp + speedObject.limit <= Date.now()) move()
+  if (itemObject.timestamp + itemObject.createTime <= Date.now()) createItem()
 }, 0)
 const draw = () => {
   window.requestAnimationFrame(draw)
