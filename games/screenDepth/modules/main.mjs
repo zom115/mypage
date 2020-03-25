@@ -22,6 +22,7 @@ const frameCounter = list => {
   } while (flag)
 }
 setInterval(() => {
+  frameCounter(timestampList)
   if (Object.values(key).some(v => v.isFirst())) {
     sign = sign === 'plus' ? 'minus' : 'plus'
     accel = .02
@@ -54,6 +55,8 @@ setInterval(() => {
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const draw = () => {
+  window.requestAnimationFrame(draw)
+  frameCounter(frameList)
   context.save()
   context.fillStyle = 'hsl(0, 0%, 50%)'
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -123,9 +126,4 @@ const draw = () => {
   context.fill()
   context.restore()
 }
-const main = () => {
-  window.requestAnimationFrame(main)
-  frameCounter(frameList)
-  draw()
-}
-main()
+draw()
