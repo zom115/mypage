@@ -1,4 +1,3 @@
-{'use strict'
 const version = 'v.0.8.5'
 const canvas = document.getElementById`canvas`
 const DOM = {
@@ -2532,7 +2531,6 @@ const reset = () => {
   }
   clonePosition = []
   cloneFlag = false
-  cloneDashFlag = false
   cloneDashType1Flag = false
   cloneDashType2Flag = false
   cloneDashType3Flag = false
@@ -3152,5 +3150,3 @@ const timerId = setInterval(() => { // loading monitoring
     loop()
   }
 }, 100)
-
-}

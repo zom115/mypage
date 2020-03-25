@@ -1,4 +1,4 @@
-{'use strict'
+import {key} from '../../../modules/key.mjs'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
@@ -76,64 +76,6 @@ const landObject = {
 let pauseTimestamp = 0
 let containueTimestamp = 0
 const timestampList = [] // for calc. fps
-const keyObject = {
-  shift: 16,
-  space: 32,
-  a: 65,
-  b: 66,
-  c: 67,
-  d: 68,
-  e: 69,
-  f: 70,
-  g: 71,
-  h: 72,
-  i: 73,
-  j: 74,
-  k: 75,
-  l: 76,
-  m: 77,
-  n: 78,
-  o: 79,
-  p: 80,
-  q: 81,
-  r: 82,
-  s: 83,
-  t: 84,
-  u: 85,
-  v: 86,
-  w: 87,
-  x: 88,
-  y: 89,
-  z: 90
-}
-const key = {}
-Object.keys(keyObject).forEach(v => {
-  key[`${v}Flag`] = false
-  key[v] = 0
-})
-document.addEventListener('keydown', e => {
-  Object.entries(keyObject).forEach(([k, v]) => {
-    if (e.keyCode === v) key[k + 'Flag'] = true
-    if (e.keyCode === keyObject.space) {
-      key[`${k}Flag`] = true
-      if (e.preventDefault) e.preventDefault()
-      else e.keyCode = 0
-    }
-  })
-}, false)
-document.addEventListener('keyup', e => {
-  Object.entries(keyObject).forEach(([k, v]) => {
-    if (e.keyCode === v) {
-      key[`${k}Flag`] = false
-      key[k] = 0
-    }
-  })
-}, false)
-const input = () => {
-  Object.keys(keyObject).forEach(v => {
-    if (key[`${v}Flag`]) key[v] += 1
-  })
-}
 const initialize = () => {
   containueTimestamp = 0
   startTimestamp = Date.now()
@@ -163,10 +105,10 @@ const initialize = () => {
   landCount = 0
 }
 const titleProcess = () => {
-  if (key.w === 1 || key.s === 1) {
+  if (key.w.isFirst() || key.s.isFirst()) {
     titleState = titleState === screenList[1] ? screenList[4] : screenList[1]
   }
-  if (key.k === 1) {
+  if (key.k.isFirst()) {
     screenState = titleState
     if (titleState === screenList[1]) initialize()
   }
@@ -211,7 +153,7 @@ const ownMoveProcess = () => {
   const keyList = ['w', 'd', 's', 'a']
   crossKeyState = 0
   keyList.forEach((v, i) => {
-    if (key[`${v}Flag`]) {
+    if (key[v].flag) {
       i === 0 ? crossKeyState += 1 :
       i === 1 ? crossKeyState += 2 :
       i === 2 ? crossKeyState += 4 :
@@ -273,7 +215,7 @@ const itemProcess = () => {
   })
 }
 const itemUseProcess = () => {
-  if (key.j === 1) {
+  if (key.j.isFirst()) {
     if ((itemStock === 2 && missileFlag) || (
       itemStock === 3 && doubleFlag) || (
       itemStock === 4 && 1 < laserCount) || (
@@ -307,7 +249,7 @@ const attackProcess = object => {
   const missileRestrictValue = 2
   const doubleRestrictValue = 3
   const laserRestrictValue = 3
-  if (key.k === 1) {
+  if (key.k.isFirst()) {
     if (object.shotList.length + 1 <= bulletRestrictValue && !laserCount) {
       object.shotList.push({x: object.x + size / 2, y: object.y})
     }
@@ -503,29 +445,29 @@ const pauseProcess = () => {
     screenState = screenList[1]
     startTimestamp += Date.now() - pauseTimestamp
   }
-  if (key.p === 1) screenState === screenList[1] ? pauseProcess() : resumeProcess()
+  if (key.p.isFirst()) screenState === screenList[1] ? pauseProcess() : resumeProcess()
 }
 const retryProcess = () => {
   if (containueTimestamp === 0) containueTimestamp = Date.now()
   if (1e4 < Date.now() - containueTimestamp) screenState = screenList[0]
-  if (key.k === 1) {
+  if (key.k.isFirst()) {
     screenState = screenList[1]
     initialize()
   }
-  if (key.j === 1) containueTimestamp -= 1e3 - (Date.now() - containueTimestamp) % 1e3
+  if (key.j.isFirst()) containueTimestamp -= 1e3 - (Date.now() - containueTimestamp) % 1e3
 }
 const settingProcess = () => {
-  if (key.j === 1) {
+  if (key.j.isFirst()) {
     screenState = screenList[0]
     titleState = screenList[1]
     return
   }
   const currentIndex = settingList.findIndex(v => v === settingState)
-  if (key.w === 1) {
+  if (key.w.isFirst()) {
     settingState = currentIndex === 0 ?
     settingList[settingList.length - 1] :
     settingList[currentIndex - 1]
-  } else if (key.s === 1) {
+  } else if (key.s.isFirst()) {
     settingState = currentIndex === settingList.length - 1 ?
     settingList[0] :
     settingList[currentIndex + 1]
@@ -533,9 +475,9 @@ const settingProcess = () => {
   const switchBool = () => {
     settingObject[settingState] = !settingObject[settingState]
   }
-  if (key.k === 1) switchBool()
-  if (key.a === 1 && settingObject[settingState]) switchBool()
-  if (key.d === 1 && !settingObject[settingState]) switchBool()
+  if (key.k.isFirst()) switchBool()
+  if (key.a.isFirst() && settingObject[settingState]) switchBool()
+  if (key.d.isFirst() && !settingObject[settingState]) switchBool()
 }
 const drawBackground = () => {
   context.fillStyle = 'black'
@@ -844,7 +786,6 @@ const setting = () => {
   drawSetting()
 }
 const loop = () => {
-  input()
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (screenState === screenList[0]) title()
   else if (screenState === screenList[1]) main()
@@ -855,4 +796,3 @@ const loop = () => {
   requestAnimationFrame(loop)
 }
 loop()
-}

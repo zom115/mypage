@@ -1,5 +1,4 @@
-!(_ = x => {'use strict'
-
+import {key} from '../../../modules/key.mjs'
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 context.textAlign = 'center'
@@ -20,27 +19,12 @@ let enemies = [{
   x: 4, y: 0, state: 'guard', time: 0, guardWeight: 150, weight: 60, hitPoint: 120
 }]
 let shockWaves = []
-let key = {a: false, d: false, j: false, s: false, w: false}
-document.addEventListener('keydown', e => {
-  if (e.keyCode === 65) key.a = true
-  if (e.keyCode === 68) key.d = true
-  if (e.keyCode === 74) key.j = true
-  if (e.keyCode === 83) key.s = true
-  if (e.keyCode === 87) key.w = true
-}, false)
-document.addEventListener('keyup', e => {
-  if (e.keyCode === 65) key.a = false
-  if (e.keyCode === 68) key.d = false
-  if (e.keyCode === 74) key.j = false
-  if (e.keyCode === 83) key.s = false
-  if (e.keyCode === 87) key.w = false
-}, false)
 const move = () => {
   if (ownState.moveWeight !== 0) return ownState.moveWeight -= 1
-  const direction = key.a ? {x:-1, y: 0}
-  : key.d ? {x: 1, y: 0}
-  : key.s ? {x: 0, y: 1}
-  : key.w ? {x: 0, y: -1} : 0
+  const direction = key.a.flag ? {x:-1, y: 0}
+  : key.d.flag ? {x: 1, y: 0}
+  : key.s.flag ? {x: 0, y: 1}
+  : key.w.flag ? {x: 0, y: -1} : 0
   if (direction === 0) return
   if (field[ownState.y + direction.y] === undefined) {
   } else if (field[ownState.y + direction.y][ownState.x + direction.x] === 0) {
@@ -52,7 +36,7 @@ const move = () => {
 const shot = () => {
   if (0 < ownState.shotWeight) ownState.shotWeight -= 1
   if (0 < ownState.shotEffect) ownState.shotEffect -= 1
-  if (key.j && ownState.shotWeight === 0) {
+  if (key.j.flag && ownState.shotWeight === 0) {
     if (ownState.charge < ownState.chargeLimit) ownState.charge += 1
   } else if (ownState.charge !== 0) {
     enemies.forEach(e => {
@@ -241,5 +225,3 @@ const main = () => {
   window.requestAnimationFrame(main)
 }
 main()
-
-})()

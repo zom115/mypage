@@ -1,4 +1,3 @@
-{'use strict'
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -2095,5 +2094,4 @@ const main = () => {
   else if (screenState === screenList[1]) inGame()
   floatMenu()
   window.requestAnimationFrame(main)
-}
 }

@@ -1,4 +1,4 @@
-{'use strict'
+import {key} from '../../../modules/key.mjs'
 let currentTime = Date.now()
 let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
@@ -75,43 +75,26 @@ terrainList.push('0'.repeat(terrainList[0].length))
 terrainList.forEach((v, i) => {
   terrainList[i] = '0' + v + '0'
 })
-let key = {a: false, d: false, j: false, k: false, s: false, w: false}
-document.addEventListener('keydown', e => {
-  if (e.keyCode === 65) key.a = true
-  if (e.keyCode === 68) key.d = true
-  if (e.keyCode === 74) key.j = true
-  if (e.keyCode === 75) key.k = true
-  if (e.keyCode === 83) key.s = true
-  if (e.keyCode === 87) key.w = true
-}, false)
-document.addEventListener('keyup', e => {
-  if (e.keyCode === 65) key.a = false
-  if (e.keyCode === 68) key.d = false
-  if (e.keyCode === 74) key.j = false
-  if (e.keyCode === 75) key.k = false
-  if (e.keyCode === 83) key.s = false
-  if (e.keyCode === 87) key.w = false
-}, false)
 let gravityFlag = false // temporary
 const input = () => {
   if (!gravityFlag) { // temporary
     ownCondition.dx = 0
     ownCondition.dy = 0
   }
-  if (key.a) {
+  if (key.a.flag) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
       ownCondition.dx -= moveAcceleration
     } else ownCondition.dx = -moveConstant
   }
-  if (key.d) {
+  if (key.d.flag) {
     if (ownCondition.dx + moveAcceleration < moveConstant) {
       ownCondition.dx += moveAcceleration
     } else ownCondition.dx = moveConstant
   }
-  if (key.w && -moveConstant < ownCondition.dy) {
+  if (key.w.flag && -moveConstant < ownCondition.dy) {
     ownCondition.dy -= moveAcceleration
   } // temporary
-  if (key.s && ownCondition.dy < moveConstant) ownCondition.dy += moveAcceleration // temporary
+  if (key.s.flag && ownCondition.dy < moveConstant) ownCondition.dy += moveAcceleration // temporary
   // else {
   //   if (jumpConstant < jumpTime) jumpTime = 0
   //   if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
@@ -136,7 +119,7 @@ const input = () => {
   //     jumpFlag = true
   //   }
   // }
-  if (key.k) gravityFlag = !gravityFlag
+  if (key.k.isFirst()) gravityFlag = !gravityFlag
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const ownBox = {w: size / 8, h: size / 8}
@@ -363,4 +346,3 @@ const main = () => {
   draw()
 }
 main()
-}
