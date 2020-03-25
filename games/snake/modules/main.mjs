@@ -16,9 +16,8 @@ let ownPositionList = []
 let intervalTime = 200
 const itemObject = {timestamp: 0, createTime: 0}
 const speedObject = {timestamp: 0, limit: 0}
-let timestamp = 0
 let windowState = ''
-document.addEventListener('visibilitychange', e => {
+document.addEventListener('visibilitychange', () => {
   if (document.hidden) windowState = 'hidden'
   else windowState = ''
 })
