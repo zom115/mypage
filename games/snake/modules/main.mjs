@@ -81,12 +81,17 @@ const move = () => {
         if (x === 2) field[iY][iX] = 1
       })
     })
+  } else if (field[ownPositionList[0].y][ownPositionList[0].x] === 4) { // drug
+    field[ownPositionList[0].y][ownPositionList[0].x] = 0
+    for (let i = 0; i < ownPositionList.length; i++) {
+      ownPositionList.pop(ownPositionList.length - 1)
+    }
   } else ownPositionList.pop(ownPositionList.length - 1)
 }
 const createItem = () => {
   itemObject.timestamp += itemObject.createTime
   let randomNumber = Math.random()
-  const probabilityList = [.01, .15, .5] // dot, obstacle, key
+  const probabilityList = [.7, .2, .05, .05] // dot, obstacle, key, drug
   let index = 0
   for (let i = 0; i < probabilityList.length; i++) {
     if (randomNumber <= probabilityList[i]) {
@@ -95,7 +100,6 @@ const createItem = () => {
     } else randomNumber -= probabilityList[i]
     if (i === probabilityList.length - 1) index = i + 1
   }
-  console.log(index)
   field[Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] = index
 }
 const drawIndicator = () => {
@@ -120,8 +124,8 @@ const drawCell = () => {
         context.fillStyle = 'hsl(0, 0%, 100%)'
         context.beginPath()
         context.arc(
-          size * (2.5 + .5) + size * iX,
-          size * (2 + .5) + size * iY,
+          size * 3 + size * iX,
+          size * 2.5 + size * iY,
           size / 6, 0,
           Math.PI * 2,
           false)
@@ -137,13 +141,16 @@ const drawCell = () => {
         context.strokeStyle = 'hsl(0, 0%, 100%)'
         context.beginPath()
         context.arc(
-          size * (2.5 + .5) + size * iX,
-          size * (2 + .5) + size * iY,
+          size * 3 + size * iX,
+          size * 2.5 + size * iY,
           size / 3, 0,
           Math.PI * 2,
           false)
         context.closePath()
         context.stroke()
+      } else if (x === 4) {
+        context.fillStyle = 'hsl(0, 0%, 100%)'
+        context.fillText('D', size * (2.5) + size * iX, size * (2.8) + size * iY)
       }
     })
   })
