@@ -67,7 +67,8 @@ const move = () => {
     ownPositionList.some((v, i) => {
       if (i === 0) return
       return v.x === ownPositionList[0].x && v.y === ownPositionList[0].y
-    })
+    }) ||
+    field[ownPositionList[0].y][ownPositionList[0].x] === 2
   ) return reset()
   if (field[ownPositionList[0].y][ownPositionList[0].x] === 1) { // getItem
     field[ownPositionList[0].y][ownPositionList[0].x] = 0
@@ -77,7 +78,8 @@ const move = () => {
 }
 const createItem = () => {
   itemObject.timestamp += itemObject.createTime
-  field[Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] = 1
+  field[Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] =
+  Math.random() < .8 ? 1 : 2
 }
 const drawIndicator = () => {
   context.font = `${size}px sans-serif`
@@ -90,21 +92,30 @@ const drawIndicator = () => {
 const drawCell = () => {
   field.forEach((y, iY) => {
     y.forEach((x, iX) => {
-      context.strokeStyle = 'hsl(0, 0%, 50%)'
       if (x === 0) {
+        context.strokeStyle = 'hsl(0, 0%, 50%)'
         context.strokeRect(
           size * 2.5 + size * iX,
           size * 2 + size * iY,
-          size*.9,
-          size*.9)
+          size * .9,
+          size * .9)
       } else if (x === 1) {
         context.fillStyle = 'hsl(0, 0%, 100%)'
         context.beginPath()
         context.arc(
-          size * (2.5 + .5) + size * iX, size * (2 + .5) + size * iY,
-          size / 6, 0, Math.PI*2, false
-        )
+          size * (2.5 + .5) + size * iX,
+          size * (2 + .5) + size * iY,
+          size / 6, 0,
+          Math.PI * 2,
+          false)
         context.fill()
+      } else if (x === 2) {
+        context.fillStyle = 'hsl(0, 0%, 25%)'
+        context.fillRect(
+          size * 2.5 + size * iX,
+          size * 2 + size * iY,
+          size * .9,
+          size * .9)
       }
     })
   })
@@ -113,8 +124,8 @@ const drawCell = () => {
     context.fillRect(
       size * 2.5 + size * value.x,
       size * 2 + size * value.y,
-      size*.9,
-      size*.9)
+      size * .9,
+      size * .9)
   })
 }
 setInterval(() => {
