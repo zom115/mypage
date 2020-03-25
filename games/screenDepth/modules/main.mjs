@@ -21,12 +21,14 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
+const move = () => {
+  sign = sign === 'plus' ? 'minus' : 'plus'
+  accel = .02
+}
+document.addEventListener('mousedown', () => move())
 setInterval(() => {
   frameCounter(timestampList)
-  if (Object.values(key).some(v => v.isFirst())) {
-    sign = sign === 'plus' ? 'minus' : 'plus'
-    accel = .02
-  }
+  if (Object.values(key).some(v => v.isFirst())) move()
   position += sign === 'plus' ? accel : -accel
   accel *= brake
   if (position < 0) {
