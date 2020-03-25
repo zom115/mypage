@@ -1,4 +1,6 @@
 import {key} from '../../../modules/key.mjs'
+const canvas = document.getElementById`canvas`
+const context = canvas.getContext`2d`
 const timestampList = []
 const frameList = []
 const second = 1e3
@@ -25,7 +27,7 @@ const move = () => {
   sign = sign === 'plus' ? 'minus' : 'plus'
   accel = .02
 }
-document.addEventListener('mousedown', () => move())
+canvas.addEventListener('mousedown', () => move())
 setInterval(() => {
   frameCounter(timestampList)
   if (Object.values(key).some(v => v.isFirst())) move()
@@ -54,8 +56,6 @@ setInterval(() => {
   }
   if (horizonLimit < horizonList.length) horizonList.pop()
 }, 0)
-const canvas = document.getElementById`canvas`
-const context = canvas.getContext`2d`
 const draw = () => {
   window.requestAnimationFrame(draw)
   frameCounter(frameList)
