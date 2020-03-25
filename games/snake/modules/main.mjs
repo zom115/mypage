@@ -16,15 +16,11 @@ let ownPositionList = []
 let intervalTime = 200
 const itemObject = {timestamp: 0, createTime: 0}
 const speedObject = {timestamp: 0, limit: 0}
-let hiddenTimestamp = 0
-const timeUpdate = () => {
-  const diffTime = Date.now() - hiddenTimestamp
-  itemObject.timestamp += diffTime
-  speedObject.timestamp += diffTime
-  hiddenTimestamp = 0
-}
-document.addEventListener('visibilitychange', () => {
-  document.hidden ? hiddenTimestamp = Date.now() : timeUpdate()
+let timestamp = 0
+let windowState = ''
+document.addEventListener('visibilitychange', e => {
+  if (document.hidden) windowState = 'hidden'
+  else windowState = ''
 })
 let direction = 'up'
 let exectionFlag = false
@@ -164,6 +160,11 @@ const drawCell = () => {
   })
 }
 setInterval(() => {
+  if (windowState === 'hidden') {
+    speedObject.timestamp = Date.now()
+    itemObject.timestamp = Date.now()
+    return
+  }
   input()
   if (speedObject.timestamp + speedObject.limit <= Date.now()) move()
   if (itemObject.timestamp + itemObject.createTime <= Date.now()) createItem()
