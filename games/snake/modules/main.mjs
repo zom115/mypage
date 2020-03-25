@@ -74,12 +74,29 @@ const move = () => {
     field[ownPositionList[0].y][ownPositionList[0].x] = 0
     score += 10
     if (score % 50 === 0) speedObject.limit *= .9
+  } else if (field[ownPositionList[0].y][ownPositionList[0].x] === 3) { // key
+    field[ownPositionList[0].y][ownPositionList[0].x] = 0
+    field.forEach((y, iY) => {
+      y.forEach((x, iX) => {
+        if (x === 2) field[iY][iX] = 1
+      })
+    })
   } else ownPositionList.pop(ownPositionList.length - 1)
 }
 const createItem = () => {
   itemObject.timestamp += itemObject.createTime
-  field[Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] =
-  Math.random() < .8 ? 1 : 2
+  let randomNumber = Math.random()
+  const probabilityList = [.01, .15, .5] // dot, obstacle, key
+  let index = 0
+  for (let i = 0; i < probabilityList.length; i++) {
+    if (randomNumber <= probabilityList[i]) {
+      index = i + 1
+      break
+    } else randomNumber -= probabilityList[i]
+    if (i === probabilityList.length - 1) index = i + 1
+  }
+  console.log(index)
+  field[Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] = index
 }
 const drawIndicator = () => {
   context.font = `${size}px sans-serif`
@@ -116,6 +133,17 @@ const drawCell = () => {
           size * 2 + size * iY,
           size * .9,
           size * .9)
+      } else if (x === 3) {
+        context.strokeStyle = 'hsl(0, 0%, 100%)'
+        context.beginPath()
+        context.arc(
+          size * (2.5 + .5) + size * iX,
+          size * (2 + .5) + size * iY,
+          size / 3, 0,
+          Math.PI * 2,
+          false)
+        context.closePath()
+        context.stroke()
       }
     })
   })
