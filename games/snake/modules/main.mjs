@@ -134,18 +134,11 @@ const drawCell = () => {
           size * .9)
       } else if (x === 3) {
         context.strokeStyle = 'hsl(0, 0%, 100%)'
-        context.beginPath()
-        context.arc(
-          size * 3 + size * iX,
-          size * 2.5 + size * iY,
-          size / 3, 0,
-          Math.PI * 2,
-          false)
-        context.closePath()
-        context.stroke()
+        context.fillStyle = 'hsl(0, 0%, 100%)'
+        context.fillText('K', size * 2.5 + size * iX, size * 2.8 + size * iY)
       } else if (x === 4) {
         context.fillStyle = 'hsl(0, 0%, 100%)'
-        context.fillText('D', size * (2.5) + size * iX, size * (2.8) + size * iY)
+        context.fillText('D', size * 2.5 + size * iX, size * 2.8 + size * iY)
       }
     })
   })
