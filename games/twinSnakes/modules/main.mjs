@@ -58,12 +58,14 @@ const input = () => {
   key.i.flag && direction.right !== 'down' ? 'up' : direction.right
   if (currentDirection.right !== direction.right) exectionFlag.right = true
 }
-const crossCheck = () => {
+const isCross = () => {
   let flag = false
   positionObject.left.forEach(leftValue => {
-    flag = positionObject.right.some(rightValue => {
-      return leftValue.x === rightValue.x && leftValue.y === rightValue.y
-    })
+    if (
+      positionObject.right.some(rightValue => {
+        return leftValue.x === rightValue.x && leftValue.y === rightValue.y
+      })
+    ) flag = true
   })
   return flag
 }
@@ -87,7 +89,7 @@ const leftMove = () => {
       return v.x === positionObject.left[0].x && v.y === positionObject.left[0].y
     }) ||
     field[positionObject.left[0].y][positionObject.left[0].x] === 2 ||
-    crossCheck()
+    isCross()
   ) return reset()
   if (field[positionObject.left[0].y][positionObject.left[0].x] === 1) { // getItem
     field[positionObject.left[0].y][positionObject.left[0].x] = 0
@@ -127,7 +129,7 @@ const rightMove = () => {
       return v.x === positionObject.right[0].x && v.y === positionObject.right[0].y
     }) ||
     field[positionObject.right[0].y][positionObject.right[0].x] === 2 ||
-    crossCheck()
+    isCross()
   ) return reset()
   if (field[positionObject.right[0].y][positionObject.right[0].x] === 1) { // getItem
     field[positionObject.right[0].y][positionObject.right[0].x] = 0
