@@ -9,8 +9,8 @@ let height = 9 * 3
 let field
 const resetField = () => {
   field = []
-  const row = new Array(height).fill(0)
-  for (let i = 0; i < width; i++) {field.unshift(row.concat())}
+  const column = new Array(width).fill(0)
+  for (let i = 0; i < height; i++) {field.unshift(column.concat())}
 }
 let ownPositionList = []
 let intervalTime = 200
@@ -60,11 +60,6 @@ const move = () => {
   } else if (direction === 'up') {
     ownPositionList.unshift({x: ownPositionList[0].x, y: ownPositionList[0].y - 1})
   }
-  if (field[ownPositionList[0].x][ownPositionList[0].y] === 1) { // getItem
-    field[ownPositionList[0].x][ownPositionList[0].y] = 0
-    score += 10
-    if (score % 50 === 0) speedObject.limit *= .9
-  } else ownPositionList.pop(ownPositionList.length - 1)
   exectionFlag = false
   if (
     ownPositionList[0].x < 0 || width <= ownPositionList[0].x ||
@@ -73,13 +68,16 @@ const move = () => {
       if (i === 0) return
       return v.x === ownPositionList[0].x && v.y === ownPositionList[0].y
     })
-  ) reset()
+  ) return reset()
+  if (field[ownPositionList[0].y][ownPositionList[0].x] === 1) { // getItem
+    field[ownPositionList[0].y][ownPositionList[0].x] = 0
+    score += 10
+    if (score % 50 === 0) speedObject.limit *= .9
+  } else ownPositionList.pop(ownPositionList.length - 1)
 }
 const createItem = () => {
   itemObject.timestamp += itemObject.createTime
-  const position = {x: (Math.random() * width)|0, y: (Math.random() * height)|0}
-  field[position.x][position.y] = field[position.x][position.y] === 0 ? 1 :
-  field[position.x][position.y]
+  field[Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] = 1
 }
 const drawIndicator = () => {
   context.font = `${size}px sans-serif`
@@ -90,16 +88,16 @@ const drawIndicator = () => {
   context.fillText(highscore, canvas.offsetWidth - size * 9.5, size * 1.5, size * 10)
 }
 const drawCell = () => {
-  field.forEach((x, iX) => {
-    x.forEach((y, iY) => {
+  field.forEach((y, iY) => {
+    y.forEach((x, iX) => {
       context.strokeStyle = 'hsl(0, 0%, 50%)'
-      if (y === 0) {
+      if (x === 0) {
         context.strokeRect(
           size * 2.5 + size * iX,
           size * 2 + size * iY,
           size*.9,
           size*.9)
-      } else if (y === 1) {
+      } else if (x === 1) {
         context.fillStyle = 'hsl(0, 0%, 100%)'
         context.beginPath()
         context.arc(
@@ -109,23 +107,14 @@ const drawCell = () => {
         context.fill()
       }
     })
-    ownPositionList.forEach((value, index) => {
-      if (index !== 0) {
-        context.fillStyle = 'hsl(0, 0%, 80%)'
-        context.fillRect(
-          size * 2.5 + size * value.x,
-          size * 2 + size * value.y,
-          size*.9,
-          size*.9)
-      } else {
-        context.fillStyle = 'hsl(0, 0%, 100%)'
-        context.fillRect(
-          size * 2.5 + size * value.x,
-          size * 2 + size * value.y,
-          size*.9,
-          size*.9)
-      }
-    })
+  })
+  ownPositionList.forEach((value, index) => {
+    context.fillStyle = index === 0 ? 'hsl(0, 0%, 100%)' : 'hsl(0, 0%, 80%)'
+    context.fillRect(
+      size * 2.5 + size * value.x,
+      size * 2 + size * value.y,
+      size*.9,
+      size*.9)
   })
 }
 setInterval(() => {
