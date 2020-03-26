@@ -22,17 +22,15 @@ const ownCondition = {
   dy: 0,
   jumpFlag: false,
 }
-const moveAcceleration = 1
+const moveAcceleration = .01
 let moveConstant = 1
 // gravitational acceleration = 9.80665 m / s ** 2
 // m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
-// 17 ???
-let coefficient = 17
+let coefficient = 5
 const elasticModulus = .9
-const jumpConstant = 3
-let jumpChargeTime = 0
+let gravityFlag = true // temporary
 const terrainObject = {
   '0': [[]],
   '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
@@ -55,12 +53,12 @@ const terrainList = [
   '140000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '107ad8000000000000000000000000000000000000000000000001',
-  '10ca00000000000000000000000000000000000000000000000001',
-  '180000000000000000000000000000000000000000000000000001',
-  '111100000000000000000000000000000000000000000000000001',
+  '10ca00000002000000000000000000000000000000000000000001',
+  '180000000020000000000000000000000000000000000000000001',
+  '111111111100000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '111000000000000000000000000000000000000000000000000001',
-  '100111100000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000111111111110000000001',
@@ -86,26 +84,28 @@ terrainList.push('0'.repeat(terrainList[0].length))
 terrainList.forEach((v, i) => {
   terrainList[i] = '0' + v + '0'
 })
-let gravityFlag = false // temporary
 const input = () => {
-  if (!gravityFlag) { // temporary
+  if (key.k.isFirst()) gravityFlag = !gravityFlag
+  if (!gravityFlag) {
     ownCondition.dx = 0
     ownCondition.dy = 0
   }
   if (key.a.flag) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
-      ownCondition.dx -= moveAcceleration
+      ownCondition.dx -= moveAcceleration * globalElapsedTime
     } else ownCondition.dx = -moveConstant
   }
   if (key.d.flag) {
     if (ownCondition.dx + moveAcceleration < moveConstant) {
-      ownCondition.dx += moveAcceleration
+      ownCondition.dx += moveAcceleration * globalElapsedTime
     } else ownCondition.dx = moveConstant
   }
-  if (key.w.flag && -moveConstant < ownCondition.dy) {
-    ownCondition.dy -= moveAcceleration
-  } // temporary
-  if (key.s.flag && ownCondition.dy < moveConstant) ownCondition.dy += moveAcceleration // temporary
+  if (key.w.flag && -moveConstant < ownCondition.dy) { // temporary
+    ownCondition.dy -= moveAcceleration * globalElapsedTime
+  }
+  if (key.s.flag && ownCondition.dy < moveConstant) { // temporary
+    ownCondition.dy += moveAcceleration * globalElapsedTime
+  }
   // else {
   //   if (jumpConstant < jumpTime) jumpTime = 0
   //   if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
@@ -130,7 +130,6 @@ const input = () => {
   //     jumpFlag = true
   //   }
   // }
-  if (key.k.isFirst()) gravityFlag = !gravityFlag
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const ownBox = {w: size / 8, h: size / 8}
@@ -196,8 +195,9 @@ const collisionDetect = () => {
                   target[nextIndex][1] - target[index][1],
                   target[nextIndex][0] - target[index][0]) / Math.PI
                 if (
+                  target.length !== 2 && (
                   tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
-                  tilt === cNextTilt || previousTilt === cNextTilt
+                  tilt === cNextTilt || previousTilt === cNextTilt)
                 ) vertexFlag = true
               }
             }
@@ -225,8 +225,9 @@ const collisionDetect = () => {
               dTarget[dNextIndex][1] - dTarget[dIndex][1],
               dTarget[dNextIndex][0] - dTarget[dIndex][0]) / Math.PI
             if (
+                dTarget.length !== 2 && (
                 tilt === dPreviousTilt || previousTilt === dPreviousTilt ||
-                tilt === dNextTilt || previousTilt === dNextTilt
+                tilt === dNextTilt || previousTilt === dNextTilt)
             ) vertexFlag = true
           })
           if (returnFlag) return
@@ -293,7 +294,6 @@ setInterval(() => {
   frameCounter(internalFrameList)
   globalElapsedTime = Date.now() - currentTime
   currentTime = Date.now()
-  // internal process
   input()
   collisionDetect()
 }, 0)
@@ -304,12 +304,12 @@ const draw = () => {
   context.fillStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
   context.arc(
-    ownCondition.x, ownCondition.y + jumpChargeTime, size / 32, 0, Math.PI * 2, false)
+    ownCondition.x, ownCondition.y, size / 32, 0, Math.PI * 2, false)
   context.fill()
   context.strokeStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
   context.arc(
-    ownCondition.x, ownCondition.y + jumpChargeTime, ownBox.w, 0, Math.PI * 2, false)
+    ownCondition.x, ownCondition.y, ownBox.w, 0, Math.PI * 2, false)
   context.closePath()
   context.stroke()
   const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
