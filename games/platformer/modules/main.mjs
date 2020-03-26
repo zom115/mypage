@@ -1,4 +1,15 @@
 import {key} from '../../../modules/key.mjs'
+const internalFrameList = []
+const animationFrameList = []
+const frameCounter = list => {
+  const now = Date.now()
+  list.push(now)
+  let flag = true
+  do {
+    if (list[0] + 1e3 < now) list.shift()
+    else flag = false
+  } while (flag)
+}
 let currentTime = Date.now()
 let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
@@ -278,7 +289,17 @@ const collisionDetect = () => {
   // elasticModulus.x = 0
   // elasticModulus.y = 0
 }
+setInterval(() => {
+  frameCounter(internalFrameList)
+  globalElapsedTime = Date.now() - currentTime
+  currentTime = Date.now()
+  // internal process
+  input()
+  collisionDetect()
+}, 0)
 const draw = () => {
+  window.requestAnimationFrame(draw)
+  frameCounter(animationFrameList)
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
@@ -323,6 +344,8 @@ const draw = () => {
   })
   context.fillStyle = 'hsl(0, 0%, 0%)'
   const list = [
+    `internalFPS: ${internalFrameList.length - 1}`,
+    `FPS: ${animationFrameList.length - 1}`,
     `x: ${ownCondition.x}`,
     `y: ${ownCondition.y}`,
     `y(m): ${(((terrainList.length - 3) * size) - ownCondition.y) * .04}`,
@@ -332,17 +355,7 @@ const draw = () => {
     `[K]gravity: ${gravityFlag}`,
   ]
   list.forEach((v, i) => {
-    context.fillText(v, size * 11, size * (1 + i))
+    context.fillText(v, size * 11, 10 * (1 + i))
   })
 }
-const main = () => {
-  window.requestAnimationFrame(main)
-  globalElapsedTime = Date.now() - currentTime
-  currentTime = Date.now()
-  // internal process
-  input()
-  collisionDetect()
-  // draw process
-  draw()
-}
-main()
+draw()
