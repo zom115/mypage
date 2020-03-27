@@ -73,7 +73,7 @@ terrainList.forEach((v, i) => {
 })
 const ownCondition = {
   x: canvas.offsetWidth * 2 / 8,
-  y: canvas.offsetHeight * 7 / 8,
+  y: canvas.offsetHeight * 3 / 4,
   dx: 0,
   dy: 0,
   jumpFlag: false,
@@ -403,10 +403,27 @@ const draw = () => {
   })
   for (let x = 0; x < layerObject.width; x++) {
     for (let y = 0; y < layerObject.height; y++) {
-      const rectSize = 2
-      context.fillStyle = layerObject.data[layerObject.width * y + x] === 0 ?
-      'hsl(0, 0%, 50%)' : 'hsl(0, 0%, 0%)'
-      context.fillRect(x * rectSize, y * rectSize, rectSize, rectSize)
+      // const rectSize = 2
+      // context.fillStyle = layerObject.data[layerObject.width * y + x] === 0 ?
+      // 'hsl(0, 0%, 50%)' : 'hsl(0, 0%, 0%)'
+      // context.fillRect(x * rectSize, y * rectSize, rectSize, rectSize)
+      const relativeCooldinates = {x: x * size, y: y * size}
+      if (layerObject.data[layerObject.width * y + x] !== 0) {
+        context.beginPath()
+        terrainObject['1'].forEach((v, i) => {
+          // console.log(i)
+          i === 0 ?
+          context.moveTo(
+            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
+          context.lineTo(
+            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+          if (terrainObject['1'].length === 2) {
+          context.lineTo(
+            relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
+          }
+        })
+        context.fill()
+      }
     }
   }
 }
