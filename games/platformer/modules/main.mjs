@@ -18,6 +18,12 @@ let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
+const terrainList = [
+  [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
+  [[1, 0], [1, 1], [0, 1],], // triangle
+  [[0, 0], [1, 0], [1, .5],], // 22.5 low
+  [[0, 0], [1, 0], [1, 1], [0, .5],], // 22.5 high
+]
 const terrainObject = {
   '0': [[]],
   '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
@@ -35,11 +41,39 @@ const terrainObject = {
   'd': [[1, 1], [0, 1], [0, 0], [1, .5],],
   'e': [[0, 1], [0, 0], [1, 0], [.5, 1],],
 }
-const terrainList = [
-  '100000000000000000000000000000000000000000000000000001',
-  '1000123456789abede000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-]
+const inversionTerrain = array => {
+  const terrain = JSON.parse(JSON.stringify(array))
+  terrain.forEach(v => {
+    v[0] = 1 - v[0]
+  })
+  terrain.reverse() // 線分の向きを揃える
+  return terrain
+}
+terrainObject['10'] = inversionTerrain(terrainObject['6'])
+const rotationTerrain = array => {
+  const terrain = JSON.parse(JSON.stringify(array))
+  terrain.forEach(v => {
+    v[0] -= .5
+    v[1] -= .5
+    ;[v[0], v[1]] = [v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2),
+      v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2)]
+    v[0] += .5
+    v[1] += .5
+  })
+  return terrain
+}
+terrainObject['11'] = rotationTerrain(terrainObject['6'])
+console.log(terrainObject)
+const testObject = {
+  data: [
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '1', '2', '3', '4', '5', '6', '7', '8',
+    '0', '0', '0', '0', '0', '0', '0', '0', '1', '2', '3', '4', '5', '10', '7', '8',
+    '0', '0', '0', '0', '0', '0', '0', '0', '1', '2', '3', '4', '5', '11', '7', '8',
+  ],
+  height: 4,
+  width: 16,
+}
 const ownCondition = {
   x: canvas.offsetWidth * 2 / 8,
   y: canvas.offsetHeight * 3 / 4,
@@ -341,24 +375,45 @@ const draw = () => {
     context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
   context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
-  terrainList.forEach((y, iY) => {
-    for (let iX = 0; iX < terrainList[0].length; iX++) {
-      const relativeCooldinates = {x: iX * size,y: iY * size}
+  for (let x = 0; x < testObject.width; x++) {
+    for (let y = 0; y < testObject.height; y++) {
+      const relativeCooldinates = {x: x * size, y: y * size}
+      const n = +testObject.data[testObject.width * y + x]
+      if (n === 0) continue
+      // console.log(testObject.data[n], n)
       context.beginPath()
-      terrainObject[y[iX]].forEach((v, i) => {
+      terrainObject[n].forEach((v, i) => {
         i === 0 ?
         context.moveTo(
           relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
         context.lineTo(
           relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
-        if (terrainObject[y[iX]].length === 2) {
+        if (terrainObject[n].length === 2) {
         context.lineTo(
           relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
         }
       })
       context.fill()
     }
-  })
+  }
+  // terrainList.forEach((y, iY) => {
+  //   for (let iX = 0; iX < terrainList[0].length; iX++) {
+  //     const relativeCooldinates = {x: iX * size,y: iY * size}
+  //     context.beginPath()
+  //     terrainObject[y[iX]].forEach((v, i) => {
+  //       i === 0 ?
+  //       context.moveTo(
+  //         relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
+  //       context.lineTo(
+  //         relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+  //       if (terrainObject[y[iX]].length === 2) {
+  //       context.lineTo(
+  //         relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
+  //       }
+  //     })
+  //     context.fill()
+  //   }
+  // })
   context.fillStyle = 'hsl(0, 0%, 0%)'
   const list = [
     `internalFPS: ${internalFrameList.length - 1}`,
@@ -366,7 +421,7 @@ const draw = () => {
     // `x: ${ownCondition.x}`,
     `x(m): ${Math.floor(ownCondition.x * .04)}`,
     // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((terrainList.length - 3) * size) - ownCondition.y) * .04)}`,
+    `y(m): ${Math.floor((((layerObject.height - 2) * size) - ownCondition.y) * .04)}`,
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx}`,
     `dy: ${ownCondition.dy}`,
