@@ -1,7 +1,7 @@
 import {key} from '../../../modules/key.mjs'
 import {mapLoader} from './mapLoader.mjs'
-let map = {}
-let tilelayer = {}
+let mapObject = {}
+let layerObject = {}
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
@@ -17,7 +17,7 @@ let currentTime = Date.now()
 let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const size = 64
+const size = 16
 const terrainObject = {
   '0': [[]],
   '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
@@ -55,15 +55,15 @@ const terrainList = [
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000021111100000000000000000000000000001',
+  '100000000000000000000021111100000000000000000000000001',
+  '100000000000000000000210000000000000000000000000000001',
+  '100000000000000000002100000000000000000000000000000001',
+  '100000000000000000021000000000000000000000000000000001',
   '100000000000000000210000000000000000000000000000000001',
-  '100000000000000002100000000000000000000000000000000001',
-  '100000000000000021000000000000000000000000000000000001',
-  '100000000000000210000000000000000000000000000000000001',
-  '100000000000002103000000000000000000000000000000000001',
-  '100000000000021000300000000000000000000000000000000001',
-  '100000000000210000030000000000000000000000000000000001',
-  '100000000002100000003000000000000000000000000000000001',
+  '100000000000000002103000000000000000000000000000000001',
+  '100000000000000021000300000000000000000000000000000001',
+  '100000000000000210000030000000000000000000000000000001',
+  '100000000000002100000003000000000000000000000000000001',
   '111111111111111111111111111111111111111111111111111111',
 ]
 terrainList.unshift('0'.repeat(terrainList[0].length))
@@ -154,7 +154,7 @@ const input = () => {
   // }
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
-const ownBox = {w: size / 8, h: size / 8}
+const ownBox = {w: 0, h: 0, r: size / 2 * .9,}
 const collisionResponse = tilt => {
   const nX = Math.cos(tilt * Math.PI)
   const nY = Math.sin(tilt * Math.PI)
@@ -274,10 +274,10 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           ny *= length
-          let nax = ax - nx * ownBox.w
-          let nay = ay - ny * ownBox.h
-          let nbx = bx - nx * ownBox.w
-          let nby = by - ny * ownBox.h
+          let nax = ax - nx * (ownBox.w + ownBox.r)
+          let nay = ay - ny * (ownBox.h + ownBox.r)
+          let nbx = bx - nx * (ownBox.w + ownBox.r)
+          let nby = by - ny * (ownBox.h + ownBox.r)
           const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
           let detectFlag = false
@@ -299,7 +299,9 @@ const collisionDetect = () => {
           if (
             !detectFlag &&
             !vertexFlag &&
-            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.w ** 2
+            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= (
+              // (ownBox.w + ownBox.h) / 2 +
+              ownBox.r) ** 2
           ) {
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
             detectFlag = true
@@ -334,9 +336,21 @@ const draw = () => {
     ownCondition.x, ownCondition.y, size / 32, 0, Math.PI * 2, false)
   context.fill()
   context.strokeStyle = 'hsl(0, 100%, 50%)'
+  context.strokeRect(
+    ownCondition.x - ownBox.w, ownCondition.y - ownBox.h, ownBox.w * 2, ownBox.h * 2)
   context.beginPath()
   context.arc(
-    ownCondition.x, ownCondition.y, ownBox.w, 0, Math.PI * 2, false)
+    ownCondition.x - ownBox.w, ownCondition.y - ownBox.h,
+    ownBox.r, Math.PI, Math.PI * 1.5, false)
+  context.arc(
+    ownCondition.x + ownBox.w, ownCondition.y - ownBox.h,
+    ownBox.r, Math.PI * 1.5, Math.PI * 2, false)
+  context.arc(
+    ownCondition.x + ownBox.w, ownCondition.y + ownBox.h,
+    ownBox.r, 0, Math.PI * .5, false)
+  context.arc(
+    ownCondition.x - ownBox.w, ownCondition.y + ownBox.h,
+    ownBox.r, Math.PI * .5, Math.PI, false)
   context.closePath()
   context.stroke()
   const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
@@ -387,12 +401,11 @@ const draw = () => {
   list.forEach((v, i) => {
     context.fillText(v, size * 11, 10 * (1 + i))
   })
-  for (let x = 0; x < tilelayer.width; x++) {
-    for (let y = 0; y < tilelayer.height; y++) {
+  for (let x = 0; x < layerObject.width; x++) {
+    for (let y = 0; y < layerObject.height; y++) {
       const rectSize = 2
-      context.fillStyle =
-      tilelayer.data[tilelayer.width * y + x] === 0 ? 'hsl(0, 0%, 50%)' :
-      'hsl(0, 0%, 0%)'
+      context.fillStyle = layerObject.data[layerObject.width * y + x] === 0 ?
+      'hsl(0, 0%, 50%)' : 'hsl(0, 0%, 0%)'
       context.fillRect(x * rectSize, y * rectSize, rectSize, rectSize)
     }
   }
@@ -400,14 +413,14 @@ const draw = () => {
 draw()
 const getJSON = async () => {
   return new Promise(async resolve => {
-    map = await mapLoader()
+    mapObject = await mapLoader()
     resolve()
   })
 }
-console.log(map)
+console.log(mapObject)
 getJSON().then(() => {
-  tilelayer = map.layers[0]
-  console.log(tilelayer)
+  layerObject = mapObject.layers[0]
+  console.log(layerObject)
   main()
   draw()
 })
