@@ -83,11 +83,29 @@ let moveConstant = .75
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
-const elasticModulus = .4 // 0 to 1
-const frictionalForce = .1 // 0 to 1
+let userEM = 5
+let userFF = 1
+let elasticModulus = userEM * .1 // 0 to 1
+let frictionalForce = userFF * .1 // 0 to 1
 let gravityFlag = true // temporary
 const input = () => {
-  if (key.k.isFirst()) gravityFlag = !gravityFlag
+  if (key.u.isFirst() && userEM < 10) {
+    userEM += 1
+    elasticModulus = userEM * .1
+  }
+  if (key.j.isFirst() && 0 < userEM) {
+    userEM -= 1
+    elasticModulus = userEM * .1
+  }
+  if (key.i.isFirst() && userFF < 10) {
+    userFF += 1
+    frictionalForce = userFF * .1
+  }
+  if (key.k.isFirst() && 0 < userFF) {
+    userFF -= 1
+    frictionalForce = userFF * .1
+  }
+  if (key.g.isFirst()) gravityFlag = !gravityFlag
   if (!gravityFlag) {
     ownCondition.dx = 0
     ownCondition.dy = 0
@@ -359,7 +377,9 @@ const draw = () => {
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx}`,
     `dy: ${ownCondition.dy}`,
-    `[K]gravity: ${gravityFlag}`,
+    `[G]gravity: ${gravityFlag}`,
+    `[J: +, U: -]elasticModulus: ${userEM * .1}`,
+    `[I: +, K: -]frictionalForce: ${userFF * .1}`,
   ]
   list.forEach((v, i) => {
     context.fillText(v, size * 11, 10 * (1 + i))
