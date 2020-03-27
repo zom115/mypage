@@ -1,10 +1,7 @@
 import {key} from '../../../modules/key.mjs'
 import {mapLoader} from './mapLoader.mjs'
-const getJSON = async () => {
-   const obj = await mapLoader()
-  console.log(obj)
-}
-getJSON()
+let map = {}
+let tilelayer = {}
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
@@ -320,7 +317,7 @@ const collisionDetect = () => {
   // elasticModulus.x = 0
   // elasticModulus.y = 0
 }
-setInterval(() => {
+const main = () => setInterval(() => {
   frameCounter(internalFrameList)
   globalElapsedTime = Date.now() - currentTime
   currentTime = Date.now()
@@ -390,5 +387,27 @@ const draw = () => {
   list.forEach((v, i) => {
     context.fillText(v, size * 11, 10 * (1 + i))
   })
+  for (let x = 0; x < tilelayer.width; x++) {
+    for (let y = 0; y < tilelayer.height; y++) {
+      const rectSize = 2
+      context.fillStyle =
+      tilelayer.data[tilelayer.width * y + x] === 0 ? 'hsl(0, 0%, 50%)' :
+      'hsl(0, 0%, 0%)'
+      context.fillRect(x * rectSize, y * rectSize, rectSize, rectSize)
+    }
+  }
 }
 draw()
+const getJSON = async () => {
+  return new Promise(async resolve => {
+    map = await mapLoader()
+    resolve()
+  })
+}
+console.log(map)
+getJSON().then(() => {
+  tilelayer = map.layers[0]
+  console.log(tilelayer)
+  main()
+  draw()
+})
