@@ -36,41 +36,43 @@ const terrainObject = {
   'e': [[0, 1], [0, 0], [1, 0], [.5, 1],],
 }
 const terrainList = [
-  '111111111111111111111111111111111111111111111111111111',
-  '140000000000500000000000000000000000000000000000000001',
-  '100000405000010000000000000000000000000000000000000001',
-  '107ad8000000200000000000000000000000000000000000000001',
-  '10ca00302002000000000000000000000000000000000000000001',
-  '180000000001000000000000000000000000000000000000000001',
-  '111111111111111111111111111111111111111111111111000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000111111111110000000001',
-  '111000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000111000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
-  '100000000000000000000021111100000000000000000000000001',
-  '100000000000000000000210000000000000000000000000000001',
-  '100000000000000000002100000000000000000000000000000001',
-  '100000000000000000021000000000000000000000000000000001',
-  '100000000000000000210000000000000000000000000000000001',
-  '100000000000000002103000000000000000000000000000000001',
-  '100000000000000021000300000000000000000000000000000001',
-  '100000000000000210000030000000000000000000000000000001',
-  '100000000000002100000003000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '1000123456789abede000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
+  '100000000000000000000000000000000000000000000000000001',
   '111111111111111111111111111111111111111111111111111111',
 ]
-terrainList.unshift('0'.repeat(terrainList[0].length))
-terrainList.push('0'.repeat(terrainList[0].length))
-terrainList.forEach((v, i) => {
-  terrainList[i] = '0' + v + '0'
-})
+const setBlank = (list) => {
+  list.unshift('0'.repeat(list[0].length))
+  list.push('0'.repeat(list[0].length))
+  list.forEach((v, i) => {
+    list[i] = '0' + v + '0'
+  })
+}
+setBlank(terrainList)
 const ownCondition = {
   x: canvas.offsetWidth * 2 / 8,
   y: canvas.offsetHeight * 3 / 4,
@@ -112,7 +114,7 @@ const input = () => {
   if (!gravityFlag) {
     ownCondition.dx = 0
     ownCondition.dy = 0
-    const num = 100
+    const num = 10
     if (key.a.flag) ownCondition.dx -= moveAcceleration * globalElapsedTime * num
     if (key.d.flag) ownCondition.dx += moveAcceleration * globalElapsedTime * num
     if (key.w.flag) ownCondition.dy -= moveAcceleration * globalElapsedTime * num
@@ -172,18 +174,21 @@ const collisionDetect = () => {
     count++
     if (100 < count) {
       ownCondition.x = canvas.offsetWidth * 2 / 8
-      ownCondition.y = canvas.offsetHeight * 7 / 8
+      ownCondition.y = canvas.offsetHeight * 3 / 4
       ownCondition.dx = 0
       ownCondition.dy = 0
     }
     repeatFlag = false
-    terrainList.forEach((y, iY) => {
-      for (let iX = 0; iX < terrainList[0].length; iX++) {
-        terrainObject[y[iX]].forEach((ro, i) => { // relative origin
-          if (terrainObject[y[iX]].length === 1) return
-          const rp = terrainObject[y[iX]].slice(i - 1)[0]
-          const rn = terrainObject[y[iX]].length - 1 === i ? // relative next
-            terrainObject[y[iX]][0] : terrainObject[y[iX]].slice(i + 1)[0]
+    for (let x = 0; x < layerObject.width; x++) {
+      for (let y = 0; y < layerObject.height; y++) {
+        const number = layerObject.data[layerObject.width * y + x]
+        let testIndex
+        testIndex = number !== 0 ? '1' : '0'
+        terrainObject[testIndex].forEach((ro, i) => { // relative origin
+          if (terrainObject[testIndex].length === 1) return
+          const rp = terrainObject[testIndex].slice(i - 1)[0]
+          const rn = terrainObject[testIndex].length - 1 === i ? // relative next
+            terrainObject[testIndex][0] : terrainObject[testIndex].slice(i + 1)[0]
           let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
           const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
           const findVertexList = [
@@ -196,7 +201,9 @@ const collisionDetect = () => {
           let returnFlag = false
           findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
-              const target = terrainObject[terrainList[iY + vl[2][1]][iX + vl[2][0]]]
+              const target = terrainObject[layerObject.data[(
+                y + vl[2][1]) * layerObject.width + x + vl[2][0]]]
+              if (target === undefined) return
               const vertex = i === 0 ? [1, ro[1]] :
               i === 1 ? [0, ro[1]] :
               i === 2 ? [ro[0], 1] : [ro[0], 0]
@@ -237,7 +244,9 @@ const collisionDetect = () => {
           ]
           cornerList.forEach(vl => { // diagonally
             if (vl[0][0] !== ro[0] || vl[0][1] !== ro[1]) return
-            const dTarget = terrainObject[terrainList[iY + vl[1][1]][iX + vl[1][0]]]
+            const dTarget = terrainObject[layerObject.data[(
+              y + vl[2][1]) * layerObject.width + x + vl[2][0]]]
+            if (dTarget === undefined) return
             const dVertex = vl[2]
             const dIndex = dTarget.findIndex(val => {
               return val[0] === dVertex[0] && val[1] === dVertex[1]
@@ -262,10 +271,10 @@ const collisionDetect = () => {
           const oy = ownCondition.y
           const dx = ownCondition.dx
           const dy = ownCondition.dy
-          const ax = iX * size + ro[0] * size
-          const ay = iY * size + ro[1] * size
-          const bx = iX * size + rn[0] * size
-          const by = iY * size + rn[1] * size
+          const ax = x * size + ro[0] * size
+          const ay = y * size + ro[1] * size
+          const bx = x * size + rn[0] * size
+          const by = y * size + rn[1] * size
           const abx = bx - ax
           const aby = by - ay
           let nx = -aby
@@ -294,13 +303,13 @@ const collisionDetect = () => {
               tilt += tilt < .5 ? 1.5 : -.5
             }
           }
-          if (terrainObject[y[iX]].length === 2 && (dy < 0 || i === 1)) return // temporary
-          if (terrainObject[y[iX]].length === 2) vertexFlag = true
+          if (terrainObject[testIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
+          if (terrainObject[testIndex].length === 2) vertexFlag = true
           if (
             !detectFlag &&
             !vertexFlag &&
             (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= (
-              // (ownBox.w + ownBox.h) / 2 +
+              (ownBox.w + ownBox.h) / 2 +
               ownBox.r) ** 2
           ) {
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
@@ -312,7 +321,7 @@ const collisionDetect = () => {
           }
         })
       }
-    })
+    }
   } while(repeatFlag)
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
@@ -401,17 +410,13 @@ const draw = () => {
   list.forEach((v, i) => {
     context.fillText(v, size * 11, 10 * (1 + i))
   })
+  context.fillStyle = 'hsl(240, 100%, 50%)'
   for (let x = 0; x < layerObject.width; x++) {
     for (let y = 0; y < layerObject.height; y++) {
-      // const rectSize = 2
-      // context.fillStyle = layerObject.data[layerObject.width * y + x] === 0 ?
-      // 'hsl(0, 0%, 50%)' : 'hsl(0, 0%, 0%)'
-      // context.fillRect(x * rectSize, y * rectSize, rectSize, rectSize)
       const relativeCooldinates = {x: x * size, y: y * size}
       if (layerObject.data[layerObject.width * y + x] !== 0) {
         context.beginPath()
         terrainObject['1'].forEach((v, i) => {
-          // console.log(i)
           i === 0 ?
           context.moveTo(
             relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
@@ -427,14 +432,12 @@ const draw = () => {
     }
   }
 }
-draw()
 const getJSON = async () => {
   return new Promise(async resolve => {
     mapObject = await mapLoader()
     resolve()
   })
 }
-console.log(mapObject)
 getJSON().then(() => {
   layerObject = mapObject.layers[0]
   console.log(layerObject)
