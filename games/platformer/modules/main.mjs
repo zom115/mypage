@@ -15,22 +15,6 @@ let globalElapsedTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 64
-const ownCondition = {
-  x: canvas.offsetWidth * 2 / 8,
-  y: canvas.offsetHeight * 7 / 8,
-  dx: 0,
-  dy: 0,
-  jumpFlag: false,
-}
-const moveAcceleration = .01
-let moveConstant = 1
-// gravitational acceleration = 9.80665 m / s ** 2
-// m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
-// 1 dot === 40 mm, 1000 mm === 25 * 40 mm
-const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
-let coefficient = 5
-const elasticModulus = .9
-let gravityFlag = true // temporary
 const terrainObject = {
   '0': [[]],
   '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
@@ -43,19 +27,19 @@ const terrainObject = {
   '8': [[1, 1], [0, 1], [0, .5],],
   '9': [[0, 1], [0, 0], [.5, 0],],
   'a': [[0, 0], [1, 0],],
-  'b': [[0, 0], [1, 0], [1, 1], [0, .5]], // 22.5 high
-  'c': [[1, 0], [1, 1], [0, 1], [.5, 0]],
-  'd': [[1, 1], [0, 1], [0, 0], [1, .5]],
-  'e': [[0, 1], [0, 0], [1, 0], [.5, 1]],
+  'b': [[0, 0], [1, 0], [1, 1], [0, .5],], // 22.5 high
+  'c': [[1, 0], [1, 1], [0, 1], [.5, 0],],
+  'd': [[1, 1], [0, 1], [0, 0], [1, .5],],
+  'e': [[0, 1], [0, 0], [1, 0], [.5, 1],],
 }
 const terrainList = [
   '111111111111111111111111111111111111111111111111111111',
-  '140000000000000000000000000000000000000000000000000001',
-  '100000000000000000000000000000000000000000000000000001',
-  '107ad8000000000000000000000000000000000000000000000001',
-  '10ca00000002000000000000000000000000000000000000000001',
-  '180000000020000000000000000000000000000000000000000001',
-  '111111111100000000000000000000000000000000000000000001',
+  '140000000000500000000000000000000000000000000000000001',
+  '100000405000010000000000000000000000000000000000000001',
+  '107ad8000000200000000000000000000000000000000000000001',
+  '10ca00302002000000000000000000000000000000000000000001',
+  '180000000001000000000000000000000000000000000000000001',
+  '111111111111111111111111111111111111111111111111000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
   '100000000000000000000000000000000000000000000000000001',
@@ -84,11 +68,34 @@ terrainList.push('0'.repeat(terrainList[0].length))
 terrainList.forEach((v, i) => {
   terrainList[i] = '0' + v + '0'
 })
+const ownCondition = {
+  x: canvas.offsetWidth * 2 / 8,
+  y: canvas.offsetHeight * 7 / 8,
+  dx: 0,
+  dy: 0,
+  jumpFlag: false,
+}
+const moveAcceleration = .01
+// 1 = 10 m / s
+let moveConstant = .75
+// gravitational acceleration = 9.80665 m / s ** 2
+// m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
+// 1 dot === 40 mm, 1000 mm === 25 * 40 mm
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
+let coefficient = 5
+const elasticModulus = .4 // 0 to 1
+const frictionalForce = .1 // 0 to 1
+let gravityFlag = true // temporary
 const input = () => {
   if (key.k.isFirst()) gravityFlag = !gravityFlag
   if (!gravityFlag) {
     ownCondition.dx = 0
     ownCondition.dy = 0
+    const num = 100
+    if (key.a.flag) ownCondition.dx -= moveAcceleration * globalElapsedTime * num
+    if (key.d.flag) ownCondition.dx += moveAcceleration * globalElapsedTime * num
+    if (key.w.flag) ownCondition.dy -= moveAcceleration * globalElapsedTime * num
+    if (key.s.flag) ownCondition.dy += moveAcceleration * globalElapsedTime * num
   }
   if (key.a.flag) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
@@ -99,12 +106,6 @@ const input = () => {
     if (ownCondition.dx + moveAcceleration < moveConstant) {
       ownCondition.dx += moveAcceleration * globalElapsedTime
     } else ownCondition.dx = moveConstant
-  }
-  if (key.w.flag && -moveConstant < ownCondition.dy) { // temporary
-    ownCondition.dy -= moveAcceleration * globalElapsedTime
-  }
-  if (key.s.flag && ownCondition.dy < moveConstant) { // temporary
-    ownCondition.dy += moveAcceleration * globalElapsedTime
   }
   // else {
   //   if (jumpConstant < jumpTime) jumpTime = 0
@@ -134,11 +135,14 @@ const input = () => {
 }
 const ownBox = {w: size / 8, h: size / 8}
 const collisionResponse = tilt => {
-  const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
-  ownCondition.dx += r * Math.cos(tilt * Math.PI)
-  ownCondition.dy += r * Math.sin(tilt * Math.PI)
-  ownCondition.dx *= elasticModulus
-  ownCondition.dy *= elasticModulus
+  const nX = Math.cos(tilt * Math.PI)
+  const nY = Math.sin(tilt * Math.PI)
+  const t = -(
+    ownCondition.dx * nX + ownCondition.dy * nY) / (nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
+  ownCondition.dx += 2 * t * nX
+  ownCondition.dy += 2 * t * nY
+  ownCondition.dx *= 1 - frictionalForce
+  ownCondition.dy *= 1 - frictionalForce
 }
 const collisionDetect = () => {
   let count = 0
@@ -148,6 +152,8 @@ const collisionDetect = () => {
     if (100 < count) {
       ownCondition.x = canvas.offsetWidth * 2 / 8
       ownCondition.y = canvas.offsetHeight * 7 / 8
+      ownCondition.dx = 0
+      ownCondition.dy = 0
     }
     repeatFlag = false
     terrainList.forEach((y, iY) => {
@@ -346,9 +352,10 @@ const draw = () => {
   const list = [
     `internalFPS: ${internalFrameList.length - 1}`,
     `FPS: ${animationFrameList.length - 1}`,
-    `x: ${ownCondition.x}`,
-    `y: ${ownCondition.y}`,
-    `y(m): ${(((terrainList.length - 3) * size) - ownCondition.y) * .04}`,
+    // `x: ${ownCondition.x}`,
+    `x(m): ${Math.floor(ownCondition.x * .04)}`,
+    // `y: ${ownCondition.y}`,
+    `y(m): ${Math.floor((((terrainList.length - 3) * size) - ownCondition.y) * .04)}`,
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx}`,
     `dy: ${ownCondition.dy}`,
