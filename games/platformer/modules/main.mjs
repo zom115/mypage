@@ -1,4 +1,10 @@
 import {key} from '../../../modules/key.mjs'
+import {mapLoader} from './mapLoader.mjs'
+const getJSON = async () => {
+   const obj = await mapLoader()
+  console.log(obj)
+}
+getJSON()
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
