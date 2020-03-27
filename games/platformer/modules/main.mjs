@@ -20,60 +20,62 @@ const context = canvas.getContext`2d`
 const size = 16
 const terrainList = [
   [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
+  [[0, 0], [1, 0]], // platform
   [[1, 0], [1, 1], [0, 1],], // triangle
-  [[0, 0], [1, 0], [1, .5],], // 22.5 low
-  [[0, 0], [1, 0], [1, 1], [0, .5],], // 22.5 high
+  [[1, .5], [1, 1], [0, 1],], // 22.5 low
+  [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
+  [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
+  [[1, 0], [1, .5], [0, .5],], // 22.5 harf
 ]
-const terrainObject = {
-  '0': [[]],
-  '1': [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
-  '2': [[1, 0], [1, 1], [0, 1],], // triangle
-  '3': [[1, 1], [0, 1], [0, 0],],
-  '4': [[0, 1], [0, 0], [1, 0],],
-  '5': [[0, 0], [1, 0], [1, 1],],
-  '6': [[0, 0], [1, 0], [1, .5],], // 22.5 low
-  '7': [[1, 0], [1, 1], [.5, 1],],
-  '8': [[1, 1], [0, 1], [0, .5],],
-  '9': [[0, 1], [0, 0], [.5, 0],],
-  'a': [[0, 0], [1, 0],],
-  'b': [[0, 0], [1, 0], [1, 1], [0, .5],], // 22.5 high
-  'c': [[1, 0], [1, 1], [0, 1], [.5, 0],],
-  'd': [[1, 1], [0, 1], [0, 0], [1, .5],],
-  'e': [[0, 1], [0, 0], [1, 0], [.5, 1],],
+const terrainObject = {'0': [[]],}
+const orgRound = (value, base) => {
+  return Math.round(value * base) / base
 }
 const inversionTerrain = array => {
   const terrain = JSON.parse(JSON.stringify(array))
   terrain.forEach(v => {
-    v[0] = 1 - v[0]
+    v[0] = orgRound(1 - v[0], 10)
   })
   terrain.reverse() // 線分の向きを揃える
   return terrain
 }
-terrainObject['10'] = inversionTerrain(terrainObject['6'])
 const rotationTerrain = array => {
   const terrain = JSON.parse(JSON.stringify(array))
   terrain.forEach(v => {
     v[0] -= .5
     v[1] -= .5
-    ;[v[0], v[1]] = [v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2),
-      v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2)]
+    ;[v[0], v[1]] = [
+      orgRound(v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2), 10),
+      orgRound(v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2), 10),]
     v[0] += .5
     v[1] += .5
   })
   return terrain
 }
-terrainObject['11'] = rotationTerrain(terrainObject['6'])
-console.log(terrainObject)
+let id = 1
+terrainList.forEach(v => {
+  for (let i = 0; i < 4; i++) {
+    if (i === 0) {
+      terrainObject[id] = JSON.parse(JSON.stringify(v))
+    } else terrainObject[id] = rotationTerrain(terrainObject[id - 2])
+    id++
+    terrainObject[id] = inversionTerrain(terrainObject[id - 1])
+    id++
+  }
+})
 const testObject = {
-  data: [
-    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-    '0', '0', '0', '0', '0', '0', '0', '0', '1', '2', '3', '4', '5', '6', '7', '8',
-    '0', '0', '0', '0', '0', '0', '0', '0', '1', '2', '3', '4', '5', '10', '7', '8',
-    '0', '0', '0', '0', '0', '0', '0', '0', '1', '2', '3', '4', '5', '11', '7', '8',
-  ],
-  height: 4,
+  data: [],
+  height: 1,
   width: 16,
 }
+Object.keys(terrainObject).forEach((v, i) => {
+  if (i % 8 === 1) {
+    for (let index = 0; index < 8; index++) testObject.data.push('0')
+    testObject.height += 1
+  }
+  if (i === 0) for (let index = 0; index < 16; index++) testObject.data.push('0')
+  else testObject.data.push(v)
+})
 const ownCondition = {
   x: canvas.offsetWidth * 2 / 8,
   y: canvas.offsetHeight * 3 / 4,
@@ -390,7 +392,7 @@ const draw = () => {
           relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
         if (terrainObject[n].length === 2) {
         context.lineTo(
-          relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
+          relativeCooldinates.x + v[0] * size - 2, relativeCooldinates.y + v[1] * size + 2)
         }
       })
       context.fill()
@@ -462,7 +464,6 @@ const getJSON = async () => {
 }
 getJSON().then(() => {
   layerObject = mapObject.layers[0]
-  console.log(layerObject)
   main()
   draw()
 })
