@@ -88,7 +88,9 @@ let userFF = 1
 let elasticModulus = userEM * .1 // 0 to 1
 let frictionalForce = userFF * .1 // 0 to 1
 let gravityFlag = true // temporary
+let collisionDisp = true
 const input = () => {
+  if (key.h.isFirst()) collisionDisp = !collisionDisp
   if (key.u.isFirst() && userEM < 10) {
     userEM += 1
     elasticModulus = userEM * .1
@@ -383,6 +385,7 @@ const draw = () => {
     `dx: ${ownCondition.dx}`,
     `dy: ${ownCondition.dy}`,
     `[G]gravity: ${gravityFlag}`,
+    `[H]collisionDisp: ${collisionDisp}`,
     `[J: +, U: -]elasticModulus: ${userEM * .1}`,
     `[I: +, K: -]frictionalForce: ${userFF * .1}`,
   ]
@@ -402,26 +405,28 @@ const draw = () => {
       }
     }
   }
-  context.fillStyle = 'hsla(90, 50%, 50%, .5)'
-  for (let x = 0; x < collisionObject.width; x++) {
-    for (let y = 0; y < collisionObject.height; y++) {
-      const id = collisionObject.data[y * collisionObject.width + x] -
-        resource.json.tilesets[1].firstgid + 1
-      if (0 < id) {
-        const relativeCooldinates = {x: x * size, y: y * size}
-        context.beginPath()
-        terrainObject[id].forEach((v, i) => {
-          i === 0 ?
-          context.moveTo(
-            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
-          context.lineTo(
-            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
-          if (terrainObject[id].length === 2) {
-          context.lineTo(
-            relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
-          }
-        })
-        context.fill()
+  if (collisionDisp) {
+    context.fillStyle = 'hsla(90, 50%, 50%, .5)'
+    for (let x = 0; x < collisionObject.width; x++) {
+      for (let y = 0; y < collisionObject.height; y++) {
+        const id = collisionObject.data[y * collisionObject.width + x] -
+          resource.json.tilesets[1].firstgid + 1
+        if (0 < id) {
+          const relativeCooldinates = {x: x * size, y: y * size}
+          context.beginPath()
+          terrainObject[id].forEach((v, i) => {
+            i === 0 ?
+            context.moveTo(
+              relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
+            context.lineTo(
+              relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+            if (terrainObject[id].length === 2) {
+            context.lineTo(
+              relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
+            }
+          })
+          context.fill()
+        }
       }
     }
   }
