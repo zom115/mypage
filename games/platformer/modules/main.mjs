@@ -83,30 +83,16 @@ let moveConstant = .75
 // 1 dot === 40 mm, 1000 mm === 25 * 40 mm
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
-let userEM = 5
-let userFF = 1
-let elasticModulus = userEM * .1 // 0 to 1
-let frictionalForce = userFF * .1 // 0 to 1
+let elasticModulus = .5 // 0 to 1
+let frictionalForce = .1 // 0 to 1
 let gravityFlag = true // temporary
 let collisionDisp = true
 const input = () => {
   if (key.h.isFirst()) collisionDisp = !collisionDisp
-  if (key.u.isFirst() && userEM < 10) {
-    userEM += 1
-    elasticModulus = userEM * .1
-  }
-  if (key.j.isFirst() && 0 < userEM) {
-    userEM -= 1
-    elasticModulus = userEM * .1
-  }
-  if (key.i.isFirst() && userFF < 10) {
-    userFF += 1
-    frictionalForce = userFF * .1
-  }
-  if (key.k.isFirst() && 0 < userFF) {
-    userFF -= 1
-    frictionalForce = userFF * .1
-  }
+  if (key.u.isFirst() && elasticModulus < 1) elasticModulus = orgRound(elasticModulus + .1, 10)
+  if (key.j.isFirst() && 0 < elasticModulus) elasticModulus = orgRound(elasticModulus - .1, 10)
+  if (key.i.isFirst() && frictionalForce < 1) frictionalForce = orgRound(frictionalForce + .1, 10)
+  if (key.k.isFirst() && 0 < frictionalForce) frictionalForce = orgRound(frictionalForce - .1, 10)
   if (key.g.isFirst()) gravityFlag = !gravityFlag
   if (!gravityFlag) {
     ownCondition.dx = 0
@@ -180,14 +166,13 @@ const collisionDetect = () => {
       for (let y = 0; y < collisionObject.height; y++) {
         const id = collisionObject.data[y * collisionObject.width + x] -
           resource.json.tilesets[1].firstgid + 1
-        const number = collisionObject.data[collisionObject.width * y + x]
-        let testIndex
-        testIndex = 0 < id ? id : '0'
-        terrainObject[testIndex].forEach((ro, i) => { // relative origin
-          if (terrainObject[testIndex].length === 1) return
-          const rp = terrainObject[testIndex].slice(i - 1)[0]
-          const rn = terrainObject[testIndex].length - 1 === i ? // relative next
-            terrainObject[testIndex][0] : terrainObject[testIndex].slice(i + 1)[0]
+        let terrainIndex
+        terrainIndex = 0 < id ? id : '0'
+        terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
+          if (terrainObject[terrainIndex].length === 1) return
+          const rp = terrainObject[terrainIndex].slice(i - 1)[0]
+          const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
+            terrainObject[terrainIndex][0] : terrainObject[terrainIndex].slice(i + 1)[0]
           let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
           const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
           const findVertexList = [
@@ -302,8 +287,8 @@ const collisionDetect = () => {
               tilt += tilt < .5 ? 1.5 : -.5
             }
           }
-          if (terrainObject[testIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
-          if (terrainObject[testIndex].length === 2) vertexFlag = true
+          if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
+          if (terrainObject[terrainIndex].length === 2) vertexFlag = true
           if (
             !detectFlag &&
             !vertexFlag &&
@@ -351,8 +336,8 @@ const draw = () => {
     `dy: ${ownCondition.dy.toFixed(2)}`,
     `[G]gravity: ${gravityFlag}`,
     `[H]collisionDisp: ${collisionDisp}`,
-    `[J: +, U: -]elasticModulus: ${userEM * .1}`,
-    `[I: +, K: -]frictionalForce: ${userFF * .1}`,
+    `[J: +, U: -]elasticModulus: ${elasticModulus}`,
+    `[I: +, K: -]frictionalForce: ${frictionalForce}`,
   ]
   list.forEach((v, i) => {
     context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
