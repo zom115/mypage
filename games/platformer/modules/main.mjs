@@ -169,6 +169,8 @@ const collisionDetect = () => {
         let terrainIndex
         terrainIndex = 0 < id ? id : '0'
         terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
+          // console.log(ro.length)
+          if (ro.rength === 0) return
           if (terrainObject[terrainIndex].length === 1) return
           const rp = terrainObject[terrainIndex].slice(i - 1)[0]
           const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
@@ -186,7 +188,8 @@ const collisionDetect = () => {
           findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
               const target = terrainObject[collisionObject.data[(
-                y + vl[2][1]) * collisionObject.width + x + vl[2][0]]]
+                y + vl[2][1]) * collisionObject.width + x + vl[2][0]] -
+                resource.json.tilesets[1].firstgid + 1]
               if (target === undefined) return
               const vertex = i === 0 ? [1, ro[1]] :
               i === 1 ? [0, ro[1]] :
@@ -228,8 +231,9 @@ const collisionDetect = () => {
           ]
           cornerList.forEach(vl => { // diagonally
             if (vl[0][0] !== ro[0] || vl[0][1] !== ro[1]) return
-            const dTarget = terrainObject[layerObject.data[(
-              y + vl[2][1]) * layerObject.width + x + vl[2][0]]]
+            const dTarget = terrainObject[collisionObject.data[(
+              y + vl[2][1]) * collisionObject.width + x + vl[2][0]] -
+              resource.json.tilesets[1].firstgid + 1]
             if (dTarget === undefined) return
             const dVertex = vl[2]
             const dIndex = dTarget.findIndex(val => {
@@ -267,10 +271,10 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           ny *= length
-          let nax = ax - nx * (ownBox.w + ownBox.r)
-          let nay = ay - ny * (ownBox.h + ownBox.r)
-          let nbx = bx - nx * (ownBox.w + ownBox.r)
-          let nby = by - ny * (ownBox.h + ownBox.r)
+          let nax = ax - nx * (ownBox.w / 2 + ownBox.r)
+          let nay = ay - ny * (ownBox.h / 2 + ownBox.r)
+          let nbx = bx - nx * (ownBox.w / 2 + ownBox.r)
+          let nby = by - ny * (ownBox.h / 2 + ownBox.r)
           const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
           let detectFlag = false
@@ -292,10 +296,9 @@ const collisionDetect = () => {
           if (
             !detectFlag &&
             !vertexFlag &&
-            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= (
-              (ownBox.w + ownBox.h) / 2 +
-              ownBox.r) ** 2
+            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.r ** 2
           ) {
+            console.log('vertex', ax, ay)
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
             detectFlag = true
           }
@@ -362,19 +365,19 @@ const draw = () => {
   context.fill()
   context.strokeStyle = 'hsl(0, 100%, 50%)'
   context.strokeRect(
-    ownCondition.x - ownBox.w, ownCondition.y - ownBox.h, ownBox.w * 2, ownBox.h * 2)
+    ownCondition.x - ownBox.w / 2, ownCondition.y - ownBox.h / 2, ownBox.w, ownBox.h)
   context.beginPath()
   context.arc(
-    ownCondition.x - ownBox.w, ownCondition.y - ownBox.h,
+    ownCondition.x - ownBox.w / 2, ownCondition.y - ownBox.h / 2,
     ownBox.r, Math.PI, Math.PI * 1.5, false)
   context.arc(
-    ownCondition.x + ownBox.w, ownCondition.y - ownBox.h,
+    ownCondition.x + ownBox.w / 2, ownCondition.y - ownBox.h / 2,
     ownBox.r, Math.PI * 1.5, Math.PI * 2, false)
   context.arc(
-    ownCondition.x + ownBox.w, ownCondition.y + ownBox.h,
+    ownCondition.x + ownBox.w / 2, ownCondition.y + ownBox.h / 2,
     ownBox.r, 0, Math.PI * .5, false)
   context.arc(
-    ownCondition.x - ownBox.w, ownCondition.y + ownBox.h,
+    ownCondition.x - ownBox.w / 2, ownCondition.y + ownBox.h / 2,
     ownBox.r, Math.PI * .5, Math.PI, false)
   context.closePath()
   context.stroke()
