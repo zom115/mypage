@@ -408,6 +408,29 @@ const draw = () => {
       }
     }
   }
+  context.fillStyle = 'hsla(90, 50%, 50%, .5)'
+  for (let x = 0; x < collisionObject.width; x++) {
+    for (let y = 0; y < collisionObject.height; y++) {
+      const id = collisionObject.data[y * collisionObject.width + x] -
+        resource.json.tilesets[1].firstgid + 1
+      if (0 < id) {
+        const relativeCooldinates = {x: x * size, y: y * size}
+        context.beginPath()
+        terrainObject[id].forEach((v, i) => {
+          i === 0 ?
+          context.moveTo(
+            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
+          context.lineTo(
+            relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+          if (terrainObject[id].length === 2) {
+          context.lineTo(
+            relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
+          }
+        })
+        context.fill()
+      }
+    }
+  }
 }
 let resource = []
 resource.push(mapLoader('json', 'resources/main.json'))
@@ -419,6 +442,7 @@ Promise.all(resource).then(result => {
   mapObject.layers.forEach(v => {
     v.name === 'collision' ? collisionObject = v : layerObject = v
   })
+  console.log(collisionObject)
   main()
   draw()
 })
