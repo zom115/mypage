@@ -1,5 +1,6 @@
 import {key} from '../../../modules/key.mjs'
 import {mapLoader} from './mapLoader.mjs'
+import {imageLoader} from './imageLoader.mjs'
 let mapObject = {}
 let layerObject = {}
 let collisionObject = {}
@@ -378,12 +379,12 @@ const draw = () => {
     context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
   context.fill()
   context.fillStyle = 'hsl(180, 100%, 50%)'
+  context.drawImage(resource.collision, size * 20, size)
   for (let x = 0; x < testObject.width; x++) {
     for (let y = 0; y < testObject.height; y++) {
       const relativeCooldinates = {x: x * size, y: y * size}
       const n = +testObject.data[testObject.width * y + x]
       if (n === 0) continue
-      // console.log(testObject.data[n], n)
       context.beginPath()
       terrainObject[n].forEach((v, i) => {
         i === 0 ?
@@ -439,14 +440,13 @@ const draw = () => {
     }
   }
 }
-const getJSON = async () => {
-  return new Promise(async resolve => {
-    mapObject = await mapLoader()
-    resolve()
-  })
-}
-getJSON().then(() => {
-  console.log(mapObject)
+let resource = []
+resource.push(mapLoader('json', 'resources/main.json'))
+resource.push(imageLoader('collision', 'images/collision.png'))
+Promise.all(resource).then(result => {
+  resource = {}
+  result.forEach(v => resource[Object.keys(v)[0]] = Object.values(v)[0])
+  mapObject = resource.json
   mapObject.layers.forEach(v => {
     v.name === 'collision' ? collisionObject = v : layerObject = v
   })
