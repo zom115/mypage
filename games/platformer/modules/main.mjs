@@ -2,6 +2,7 @@ import {key} from '../../../modules/key.mjs'
 import {mapLoader} from './mapLoader.mjs'
 let mapObject = {}
 let layerObject = {}
+let collisionObject = {}
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
@@ -398,24 +399,6 @@ const draw = () => {
       context.fill()
     }
   }
-  // terrainList.forEach((y, iY) => {
-  //   for (let iX = 0; iX < terrainList[0].length; iX++) {
-  //     const relativeCooldinates = {x: iX * size,y: iY * size}
-  //     context.beginPath()
-  //     terrainObject[y[iX]].forEach((v, i) => {
-  //       i === 0 ?
-  //       context.moveTo(
-  //         relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
-  //       context.lineTo(
-  //         relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
-  //       if (terrainObject[y[iX]].length === 2) {
-  //       context.lineTo(
-  //         relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
-  //       }
-  //     })
-  //     context.fill()
-  //   }
-  // })
   context.fillStyle = 'hsl(0, 0%, 0%)'
   const list = [
     `internalFPS: ${internalFrameList.length - 1}`,
@@ -463,7 +446,10 @@ const getJSON = async () => {
   })
 }
 getJSON().then(() => {
-  layerObject = mapObject.layers[0]
+  console.log(mapObject)
+  mapObject.layers.forEach(v => {
+    v.name === 'collision' ? collisionObject = v : layerObject = v
+  })
   main()
   draw()
 })
