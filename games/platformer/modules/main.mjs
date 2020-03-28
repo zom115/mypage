@@ -173,11 +173,13 @@ const collisionDetect = () => {
       ownCondition.dy = 0
     }
     repeatFlag = false
-    for (let x = 0; x < layerObject.width; x++) {
-      for (let y = 0; y < layerObject.height; y++) {
-        const number = layerObject.data[layerObject.width * y + x]
+    for (let x = 0; x < collisionObject.width; x++) {
+      for (let y = 0; y < collisionObject.height; y++) {
+        const id = collisionObject.data[y * collisionObject.width + x] -
+          resource.json.tilesets[1].firstgid + 1
+        const number = collisionObject.data[collisionObject.width * y + x]
         let testIndex
-        testIndex = number !== 0 ? '1' : '0'
+        testIndex = 0 < id ? id : '0'
         terrainObject[testIndex].forEach((ro, i) => { // relative origin
           if (terrainObject[testIndex].length === 1) return
           const rp = terrainObject[testIndex].slice(i - 1)[0]
@@ -195,8 +197,8 @@ const collisionDetect = () => {
           let returnFlag = false
           findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
-              const target = terrainObject[layerObject.data[(
-                y + vl[2][1]) * layerObject.width + x + vl[2][0]]]
+              const target = terrainObject[collisionObject.data[(
+                y + vl[2][1]) * collisionObject.width + x + vl[2][0]]]
               if (target === undefined) return
               const vertex = i === 0 ? [1, ro[1]] :
               i === 1 ? [0, ro[1]] :
