@@ -1,0 +1,15 @@
+{ "columns":40,
+ "image":"..\/..\/misaki\/images\/MagicCliffsArtwork\/tileset.png",
+ "imageheight":320,
+ "imagewidth":640,
+ "margin":0,
+ "name":"tileset",
+ "spacing":0,
+ "tilecount":800,
+ "tiledversion":"2020.03.18",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#003039",
+ "type":"tileset",
+ "version":1.2
+}
