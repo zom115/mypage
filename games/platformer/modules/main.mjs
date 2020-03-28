@@ -139,7 +139,7 @@ const input = () => {
   // }
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
-const ownBox = {w: 0, h: 0, r: size / 2 * .9,}
+const ownBox = {w: 0, h: size, r: size / 2 * .9,}
 const collisionResponse = tilt => {
   const nX = Math.cos(tilt * Math.PI)
   const nY = Math.sin(tilt * Math.PI)
@@ -295,8 +295,15 @@ const collisionDetect = () => {
           if (terrainObject[terrainIndex].length === 2) vertexFlag = true
           if (
             !detectFlag &&
-            !vertexFlag &&
-            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.r ** 2
+            !vertexFlag && (
+            (ax - (ox - ownBox.w / 2 + dx)) ** 2 + (ay - (oy - ownBox.h / 2 + dy)) ** 2 <=
+              ownBox.r ** 2 ||
+            (ax - (ox - ownBox.w / 2 + dx)) ** 2 + (ay - (oy + ownBox.h / 2 + dy)) ** 2 <=
+              ownBox.r ** 2 ||
+            (ax - (ox + ownBox.w / 2 + dx)) ** 2 + (ay - (oy - ownBox.h / 2 + dy)) ** 2 <=
+              ownBox.r ** 2 ||
+            (ax - (ox + ownBox.w / 2 + dx)) ** 2 + (ay - (oy + ownBox.h / 2 + dy)) ** 2 <=
+              ownBox.r ** 2 )
           ) {
             console.log('vertex', ax, ay)
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
@@ -348,11 +355,11 @@ const draw = () => {
   context.fillStyle = 'hsl(240, 100%, 50%)'
   for (let x = 0; x < layerObject.width; x++) {
     for (let y = 0; y < layerObject.height; y++) {
-      const id = layerObject.data[layerObject.width * y + x] - resource.json.tilesets[0].firstgid + 1
+      const id = layerObject.data[layerObject.width * y + x] - resource.json.tilesets[0].firstgid
       if (id !== 0) {
         context.drawImage(
           resource.tileset,
-          (id % tileset.width - 1) * size,
+          (id % tileset.width) * size,
           (id - id % tileset.width) / tileset.width * size
           , size, size, x * size, y * size, size, size)
       }
