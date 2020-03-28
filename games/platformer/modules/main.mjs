@@ -338,6 +338,38 @@ const draw = () => {
   window.requestAnimationFrame(draw)
   frameCounter(animationFrameList)
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  context.fillStyle = 'hsl(0, 0%, 0%)'
+  const list = [
+    `internalFPS: ${internalFrameList.length - 1}`,
+    `FPS: ${animationFrameList.length - 1}`,
+    // `x: ${ownCondition.x}`,
+    `x(m): ${Math.floor(ownCondition.x * .04)}`,
+    // `y: ${ownCondition.y}`,
+    `y(m): ${Math.floor((((layerObject.height - 2) * size) - ownCondition.y) * .04)}`,
+    `coefficient: ${coefficient}`,
+    `dx: ${ownCondition.dx.toFixed(2)}`,
+    `dy: ${ownCondition.dy.toFixed(2)}`,
+    `[G]gravity: ${gravityFlag}`,
+    `[H]collisionDisp: ${collisionDisp}`,
+    `[J: +, U: -]elasticModulus: ${userEM * .1}`,
+    `[I: +, K: -]frictionalForce: ${userFF * .1}`,
+  ]
+  list.forEach((v, i) => {
+    context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
+  })
+  context.fillStyle = 'hsl(240, 100%, 50%)'
+  for (let x = 0; x < layerObject.width; x++) {
+    for (let y = 0; y < layerObject.height; y++) {
+      const id = layerObject.data[layerObject.width * y + x] - resource.json.tilesets[0].firstgid + 1
+      if (id !== 0) {
+        context.drawImage(
+          resource.tileset,
+          (id % tileset.width - 1) * size,
+          (id - id % tileset.width) / tileset.width * size
+          , size, size, x * size, y * size, size, size)
+      }
+    }
+  }
   context.fillStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
   context.arc(
@@ -372,39 +404,6 @@ const draw = () => {
     ownCondition.y + size * r * ownCondition.dy / r + 1)
     context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
   context.fill()
-  context.fillStyle = 'hsl(180, 100%, 50%)'
-  context.fillStyle = 'hsl(0, 0%, 0%)'
-  const list = [
-    `internalFPS: ${internalFrameList.length - 1}`,
-    `FPS: ${animationFrameList.length - 1}`,
-    // `x: ${ownCondition.x}`,
-    `x(m): ${Math.floor(ownCondition.x * .04)}`,
-    // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((layerObject.height - 2) * size) - ownCondition.y) * .04)}`,
-    `coefficient: ${coefficient}`,
-    `dx: ${ownCondition.dx}`,
-    `dy: ${ownCondition.dy}`,
-    `[G]gravity: ${gravityFlag}`,
-    `[H]collisionDisp: ${collisionDisp}`,
-    `[J: +, U: -]elasticModulus: ${userEM * .1}`,
-    `[I: +, K: -]frictionalForce: ${userFF * .1}`,
-  ]
-  list.forEach((v, i) => {
-    context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
-  })
-  context.fillStyle = 'hsl(240, 100%, 50%)'
-  for (let x = 0; x < layerObject.width; x++) {
-    for (let y = 0; y < layerObject.height; y++) {
-      const id = layerObject.data[layerObject.width * y + x] - resource.json.tilesets[0].firstgid + 1
-      if (id !== 0) {
-        context.drawImage(
-          resource.tileset,
-          (id % tileset.width - 1) * size,
-          (id - id % tileset.width) / tileset.width * size
-          , size, size, x * size, y * size, size, size)
-      }
-    }
-  }
   if (collisionDisp) {
     context.fillStyle = 'hsla(90, 50%, 50%, .5)'
     for (let x = 0; x < collisionObject.width; x++) {
@@ -442,7 +441,6 @@ Promise.all(resource).then(result => {
   mapObject.layers.forEach(v => {
     v.name === 'collision' ? collisionObject = v : layerObject = v
   })
-  console.log(resource.json.tilesets[0].firstgid)
   main()
   draw()
 })
