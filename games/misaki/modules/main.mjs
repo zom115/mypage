@@ -13,8 +13,6 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
-let currentTime = Date.now()
-let globalElapsedTime = 1
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -30,12 +28,12 @@ let settings = { // initial value
   volume: {
     master: setStorage('master', .5, true),
     voice : setStorage('voice', .1, true),
-    music : setStorage('music', .02, true)
+    music : setStorage('music', .02, true),
   }, type: {
     DECO  : setStorage('DECO', false, true),
     status: setStorage('status', false, true),
     hitbox: setStorage('hitbox', false, true),
-    map   : setStorage('map', false, true)
+    map   : setStorage('map', false, true),
   }
 }
 const inputDOM = document.getElementsByTagName`input`
@@ -62,7 +60,7 @@ let image = {
         'images/Misaki/Misaki_Idle_4.png',
         'images/Misaki/Misaki_Idle_4_Blink_1.png',
         'images/Misaki/Misaki_Idle_4_Blink_2.png',
-      ]
+      ],
     }, walk : {
       data: [],
       src: [
@@ -71,13 +69,13 @@ let image = {
         'images/Misaki/Misaki_Walk_3.png',
         'images/Misaki/Misaki_Walk_4.png',
         'images/Misaki/Misaki_Walk_5.png',
-        'images/Misaki/Misaki_Walk_6.png'
+        'images/Misaki/Misaki_Walk_6.png',
       ],
     }, turn : {
       data: [],
       src: [
         'images/Misaki/Misaki_Turn_3.png',
-        'images/Misaki/Misaki_Turn_2.png'
+        'images/Misaki/Misaki_Turn_2.png',
       ],
     }, run : {
       data: [],
@@ -89,14 +87,14 @@ let image = {
         'images/Misaki/Misaki_Run_5.png',
         'images/Misaki/Misaki_Run_6.png',
         'images/Misaki/Misaki_Run_7.png',
-        'images/Misaki/Misaki_Run_8.png'
+        'images/Misaki/Misaki_Run_8.png',
       ],
     }, crouch: {
       data: [],
       src: [
         'images/Misaki/Misaki_Crouch_1.png',
         'images/Misaki/Misaki_Crouch_2.png',
-        'images/Misaki/Misaki_Crouch_3.png'
+        'images/Misaki/Misaki_Crouch_3.png',
       ],
     }, jump : {
       data: [],
@@ -109,7 +107,7 @@ let image = {
         'images/Misaki/Misaki_Jump_MidAir_3.png',
         'images/Misaki/Misaki_Jump_Fall_1.png',
         'images/Misaki/Misaki_Jump_Fall_2.png',
-        'images/Misaki/Misaki_Jump_Fall_3.png'
+        'images/Misaki/Misaki_Jump_Fall_3.png',
       ],
     }, slide : {
       data: [],
@@ -121,7 +119,7 @@ let image = {
       data: [],
       src: [
         'images/Misaki/Misaki_Punch_1.png',
-        'images/Misaki/Misaki_Punch_2.png'
+        'images/Misaki/Misaki_Punch_2.png',
       ],
     }, kick : {
       data: [],
@@ -131,7 +129,7 @@ let image = {
         'images/Misaki/Misaki_Kick_3.png',
         'images/Misaki/Misaki_Kick_4.png',
         'images/Misaki/Misaki_Kick_5.png',
-        'images/Misaki/Misaki_Kick_6.png'
+        'images/Misaki/Misaki_Kick_6.png',
       ],
     }, damage: {
       data: [],
@@ -139,7 +137,7 @@ let image = {
         'images/Misaki/Misaki_Damage_1.png',
         'images/Misaki/Misaki_Damage_2.png',
         'images/Misaki/Misaki_Damage_3.png',
-        'images/Misaki/Misaki_Damage_4.png'
+        'images/Misaki/Misaki_Damage_4.png',
       ],
     }, down : {
       data: [],
@@ -147,14 +145,14 @@ let image = {
         'images/Misaki/Misaki_Damage_down_1.png',
         'images/Misaki/Misaki_Damage_down_2.png',
         'images/Misaki/Misaki_Damage_down_3.png',
-        'images/Misaki/Misaki_Damage_down_4.png'
+        'images/Misaki/Misaki_Damage_down_4.png',
       ],
     }, return: {
       data: [],
       src: [
         'images/Misaki/Misaki_Damage_return_1.png',
         'images/Misaki/Misaki_Damage_return_2.png',
-        'images/Misaki/Misaki_Damage_return_3.png'
+        'images/Misaki/Misaki_Damage_return_3.png',
       ],
     },
   }, kohaku: {
@@ -164,7 +162,7 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
         'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
         'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_4.png'
+        'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
       ],
     }, walk  : {
       data: [],
@@ -174,7 +172,7 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
         'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
         'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
-        'images/Unitychan/BasicActions/Unitychan_Walk_6.png'
+        'images/Unitychan/BasicActions/Unitychan_Walk_6.png',
       ],
     }, damage: {
       data: [],
@@ -196,7 +194,7 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_19.png'
+        'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
       ],
     }, sword: {
       data: [],
@@ -224,7 +222,7 @@ let image = {
       src: ['images/MagicCliffsArtwork/sea.png'],
     }, sky : {
       data: [],
-      src: ['images/MagicCliffsArtwork/sky.png']
+      src: ['images/MagicCliffsArtwork/sky.png'],
     },
   },
 }
@@ -257,16 +255,16 @@ const audio = {
       src: 'audio/Misaki/V2001.wav',
     }, doubleJump: {
       data: '',
-      src: 'audio/Misaki/V2002.wav'
+      src: 'audio/Misaki/V2002.wav',
     }, punch : {
       data: '',
-      src: 'audio/Misaki/V2005.wav'
+      src: 'audio/Misaki/V2005.wav',
     }, kick : {
       data: '',
-      src: 'audio/Misaki/V2006.wav'
+      src: 'audio/Misaki/V2006.wav',
     }, win : {
       data: '',
-      src: 'audio/Misaki/V2024.wav'
+      src: 'audio/Misaki/V2024.wav',
     },
   }, music: {
     'テレフォン・ダンス': {
@@ -318,12 +316,11 @@ Object.keys(audio).forEach(v => {
 let imageStat = {
   idle  : {
     blinkAnimationInterval: 15,
-    blinkInterval: 500,
+    blinkInterval: 5e3,
     blinkMax: 3,
     blinkRotate: [0, 1, 2, 1],
     breathCount: 0,
     breathInterval: 30,
-    breathIntervalMax: 500,
     breathMax: 4,
     breathTimestamp: globalTimestamp,
     condition: 0,
@@ -337,7 +334,7 @@ let imageStat = {
   push  : {condition: 0},
   punch : {condition: 0, time: 0, frame: 3, audioTrigger: 1},
   kick  : {condition: 0, time: 0, frame: 7, audioTrigger: 3},
-  damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0}
+  damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
 }
 const unityChanStat = {
   idle  : {frame: 55},
@@ -350,8 +347,8 @@ const unityChanStat = {
     active: 7,
     activeLength: 1,
     recovery: 5,
-    recoveryLength: 2
-  }
+    recoveryLength: 2,
+  },
 }
 let playFlag = false
 let currentPlay = 'アオイセカイ'
@@ -375,11 +372,11 @@ let fieldArray = []
 let gate = []
 const aftergrowLimit = {
   gate: 240,
-  loading: 90
+  loading: 90,
 }
 let aftergrow = {
   gate: 0,
-  loading: 0
+  loading: 0,
 }
 let enemies = []
 const setStage = arg => {
@@ -2139,8 +2136,6 @@ const floatMenu = () => {
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
-  globalElapsedTime = Date.now() - currentTime
-  currentTime = Date.now()
   if (screenState === screenList[0]) title()
   else if (screenState === screenList[1]) inGame()
   floatMenu()
