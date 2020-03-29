@@ -181,7 +181,6 @@ const collisionDetect = () => {
         let terrainIndex
         terrainIndex = 0 < id ? id : '0'
         terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
-          // console.log(ro.length)
           if (ro.rength === 0) return
           if (terrainObject[terrainIndex].length === 1) return
           const rp = terrainObject[terrainIndex].slice(i - 1)[0]
@@ -235,12 +234,6 @@ const collisionDetect = () => {
               }
             }
           })
-          const cornerList = [
-            [[0, 0], [-1, -1], [1, 1]],
-            [[1, 0], [1, -1], [0, 1]],
-            [[1, 1], [1, 1], [0, 0]],
-            [[0, 1], [-1, 1], [1, 0]],
-          ]
           if (returnFlag) return
           const ox = ownCondition.x
           const oy = ownCondition.y
@@ -285,7 +278,6 @@ const collisionDetect = () => {
             !vertexFlag &&
             (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.r ** 2
           ) {
-            console.log('vertex', ax, ay)
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
             detectFlag = true
           }
