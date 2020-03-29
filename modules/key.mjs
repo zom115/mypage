@@ -10,6 +10,7 @@ keyList.forEach(v => {
   key[v].flag = false
   key[v].holdtime = 0
   key[v].isUsed = false
+  key[v].key = v
   key[v].timestamp = 0
   key[v].isFirst = () => {
     if (key[v].flag === true && key[v].isUsed === false) {

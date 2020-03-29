@@ -87,28 +87,48 @@ let elasticModulus = .5 // 0 to 1
 let frictionalForce = .1 // 0 to 1
 let gravityFlag = true // temporary
 let collisionDisp = true
+const keyMapObject = {
+  left: key.a,
+  right: key.d,
+  up: key.w,
+  down: key.s,
+  collision: key.h,
+  subElasticModulus: key.u,
+  addElasticModulus: key.i,
+  subFrictionalForce: key.o,
+  addFrictionalForce: key.p,
+  gravity: key.g,
+}
 const input = () => {
-  if (key.h.isFirst()) collisionDisp = !collisionDisp
-  if (key.u.isFirst() && elasticModulus < 1) elasticModulus = orgRound(elasticModulus + .1, 10)
-  if (key.j.isFirst() && 0 < elasticModulus) elasticModulus = orgRound(elasticModulus - .1, 10)
-  if (key.i.isFirst() && frictionalForce < 1) frictionalForce = orgRound(frictionalForce + .1, 10)
-  if (key.k.isFirst() && 0 < frictionalForce) frictionalForce = orgRound(frictionalForce - .1, 10)
-  if (key.g.isFirst()) gravityFlag = !gravityFlag
+  if (keyMapObject.collision.isFirst()) collisionDisp = !collisionDisp
+  if (keyMapObject.subElasticModulus.isFirst() && 0 < elasticModulus) {
+    elasticModulus = orgRound(elasticModulus - .1, 10)
+  }
+  if (keyMapObject.addElasticModulus.isFirst() && elasticModulus < 1) {
+    elasticModulus = orgRound(elasticModulus + .1, 10)
+  }
+  if (keyMapObject.subFrictionalForce.isFirst() && 0 < frictionalForce) {
+    frictionalForce = orgRound(frictionalForce - .1, 10)
+  }
+  if (keyMapObject.addFrictionalForce.isFirst() && frictionalForce < 1) {
+    frictionalForce = orgRound(frictionalForce + .1, 10)
+  }
+  if (keyMapObject.gravity.isFirst()) gravityFlag = !gravityFlag
   if (!gravityFlag) {
     ownCondition.dx = 0
     ownCondition.dy = 0
     const num = 10
-    if (key.a.flag) ownCondition.dx -= moveAcceleration * globalElapsedTime * num
-    if (key.d.flag) ownCondition.dx += moveAcceleration * globalElapsedTime * num
-    if (key.w.flag) ownCondition.dy -= moveAcceleration * globalElapsedTime * num
-    if (key.s.flag) ownCondition.dy += moveAcceleration * globalElapsedTime * num
+    if (keyMapObject.left.flag) ownCondition.dx -= moveAcceleration * globalElapsedTime * num
+    if (keyMapObject.right.flag) ownCondition.dx += moveAcceleration * globalElapsedTime * num
+    if (keyMapObject.up.flag) ownCondition.dy -= moveAcceleration * globalElapsedTime * num
+    if (keyMapObject.down.flag) ownCondition.dy += moveAcceleration * globalElapsedTime * num
   }
-  if (key.a.flag) {
+  if (keyMapObject.left.flag) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
       ownCondition.dx -= moveAcceleration * globalElapsedTime
     } else ownCondition.dx = -moveConstant
   }
-  if (key.d.flag) {
+  if (keyMapObject.right.flag) {
     if (ownCondition.dx + moveAcceleration < moveConstant) {
       ownCondition.dx += moveAcceleration * globalElapsedTime
     } else ownCondition.dx = moveConstant
@@ -139,7 +159,7 @@ const input = () => {
   // }
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
-const ownBox = {w: 0, h: size, r: size / 2 * .9,}
+const ownBox = {w: size, h: size, r: size / 2 * .9,}
 const collisionResponse = tilt => {
   const nX = Math.cos(tilt * Math.PI)
   const nY = Math.sin(tilt * Math.PI)
@@ -271,10 +291,10 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           ny *= length
-          let nax = ax - nx * (ownBox.w / 2 + ownBox.r)
-          let nay = ay - ny * (ownBox.h / 2 + ownBox.r)
-          let nbx = bx - nx * (ownBox.w / 2 + ownBox.r)
-          let nby = by - ny * (ownBox.h / 2 + ownBox.r)
+          let nax = ax - nx * ownBox.r
+          let nay = ay - ny * ownBox.r
+          let nbx = bx - nx * ownBox.r
+          let nby = by - ny * ownBox.r
           const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
           let detectFlag = false
@@ -295,15 +315,8 @@ const collisionDetect = () => {
           if (terrainObject[terrainIndex].length === 2) vertexFlag = true
           if (
             !detectFlag &&
-            !vertexFlag && (
-            (ax - (ox - ownBox.w / 2 + dx)) ** 2 + (ay - (oy - ownBox.h / 2 + dy)) ** 2 <=
-              ownBox.r ** 2 ||
-            (ax - (ox - ownBox.w / 2 + dx)) ** 2 + (ay - (oy + ownBox.h / 2 + dy)) ** 2 <=
-              ownBox.r ** 2 ||
-            (ax - (ox + ownBox.w / 2 + dx)) ** 2 + (ay - (oy - ownBox.h / 2 + dy)) ** 2 <=
-              ownBox.r ** 2 ||
-            (ax - (ox + ownBox.w / 2 + dx)) ** 2 + (ay - (oy + ownBox.h / 2 + dy)) ** 2 <=
-              ownBox.r ** 2 )
+            !vertexFlag &&
+            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.r ** 2
           ) {
             console.log('vertex', ax, ay)
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
@@ -319,8 +332,6 @@ const collisionDetect = () => {
   } while(repeatFlag)
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
-  // elasticModulus.x = 0
-  // elasticModulus.y = 0
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
@@ -344,10 +355,12 @@ const draw = () => {
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx.toFixed(2)}`,
     `dy: ${ownCondition.dy.toFixed(2)}`,
-    `[G]gravity: ${gravityFlag}`,
-    `[H]collisionDisp: ${collisionDisp}`,
-    `[J: +, U: -]elasticModulus: ${elasticModulus}`,
-    `[I: +, K: -]frictionalForce: ${frictionalForce}`,
+    `[${keyMapObject.gravity.key}]gravity: ${gravityFlag}`,
+    `[${keyMapObject.collision.key}]collisionDisp: ${collisionDisp}`,
+    `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
+    `elasticModulus: ${elasticModulus}`,
+    `[${keyMapObject.subFrictionalForce.key}: -, ${keyMapObject.addFrictionalForce.key}: +]` +
+    `frictionalForce: ${frictionalForce}`,
   ]
   list.forEach((v, i) => {
     context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
@@ -367,25 +380,11 @@ const draw = () => {
   }
   context.fillStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
-  context.arc(
-    ownCondition.x, ownCondition.y, size / 32, 0, Math.PI * 2, false)
+  context.arc(ownCondition.x, ownCondition.y, size / 32, 0, Math.PI * 2, false)
   context.fill()
   context.strokeStyle = 'hsl(0, 100%, 50%)'
-  context.strokeRect(
-    ownCondition.x - ownBox.w / 2, ownCondition.y - ownBox.h / 2, ownBox.w, ownBox.h)
   context.beginPath()
-  context.arc(
-    ownCondition.x - ownBox.w / 2, ownCondition.y - ownBox.h / 2,
-    ownBox.r, Math.PI, Math.PI * 1.5, false)
-  context.arc(
-    ownCondition.x + ownBox.w / 2, ownCondition.y - ownBox.h / 2,
-    ownBox.r, Math.PI * 1.5, Math.PI * 2, false)
-  context.arc(
-    ownCondition.x + ownBox.w / 2, ownCondition.y + ownBox.h / 2,
-    ownBox.r, 0, Math.PI * .5, false)
-  context.arc(
-    ownCondition.x - ownBox.w / 2, ownCondition.y + ownBox.h / 2,
-    ownBox.r, Math.PI * .5, Math.PI, false)
+  context.arc(ownCondition.x, ownCondition.y, ownBox.r, 0 , Math.PI * 2)
   context.closePath()
   context.stroke()
   const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
