@@ -75,13 +75,7 @@ let elasticModulus = 0 // 0 to 1
 const wallFF = 0
 let userFF = .1
 let frictionalForce = userFF // 0 to 1
-const ownCondition = {
-  x: canvas.offsetWidth * 2 / 8,
-  y: canvas.offsetHeight * 3 / 4,
-  dx: 0,
-  dy: 0,
-  jumpFlag: false,
-}
+const ownCondition = {x: 0, y: 0, dx: 0, dy: 0, jumpFlag: false,}
 const moveAcceleration = .01
 const normalConstant = .5
 const dashConstant = .75
@@ -388,7 +382,7 @@ const draw = () => {
   }
 }
 let mapObject = {}
-const layerNameList = ['collision', 'objects']
+const layerNameList = ['collision', 'objects', 'objectsLayer']
 let layerIndexObject = {}
 const tilesetNameList = ['collision', 'tileset']
 let tilesetIndexObject = {}
@@ -406,6 +400,16 @@ const initialize = () => {
         tilesetIndexObject[str] = i
         resource.push(mapLoader(str, 'resources/' + v.source))
       })
+      {
+        const objectsLayer = mapObject.layers[layerIndexObject.objectsLayer]
+        const playerPositionIndex = objectsLayer.objects.findIndex(v => {
+          return v.name === 'playerPosition'
+        })
+        const playerPosition = objectsLayer.objects[playerPositionIndex]
+        console.log(objectsLayer, playerPosition.x, playerPosition.y)
+        ownCondition.x = playerPosition.x
+        ownCondition.y = playerPosition.y
+      }
     })
     await Promise.all(resource).then(result => {
       resource = []
@@ -425,7 +429,6 @@ const initialize = () => {
   })
 }
 initialize().then(() => {
-  console.log(mapObject, mapInfoObject)
   main()
   draw()
 })
