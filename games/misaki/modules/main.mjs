@@ -316,7 +316,18 @@ Object.keys(audio).forEach(v => {
   })
 })
 let imageStat = {
-  idle  : {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
+  idle  : {
+    blinkAnimationInterval: 15,
+    blinkInterval: 500,
+    blinkMax: 3,
+    blinkRotate: [0, 1, 2, 1],
+    breathCount: 0,
+    breathInterval: 30,
+    breathIntervalMax: 500,
+    breathMax: 4,
+    breathTimestamp: globalTimestamp,
+    condition: 0,
+  },
   walk  : {condition: 0, time: 0, frame: 10},
   turn  : {condition: 0, time: 0, frame: 5},
   run   : {condition: 0, time: 0, frame: 7},
@@ -334,7 +345,12 @@ const unityChanStat = {
   damage: {frame: 5},
   sword : {
     frame: 7,
-    startUp: 7, startUpLength: 3, active: 7, activeLength: 1, recovery: 5, recoveryLength: 2
+    startUp: 7,
+    startUpLength: 3,
+    active: 7,
+    activeLength: 1,
+    recovery: 5,
+    recoveryLength: 2
   }
 }
 let playFlag = false
@@ -873,7 +889,7 @@ const enterGate = (stage, x, y) => {
   player.x = x
   player.y = y
 }
-const playerData = {minBreath: 15, midBreath: 45 ,maxBreath: 75}
+const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3 ,breathMax: 5e3}
 let player = {
   x: stage.w * 1 / 8, y: stage.h * 15 / 16,
   dx: 0, dy: 0, state: 'idle', direction: 'right',
@@ -881,7 +897,12 @@ let player = {
   hitbox: {x: 0, y: 0, w: 0, h: 0},
   attackBox: {x: 0, y: 0, w: 0, h: 0},
   invincibleTimer: 0,
-  breathInterval: playerData.midBreath
+  blinkCount: 0,
+  blinkInterval: 0,
+  blinkTimestamp: globalTimestamp,
+  breathCount: 0,
+  breathInterval: playerData.breathMid,
+  breathTimestamp: globalTimestamp,
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const walkConstant = .7 // dx := 1.4
@@ -894,7 +915,6 @@ const brakeConstant = .75
 const slideBrakeConstant = .95
 const gravityConstant = .272
 const jumpConstant = 5
-let frame = 0
 let jump = {flag: false, double: false, step: false, time: 0}
 let slide = {flag: false}
 let cooltime = {
@@ -1619,36 +1639,39 @@ const viewUpdate = () => {
   } else if (player.state === 'idle') {
     const i = imageStat[player.state]
     const l = image.misaki[player.state].data.length
-    i.time += 1
-    if (( // breath
-      0 <= i.condition && i.condition < 0 + l / 4 &&
-      i.time % ~~(player.breathInterval) === 0) || (
-      0 + l / 4 <= i.condition && i.condition < 0 + l *.5 &&
-      i.time % ~~(player.breathInterval*.5) === 0) || (
-      0 + l * .5 <= i.condition && i.condition < 0 + l * 3 / 4 &&
-      i.time % ~~(player.breathInterval*2) === 0) || (
-      0 + l * 3 / 4 <= i.condition && i.condition < 0 + l &&
-      i.time % ~~(player.breathInterval*.5) === 0)
+    if ( // breath
+      player.breathTimestamp + player.breathInterval / i.breathMax * player.breathCount <=
+      globalTimestamp
     ) {
-      i.condition += 3
-      i.time = 0
+      player.breathCount++
+      if (i.breathMax <= player.breathCount) {
+        player.breathCount = 0
+        player.breathTimestamp = globalTimestamp
+        if (player.breathInterval < playerData.breathMax) player.breathInterval += 1
+      }
     }
-    if (l <= i.condition && i.condition <= l + 3) {
-      i.condition -= l
-      if (player.breathInterval < playerData.maxBreath) player.breathInterval += 1
+    if (
+      player.blinkTimestamp + player.blinkInterval +
+      i.blinkAnimationInterval * player.blinkCount <=
+      globalTimestamp
+    ) { // eye blink
+      player.blinkCount++
+      if (i.blinkRotate.length <= player.blinkCount) {
+        player.blinkCount = 0
+        player.blinkInterval = Math.random() * i.blinkInterval
+        player.blinkTimestamp = globalTimestamp
+      }
     }
-    if (2 < i.condition && i.condition < 6 && player.breathInterval < 25) {
+    i.condition = player.breathCount * i.blinkMax + i.blinkRotate[player.blinkCount]
+    if (
+      2 < i.condition && i.condition < 6 &&
+      player.breathInterval < playerData.breathFatigue
+    ) {
       const num = Math.random()
       const list = num < .9 ? {value: audio.misaki.punch.data, startTime: .3}
       : num < .95 ? {value: audio.misaki.jump.data, startTime: .3}
       : {value: audio.misaki.doubleJump.data, startTime: .33}
       playAudio(list.value, list.startTime)
-    }
-    if (frame % i.frame === 0) { // eye blink
-      i.blinkTime += 1
-      if (i.blinkTime === 4) i.blinkTime = -(Math.random() * i.maxInterval)|0
-      if (i.blinkTime === 0 || i.blinkTime === 1) i.condition += 1
-      else if (i.blinkTime === 2 || i.blinkTime === 3)  i.condition -= 1
     }
   } else if (player.state === 'walk') {
     const i = imageStat[player.state]
@@ -1688,8 +1711,8 @@ const viewUpdate = () => {
     if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === image.misaki[player.state].data.length) {
       i.condition -= image.misaki[player.state].data.length
-      if (playerData.minBreath < player.breathInterval) player.breathInterval -= 1
-      else if (player.breathInterval < playerData.minBreath) player.breathInterval += 1
+      if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1
+      else if (player.breathInterval < playerData.breathMin) player.breathInterval += 1
     }
   } else if (player.state === 'crouch') {
     const i = imageStat[player.state]
@@ -2051,7 +2074,6 @@ const title = () => {
   if (!menuFlag) titleProcess()
 }
 const inGame = () => {
-  frame += 1
   modelUpdate()
   viewUpdate()
   musicProcess()
