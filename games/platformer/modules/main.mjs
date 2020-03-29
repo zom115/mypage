@@ -91,6 +91,7 @@ const normalConstant = .5
 const dashConstant = .75
 let moveConstant = normalConstant // 1 = 10 m / s
 let jumpFlag = false
+const jumpConstant = 1
 const keyMapObject = {
   left: key.a,
   right: key.d,
@@ -144,7 +145,7 @@ const input = () => {
     } else ownCondition.dx = moveConstant
   }
   if (keyMapObject.jump.isFirst()) {
-    if (jumpFlag) ownCondition.dy -= 1
+    if (jumpFlag) ownCondition.dy -= jumpConstant
     jumpFlag = false
   }
 }
