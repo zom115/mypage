@@ -25,20 +25,6 @@ let settings = { // initial value
     map   : setStorage('map', false, true)
   }
 }
-Object.keys(settings.volume).forEach(v => {
-  document.getElementById(`${v}Input`).value = settings.volume[v]
-  document.getElementById(`${v}Output`).value = settings.volume[v] * 100|0
-  document.getElementById(`${v}Input`).addEventListener('input', e => {
-    document.getElementById(`${v}Output`).value = e.target.value * 100|0
-    settings.volume[v] = setStorage(v, e.target.value, false)
-    if (v === 'master' || v === 'voice') voicePathList.forEach(path => {
-      voiceLoadedMap[path].volume = settings.volume.master * settings.volume.voice
-    })
-    if (v === 'master' || v === 'music') musicPathList.forEach(path => {
-      musicLoadedMap[path].volume = settings.volume.master * settings.volume.music
-    })
-  })
-})
 const inputDOM = document.getElementsByTagName`input`
 Object.keys(settings.type).forEach(v => {
   inputDOM[v].checked = settings.type[v]
@@ -279,6 +265,32 @@ const audio = {
     },
   },
 }
+const voiceVolumeHandler = voice => {
+  voice.volume = settings.volume.master * settings.volume.voice
+}
+const musicVolumeHandler = music => {
+  music.volume = settings.volume.master * settings.volume.music
+}
+const volumeHandler = () => {
+  Object.keys(audio).forEach(v => {
+    Object.keys(audio[v]).forEach(vl => {
+      if (v === 'misaki') {
+        voiceVolumeHandler(audio[v][vl].data)
+      } else if (v === 'music') {
+        musicVolumeHandler(audio[v][vl].data)
+      }
+    })
+  })
+}
+Object.keys(settings.volume).forEach(v => {
+  document.getElementById(`${v}Input`).value = settings.volume[v]
+  document.getElementById(`${v}Output`).value = settings.volume[v] * 100|0
+  document.getElementById(`${v}Input`).addEventListener('input', e => {
+    document.getElementById(`${v}Output`).value = e.target.value * 100|0
+    settings.volume[v] = setStorage(v, e.target.value, false)
+    volumeHandler()
+  })
+})
 const resourceList = []
 Object.keys(image).forEach(v => {
   Object.keys(image[v]).forEach(vl => {
@@ -289,10 +301,6 @@ Object.keys(audio).forEach(v => {
   Object.keys(audio[v]).forEach(vl => {
     resourceList.push(audioObjectLoading(audio[v][vl]))
   })
-})
-Promise.all(resourceList).then(() => {
-  console.log('loading finished')
-  console.log(audio)
 })
 let imageStat = {
   idle  : {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
@@ -316,57 +324,8 @@ const unityChanStat = {
     startUp: 7, startUpLength: 3, active: 7, activeLength: 1, recovery: 5, recoveryLength: 2
   }
 }
-const voiceStat = {
-  jump      : 'audio/Misaki/V2001.wav',
-  doubleJump: 'audio/Misaki/V2002.wav',
-  punch     : 'audio/Misaki/V2005.wav',
-  kick      : 'audio/Misaki/V2006.wav',
-  win       : 'audio/Misaki/V2024.wav'
-}
-let voicePathList = []
-Object.values(voiceStat).forEach(v => voicePathList.push(v))
-let voiceLoadedList = []
-let voiceLoadedMap = []
-voicePathList.forEach(path => {
-  const voicePreload = new Audio()
-  voicePreload.src = path
-  voicePreload.volume = settings.volume.master * settings.volume.voice
-  voicePreload.addEventListener('canplaythrough', () => {
-    voiceLoadedList.push(path)
-    voiceLoadedMap[path] = voicePreload
-  })
-})
-const musicStat = {
-  'テレフォン・ダンス': 'audio/music/nc109026.wav',
-  'アオイセカイ': 'audio/music/nc110060.mp3'
-}
-let musicPathList = []
-Object.values(musicStat).forEach(v => musicPathList.push(v))
-let musicLoadedList = []
-let musicLoadedMap = []
-musicPathList.forEach(path => {
-  const musicPreload = new Audio()
-  musicPreload.src = path
-  musicPreload.volume = settings.volume.master * settings.volume.music
-  musicPreload.addEventListener('canplaythrough', () => {
-    musicLoadedList.push(path)
-    musicLoadedMap[path] = musicPreload
-  })
-})
-const timerId = setInterval(() => { // loading monitoring
-  if (
-    voiceLoadedList.length === voicePathList.length &&
-    musicLoadedList.length === musicPathList.length
-  ) { // untrustworthy length in assosiative
-    clearInterval(timerId)
-    main()
-  } else {
-    aftergrow.loading = aftergrowLimit.loading
-    drawLoadingScreen()
-  }
-}, 100)
 let playFlag = false
-let currentPlay = musicStat['アオイセカイ']
+let currentPlay = 'アオイセカイ'
 const playAudio = (element, startTime = 0) => {
   element.currentTime = startTime
   element.play()
@@ -2060,18 +2019,7 @@ const drawLoadingScreen = () => {
   context.fillStyle = `hsla(0, 0%, 40%, ${aftergrow.loading / aftergrowLimit.loading})`
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = `hsla(0, 0%, 0%, ${aftergrow.loading / aftergrowLimit.loading})`
-  const ratio = Math.ceil(
-    voiceLoadedList.length + musicLoadedList.length) / (
-    voicePathList.length + musicPathList.length
-  )
-  context.fillRect(
-    canvas.offsetWidth / 4, canvas.offsetHeight / 2, (canvas.offsetWidth / 2) * ratio, size
-  )
   context.font = `${size * 2}px sans-serif`
-  context.textAlign = 'center'
-  context.fillText(
-    `${ratio * 100|0}%`, canvas.offsetWidth / 2, canvas.offsetHeight / 2 + size * 4
-  )
   context.textAlign = 'right'
   context.fillText(
     'Now loading...', canvas.offsetWidth - size * 2, canvas.offsetHeight - size * 2
@@ -2080,27 +2028,27 @@ const drawLoadingScreen = () => {
 }
 const musicProcess = () => {
   const setMusic = () => {
-    return stage.name === 'AthleticCourse' ? musicStat['テレフォン・ダンス']
-    : musicStat['アオイセカイ']
+    return stage.name === 'AthleticCourse' ? 'テレフォン・ダンス'
+    : 'アオイセカイ'
   }
   if (
     currentPlay !== setMusic() ||
     !playFlag && Object.values(key).some(value => {return 0 < value})
   ) {
-    musicPathList.forEach(v => musicLoadedMap[v].pause())
+    Object.keys(audio.music).forEach(v => audio.music[v].data.pause())
     if (!playFlag) playFlag = true
     currentPlay = setMusic()
-    musicLoadedMap[currentPlay].currentTime = 0
-    musicLoadedMap[currentPlay].play()
+    audio.music[currentPlay].data.currentTime = 0
+    audio.music[currentPlay].data.play()
   }
   if (
-    currentPlay === musicStat['テレフォン・ダンス'] &&
-    32.74 < musicLoadedMap[currentPlay].currentTime
-  ) musicLoadedMap[currentPlay].currentTime = 7.14 + 4 / 60 // 4 frame delay?
+    currentPlay === 'テレフォン・ダンス' &&
+    32.74 < audio.music[currentPlay].data.currentTime
+  ) audio.music[currentPlay].data.currentTime = 7.14 + 4 / 60 // 4 frame delay?
   else if (
-    currentPlay === musicStat['アオイセカイ'] &&
-    60 + 13 < musicLoadedMap[currentPlay].currentTime
-  ) musicLoadedMap[currentPlay].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
+    currentPlay === 'アオイセカイ' &&
+    60 + 13 < audio.music[currentPlay].data.currentTime
+  ) audio.music[currentPlay].data.currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
 const titleProcess = () => {
   if (action.attack.some(v => key[v])) screenState = screenList[1]
@@ -2202,3 +2150,8 @@ const main = () => {
   else if (screenState === screenList[1]) inGame()
   floatMenu()
 }
+Promise.all(resourceList).then(() => {
+  console.log('loading finished')
+  volumeHandler()
+  main()
+})
