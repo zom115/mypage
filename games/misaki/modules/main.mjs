@@ -909,11 +909,6 @@ let action = {
 let toggle = {
   DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
 }
-let keyTimestamp = {pressed: {}, released: {}}
-Object.values(action).forEach(act => {
-  keyTimestamp.pressed[act] = -1
-  keyTimestamp.released[act] = 0
-})
 // const keyObjects = {
 //   shift: 16,
 //   space: 32,
@@ -1544,18 +1539,6 @@ const modelUpdate = () => {
       player.y = stage.checkPoint.y
     }
   }
-  if (!menuFlag) Object.values(action).forEach(act => {
-    if (act.some(v => key[v].flag)) {
-      if (keyTimestamp.pressed[act] < keyTimestamp.released[act]) {
-        keyTimestamp.pressed[act] = frame
-      }
-    }
-    else {
-      if (keyTimestamp.released[act] < keyTimestamp.pressed[act]) {
-        keyTimestamp.released[act] = frame
-      }
-    }
-  })
   if (player.state === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
     player.attackBox = player.direction === 'left' ? {
       x: player.x - size,
