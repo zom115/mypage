@@ -2,10 +2,6 @@ import {key} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 // import {drawCollision} from './drawCollision.mjs'
-const tileset = {width: 40, height: 19}
-let mapObject = {}
-let layerObject = {}
-let collisionObject = {}
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
@@ -174,10 +170,10 @@ const collisionDetect = () => {
       ownCondition.dy = 0
     }
     repeatFlag = false
-    for (let x = 0; x < collisionObject.width; x++) {
-      for (let y = 0; y < collisionObject.height; y++) {
-        const id = collisionObject.data[y * collisionObject.width + x] -
-          resource.json.tilesets[1].firstgid + 1
+    for (let x = 0; x < mapObject.layers[0].width; x++) {
+      for (let y = 0; y < mapObject.layers[0].height; y++) {
+        const id = mapObject.layers[0].data[y * mapObject.layers[0].width + x] -
+          mapObject.tilesets[1].firstgid + 1
         let terrainIndex
         terrainIndex = 0 < id ? id : '0'
         terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
@@ -198,9 +194,9 @@ const collisionDetect = () => {
           let returnFlag = false
           findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
-              const target = terrainObject[collisionObject.data[(
-                y + vl[2][1]) * collisionObject.width + x + vl[2][0]] -
-                resource.json.tilesets[1].firstgid + 1]
+              const target = terrainObject[mapObject.layers[0].data[(
+                y + vl[2][1]) * mapObject.layers[0].width + x + vl[2][0]] -
+                mapObject.tilesets[1].firstgid + 1]
               if (target === undefined) return
               const vertex = i === 0 ? [1, ro[1]] :
               i === 1 ? [0, ro[1]] :
@@ -315,7 +311,7 @@ const draw = () => {
     // `x: ${ownCondition.x}`,
     `x(m): ${Math.floor(ownCondition.x * .04)}`,
     // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((layerObject.height - 2) * size) - ownCondition.y) * .04)}`,
+    `y(m): ${Math.floor((((mapObject.layers[1].height - 2) * size) - ownCondition.y) * .04)}`,
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx.toFixed(2)}`,
     `dy: ${ownCondition.dy.toFixed(2)}`,
@@ -330,14 +326,15 @@ const draw = () => {
     context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
   })
   context.fillStyle = 'hsl(240, 100%, 50%)'
-  for (let x = 0; x < layerObject.width; x++) {
-    for (let y = 0; y < layerObject.height; y++) {
-      const id = layerObject.data[layerObject.width * y + x] - resource.json.tilesets[0].firstgid
+  for (let x = 0; x < mapObject.layers[1].width; x++) {
+    for (let y = 0; y < mapObject.layers[1].height; y++) {
+      const id = mapObject.layers[1].data[mapObject.layers[1].width * y + x] -
+        mapObject.tilesets[0].firstgid
       if (id !== 0) {
         context.drawImage(
           resource.tileset,
-          (id % tileset.width) * size,
-          (id - id % tileset.width) / tileset.width * size
+          (id % mapInfoObject.tileset.columns) * size,
+          (id - id % mapInfoObject.tileset.columns) / mapInfoObject.tileset.columns * size
           , size, size, x * size, y * size, size, size)
       }
     }
@@ -364,9 +361,9 @@ const draw = () => {
   context.fill()
   if (collisionDisp) {
     context.fillStyle = 'hsla(300, 50%, 50%, 1)'
-    for (let x = 0; x < collisionObject.width; x++) {
-      for (let y = 0; y < collisionObject.height; y++) {
-        const id = collisionObject.data[y * collisionObject.width + x] -
+    for (let x = 0; x < mapObject.layers[0].width; x++) {
+      for (let y = 0; y < mapObject.layers[0].height; y++) {
+        const id = mapObject.layers[0].data[y * mapObject.layers[0].width + x] -
           resource.json.tilesets[1].firstgid + 1
         if (0 < id) {
           const relativeCooldinates = {x: x * size, y: y * size}
@@ -388,17 +385,30 @@ const draw = () => {
     }
   }
 }
+let mapInfoObject = {}
+let mapObject = {}
 let resource = []
-resource.push(mapLoader('json', 'resources/main.json'))
-resource.push(imageLoader('collision', 'images/collision.png'))
-resource.push(imageLoader('tileset', '../misaki/images/MagicCliffsArtwork/tileset.png'))
-Promise.all(resource).then(result => {
-  resource = {}
-  result.forEach(v => resource[Object.keys(v)[0]] = Object.values(v)[0])
-  mapObject = resource.json
-  mapObject.layers.forEach(v => {
-    v.name === 'collision' ? collisionObject = v : layerObject = v
+mapLoader('main', 'resources/main.json').then(result => {
+  mapObject = result.main
+  console.log(mapObject)
+  mapObject.tilesets.forEach(v => {
+    const str = v.source
+    resource.push(mapLoader(str.substring(0, str.indexOf('.')), 'resources/' + v.source))
   })
-  main()
-  draw()
+  Promise.all(resource).then(result => {
+    resource = []
+    result.forEach(v => {
+      Object.entries(v).forEach(([key, value]) => {
+        mapInfoObject[key] = value
+        const src = value.image
+        resource.push(imageLoader(key, src.slice(src.indexOf('../') + 1)))
+      })
+    })
+    Promise.all(resource).then(result => {
+      resource = {}
+      result.forEach(v => resource[Object.keys(v)[0]] = Object.values(v)[0])
+      main()
+      draw()
+    })
+  })
 })
