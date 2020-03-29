@@ -68,6 +68,15 @@ terrainList.forEach(v => {
   }
 })
 // drawCollision(terrainObject)
+/*
+gravitational acceleration = 9.80665 m / s ** 2
+m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
+1 dot === 40 mm, 1000 mm === 25 * 40 mm
+*/
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
+let coefficient = 5
+let elasticModulus = 0 // 0 to 1
+let frictionalForce = .1 // 0 to 1
 const ownCondition = {
   x: canvas.offsetWidth * 2 / 8,
   y: canvas.offsetHeight * 3 / 4,
@@ -76,22 +85,14 @@ const ownCondition = {
   jumpFlag: false,
 }
 const moveAcceleration = .01
-// 1 = 10 m / s
-let moveConstant = .75
-// gravitational acceleration = 9.80665 m / s ** 2
-// m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
-// 1 dot === 40 mm, 1000 mm === 25 * 40 mm
-const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
-let coefficient = 5
-let elasticModulus = .5 // 0 to 1
-let frictionalForce = .1 // 0 to 1
-let gravityFlag = true // temporary
-let collisionDisp = true
+let moveConstant = .75 // 1 = 10 m / s
+let jumpFlag = false
 const keyMapObject = {
   left: key.a,
   right: key.d,
   up: key.w,
   down: key.s,
+  jump: key.j,
   collision: key.h,
   subElasticModulus: key.u,
   addElasticModulus: key.i,
@@ -99,6 +100,8 @@ const keyMapObject = {
   addFrictionalForce: key.p,
   gravity: key.g,
 }
+let gravityFlag = true // temporary
+let collisionDisp = false
 const input = () => {
   if (keyMapObject.collision.isFirst()) collisionDisp = !collisionDisp
   if (keyMapObject.subElasticModulus.isFirst() && 0 < elasticModulus) {
@@ -133,31 +136,13 @@ const input = () => {
       ownCondition.dx += moveAcceleration * globalElapsedTime
     } else ownCondition.dx = moveConstant
   }
-  // else {
-  //   if (jumpConstant < jumpTime) jumpTime = 0
-  //   if (jumpTime !== 0) ownCondition.dy += jumpConstant - jumpTime
-  //   jumpTime = 0
-  // }
-  // if (key.k) {
-  //   moveConstant =  dashConstant
+  if (keyMapObject.jump.isFirst()) jumpFlag = true
+  // if (keyMapObject.dash.flag) {
+  //   moveConstant = dashConstant
   //   if (-stopConstant < ownCondition.dx && ownCondition.dx < stopConstant) {
   //     ownCondition.dx = ownCondition.dx / 2
   //   }
   // } else moveConstant = normalConstant
-  // if (key.s) {
-  //   if (jumpChargeTime < jumpConstant && !jumpFlag) jumpChargeTime += 1
-  // } else if (jumpChargeTime !== 0) {
-  //   ownCondition.dy -= jumpChargeTime
-  //   jumpChargeTime = 0
-  //   jumpFlag = true
-  // }
-  // if (key.w) {
-  //   if (!jumpFlag) {
-  //     ownCondition.dy -= jumpConstant
-  //     jumpFlag = true
-  //   }
-  // }
-  ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
 }
 const ownBox = {w: size, h: size, r: size / 2 * .9,}
 const collisionResponse = tilt => {
@@ -169,6 +154,7 @@ const collisionResponse = tilt => {
   ownCondition.dy += 2 * t * nY
   ownCondition.dx *= 1 - frictionalForce
   ownCondition.dy *= 1 - frictionalForce
+  if (jumpFlag) ownCondition.dy -= 1
 }
 const collisionDetect = () => {
   let count = 0
@@ -333,12 +319,17 @@ const collisionDetect = () => {
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
 }
+const stateUpdate = () => {
+  ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
+  jumpFlag = false
+}
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
   globalElapsedTime = Date.now() - currentTime
   currentTime = Date.now()
   input()
   collisionDetect()
+  stateUpdate()
 }, 0)
 const draw = () => {
   window.requestAnimationFrame(draw)
