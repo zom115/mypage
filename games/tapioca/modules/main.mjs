@@ -1,5 +1,5 @@
 import {key} from '../../../modules/key.mjs'
-const version = 'v.0.8.6'
+const version = 'v.0.8.7'
 const canvas = document.getElementById`canvas`
 const DOM = {
   operation: document.getElementById`operation`,
@@ -68,7 +68,7 @@ const bulletRadius = size / 6
 const storeSize = size * 4.5
 const bulletSpeed = size / 8
 const minImgRadius = size / 4
-const holdTimeLimit = 14
+const holdTimeLimit = 14 * 60
 let explosiveRange = size * 2
 const explosiveLimit = 30
 let recoilEffect = {
@@ -1862,7 +1862,7 @@ const setStore = () => {
   })
 }
 const upgradeOne = () => {
-  if (key[action.lookUp].holdtime === holdTimeLimit && inventory[0].offensivePower <= ammo) {
+  if (holdTimeLimit <= key[action.lookUp].holdtime && inventory[0].offensivePower <= ammo) {
     inventory[0].opIndex = (inventory[0].opIndex+1)|0
     inventory[0].damage = inventory[0].damage + maxDamageInitial * (1 / inventory[0].opIndex)
     ammo = (ammo - inventory[0].offensivePower)|0
@@ -1874,28 +1874,28 @@ const upgradeOne = () => {
   ) afterglow.offensivePower = (afterglow.offensivePower-1)|0
 }
 const upgradeDash =() => {
-  if (key[action.lookUp].holdtime === holdTimeLimit && cost.dashDamage <= ammo) {
+  if (holdTimeLimit <= key[action.lookUp].holdtime && cost.dashDamage <= ammo) {
     cost.dashDamageIndex = (cost.dashDamageIndex+1)|0
     dash.damage = dash.damage + dash.damage * (1 / cost.dashDamageIndex)
     ammo = (ammo - cost.dashDamage)|0
     cost.dashDamage = (cost.dashDamage*2)|0
     afterglow.dashDamage = holdTimeLimit
   } else if (0 < afterglow.dashDamage) afterglow.dashDamage = (afterglow.dashDamage-1)|0
-  if (key[action.lookRight].holdtime === holdTimeLimit && cost.dashDistance <= point) {
+  if (holdTimeLimit <= key[action.lookRight].holdtime && cost.dashDistance <= point) {
     dash.decrease = dash.decrease*.85
     point = (point - cost.dashDistance)|0
     cost.dashDistance = (cost.dashDistance*2)|0
     cost.dashDistanceIndex = (cost.dashDistanceIndex+1)|0
     afterglow.dashDistance = holdTimeLimit
   } else if (0 < afterglow.dashDistance) afterglow.dashDistance = (afterglow.dashDistance-1)|0
-  if (key[action.lookDown].holdtime === holdTimeLimit && cost.dashCooltime <= point) {
+  if (holdTimeLimit <= key[action.lookDown].holdtime && cost.dashCooltime <= point) {
     dash.limit = dash.limit * .95
     point = (point - cost.dashCooltime)|0
     cost.dashCooltime = (cost.dashCooltime+cost.dashCooltime*2)|0
     cost.dashCooltimeIndex = (cost.dashCooltimeIndex+1)|0
     afterglow.dashCooltime = holdTimeLimit
   } else if (0 < afterglow.dashCooltime) afterglow.dashCooltime = (afterglow.dashCooltime-1)|0
-  if (key[action.lookLeft].holdtime === holdTimeLimit && cost.dashDistance <= point) {
+  if (holdTimeLimit <= key[action.lookLeft].holdtime && cost.dashDistance <= point) {
     dash.breakthrough = dash.breakthrough * 1.05
     point = (point - cost.dashDistance)|0
     cost.dashDistance = (cost.dashDistance*2)|0
@@ -1904,7 +1904,7 @@ const upgradeDash =() => {
   } else if (0 < afterglow.dashSpeed) afterglow.dashSpeed = (afterglow.dashSpeed-1)|0
 }
 const upgradeExplosive = () => {
-  if (key[action.lookDown].holdtime === holdTimeLimit && inventory[0].explosive3 <= ammo) {
+  if (holdTimeLimit <= key[action.lookDown].holdtime && inventory[0].explosive3 <= ammo) {
     homingFlag = false
     explosive1Flag = false
     explosive2Flag = false
@@ -1914,7 +1914,7 @@ const upgradeExplosive = () => {
   } else if (0 < afterglow.explosive3) afterglow.explosive3 = (afterglow.explosive3-1)|0
 }
 const upgradeTest = () => {
-  if (key[action.lookRight].holdtime === holdTimeLimit && cost.clone <= point) {
+  if (holdTimeLimit <= key[action.lookRight].holdtime && cost.clone <= point) {
     cloneFlag = true
     point = (point - cost.clone)|0
     cost.clone = (cost.clone * 2)|0
@@ -1922,7 +1922,7 @@ const upgradeTest = () => {
   } else if (0 < afterglow.clone) afterglow.clone = (afterglow.clone-1)|0
 }
 const upgradeLimitBreak = () => {
-  if (key[action.lookUp].holdtime === holdTimeLimit && inventory[0].limitBreak <= point) {
+  if (holdTimeLimit <= key[action.lookUp].holdtime && inventory[0].limitBreak <= point) {
     afterglow.limitBreakResult = .1 + Math.random() * 1.9
     inventory[0].damage = inventory[0].damage * afterglow.limitBreakResult
     point = (point - inventory[0].limitBreak)|0
@@ -1934,7 +1934,7 @@ const upgradeLimitBreak = () => {
   } else if (0 < afterglow.limitBreakFailed) {
     afterglow.limitBreakFailed = afterglow.limitBreakFailed - .1
   }
-  if (key[action.lookLeft].holdtime === holdTimeLimit && inventory[0].reset <= point) {
+  if (holdTimeLimit <= key[action.lookLeft].holdtime && inventory[0].reset <= point) {
     inventory[0].opIndex = 0
     inventory[0].offensivePower = 25
     inventory[0].opLog = 25
@@ -1946,25 +1946,25 @@ const upgradeLimitBreak = () => {
   }
 }
 const upgradeClone = ()  => {
-  if (key[action.lookUp].holdtime === holdTimeLimit) {
+  if (holdTimeLimit <= key[action.lookUp].holdtime) {
     cloneDashType1Flag = !cloneDashType1Flag
     cloneDashType2Flag = false
     cloneDashType3Flag = false
     afterglow.explosive1 = holdTimeLimit
   } else if (0 < afterglow.explosive1) afterglow.explosive1 = (afterglow.explosive1-1)|0
-  if (key[action.lookRight].holdtime === holdTimeLimit) {
+  if (holdTimeLimit <= key[action.lookRight].holdtime) {
     cloneDashType1Flag = false
     cloneDashType2Flag = !cloneDashType2Flag
     cloneDashType3Flag = false
     afterglow.explosive2 = holdTimeLimit
   } else if (0 < afterglow.explosive2) afterglow.explosive2 = (afterglow.explosive2-1)|0
-  if (key[action.lookDown].holdtime === holdTimeLimit) {
+  if (holdTimeLimit <= key[action.lookDown].holdtime) {
     cloneDashType1Flag = false
     cloneDashType2Flag = false
     cloneDashType3Flag = !cloneDashType3Flag
     afterglow.explosive3 = holdTimeLimit
   } else if (0 < afterglow.explosive3) afterglow.explosive3 = (afterglow.explosive3-1)|0
-  if (key[action.lookLeft].holdtime === holdTimeLimit) {
+  if (holdTimeLimit <= key[action.lookLeft].holdtime) {
     cloneReturnFlag = !cloneReturnFlag
     afterglow.explosiveRange = holdTimeLimit
   } else if (
@@ -2731,8 +2731,8 @@ const keyInput = () => {
     : (key.b.isFirst()) ? 24
     : (key.n.isFirst()) ? 25
     : (key.m.isFirst()) ? 26
-    : (key.shift.isFirst()) ? 30
-    : (key.space.isFirst()) ? 31
+    : (key.Shift.isFirst()) ? 30
+    : (key[' '].isFirst()) ? 31
     : -2
     if (aft === -2) aft = bfr
     else if (bfr === aft) aft = -2
@@ -2771,12 +2771,12 @@ const keyLayoutProcess = () => {
   const ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
   const rowNum = rotate()
   let inKey = input()
-  if (inKey === order.indexOf('w') && key.w.holdtime === holdTimeLimit &&
+  if (inKey === order.indexOf('w') && holdTimeLimit <= key.w.holdtime &&
     !(Object.values(action).some(x => x === 'w' || x === 'a'))) {
     operationMode = setStorage('operation', 'WASD')
     setOperation()
   }
-  if (inKey === order.indexOf('e') && key.e.holdtime === holdTimeLimit &&
+  if (inKey === order.indexOf('e') && holdTimeLimit <= key.e.holdtime &&
     !(Object.values(action).some(x => x === 'e' || x === 'f'))) {
     operationMode = setStorage('operation', 'ESDF')
     setOperation()
@@ -2790,7 +2790,7 @@ const keyLayoutProcess = () => {
     : setStorage('autoCombatReload', 'ON')
   }
   if (
-    inKey === order.indexOf(action.back) && key[action.back].holdtime === holdTimeLimit
+    inKey === order.indexOf(action.back) && holdTimeLimit <= key[action.back].holdtime
   ) state = 'title'
   context.font = `${size * .65}px sans-serif`
   context.fillStyle = 'hsl(210, 100%, 40%)'
