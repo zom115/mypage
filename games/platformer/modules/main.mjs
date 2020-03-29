@@ -1,6 +1,6 @@
 import {key} from '../../../modules/key.mjs'
-import {mapLoader} from './mapLoader.mjs'
-import {imageLoader} from './imageLoader.mjs'
+import {mapLoader} from '../../../modules/mapLoader.mjs'
+import {imageLoader} from '../../../modules/imageLoader.mjs'
 // import {drawCollision} from './drawCollision.mjs'
 const tileset = {width: 40, height: 19}
 let mapObject = {}
