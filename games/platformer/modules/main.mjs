@@ -1,4 +1,4 @@
-import {key} from '../../../modules/key.mjs'
+import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 // import {drawCollision} from './drawCollision.mjs'
@@ -298,6 +298,28 @@ const draw = () => {
   window.requestAnimationFrame(draw)
   frameCounter(animationFrameList)
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  Object.values(bgIndexObject).forEach(v => { // draw background
+    const properties = mapObject.layers[v].properties
+    // const offsetX = properties[properties.findIndex(vl => vl.name === 'offsetX')].value
+    // offsetX === 'left'
+    const direction = properties[properties.findIndex(vl => vl.name === 'direction')].value
+    const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
+    const scrollTimePerSize =
+      properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
+    scrollTimePerSize
+    const image = resource[mapObject.layers[v].name]
+    const resetWidthTime = scrollTimePerSize * image.width / size
+    let ratio = globalTimestamp % resetWidthTime / resetWidthTime
+    if (direction === 'left') ratio = -ratio
+    let offsety = mapObject.layers[v].offsety
+    if (offsety === undefined) offsety = 0
+    let imageOffsetY = 0
+    if (offsetY === 'bottom') imageOffsetY = canvas.offsetHeight - image.height - offsety
+    else if (offsetY === 'top') imageOffsetY = offsety
+    for (let i = 0; i < Math.ceil(canvas.offsetWidth / image.width) + 1; i++) {
+      context.drawImage(image, image.width * (i + ratio), imageOffsetY)
+    }
+  })
   context.fillStyle = 'hsl(0, 0%, 0%)'
   const list = [
     `internalFPS: ${internalFrameList.length - 1}`,
@@ -382,8 +404,10 @@ const draw = () => {
   }
 }
 let mapObject = {}
-const layerNameList = ['collision', 'objects', 'objectsLayer']
+const layerNameList = ['collision', 'objects', 'objectsLayer', 'sky', 'clouds', 'sea']
 let layerIndexObject = {}
+const bgNameList = ['sky', 'clouds', 'sea']
+let bgIndexObject = {}
 const tilesetNameList = ['collision', 'tileset']
 let tilesetIndexObject = {}
 let mapInfoObject = {}
@@ -406,13 +430,19 @@ const initialize = () => {
           return v.name === 'playerPosition'
         })
         const playerPosition = objectsLayer.objects[playerPositionIndex]
-        console.log(objectsLayer, playerPosition.x, playerPosition.y)
         ownCondition.x = playerPosition.x
         ownCondition.y = playerPosition.y
       }
     })
     await Promise.all(resource).then(result => {
       resource = []
+      mapObject.layers.forEach((v, i) => {
+        if (v.type === 'imagelayer') {
+          bgIndexObject[v.name] = i
+          const src = v.image
+          resource.push(imageLoader(v.name, src.slice(src.indexOf('../') + 1)))
+        }
+      })
       result.forEach(v => {
         Object.entries(v).forEach(([key, value]) => {
           mapInfoObject[key] = value
