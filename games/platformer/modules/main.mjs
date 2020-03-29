@@ -76,7 +76,9 @@ m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
 let elasticModulus = 0 // 0 to 1
-let frictionalForce = .1 // 0 to 1
+const wallFF = 0
+let userFF = .1
+let frictionalForce = userFF // 0 to 1
 const ownCondition = {
   x: canvas.offsetWidth * 2 / 8,
   y: canvas.offsetHeight * 3 / 4,
@@ -113,11 +115,11 @@ const input = () => {
   if (keyMapObject.addElasticModulus.isFirst() && elasticModulus < 1) {
     elasticModulus = orgRound(elasticModulus + .1, 10)
   }
-  if (keyMapObject.subFrictionalForce.isFirst() && 0 < frictionalForce) {
-    frictionalForce = orgRound(frictionalForce - .1, 10)
+  if (keyMapObject.subFrictionalForce.isFirst() && 0 < userFF) {
+    userFF = orgRound(userFF - .1, 10)
   }
-  if (keyMapObject.addFrictionalForce.isFirst() && frictionalForce < 1) {
-    frictionalForce = orgRound(frictionalForce + .1, 10)
+  if (keyMapObject.addFrictionalForce.isFirst() && userFF < 1) {
+    userFF = orgRound(userFF + .1, 10)
   }
   if (keyMapObject.gravity.isFirst()) gravityFlag = !gravityFlag
   if (!gravityFlag) {
@@ -154,9 +156,9 @@ const collisionResponse = tilt => {
     ownCondition.dx * nX + ownCondition.dy * nY) / (nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
   ownCondition.dx += 2 * t * nX
   ownCondition.dy += 2 * t * nY
+  if (tilt <= 1) frictionalForce = wallFF
   ownCondition.dx *= 1 - frictionalForce
   ownCondition.dy *= 1 - frictionalForce
-  // console.log(tilt)
   if (1 < tilt) jumpFlag = true
 }
 const collisionDetect = () => {
@@ -324,7 +326,7 @@ const collisionDetect = () => {
 }
 const stateUpdate = () => {
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
-  // jumpFlag = false
+  frictionalForce = userFF
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
@@ -354,7 +356,7 @@ const draw = () => {
     `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
     `elasticModulus: ${elasticModulus}`,
     `[${keyMapObject.subFrictionalForce.key}: -, ${keyMapObject.addFrictionalForce.key}: +]` +
-    `frictionalForce: ${frictionalForce}`,
+    `frictionalForce: ${userFF}`,
   ]
   list.forEach((v, i) => {
     context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
