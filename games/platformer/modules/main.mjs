@@ -85,7 +85,9 @@ const ownCondition = {
   jumpFlag: false,
 }
 const moveAcceleration = .01
-let moveConstant = .75 // 1 = 10 m / s
+const normalConstant = .5
+const dashConstant = .75
+let moveConstant = normalConstant // 1 = 10 m / s
 let jumpFlag = false
 const keyMapObject = {
   left: key.a,
@@ -93,6 +95,7 @@ const keyMapObject = {
   up: key.w,
   down: key.s,
   jump: key.j,
+  dash: key.k,
   collision: key.h,
   subElasticModulus: key.u,
   addElasticModulus: key.i,
@@ -126,6 +129,8 @@ const input = () => {
     if (keyMapObject.up.flag) ownCondition.dy -= moveAcceleration * globalElapsedTime * num
     if (keyMapObject.down.flag) ownCondition.dy += moveAcceleration * globalElapsedTime * num
   }
+  if (keyMapObject.dash.flag) moveConstant = dashConstant
+  else moveConstant = normalConstant
   if (keyMapObject.left.flag) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
       ownCondition.dx -= moveAcceleration * globalElapsedTime
@@ -136,13 +141,10 @@ const input = () => {
       ownCondition.dx += moveAcceleration * globalElapsedTime
     } else ownCondition.dx = moveConstant
   }
-  if (keyMapObject.jump.isFirst()) jumpFlag = true
-  // if (keyMapObject.dash.flag) {
-  //   moveConstant = dashConstant
-  //   if (-stopConstant < ownCondition.dx && ownCondition.dx < stopConstant) {
-  //     ownCondition.dx = ownCondition.dx / 2
-  //   }
-  // } else moveConstant = normalConstant
+  if (keyMapObject.jump.isFirst()) {
+    if (jumpFlag) ownCondition.dy -= 1
+    jumpFlag = false
+  }
 }
 const ownBox = {w: size, h: size, r: size / 2 * .9,}
 const collisionResponse = tilt => {
@@ -154,7 +156,8 @@ const collisionResponse = tilt => {
   ownCondition.dy += 2 * t * nY
   ownCondition.dx *= 1 - frictionalForce
   ownCondition.dy *= 1 - frictionalForce
-  if (jumpFlag) ownCondition.dy -= 1
+  // console.log(tilt)
+  if (1 < tilt) jumpFlag = true
 }
 const collisionDetect = () => {
   let count = 0
@@ -321,7 +324,7 @@ const collisionDetect = () => {
 }
 const stateUpdate = () => {
   ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
-  jumpFlag = false
+  // jumpFlag = false
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
@@ -390,7 +393,7 @@ const draw = () => {
     context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
   context.fill()
   if (collisionDisp) {
-    context.fillStyle = 'hsla(90, 50%, 50%, .5)'
+    context.fillStyle = 'hsla(300, 50%, 50%, 1)'
     for (let x = 0; x < collisionObject.width; x++) {
       for (let y = 0; y < collisionObject.height; y++) {
         const id = collisionObject.data[y * collisionObject.width + x] -
