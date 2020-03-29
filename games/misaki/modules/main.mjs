@@ -73,6 +73,158 @@ let image = {
         'images/Misaki/Misaki_Walk_5.png',
         'images/Misaki/Misaki_Walk_6.png'
       ],
+    }, turn : {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Turn_3.png',
+        'images/Misaki/Misaki_Turn_2.png'
+      ],
+    }, run : {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Run_1.png',
+        'images/Misaki/Misaki_Run_2.png',
+        'images/Misaki/Misaki_Run_3.png',
+        'images/Misaki/Misaki_Run_4.png',
+        'images/Misaki/Misaki_Run_5.png',
+        'images/Misaki/Misaki_Run_6.png',
+        'images/Misaki/Misaki_Run_7.png',
+        'images/Misaki/Misaki_Run_8.png'
+      ],
+    }, crouch: {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Crouch_1.png',
+        'images/Misaki/Misaki_Crouch_2.png',
+        'images/Misaki/Misaki_Crouch_3.png'
+      ],
+    }, jump : {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Jump_up_1.png',
+        'images/Misaki/Misaki_Jump_up_2.png',
+        'images/Misaki/Misaki_Jump_up_3.png',
+        'images/Misaki/Misaki_Jump_MidAir_1.png',
+        'images/Misaki/Misaki_Jump_MidAir_2.png',
+        'images/Misaki/Misaki_Jump_MidAir_3.png',
+        'images/Misaki/Misaki_Jump_Fall_1.png',
+        'images/Misaki/Misaki_Jump_Fall_2.png',
+        'images/Misaki/Misaki_Jump_Fall_3.png'
+      ],
+    }, slide : {
+      data: [],
+      src: ['images/Misaki/Misaki_Slide_1.png'],
+    }, push : {
+      data: [],
+      src: ['images/Misaki/Misaki_Push_1.png'],
+    }, punch: {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Punch_1.png',
+        'images/Misaki/Misaki_Punch_2.png'
+      ],
+    }, kick : {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Kick_1.png',
+        'images/Misaki/Misaki_Kick_2.png',
+        'images/Misaki/Misaki_Kick_3.png',
+        'images/Misaki/Misaki_Kick_4.png',
+        'images/Misaki/Misaki_Kick_5.png',
+        'images/Misaki/Misaki_Kick_6.png'
+      ],
+    }, damage: {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Damage_1.png',
+        'images/Misaki/Misaki_Damage_2.png',
+        'images/Misaki/Misaki_Damage_3.png',
+        'images/Misaki/Misaki_Damage_4.png'
+      ],
+    }, down : {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Damage_down_1.png',
+        'images/Misaki/Misaki_Damage_down_2.png',
+        'images/Misaki/Misaki_Damage_down_3.png',
+        'images/Misaki/Misaki_Damage_down_4.png'
+      ],
+    }, return: {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Damage_return_1.png',
+        'images/Misaki/Misaki_Damage_return_2.png',
+        'images/Misaki/Misaki_Damage_return_3.png'
+      ],
+    },
+  }, kohaku: {
+    idle: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_4.png'
+      ],
+    }, walk  : {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Walk_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
+        'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
+        'images/Unitychan/BasicActions/Unitychan_Walk_6.png'
+      ],
+    }, damage: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_15.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_19.png'
+      ],
+    }, sword: {
+      data: [],
+      src: [
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
+      ],
+    },
+  }, bg : {
+    tileset : {
+      data: [],
+      src: ['images/MagicCliffsArtwork/tileset.png'],
+    }, farGrounds: {
+      data: [],
+      src: ['images/MagicCliffsArtwork/far-grounds.png'],
+    }, clouds : {
+      data: [],
+      src: ['images/MagicCliffsArtwork/clouds.png'],
+    }, sea : {
+      data: [],
+      src: ['images/MagicCliffsArtwork/sea.png'],
+    }, sky : {
+      data: [],
+      src: ['images/MagicCliffsArtwork/sky.png']
     },
   },
 }
@@ -91,138 +243,15 @@ const resourceLoading = obj => {
     })
   })
 }
-const loadingList = [
-  image.misaki.idle,
-  image.misaki.walk,
-]
 const resourceLoadingPromiseList = []
-loadingList.forEach(v => resourceLoadingPromiseList.push(resourceLoading(v)))
-Promise.all(resourceLoadingPromiseList).then(result => {
-  console.log(result)
+Object.keys(image).forEach(v => {
+  Object.keys(image[v]).forEach(vl => {
+    resourceLoadingPromiseList.push(resourceLoading(image[v][vl]))
+  })
 })
-const imageListObject = {
-  misaki: {
-    idle : [
-      'images/Misaki/Misaki_Idle_1.png',
-      'images/Misaki/Misaki_Idle_1_Blink_1.png',
-      'images/Misaki/Misaki_Idle_1_Blink_2.png',
-      'images/Misaki/Misaki_Idle_2.png',
-      'images/Misaki/Misaki_Idle_2_Blink_1.png',
-      'images/Misaki/Misaki_Idle_2_Blink_2.png',
-      'images/Misaki/Misaki_Idle_3.png',
-      'images/Misaki/Misaki_Idle_3_Blink_1.png',
-      'images/Misaki/Misaki_Idle_3_Blink_2.png',
-      'images/Misaki/Misaki_Idle_4.png',
-      'images/Misaki/Misaki_Idle_4_Blink_1.png',
-      'images/Misaki/Misaki_Idle_4_Blink_2.png'
-    ], walk  : [
-      'images/Misaki/Misaki_Walk_1.png',
-      'images/Misaki/Misaki_Walk_2.png',
-      'images/Misaki/Misaki_Walk_3.png',
-      'images/Misaki/Misaki_Walk_4.png',
-      'images/Misaki/Misaki_Walk_5.png',
-      'images/Misaki/Misaki_Walk_6.png'
-    ], turn  : [
-      'images/Misaki/Misaki_Turn_3.png',
-      'images/Misaki/Misaki_Turn_2.png'
-    ], run   : [
-      'images/Misaki/Misaki_Run_1.png',
-      'images/Misaki/Misaki_Run_2.png',
-      'images/Misaki/Misaki_Run_3.png',
-      'images/Misaki/Misaki_Run_4.png',
-      'images/Misaki/Misaki_Run_5.png',
-      'images/Misaki/Misaki_Run_6.png',
-      'images/Misaki/Misaki_Run_7.png',
-      'images/Misaki/Misaki_Run_8.png'
-    ], crouch: [
-      'images/Misaki/Misaki_Crouch_1.png',
-      'images/Misaki/Misaki_Crouch_2.png',
-      'images/Misaki/Misaki_Crouch_3.png'
-    ], jump  : [
-      'images/Misaki/Misaki_Jump_up_1.png',
-      'images/Misaki/Misaki_Jump_up_2.png',
-      'images/Misaki/Misaki_Jump_up_3.png',
-      'images/Misaki/Misaki_Jump_MidAir_1.png',
-      'images/Misaki/Misaki_Jump_MidAir_2.png',
-      'images/Misaki/Misaki_Jump_MidAir_3.png',
-      'images/Misaki/Misaki_Jump_Fall_1.png',
-      'images/Misaki/Misaki_Jump_Fall_2.png',
-      'images/Misaki/Misaki_Jump_Fall_3.png'
-    ], slide : ['images/Misaki/Misaki_Slide_1.png'],
-    push : ['images/Misaki/Misaki_Push_1.png'],
-    punch: [
-      'images/Misaki/Misaki_Punch_1.png',
-      'images/Misaki/Misaki_Punch_2.png'
-    ], kick  : [
-      'images/Misaki/Misaki_Kick_1.png',
-      'images/Misaki/Misaki_Kick_2.png',
-      'images/Misaki/Misaki_Kick_3.png',
-      'images/Misaki/Misaki_Kick_4.png',
-      'images/Misaki/Misaki_Kick_5.png',
-      'images/Misaki/Misaki_Kick_6.png'
-    ], damage: [
-      'images/Misaki/Misaki_Damage_1.png',
-      'images/Misaki/Misaki_Damage_2.png',
-      'images/Misaki/Misaki_Damage_3.png',
-      'images/Misaki/Misaki_Damage_4.png'
-    ], down  : [
-      'images/Misaki/Misaki_Damage_down_1.png',
-      'images/Misaki/Misaki_Damage_down_2.png',
-      'images/Misaki/Misaki_Damage_down_3.png',
-      'images/Misaki/Misaki_Damage_down_4.png'
-    ], return: [
-      'images/Misaki/Misaki_Damage_return_1.png',
-      'images/Misaki/Misaki_Damage_return_2.png',
-      'images/Misaki/Misaki_Damage_return_3.png'
-    ]
-  }, kohaku: {
-    idle: [
-      'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
-      'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
-      'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
-      'images/Unitychan/BasicActions/Unitychan_Idle_4.png'
-    ], walk  : [
-      'images/Unitychan/BasicActions/Unitychan_Walk_1.png',
-      'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
-      'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
-      'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
-      'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
-      'images/Unitychan/BasicActions/Unitychan_Walk_6.png'
-    ], damage: [
-      'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_15.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
-      'images/Unitychan/BasicActions/Unitychan_Damage_19.png'
-    ], sword: [
-      'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
-      'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
-      'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
-      'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
-      'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
-      'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
-    ]
-  }, bg    : {
-    tileset   : ['images/MagicCliffsArtwork/tileset.png'],
-    farGrounds: ['images/MagicCliffsArtwork/far-grounds.png'],
-    clouds    : ['images/MagicCliffsArtwork/clouds.png'],
-    sea       : ['images/MagicCliffsArtwork/sea.png'],
-    sky       : ['images/MagicCliffsArtwork/sky.png']
-  }
-}
+Promise.all(resourceLoadingPromiseList).then(() => {
+  console.log('loading finished')
+})
 let imageStat = {
   idle  : {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
   walk  : {condition: 0, time: 0, frame: 10},
@@ -245,20 +274,6 @@ const unityChanStat = {
     startUp: 7, startUpLength: 3, active: 7, activeLength: 1, recovery: 5, recoveryLength: 2
   }
 }
-let imagePathList = []
-Object.keys(imageListObject).forEach(v => {
-  Object.values(imageListObject[v]).forEach(vv => imagePathList.push(...vv))
-})
-let imageLoadedList = []
-let imageLoadedMap = []
-imagePathList.forEach(path => {
-  const imgPreload = new Image()
-  imgPreload.src = path
-  imgPreload.addEventListener('load', () => {
-    imageLoadedList.push(path)
-    imageLoadedMap[path] = imgPreload
-  })
-})
 const voiceStat = {
   jump      : 'audio/Misaki/V2001.wav',
   doubleJump: 'audio/Misaki/V2002.wav',
@@ -298,7 +313,6 @@ musicPathList.forEach(path => {
 })
 const timerId = setInterval(() => { // loading monitoring
   if (
-    imageLoadedList.length === imagePathList.length &&
     voiceLoadedList.length === voicePathList.length &&
     musicLoadedList.length === musicPathList.length
   ) { // untrustworthy length in assosiative
@@ -1610,7 +1624,7 @@ const viewUpdate = () => {
     : -6 < player.dy ? 0 : 8
   } else if (player.state === 'idle') {
     const i = imageStat[player.state]
-    const l = imageListObject.misaki[player.state].length
+    const l = image.misaki[player.state].data.length
     i.time += 1
     if (( // breath
       0 <= i.condition && i.condition < 0 + l / 4 &&
@@ -1646,8 +1660,8 @@ const viewUpdate = () => {
     const i = imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === imageListObject.misaki[player.state].length) {
-      i.condition -= imageListObject.misaki[player.state].length
+    if (i.condition === image.misaki[player.state].data.length) {
+      i.condition -= image.misaki[player.state].data.length
       i.time = 0
       if (player.midBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
@@ -1656,8 +1670,8 @@ const viewUpdate = () => {
     const i = imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === imageListObject.misaki[player.state].length) {
-      i.condition -= imageListObject.misaki[player.state].length
+    if (i.condition === image.misaki[player.state].data.length) {
+      i.condition -= image.misaki[player.state].data.length
       i.time = 0
       player.state = 'idle'
     }
@@ -1665,8 +1679,8 @@ const viewUpdate = () => {
     const i = imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === imageListObject.misaki[player.state].length) {
-      i.condition -= imageListObject.misaki[player.state].length
+    if (i.condition === image.misaki[player.state].data.length) {
+      i.condition -= image.misaki[player.state].data.length
       i.time = 0
       if (!menuFlag) {
         if (
@@ -1678,8 +1692,8 @@ const viewUpdate = () => {
     const i = imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === imageListObject.misaki[player.state].length) {
-      i.condition -= imageListObject.misaki[player.state].length
+    if (i.condition === image.misaki[player.state].data.length) {
+      i.condition -= image.misaki[player.state].data.length
       if (playerData.minBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < playerData.minBreath) player.breathInterval += 1
     }
@@ -1687,7 +1701,7 @@ const viewUpdate = () => {
     const i = imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === imageListObject.misaki[player.state].length) {
+    if (i.condition === image.misaki[player.state].data.length) {
       i.condition -= 1
       i.time = 0
     }
@@ -1698,9 +1712,9 @@ const viewUpdate = () => {
       i.condition += 1
       if (i.condition === i.audioTrigger) playAudio(voiceStat[player.state])
     }
-    if (i.condition === imageListObject.misaki[player.state].length) {
+    if (i.condition === image.misaki[player.state].data.length) {
       i.time = 0
-      i.condition -= imageListObject.misaki[player.state].length
+      i.condition -= image.misaki[player.state].data.length
       player.state = 'idle'
     }
   } else if (player.state === 'kick') {
@@ -1711,9 +1725,9 @@ const viewUpdate = () => {
       i.condition += 1
       if (i.condition === i.audioTrigger) playAudio(voiceStat[player.state])
     }
-    if (i.condition === imageListObject.misaki[player.state].length) {
+    if (i.condition === image.misaki[player.state].data.length) {
       i.time = 0
-      i.condition -= imageListObject.misaki[player.state].length
+      i.condition -= image.misaki[player.state].data.length
       player.state = 'idle'
     }
   }
@@ -1726,8 +1740,8 @@ const viewUpdate = () => {
       if (v.state === 'walk') {
         if (v.imageTimer % unityChanStat[v.state].frame === 0) {
           v.image += 1
-          if (v.image === imageListObject.kohaku[v.state].length) {
-            v.image -= imageListObject.kohaku[v.state].length
+          if (v.image === image.kohaku[v.state].data.length) {
+            v.image -= image.kohaku[v.state].data.length
           }
           v.imageTimer = 0
         }
@@ -1735,8 +1749,8 @@ const viewUpdate = () => {
         if (v.invincibleTimer === 30) v.image = 0
         if (v.imageTimer % unityChanStat[v.state].frame === 0) {
           v.image += 1
-          if (v.image === imageListObject.kohaku[v.state].length) {
-            v.image -= imageListObject.kohaku[v.state].length
+          if (v.image === image.kohaku[v.state].data.length) {
+            v.image -= image.kohaku[v.state].data.length
             v.state = 'walk'
           }
           v.imageTimer = 0
@@ -1754,8 +1768,8 @@ const viewUpdate = () => {
           )
         ) {
           v.image += 1
-          if (v.image === imageListObject.kohaku[v.state].length) {
-            v.image -= imageListObject.kohaku[v.state].length
+          if (v.image === image.kohaku[v.state].data.length) {
+            v.image -= image.kohaku[v.state].data.length
             v.state = 'idle'
           }
           v.imageTimer = 0
@@ -1763,8 +1777,8 @@ const viewUpdate = () => {
       } else if (v.state === 'idle') {
         if (v.imageTimer % unityChanStat[v.state].frame === 0) {
           v.image += 1
-          if (v.image === imageListObject.kohaku[v.state].length) {
-            v.image -= imageListObject.kohaku[v.state].length
+          if (v.image === image.kohaku[v.state].data.length) {
+            v.image -= image.kohaku[v.state].data.length
           }
           v.imageTimer = 0
         }
@@ -1774,37 +1788,30 @@ const viewUpdate = () => {
 }
 const draw = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  const cloudsWidth = imageLoadedMap[imageListObject.bg['clouds'][0]].width
-  const cloudsHeight = imageLoadedMap[imageListObject.bg['clouds'][0]].height
-  const skyWidth = imageLoadedMap[imageListObject.bg['sky'][0]].width
-  const seaWidth = imageLoadedMap[imageListObject.bg['sea'][0]].width
-  const seaHeight = imageLoadedMap[imageListObject.bg['sea'][0]].height
-  for (let i = 0; i < Math.ceil(canvas.offsetWidth / skyWidth) + 1; i++) {
+  const clouds = image.bg.clouds.data[0]
+  const sky = image.bg.sky.data[0]
+  const sea = image.bg.sea.data[0]
+  for (let i = 0; i < Math.ceil(canvas.offsetWidth / sky.width) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imageListObject.bg['sky'][0]],
-      skyWidth * i - stage.time / 120 % skyWidth, 0
+      sky,
+      sky.width * i - stage.time / 120 % sky.width, 0
     )
   }
-  for (let i = 0; i < Math.ceil(canvas.offsetWidth / cloudsWidth) + 1; i++) {
+  for (let i = 0; i < Math.ceil(canvas.offsetWidth / clouds.width) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imageListObject.bg['clouds'][0]],
-      cloudsWidth * i - stage.time / 60 % cloudsWidth,
-      canvas.offsetHeight - cloudsHeight - seaHeight
-    )
+      clouds,
+      clouds.width * i - stage.time / 60 % clouds.width,
+      canvas.offsetHeight - clouds.height - sea.height)
   }
-  for (let i = 0; i < Math.ceil(canvas.offsetWidth / seaWidth) + 1; i++) {
+  for (let i = 0; i < Math.ceil(canvas.offsetWidth / sea.width) + 1; i++) {
     context.drawImage(
-      imageLoadedMap[imageListObject.bg['sea'][0]],
-      seaWidth * i - stage.time / 30 % seaWidth,
-      canvas.offsetHeight - seaHeight
-    )
+      sea,
+      sea.width * i - stage.time / 30 % sea.width,
+      canvas.offsetHeight - sea.height)
   }
-  const bgOffset = (player.x / stage.w) * (canvas.offsetWidth - imageLoadedMap[imageListObject.bg['farGrounds'][0]].width)
-  context.drawImage(
-    imageLoadedMap[imageListObject.bg['farGrounds'][0]],
-    bgOffset,
-    canvas.offsetHeight - imageLoadedMap[imageListObject.bg['farGrounds'][0]].height
-  )
+  const farGrounds = image.bg.farGrounds.data[0]
+  const bgOffset = (player.x / stage.w) * (canvas.offsetWidth - farGrounds.width)
+  context.drawImage(farGrounds, bgOffset, canvas.offsetHeight - farGrounds.height)
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0
@@ -1824,6 +1831,7 @@ const draw = () => {
     })
   }
   { // draw ground
+    const tileset = image.bg.tileset.data[0]
     field.forEach(obj => {
       if (obj.w === size && obj.h === size) {
         if (
@@ -1832,14 +1840,14 @@ const draw = () => {
           fieldArray[obj.y / size - 1][obj.x / size] === '1'
         ) {
           context.drawImage(
-            imageLoadedMap[imageListObject.bg['tileset'][0]], size * (1+obj.id),
+            tileset, size * (1+obj.id),
             size * 10, size, size,
             obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
             size, size
           )
         } else {
           context.drawImage(
-            imageLoadedMap[imageListObject.bg['tileset'][0]], size * (1+obj.id),
+            tileset, size * (1+obj.id),
             size * 9 - size, size, size * 2,
             obj.x - stageOffset.x|0, obj.y - stageOffset.y - size|0,
             size, size * 2
@@ -1847,7 +1855,7 @@ const draw = () => {
         }
       } else {
         context.drawImage(
-          imageLoadedMap[imageListObject.bg['tileset'][0]], size * 33, size * 7, size, size,
+          tileset, size * 33, size * 7, size, size,
           obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
           obj.w|0, obj.h|0
         )
@@ -1865,7 +1873,7 @@ const draw = () => {
     if (v.type === 'enemy') {
       let ex = v.x - imageOffset.x - stageOffset.x
       const ey = v.y - imageOffset.y - stageOffset.y
-      const img = imageLoadedMap[imageListObject.kohaku[v.state][v.image]]
+      const img = image.kohaku[v.state].data[v.image]
       context.save()
       if (v.direction === 'left') {
         context.scale(-1, 1)
@@ -1889,9 +1897,7 @@ const draw = () => {
     aftergrow.gate -= 1
   }
   let x = player.x - imageOffset.x - stageOffset.x
-  const img = imageLoadedMap[
-    imageListObject.misaki[player.state][imageStat[player.state].condition]
-  ]
+  const img = image.misaki[player.state].data[imageStat[player.state].condition]
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
@@ -2013,8 +2019,8 @@ const drawLoadingScreen = () => {
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = `hsla(0, 0%, 0%, ${aftergrow.loading / aftergrowLimit.loading})`
   const ratio = Math.ceil(
-    imageLoadedList.length + voiceLoadedList.length + musicLoadedList.length) / (
-    imagePathList.length + voicePathList.length + musicPathList.length
+    voiceLoadedList.length + musicLoadedList.length) / (
+    voicePathList.length + musicPathList.length
   )
   context.fillRect(
     canvas.offsetWidth / 4, canvas.offsetHeight / 2, (canvas.offsetWidth / 2) * ratio, size
