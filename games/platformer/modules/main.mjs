@@ -241,31 +241,6 @@ const collisionDetect = () => {
             [[1, 1], [1, 1], [0, 0]],
             [[0, 1], [-1, 1], [1, 0]],
           ]
-          cornerList.forEach(vl => { // diagonally
-            if (vl[0][0] !== ro[0] || vl[0][1] !== ro[1]) return
-            const dTarget = terrainObject[collisionObject.data[(
-              y + vl[2][1]) * collisionObject.width + x + vl[2][0]] -
-              resource.json.tilesets[1].firstgid + 1]
-            if (dTarget === undefined) return
-            const dVertex = vl[2]
-            const dIndex = dTarget.findIndex(val => {
-              return val[0] === dVertex[0] && val[1] === dVertex[1]
-            })
-            if (dIndex === -1) return
-            const dPreviousIndex = dIndex === 0 ? dTarget.length - 1 : dIndex - 1
-            const dNextIndex = dIndex === dTarget.length - 1 ? 0 : dIndex + 1
-            const dPreviousTilt = Math.atan2(
-              dTarget[dIndex][1] - dTarget[dPreviousIndex][1],
-                dTarget[dIndex][0] - dTarget[dPreviousIndex][0]) / Math.PI
-            const dNextTilt = Math.atan2(
-              dTarget[dNextIndex][1] - dTarget[dIndex][1],
-              dTarget[dNextIndex][0] - dTarget[dIndex][0]) / Math.PI
-            if (
-                dTarget.length !== 2 && (
-                tilt === dPreviousTilt || previousTilt === dPreviousTilt ||
-                tilt === dNextTilt || previousTilt === dNextTilt)
-            ) vertexFlag = true
-          })
           if (returnFlag) return
           const ox = ownCondition.x
           const oy = ownCondition.y
