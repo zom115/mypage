@@ -1,4 +1,5 @@
-const version = 'v.0.8.5'
+import {key} from '../../../modules/key.mjs'
+const version = 'v.0.8.6'
 const canvas = document.getElementById`canvas`
 const DOM = {
   operation: document.getElementById`operation`,
@@ -19,133 +20,6 @@ const context = canvas.getContext`2d`
 context.imageSmoothingEnabled
 = context.msImageSmoothingEnabled
 = context.webkitImageSmoothingEnabled = false
-let key = {
-  shiftFlag: false, shift: 0,
-  spaceFlag: false, space: 0,
-  aFlag: false, a: 0,
-  bFlag: false, b: 0,
-  cFlag: false, c: 0,
-  dFlag: false, d: 0,
-  eFlag: false, e: 0,
-  fFlag: false, f: 0,
-  gFlag: false, g: 0,
-  hFlag: false, h: 0,
-  iFlag: false, i: 0,
-  jFlag: false, j: 0,
-  kFlag: false, k: 0,
-  lFlag: false, l: 0,
-  mFlag: false, m: 0,
-  nFlag: false, n: 0,
-  oFlag: false, o: 0,
-  pFlag: false, p: 0,
-  qFlag: false, q: 0,
-  rFlag: false, r: 0,
-  sFlag: false, s: 0,
-  tFlag: false, t: 0,
-  uFlag: false, u: 0,
-  vFlag: false, v: 0,
-  wFlag: false, w: 0,
-  xFlag: false, x: 0,
-  yFlag: false, y: 0,
-  zFlag: false, z: 0
-}
-document.addEventListener('keydown', e => {
-  if (e.keyCode === 16) key.shiftFlag = true
-  if (e.keyCode === 32) {
-    key.spaceFlag = true
-    if (e.preventDefault) e.preventDefault()
-    else {
-      e.keyCode = 0
-      return false
-    }
-  }
-  if (e.keyCode === 65) key.aFlag = true
-  if (e.keyCode === 66) key.bFlag = true
-  if (e.keyCode === 67) key.cFlag = true
-  if (e.keyCode === 68) key.dFlag = true
-  if (e.keyCode === 69) key.eFlag = true
-  if (e.keyCode === 70) key.fFlag = true
-  if (e.keyCode === 71) key.gFlag = true
-  if (e.keyCode === 72) key.hFlag = true
-  if (e.keyCode === 73) key.iFlag = true
-  if (e.keyCode === 74) key.jFlag = true
-  if (e.keyCode === 75) key.kFlag = true
-  if (e.keyCode === 76) key.lFlag = true
-  if (e.keyCode === 77) key.mFlag = true
-  if (e.keyCode === 78) key.nFlag = true
-  if (e.keyCode === 79) key.oFlag = true
-  if (e.keyCode === 80) key.pFlag = true
-  if (e.keyCode === 81) key.qFlag = true
-  if (e.keyCode === 82) key.rFlag = true
-  if (e.keyCode === 83) key.sFlag = true
-  if (e.keyCode === 84) key.tFlag = true
-  if (e.keyCode === 85) key.uFlag = true
-  if (e.keyCode === 86) key.vFlag = true
-  if (e.keyCode === 87) key.wFlag = true
-  if (e.keyCode === 88) key.xFlag = true
-  if (e.keyCode === 89) key.yFlag = true
-  if (e.keyCode === 90) key.zFlag = true
-}, false)
-document.addEventListener('keyup', e => {
-  if (e.keyCode === 16) key.shiftFlag = false, key.shift = 0
-  if (e.keyCode === 32) key.spaceFlag = false, key.space = 0
-  if (e.keyCode === 65) key.aFlag = false, key.a = 0
-  if (e.keyCode === 66) key.bFlag = false, key.b = 0
-  if (e.keyCode === 67) key.cFlag = false, key.c = 0
-  if (e.keyCode === 68) key.dFlag = false, key.d = 0
-  if (e.keyCode === 69) key.eFlag = false, key.e = 0
-  if (e.keyCode === 70) key.fFlag = false, key.f = 0
-  if (e.keyCode === 71) key.gFlag = false, key.g = 0
-  if (e.keyCode === 72) key.hFlag = false, key.h = 0
-  if (e.keyCode === 73) key.iFlag = false, key.i = 0
-  if (e.keyCode === 74) key.jFlag = false, key.j = 0
-  if (e.keyCode === 75) key.kFlag = false, key.k = 0
-  if (e.keyCode === 76) key.lFlag = false, key.l = 0
-  if (e.keyCode === 77) key.mFlag = false, key.m = 0
-  if (e.keyCode === 78) key.nFlag = false, key.n = 0
-  if (e.keyCode === 79) key.oFlag = false, key.o = 0
-  if (e.keyCode === 80) key.pFlag = false, key.p = 0
-  if (e.keyCode === 81) key.qFlag = false, key.q = 0
-  if (e.keyCode === 82) key.rFlag = false, key.r = 0
-  if (e.keyCode === 83) key.sFlag = false, key.s = 0
-  if (e.keyCode === 84) key.tFlag = false, key.t = 0
-  if (e.keyCode === 85) key.uFlag = false, key.u = 0
-  if (e.keyCode === 86) key.vFlag = false, key.v = 0
-  if (e.keyCode === 87) key.wFlag = false, key.w = 0
-  if (e.keyCode === 88) key.xFlag = false, key.x = 0
-  if (e.keyCode === 89) key.yFlag = false, key.y = 0
-  if (e.keyCode === 90) key.zFlag = false, key.z = 0
-}, false)
-const inputProcess = () => {
-  if (key.shiftFlag) key.shift = (key.shift+1)|0
-  if (key.spaceFlag) key.space = (key.space+1)|0
-  if (key.aFlag) key.a = (key.a+1)|0
-  if (key.bFlag) key.b = (key.b+1)|0
-  if (key.cFlag) key.c = (key.c+1)|0
-  if (key.dFlag) key.d = (key.d+1)|0
-  if (key.eFlag) key.e = (key.e+1)|0
-  if (key.fFlag) key.f = (key.f+1)|0
-  if (key.gFlag) key.g = (key.g+1)|0
-  if (key.hFlag) key.h = (key.h+1)|0
-  if (key.iFlag) key.i = (key.i+1)|0
-  if (key.jFlag) key.j = (key.j+1)|0
-  if (key.kFlag) key.k = (key.k+1)|0
-  if (key.lFlag) key.l = (key.l+1)|0
-  if (key.mFlag) key.m = (key.m+1)|0
-  if (key.nFlag) key.n = (key.n+1)|0
-  if (key.oFlag) key.o = (key.o+1)|0
-  if (key.pFlag) key.p = (key.p+1)|0
-  if (key.qFlag) key.q = (key.q+1)|0
-  if (key.rFlag) key.r = (key.r+1)|0
-  if (key.sFlag) key.s = (key.s+1)|0
-  if (key.tFlag) key.t = (key.t+1)|0
-  if (key.uFlag) key.u = (key.u+1)|0
-  if (key.vFlag) key.v = (key.v+1)|0
-  if (key.wFlag) key.w = (key.w+1)|0
-  if (key.xFlag) key.x = (key.x+1)|0
-  if (key.yFlag) key.y = (key.y+1)|0
-  if (key.zFlag) key.z = (key.z+1)|0
-}
 const storage = localStorage
 const setDOM = (key, value) => {
   if (Object.keys(DOM).some(x => x === key)) DOM[key].innerHTML = value.toUpperCase()
@@ -353,10 +227,10 @@ const setAngle = () => {
 }
 document.addEventListener('DOMContentLoaded', () => {
   action = {
-    fire: setStorageFirst('fire', 'space'),
+    fire: setStorageFirst('fire', ' '),
     reload: setStorageFirst('reload', 'r'),
     combatReload: setStorageFirst('combatReload', 'c'),
-    slow: setStorageFirst('slow', 'shift'),
+    slow: setStorageFirst('slow', 'Shift'),
     dash: setStorageFirst('dash', 'n'),
     back: setStorageFirst('back', 'b'),
     change: setStorageFirst('change', 'm'),
@@ -380,9 +254,9 @@ const slideProcess = () => {
     slide.state = 'release'
     const stopSlide = () => {
       if (inventory[0].magazines[firearm.grip] === 0) return // cocking postponement
-      if ((0 < key[action.combatReload] || combatReload.auto === 'ON') && combatReload.magFlag) {
+      if ((key[action.combatReload].flag || combatReload.auto === 'ON') && combatReload.magFlag) {
         combatReload.flag = true
-        combatReload.weight = (key[action.combatReload] === 0) ? 8 : 4
+        combatReload.weight = (!key[action.combatReload].flag) ? 8 : 4
       }
     }
     stopSlide()
@@ -620,9 +494,9 @@ const dashCoolTimer = arg => {
   return dash.coolTime
 }
 const dashProcess = () => {
-  if (cloneDashType1Flag && key[action.slow] === 0) cloneSpeed = dash.breakthrough
+  if (cloneDashType1Flag && !key[action.slow].flag) cloneSpeed = dash.breakthrough
   else if (cloneDashType2Flag) { ownSpeed.current = dash.breakthrough
-  } else if (cloneDashType3Flag && key[action.slow] === 0) {
+  } else if (cloneDashType3Flag && !key[action.slow].flag) {
     clonePosition = []
     cloneSpeed = dash.breakthrough
   } else ownSpeed.current = dash.breakthrough
@@ -630,10 +504,10 @@ const dashProcess = () => {
 }
 const speedAdjust = () => {
   if (((
-    0 < key[action.up] && 0 < key[action.lookDown]) ||
-    (0 < key[action.right] && 0 < key[action.lookLeft]) ||
-    (0 < key[action.down] && 0 < key[action.lookUp]) ||
-    (0 < key[action.left] && 0 < key[action.lookRight])) &&
+    key[action.up].flag && key[action.lookDown].flag) ||
+    (key[action.right].flag && key[action.lookLeft].flag) ||
+    (key[action.down].flag && key[action.lookUp].flag) ||
+    (key[action.left].flag && key[action.lookRight].flag)) &&
     ownSpeed.min < ownSpeed.current
   ) {
     ownSpeed.current = ownSpeed.current - ownSpeed.dx
@@ -659,10 +533,12 @@ const moving = () => {
   : directionCalc(direction)
   differenceAddition(ownPosition, dx * ownSpeed.current, dy * ownSpeed.current)
   if (cloneFlag) {
-    if (0 < key[action.slow]) {
+    if (key[action.slow].flag) {
       clonePosition.unshift({dx: dx * cloneSpeed, dy: dy * cloneSpeed})
     } else {
-      if (ownSpeed.max < cloneSpeed && (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)) {
+      if (ownSpeed.max < cloneSpeed && (
+        cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)
+      ) {
         const tmp = directionCalc(currentDirection)
         dx = -tmp.dx
         dy = -tmp.dy
@@ -678,34 +554,34 @@ const bomb = () => {
   })
 }
 const interfaceProcess = () => {
-  if (key[action.pause] === 1) state = 'pause'
-  if (key[action.inventory] === 1) inventoryFlag = !inventoryFlag
+  if (key[action.pause].isFirst()) state = 'pause'
+  if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
-  if (0 < key[action.lookUp]) angle = (angle+1)|0
-  if (0 < key[action.lookRight]) angle = (angle+2)|0
-  if (0 < key[action.lookDown]) angle = (angle+4)|0
-  if (0 < key[action.lookLeft]) angle = (angle+8)|0
-  if (0 < key[action.up]) direction = (direction+1)|0
-  if (0 < key[action.right]) direction = (direction+2)|0
-  if (0 < key[action.down]) direction = (direction+4)|0
-  if (0 < key[action.left]) direction = (direction+8)|0
+  if (key[action.lookUp].flag) angle = (angle+1)|0
+  if (key[action.lookRight].flag) angle = (angle+2)|0
+  if (key[action.lookDown].flag) angle = (angle+4)|0
+  if (key[action.lookLeft].flag) angle = (angle+8)|0
+  if (key[action.up].flag) direction = (direction+1)|0
+  if (key[action.right].flag) direction = (direction+2)|0
+  if (key[action.down].flag) direction = (direction+4)|0
+  if (key[action.left].flag) direction = (direction+8)|0
   if (0 < angle) currentDirection = angle
   else if (direction !== 0) currentDirection = direction
-  if (key[action.reload] === 1 && reload.time === 0 && reload.state === 'done') {
+  if (key[action.reload].isFirst() && reload.time === 0 && reload.state === 'done') {
     inventory[0].reloadSpeed = inventory[0].baseReloadSpeed
     reloadProcess()
   } else if (0 < reload.time || reload.state !== 'done') reloadProcess()
-  if (key[action.fire]) firingProcess()
+  if (key[action.fire].flag) firingProcess()
   loadingProcess()
-  if (key[action.change] === 1) magazineForword() // TODO: to consider
-  if (dashCoolTimer() === 0 && key[action.dash] === 1) dashProcess()
+  if (key[action.change].isFirst()) magazineForword() // TODO: to consider
+  if (dashCoolTimer() === 0 && key[action.dash].isFirst()) dashProcess()
   if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed) moving()
-  if (key[action.debug] === 1) debugMode = !debugMode
-  if (manyAmmo() && key[action.back] === 1) bomb()
+  if (key[action.debug].isFirst()) debugMode = !debugMode
+  if (manyAmmo() && key[action.back].isFirst()) bomb()
 }
 const cloneProcess = () => {
   if (
-    cloneReturnFlag && direction === 0 && key[action.slow] === 0 &&
+    cloneReturnFlag && direction === 0 && !key[action.slow].flag &&
     cloneSpeed <= ownSpeed.max
   ) clonePosition.shift()
   if (60 < clonePosition.length) clonePosition.shift()
@@ -800,7 +676,7 @@ const drawMyself = () => {
     })
     context.globalAlpha = .5
     if (
-      0 < key[action.dash] && key[action.dash] <= flashTimeLimit &&
+      key[action.dash].flag && key[action.dash].holdtime <= flashTimeLimit &&
       ownSpeed.current <= ownSpeed.max
     ) {
       context.fillStyle = 'hsla(0, 100%, 50%, .5)'
@@ -1149,8 +1025,8 @@ const bulletProcess = () => {
         bullets.splice(i, 1)
         return
       }
-      let theta = (0 < key[action.combatReload]) ?  -degree * (Math.PI / 180)
-      : (0 < key[action.change]) ? degree * (Math.PI / 180) : 0
+      let theta = key[action.combatReload].flag ?  -degree * (Math.PI / 180)
+      : key[action.change].flag ? degree * (Math.PI / 180) : 0
       const oldDx = bullet.dx
       const oldDy = bullet.dy
       bullet.dx = oldDx * Math.cos(theta) - oldDy * Math.sin(theta)
@@ -1175,8 +1051,8 @@ const bulletProcess = () => {
               dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
             }
           })
-        } else if (bullet.prepareFlag && key[action.fire] === 1) bullet.life = 2
-        else if (key[action.fire] === 1) bullet.prepareFlag = true
+        } else if (bullet.prepareFlag && key[action.fire].isFirst()) bullet.life = 2
+        else if (key[action.fire].isFirst()) bullet.prepareFlag = true
         return false
       }
       const hit = enemies.findIndex((enemy, index) => {
@@ -1201,11 +1077,11 @@ const bulletProcess = () => {
               dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
             }
           })
-        } else if (bullet.prepareFlag && key[action.fire] === 1) {
+        } else if (bullet.prepareFlag && key[action.fire].isFirst()) {
           bullet.life = 2
           return
         }
-        else if (key[action.fire] === 1) bullet.prepareFlag = true
+        else if (key[action.fire].isFirst()) bullet.prepareFlag = true
         if (hit === -1) return
         bullet.dx = 0
         bullet.dy = 0
@@ -1683,13 +1559,13 @@ const inventoryProcess = () => {
     {x: -size * 5.5, y: 0}
   ]
   const selectedBuffer = selectedIndex
-  selectedIndex = (key[action.lookUp] === 1) ? 1
-  : (key[action.lookRight] === 1) ? 2
-  : (key[action.lookDown] === 1) ? 3
-  : (key[action.lookLeft] === 1) ? 4 : selectedIndex
+  selectedIndex = (key[action.lookUp].isFirst()) ? 1
+  : (key[action.lookRight].isFirst()) ? 2
+  : (key[action.lookDown].isFirst()) ? 3
+  : (key[action.lookLeft].isFirst()) ? 4 : selectedIndex
   const swapArray = (pressedKey, num) => {
-    if (num + 1 <= inventory.length && pressedKey === 1 && afterglow.inventory === 0) {
-      if (0 < key[action.slow]) {
+    if (num + 1 <= inventory.length && key[pressedKey].isFirst() && afterglow.inventory === 0) {
+      if (key[action.slow].flag) {
         inventory[num].type = 'droppedWeapon'
         inventory[num].unavailableTime = 30
         inventory[num].x = ownPosition.x + dropPosition[num].x
@@ -1704,10 +1580,10 @@ const inventoryProcess = () => {
       selectedIndex = 0
     }
   }
-  if (selectedBuffer === 1 || 0 < key[action.slow]) swapArray(key[action.lookUp], 1)
-  if (selectedBuffer === 2 || 0 < key[action.slow]) swapArray(key[action.lookRight], 2)
-  if (selectedBuffer === 3 || 0 < key[action.slow]) swapArray(key[action.lookDown], 3)
-  if (selectedBuffer === 4 || 0 < key[action.slow]) swapArray(key[action.lookLeft], 4)
+  if (selectedBuffer === 1 || key[action.slow].flag) swapArray(action.lookUp, 1)
+  if (selectedBuffer === 2 || key[action.slow].flag) swapArray(action.lookRight, 2)
+  if (selectedBuffer === 3 || key[action.slow].flag) swapArray(action.lookDown, 3)
+  if (selectedBuffer === 4 || key[action.slow].flag) swapArray(action.lookLeft, 4)
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
@@ -1983,7 +1859,7 @@ const setStore = () => {
   })
 }
 const upgradeOne = () => {
-  if (key[action.lookUp] === holdTimeLimit && inventory[0].offensivePower <= ammo) {
+  if (key[action.lookUp].holdtime === holdTimeLimit && inventory[0].offensivePower <= ammo) {
     inventory[0].opIndex = (inventory[0].opIndex+1)|0
     inventory[0].damage = inventory[0].damage + maxDamageInitial * (1 / inventory[0].opIndex)
     ammo = (ammo - inventory[0].offensivePower)|0
@@ -1995,28 +1871,28 @@ const upgradeOne = () => {
   ) afterglow.offensivePower = (afterglow.offensivePower-1)|0
 }
 const upgradeDash =() => {
-  if (key[action.lookUp] === holdTimeLimit && cost.dashDamage <= ammo) {
+  if (key[action.lookUp].holdtime === holdTimeLimit && cost.dashDamage <= ammo) {
     cost.dashDamageIndex = (cost.dashDamageIndex+1)|0
     dash.damage = dash.damage + dash.damage * (1 / cost.dashDamageIndex)
     ammo = (ammo - cost.dashDamage)|0
     cost.dashDamage = (cost.dashDamage*2)|0
     afterglow.dashDamage = holdTimeLimit
   } else if (0 < afterglow.dashDamage) afterglow.dashDamage = (afterglow.dashDamage-1)|0
-  if (key[action.lookRight] === holdTimeLimit && cost.dashDistance <= point) {
+  if (key[action.lookRight].holdtime === holdTimeLimit && cost.dashDistance <= point) {
     dash.decrease = dash.decrease*.85
     point = (point - cost.dashDistance)|0
     cost.dashDistance = (cost.dashDistance*2)|0
     cost.dashDistanceIndex = (cost.dashDistanceIndex+1)|0
     afterglow.dashDistance = holdTimeLimit
   } else if (0 < afterglow.dashDistance) afterglow.dashDistance = (afterglow.dashDistance-1)|0
-  if (key[action.lookDown] === holdTimeLimit && cost.dashCooltime <= point) {
+  if (key[action.lookDown].holdtime === holdTimeLimit && cost.dashCooltime <= point) {
     dash.limit = dash.limit * .95
     point = (point - cost.dashCooltime)|0
     cost.dashCooltime = (cost.dashCooltime+cost.dashCooltime*2)|0
     cost.dashCooltimeIndex = (cost.dashCooltimeIndex+1)|0
     afterglow.dashCooltime = holdTimeLimit
   } else if (0 < afterglow.dashCooltime) afterglow.dashCooltime = (afterglow.dashCooltime-1)|0
-  if (key[action.lookLeft] === holdTimeLimit && cost.dashDistance <= point) {
+  if (key[action.lookLeft].holdtime === holdTimeLimit && cost.dashDistance <= point) {
     dash.breakthrough = dash.breakthrough * 1.05
     point = (point - cost.dashDistance)|0
     cost.dashDistance = (cost.dashDistance*2)|0
@@ -2025,7 +1901,7 @@ const upgradeDash =() => {
   } else if (0 < afterglow.dashSpeed) afterglow.dashSpeed = (afterglow.dashSpeed-1)|0
 }
 const upgradeExplosive = () => {
-  if (key[action.lookDown] === holdTimeLimit && inventory[0].explosive3 <= ammo) {
+  if (key[action.lookDown].holdtime === holdTimeLimit && inventory[0].explosive3 <= ammo) {
     homingFlag = false
     explosive1Flag = false
     explosive2Flag = false
@@ -2035,7 +1911,7 @@ const upgradeExplosive = () => {
   } else if (0 < afterglow.explosive3) afterglow.explosive3 = (afterglow.explosive3-1)|0
 }
 const upgradeTest = () => {
-  if (key[action.lookRight] === holdTimeLimit && cost.clone <= point) {
+  if (key[action.lookRight].holdtime === holdTimeLimit && cost.clone <= point) {
     cloneFlag = true
     point = (point - cost.clone)|0
     cost.clone = (cost.clone * 2)|0
@@ -2043,7 +1919,7 @@ const upgradeTest = () => {
   } else if (0 < afterglow.clone) afterglow.clone = (afterglow.clone-1)|0
 }
 const upgradeLimitBreak = () => {
-  if (key[action.lookUp] === holdTimeLimit && inventory[0].limitBreak <= point) {
+  if (key[action.lookUp].holdtime === holdTimeLimit && inventory[0].limitBreak <= point) {
     afterglow.limitBreakResult = .1 + Math.random() * 1.9
     inventory[0].damage = inventory[0].damage * afterglow.limitBreakResult
     point = (point - inventory[0].limitBreak)|0
@@ -2055,7 +1931,7 @@ const upgradeLimitBreak = () => {
   } else if (0 < afterglow.limitBreakFailed) {
     afterglow.limitBreakFailed = afterglow.limitBreakFailed - .1
   }
-  if (key[action.lookLeft] === holdTimeLimit && inventory[0].reset <= point) {
+  if (key[action.lookLeft].holdtime === holdTimeLimit && inventory[0].reset <= point) {
     inventory[0].opIndex = 0
     inventory[0].offensivePower = 25
     inventory[0].opLog = 25
@@ -2067,25 +1943,25 @@ const upgradeLimitBreak = () => {
   }
 }
 const upgradeClone = ()  => {
-  if (key[action.lookUp] === holdTimeLimit) {
+  if (key[action.lookUp].holdtime === holdTimeLimit) {
     cloneDashType1Flag = !cloneDashType1Flag
     cloneDashType2Flag = false
     cloneDashType3Flag = false
     afterglow.explosive1 = holdTimeLimit
   } else if (0 < afterglow.explosive1) afterglow.explosive1 = (afterglow.explosive1-1)|0
-  if (key[action.lookRight] === holdTimeLimit) {
+  if (key[action.lookRight].holdtime === holdTimeLimit) {
     cloneDashType1Flag = false
     cloneDashType2Flag = !cloneDashType2Flag
     cloneDashType3Flag = false
     afterglow.explosive2 = holdTimeLimit
   } else if (0 < afterglow.explosive2) afterglow.explosive2 = (afterglow.explosive2-1)|0
-  if (key[action.lookDown] === holdTimeLimit) {
+  if (key[action.lookDown].holdtime === holdTimeLimit) {
     cloneDashType1Flag = false
     cloneDashType2Flag = false
     cloneDashType3Flag = !cloneDashType3Flag
     afterglow.explosive3 = holdTimeLimit
   } else if (0 < afterglow.explosive3) afterglow.explosive3 = (afterglow.explosive3-1)|0
-  if (key[action.lookLeft] === holdTimeLimit) {
+  if (key[action.lookLeft].holdtime === holdTimeLimit) {
     cloneReturnFlag = !cloneReturnFlag
     afterglow.explosiveRange = holdTimeLimit
   } else if (
@@ -2194,8 +2070,8 @@ const drawStore = () => {
       context.restore()
       context.fillStyle = (0 < effect)
       ? `hsl(0, 50%, ${50 + 50 * effect / holdTimeLimit}%)`
-      : (expence <= material && key[action.lookUp] <= holdTimeLimit)
-      ? `hsl(0, 50%, ${50 + 50 * key[action.lookUp] / holdTimeLimit}%)`
+      : (expence <= material && key[action.lookUp].holdtime <= holdTimeLimit)
+      ? `hsl(0, 50%, ${50 + 50 * key[action.lookUp].holdtime / holdTimeLimit}%)`
       : (material < expence) ? 'hsla(0, 50%, 50%, .4)' :'hsl(0, 50%, 50%)'
       context.save()
       context.textAlign = 'center'
@@ -2209,8 +2085,8 @@ const drawStore = () => {
         relativeX(object.x + size * 2.5), relativeY(object.y - size * 2)
       )
       context.restore()
-      if ((expence <= material && key[action.lookUp] <= holdTimeLimit) || 0 < effect) {
-        ratio = (effect === 0) ? key[action.lookUp] / holdTimeLimit : 1
+      if ((expence <= material && key[action.lookUp].holdtime <= holdTimeLimit) || 0 < effect) {
+        ratio = (effect === 0) ? key[action.lookUp].holdtime / holdTimeLimit : 1
         context.fillRect(
           relativeX(object.x - size * 3.5),
           relativeY(object.y - size * 3.5), ratio * size * 12, size / 2
@@ -2228,8 +2104,8 @@ const drawStore = () => {
       context.restore()
       context.fillStyle = (0 < effect)
       ? `hsl(280, 50%, ${50 + 50 * effect/holdTimeLimit}%)`
-      : (expence <= material && key[action.lookRight] <= holdTimeLimit)
-      ? `hsl(280, 50%, ${50 + 50 * key[action.lookRight] / holdTimeLimit}%)`
+      : (expence <= material && key[action.lookRight].holdtime <= holdTimeLimit)
+      ? `hsl(280, 50%, ${50 + 50 * key[action.lookRight].holdtime / holdTimeLimit}%)`
       : (material < expence) ? 'hsla(280, 50%, 50%, .4)' :'hsl(280, 50%, 50%)'
       context.fillText(
         `[HOLD ${action.lookRight.toUpperCase()}]`,
@@ -2240,8 +2116,8 @@ const drawStore = () => {
         `${expence} ${text}`,
         relativeX(object.x+size * 6), relativeY(object.y+size * 4.5)
       )
-      if ((expence <= material && key[action.lookRight] <= holdTimeLimit) || 0 < effect) {
-        ratio = (effect === 0) ? key[action.lookRight] / holdTimeLimit : 1
+      if ((expence <= material && key[action.lookRight].holdtime <= holdTimeLimit) || 0 < effect) {
+        ratio = (effect === 0) ? key[action.lookRight].holdtime / holdTimeLimit : 1
         context.fillRect(
           relativeX(object.x+size * 6), relativeY(object.y+size * 3.5),
           ratio * size * 12, size / 2
@@ -2259,8 +2135,8 @@ const drawStore = () => {
       context.restore()
       context.fillStyle = (0 < effect)
       ? `hsl(340, 50%, ${50 + 50 * effect / holdTimeLimit}%)`
-      : (expence <= material && key[action.lookDown] <= holdTimeLimit)
-      ? `hsl(340, 50%, ${50 + 50 * key[action.lookDown] / holdTimeLimit}%)`
+      : (expence <= material && key[action.lookDown].holdtime <= holdTimeLimit)
+      ? `hsl(340, 50%, ${50 + 50 * key[action.lookDown].holdtime / holdTimeLimit}%)`
       : (material < expence) ? 'hsla(340, 50%, 50%, .4)' :'hsl(340, 50%, 50%)'
       context.save()
       context.textAlign = 'center'
@@ -2274,8 +2150,8 @@ const drawStore = () => {
         relativeX(object.x + size * 2.5), relativeY(object.y+size * 10)
       )
       context.restore()
-      if ((expence <= material && key[action.lookDown] <= holdTimeLimit) || 0 < effect) {
-        ratio = (effect === 0) ? key[action.lookDown] / holdTimeLimit : 1
+      if ((expence <= material && key[action.lookDown].holdtime <= holdTimeLimit) || 0 < effect) {
+        ratio = (effect === 0) ? key[action.lookDown].holdtime / holdTimeLimit : 1
         context.fillRect(
           relativeX(object.x - size * 3.5), relativeY(object.y+size * 8.5),
           ratio * size * 12, size / 2
@@ -2294,8 +2170,8 @@ const drawStore = () => {
       context.restore()
       context.fillStyle = (0 < effect)
       ? `hsl(100, 50%, ${50 + 50 * effect/holdTimeLimit}%)`
-      : (expence <= material && key[action.lookLeft] <= holdTimeLimit)
-      ? `hsl(100, 50%, ${50 + 50 * key[action.lookLeft] / holdTimeLimit}%)`
+      : (expence <= material && key[action.lookLeft].holdtime <= holdTimeLimit)
+      ? `hsl(100, 50%, ${50 + 50 * key[action.lookLeft].holdtime / holdTimeLimit}%)`
       : (material < expence) ? 'hsla(100, 50%, 50%, .4)' :'hsl(100, 50%, 50%)'
       context.save()
       context.textAlign = 'right'
@@ -2308,8 +2184,12 @@ const drawStore = () => {
         `${expence} ${text}`, relativeX(object.x-size * 1), relativeY(object.y+size * 4.5)
       )
       context.restore()
-      if ((expence <= material && key[action.lookLeft] <= holdTimeLimit) || 0 < effect) {
-        ratio = (effect === 0) ? key[action.lookLeft] / holdTimeLimit : 1
+      if ((
+        expence <= material &&
+        key[action.lookLeft].holdtime <= holdTimeLimit) ||
+        0 < effect
+      ) {
+        ratio = (effect === 0) ? key[action.lookLeft].holdtime / holdTimeLimit : 1
         context.fillRect(
           relativeX(object.x-size * 12), relativeY(object.y+size * 3.5),
           ratio * size * 12, size / 2
@@ -2508,8 +2388,9 @@ const command = () => {
   let bool = false
   let counter = 0
   return () => {
-    if (counter % 2 === 0 && 0 < key[action.lookUp] && 0 < key[action.up]) counter += 1
-    else if (counter % 2 === 1 && 0 < key[action.lookUp] && 0 < key[action.down]) counter += 1
+    if (counter % 2 === 0 && key[action.lookUp].flag && key[action.up].flag) counter += 1
+    else if (
+      counter % 2 === 1 && key[action.lookUp].flag && key[action.down].flag) counter += 1
     if (counter === 5) {
       bool = true
     }
@@ -2711,7 +2592,7 @@ const drawTitleScreen = () => {
 }
 const titleProcess = () => {
   resetScreen()
-  if (key[action.fire] === 1) {
+  if (key[action.fire].isFirst()) {
     reset()
     if (manyAmmo()) {
       inventory[0].magazines = [99, inventory[0].magazineSize]
@@ -2720,11 +2601,11 @@ const titleProcess = () => {
     }
     state = 'main'
   }
-  if (key[action.slow] === 1) {
+  if (key[action.slow].isFirst()) {
     input()
     state = 'keyLayout'
   }
-  if (key[action.change] === 1) mapMode = !mapMode
+  if (key[action.change].isFirst()) mapMode = !mapMode
   drawTitleScreen()
 }
 const mainProcess = () => {
@@ -2752,7 +2633,7 @@ const mainProcess = () => {
   }
 }
 const pauseProcess = () => {
-  if (key[action.pause] === 1) state = 'main'
+  if (key[action.pause].isFirst()) state = 'main'
   resetScreen()
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -2769,7 +2650,7 @@ const pauseProcess = () => {
 }
 const resultProcess = () => {
   manyAmmo()
-  if (key[action.back] === 1) reset()
+  if (key[action.back].isFirst()) reset()
   resetScreen()
   drawing()
   context.font = '32px sans-serif'
@@ -2821,34 +2702,34 @@ const keyInput = () => {
   return () => {
     bfr = aft
     aft = (
-    key.q === 1) ? 0
-    : (key.w === 1) ? 1
-    : (key.e === 1) ? 2
-    : (key.r === 1) ? 3
-    : (key.t === 1) ? 4
-    : (key.y === 1) ? 5
-    : (key.u === 1) ? 6
-    : (key.i === 1) ? 7
-    : (key.o === 1) ? 8
-    : (key.p === 1) ? 9
-    : (key.a === 1) ? 10
-    : (key.s === 1) ? 11
-    : (key.d === 1) ? 12
-    : (key.f === 1) ? 13
-    : (key.g === 1) ? 14
-    : (key.h === 1) ? 15
-    : (key.j === 1) ? 16
-    : (key.k === 1) ? 17
-    : (key.l === 1) ? 18
-    : (key.z === 1) ? 20
-    : (key.x === 1) ? 21
-    : (key.c === 1) ? 22
-    : (key.v === 1) ? 23
-    : (key.b === 1) ? 24
-    : (key.n === 1) ? 25
-    : (key.m === 1) ? 26
-    : (key.shift === 1) ? 30
-    : (key.space === 1) ? 31
+    key.q.isFirst()) ? 0
+    : (key.w.isFirst()) ? 1
+    : (key.e.isFirst()) ? 2
+    : (key.r.isFirst()) ? 3
+    : (key.t.isFirst()) ? 4
+    : (key.y.isFirst()) ? 5
+    : (key.u.isFirst()) ? 6
+    : (key.i.isFirst()) ? 7
+    : (key.o.isFirst()) ? 8
+    : (key.p.isFirst()) ? 9
+    : (key.a.isFirst()) ? 10
+    : (key.s.isFirst()) ? 11
+    : (key.d.isFirst()) ? 12
+    : (key.f.isFirst()) ? 13
+    : (key.g.isFirst()) ? 14
+    : (key.h.isFirst()) ? 15
+    : (key.j.isFirst()) ? 16
+    : (key.k.isFirst()) ? 17
+    : (key.l.isFirst()) ? 18
+    : (key.z.isFirst()) ? 20
+    : (key.x.isFirst()) ? 21
+    : (key.c.isFirst()) ? 22
+    : (key.v.isFirst()) ? 23
+    : (key.b.isFirst()) ? 24
+    : (key.n.isFirst()) ? 25
+    : (key.m.isFirst()) ? 26
+    : (key.shift.isFirst()) ? 30
+    : (key.space.isFirst()) ? 31
     : -2
     if (aft === -2) aft = bfr
     else if (bfr === aft) aft = -2
@@ -2870,10 +2751,10 @@ const menuColumn = () => {
   const array = [0, 1]
   let num = array[0]
   return () => {
-    if (key[action.down] === 1) {
+    if (key[action.down].isFirst()) {
       if (num === array.slice(-1)[0]) num = array[0]
       else num = (num+1)|0
-    } else if (key[action.up] === 1) {
+    } else if (key[action.up].isFirst()) {
       if (num === array[0]) num = array.slice(-1)[0]
       else num = (num-1)|0
     }
@@ -2887,26 +2768,26 @@ const keyLayoutProcess = () => {
   const ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
   const rowNum = rotate()
   let inKey = input()
-  if (inKey === order.indexOf('w') && key.w === holdTimeLimit &&
+  if (inKey === order.indexOf('w') && key.w.holdtime === holdTimeLimit &&
     !(Object.values(action).some(x => x === 'w' || x === 'a'))) {
     operationMode = setStorage('operation', 'WASD')
     setOperation()
   }
-  if (inKey === order.indexOf('e') && key.e === holdTimeLimit &&
+  if (inKey === order.indexOf('e') && key.e.holdtime === holdTimeLimit &&
     !(Object.values(action).some(x => x === 'e' || x === 'f'))) {
     operationMode = setStorage('operation', 'ESDF')
     setOperation()
   }
-  if (rowNum === 0 && (key[action.left] === 1 || key[action.right] === 1)) {
+  if (rowNum === 0 && (key[action.left].isFirst() || key[action.right].isFirst())) {
     reload.auto = (reload.auto === 'ON') ? setStorage('autoReload', 'OFF')
     : setStorage('autoReload', 'ON')
   }
-  if (rowNum === 1 && (key[action.left] === 1 || key[action.right] === 1)) {
+  if (rowNum === 1 && (key[action.left].isFirst() || key[action.right].isFirst())) {
     combatReload.auto = (combatReload.auto === 'ON') ? setStorage('autoCombatReload', 'OFF')
     : setStorage('autoCombatReload', 'ON')
   }
   if (
-    inKey === order.indexOf(action.back) && key[action.back] === holdTimeLimit
+    inKey === order.indexOf(action.back) && key[action.back].holdtime === holdTimeLimit
   ) state = 'title'
   context.font = `${size * .65}px sans-serif`
   context.fillStyle = 'hsl(210, 100%, 40%)'
@@ -2971,13 +2852,14 @@ const keyLayoutProcess = () => {
       y: canvas.offsetHeight/20 *(11 + ~~('0' + i / 10).slice(1) * 2)
     }
     if ((
-      action.up === 'e' && 0 < key.w && key.w < holdTimeLimit) && i === order.indexOf('w') &&
+      action.up === 'e' && key.w.flag && key.w.holdtime < holdTimeLimit) &&
+      i === order.indexOf('w') &&
       inKey === order.indexOf('w') || inKey === order.indexOf('e') &&
-      (action.up === 'w' && 0 < key.e && key.e < holdTimeLimit) &&
+      (action.up === 'w' && key.e.flag && key.e.holdtime < holdTimeLimit) &&
       i === order.indexOf('e')
     ) {
       flag = true
-      const time = (action.up === 'e') ? key.w : key.e
+      const time = (action.up === 'e') ? key.w.flag : key.e.flag
       context.fillStyle = 'hsla(280, 100%, 45%, .4)'
       context.fillRect(
         p.x - size * .86, p.y + size * .25,
@@ -3069,7 +2951,7 @@ const keyLayoutProcess = () => {
   context.fillText('KEY LAYOUT EDITOR', size, size * 1.75)
   context.textAlign = 'right'
   context.fillStyle = (
-      inKey === order.indexOf(action.back) && key[action.back] === 0
+      inKey === order.indexOf(action.back) && !key[action.back].flag
     ) ? 'hsla(0, 0%, 35%, .3)' : 'hsla(340, 100%, 35%, .6)'
   context.fillText(
     `[HOLD "${action.back.toUpperCase()}"] TO TITLE`,
@@ -3078,12 +2960,11 @@ const keyLayoutProcess = () => {
   if (inKey === order.indexOf(action.back)) {
     context.fillRect(
       canvas.offsetWidth - size * 11.5, canvas.offsetHeight - size,
-      size * 10.6 * key[action.back] / holdTimeLimit, size * .2
+      size * 10.6 * key[action.back].holdtime / holdTimeLimit, size * .2
     )
   }
 }
 const loop = () => {
-  inputProcess()
   if (state === 'title') titleProcess()
   else if (state === 'main') mainProcess()
   else if (state === 'pause') pauseProcess()
