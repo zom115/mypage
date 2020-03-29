@@ -385,30 +385,36 @@ const draw = () => {
     }
   }
 }
-let mapInfoObject = {}
 let mapObject = {}
+let mapInfoObject = {}
 let resource = []
-mapLoader('main', 'resources/main.json').then(result => {
-  mapObject = result.main
-  console.log(mapObject)
-  mapObject.tilesets.forEach(v => {
-    const str = v.source
-    resource.push(mapLoader(str.substring(0, str.indexOf('.')), 'resources/' + v.source))
-  })
-  Promise.all(resource).then(result => {
-    resource = []
-    result.forEach(v => {
-      Object.entries(v).forEach(([key, value]) => {
-        mapInfoObject[key] = value
-        const src = value.image
-        resource.push(imageLoader(key, src.slice(src.indexOf('../') + 1)))
+const initialize = () => {
+  return new Promise(async resolve => {
+    await mapLoader('main', 'resources/main.json').then(result => {
+      mapObject = result.main
+      mapObject.tilesets.forEach(v => {
+        const str = v.source
+        resource.push(mapLoader(str.substring(0, str.indexOf('.')), 'resources/' + v.source))
       })
     })
-    Promise.all(resource).then(result => {
+    await Promise.all(resource).then(result => {
+      resource = []
+      result.forEach(v => {
+        Object.entries(v).forEach(([key, value]) => {
+          mapInfoObject[key] = value
+          const src = value.image
+          resource.push(imageLoader(key, src.slice(src.indexOf('../') + 1)))
+        })
+      })
+    })
+    await Promise.all(resource).then(result => {
       resource = {}
       result.forEach(v => resource[Object.keys(v)[0]] = Object.values(v)[0])
-      main()
-      draw()
+      resolve()
     })
   })
+}
+initialize().then(() => {
+  main()
+  draw()
 })
