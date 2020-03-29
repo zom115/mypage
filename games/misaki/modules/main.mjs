@@ -2,6 +2,19 @@ import {key} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
+const internalFrameList = []
+const animationFrameList = []
+const frameCounter = list => {
+  const now = Date.now()
+  list.push(now)
+  let flag = true
+  do {
+    if (list[0] + 1e3 < now) list.shift()
+    else flag = false
+  } while (flag)
+}
+let currentTime = Date.now()
+let globalElapsedTime = 1
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -967,6 +980,8 @@ Object.values(action).forEach(act => {
 //   })
 // }, false)
 const modelUpdate = () => {
+  let keyFlag = {jump: action.jump.some(v => key[v].isFirst())}
+  console.log(keyFlag.jump, jump.flag)
   const inGameInputProcess = () => {
     if (player.state === 'crouch') player.state = 'idle'
     const crouchProhibitionList = ['run']
@@ -992,7 +1007,7 @@ const modelUpdate = () => {
       player.dx += speed
     }
     { // jump
-      if (action.jump.some(v => {key[v].isFirst()}) && player.state !== 'damage') {
+      if (keyFlag.jump && player.state !== 'damage') {
         if (jump.flag) {
           if (!jump.double && jump.time === 0 && !player.grapFlag) {
             player.dy = -jumpConstant
@@ -1057,7 +1072,7 @@ const modelUpdate = () => {
     if (player.grapFlag) { // wall kick
       let flag = false
       if (
-        action.jump.some(v => key[v].isFirst()) &&
+        keyFlag.jump &&
         player.grapFlag &&
         player.direction === 'right'
       ) {
@@ -1065,7 +1080,7 @@ const modelUpdate = () => {
         player.direction = 'left'
         flag = true
       } else if (
-        action.jump.some(v => key[v].isFirst()) &&
+        keyFlag.jump &&
         player.grapFlag &&
         player.direction === 'left'
       ) {
@@ -1264,7 +1279,6 @@ const modelUpdate = () => {
                 player.x = iX * size - player.hitbox.w / 2 - 1
                 player.dx = 0
                 player.wallFlag = 'left'
-                console.log('right')
               }
             }
           } else if (player.dx !== 0 && y[iX + 1] !== '1') { // left wall
@@ -1795,7 +1809,6 @@ const viewUpdate = () => {
   })
 }
 const drawInGame = () => {
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   const clouds = image.bg.clouds.data[0]
   const sky = image.bg.sky.data[0]
   const sea = image.bg.sea.data[0]
@@ -2045,7 +2058,6 @@ const titleProcess = () => {
   if (action.attack.some(v => key[v].isFirst())) screenState = screenList[1]
 }
 const drawTitle = () => {
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.fillStyle = 'hsl(0, 0%, 0%)'
   context.font = `${size * 4}px sans-serif`
   context.textAlign = 'center'
@@ -2132,12 +2144,17 @@ const floatMenu = () => {
   floatMenuProcess()
 }
 const main = () => setInterval(() => {
+  frameCounter(internalFrameList)
+  globalElapsedTime = Date.now() - currentTime
+  currentTime = Date.now()
   if (screenState === screenList[0]) title()
   else if (screenState === screenList[1]) inGame()
   floatMenu()
 }, 0)
 const draw = () => {
   window.requestAnimationFrame(draw)
+  frameCounter(animationFrameList)
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (screenState === screenList[0]) drawTitle()
   else if (screenState === screenList[1]) drawInGame()
   drawFloatMenu()
