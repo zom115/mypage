@@ -1,3 +1,6 @@
+// import {key} from '../../../modules/key.mjs'
+import {mapLoader} from '../../../modules/mapLoader.mjs'
+import {imageLoader} from '../../../modules/imageLoader.mjs'
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -41,6 +44,61 @@ Object.keys(settings.type).forEach(v => {
   inputDOM[v].addEventListener('change', () => {
     settings.type[v] = setStorage(v, inputDOM[v].checked, false)
   }, false)
+})
+let image = {
+  misaki: {
+    idle: {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Idle_1.png',
+        'images/Misaki/Misaki_Idle_1_Blink_1.png',
+        'images/Misaki/Misaki_Idle_1_Blink_2.png',
+        'images/Misaki/Misaki_Idle_2.png',
+        'images/Misaki/Misaki_Idle_2_Blink_1.png',
+        'images/Misaki/Misaki_Idle_2_Blink_2.png',
+        'images/Misaki/Misaki_Idle_3.png',
+        'images/Misaki/Misaki_Idle_3_Blink_1.png',
+        'images/Misaki/Misaki_Idle_3_Blink_2.png',
+        'images/Misaki/Misaki_Idle_4.png',
+        'images/Misaki/Misaki_Idle_4_Blink_1.png',
+        'images/Misaki/Misaki_Idle_4_Blink_2.png',
+      ]
+    }, walk : {
+      data: [],
+      src: [
+        'images/Misaki/Misaki_Walk_1.png',
+        'images/Misaki/Misaki_Walk_2.png',
+        'images/Misaki/Misaki_Walk_3.png',
+        'images/Misaki/Misaki_Walk_4.png',
+        'images/Misaki/Misaki_Walk_5.png',
+        'images/Misaki/Misaki_Walk_6.png'
+      ],
+    },
+  },
+}
+const resourceLoading = obj => {
+  return new Promise(resolve => {
+    let resource = []
+    obj.src.forEach((v, i) => resource.push(imageLoader(i, v)))
+    Promise.all(resource).then(result => {
+      resource = {}
+      const object = {}
+      result.forEach(v => {object[Object.keys(v)[0]] = Object.values(v)[0]})
+      for (let i = 0; i < result.length; i++) {
+        obj.data.push(object[i])
+        if (i === result.length - 1) resolve()
+      }
+    })
+  })
+}
+const loadingList = [
+  image.misaki.idle,
+  image.misaki.walk,
+]
+const resourceLoadingPromiseList = []
+loadingList.forEach(v => resourceLoadingPromiseList.push(resourceLoading(v)))
+Promise.all(resourceLoadingPromiseList).then(result => {
+  console.log(result)
 })
 const imageListObject = {
   misaki: {
@@ -266,7 +324,7 @@ let menuGaugeMaxTime = 100 * (1 / 75)
 let menuOpenTimestamp = 0
 let menuCloseTimestamp = 0
 const screenList = ['title', 'main']
-let screenState = screenList[0]
+let screenState = screenList[1]
 let stage = {name: '', time: 0, w: 0, h: 0, checkPoint: {x: 0, y: 0}}
 let field = []
 let fieldArray = []
@@ -1946,6 +2004,7 @@ const draw = () => {
     })
   }
   if (0 < aftergrow.loading) drawLoadingScreen()
+  context.drawImage(image.misaki.idle.data[0], 0, 0)
 }
 const drawLoadingScreen = () => {
   aftergrow.loading -= 1
@@ -2089,9 +2148,9 @@ const floatMenu = () => {
   drawFloatMenu()
 }
 const main = () => {
+  window.requestAnimationFrame(main)
   input()
   if (screenState === screenList[0]) title()
   else if (screenState === screenList[1]) inGame()
   floatMenu()
-  window.requestAnimationFrame(main)
 }
