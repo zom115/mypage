@@ -966,11 +966,6 @@ Object.values(action).forEach(act => {
 //     }
 //   })
 // }, false)
-const input = () => {
-  // Object.keys(keyObjects).forEach(v => {
-  //   if (key[v + 'Flag']) key[v] += 1
-  // })
-}
 const modelUpdate = () => {
   const inGameInputProcess = () => {
     if (player.state === 'crouch') player.state = 'idle'
@@ -1799,7 +1794,7 @@ const viewUpdate = () => {
     }
   })
 }
-const draw = () => {
+const drawInGame = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   const clouds = image.bg.clouds.data[0]
   const sky = image.bg.sky.data[0]
@@ -2022,26 +2017,10 @@ const draw = () => {
       }
     })
   }
-  if (0 < aftergrow.loading) drawLoadingScreen()
-  context.drawImage(image.misaki.idle.data[0], 0, 0)
-}
-const drawLoadingScreen = () => {
-  aftergrow.loading -= 1
-  context.save()
-  context.fillStyle = `hsla(0, 0%, 40%, ${aftergrow.loading / aftergrowLimit.loading})`
-  context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  context.fillStyle = `hsla(0, 0%, 0%, ${aftergrow.loading / aftergrowLimit.loading})`
-  context.font = `${size * 2}px sans-serif`
-  context.textAlign = 'right'
-  context.fillText(
-    'Now loading...', canvas.offsetWidth - size * 2, canvas.offsetHeight - size * 2
-  )
-  context.restore()
 }
 const musicProcess = () => {
   const setMusic = () => {
-    return stage.name === 'AthleticCourse' ? 'テレフォン・ダンス'
-    : 'アオイセカイ'
+    return stage.name === 'AthleticCourse' ? 'テレフォン・ダンス' : 'アオイセカイ'
   }
   if (
     currentPlay !== setMusic() ||
@@ -2086,13 +2065,11 @@ const drawTitle = () => {
 }
 const title = () => {
   if (!menuFlag) titleProcess()
-  drawTitle()
 }
 const inGame = () => {
   frame += 1
   modelUpdate()
   viewUpdate()
-  draw()
   musicProcess()
 }
 let floatMenuCursor = 0
@@ -2153,17 +2130,21 @@ const drawFloatMenu = () => {
 }
 const floatMenu = () => {
   floatMenuProcess()
-  drawFloatMenu()
 }
-const main = () => {
-  window.requestAnimationFrame(main)
-  input()
+const main = () => setInterval(() => {
   if (screenState === screenList[0]) title()
   else if (screenState === screenList[1]) inGame()
   floatMenu()
+}, 0)
+const draw = () => {
+  window.requestAnimationFrame(draw)
+  if (screenState === screenList[0]) drawTitle()
+  else if (screenState === screenList[1]) drawInGame()
+  drawFloatMenu()
 }
 Promise.all(resourceList).then(() => {
   console.log('loading finished')
   volumeHandler()
   main()
+  draw()
 })
