@@ -1,4 +1,4 @@
-// import {key} from '../../../modules/key.mjs'
+import {key} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
@@ -896,7 +896,7 @@ let cooltime = {
   slide: 2, slideLimit: 45
 }
 let action = {
-  up: ['w'], right: ['d'], down: ['s'], left: ['a'], jump: ['i', 'l', 'space'],
+  up: ['w'], right: ['d'], down: ['s'], left: ['a'], jump: ['i', 'l', ' '],
   attack: ['k'], accel: ['j'], option: ['o']
 }
 let toggle = {
@@ -907,97 +907,97 @@ Object.values(action).forEach(act => {
   keyTimestamp.pressed[act] = -1
   keyTimestamp.released[act] = 0
 })
-const keyObjects = {
-  shift: 16,
-  space: 32,
-  a: 65,
-  b: 66,
-  c: 67,
-  d: 68,
-  e: 69,
-  f: 70,
-  g: 71,
-  h: 72,
-  i: 73,
-  j: 74,
-  k: 75,
-  l: 76,
-  m: 77,
-  n: 78,
-  o: 79,
-  p: 80,
-  q: 81,
-  r: 82,
-  s: 83,
-  t: 84,
-  u: 85,
-  v: 86,
-  w: 87,
-  x: 88,
-  y: 89,
-  z: 90
-}
-let key = {}
-Object.keys(keyObjects).forEach(v => {
-  key[v + 'Flag'] = false
-  key[v] = 0
-})
-document.addEventListener('keydown', e => {
-  Object.entries(keyObjects).forEach(([k, v]) => {
-    if (k === 'space') {
-      if (e.keyCode === v) {
-        key[k + 'Flag'] = true
-        if (e.preventDefault) e.preventDefault()
-        else {
-          e.keyCode = 0
-          return false
-        }
-      }
-    } else {
-      if (e.keyCode === v) key[k + 'Flag'] = true
-    }
-  })
-}, false)
-document.addEventListener('keyup', e => {
-  Object.entries(keyObjects).forEach(([k, v]) => {
-    if (e.keyCode === v) {
-      key[k + 'Flag'] = false
-      key[k] = 0
-    }
-  })
-}, false)
+// const keyObjects = {
+//   shift: 16,
+//   space: 32,
+//   a: 65,
+//   b: 66,
+//   c: 67,
+//   d: 68,
+//   e: 69,
+//   f: 70,
+//   g: 71,
+//   h: 72,
+//   i: 73,
+//   j: 74,
+//   k: 75,
+//   l: 76,
+//   m: 77,
+//   n: 78,
+//   o: 79,
+//   p: 80,
+//   q: 81,
+//   r: 82,
+//   s: 83,
+//   t: 84,
+//   u: 85,
+//   v: 86,
+//   w: 87,
+//   x: 88,
+//   y: 89,
+//   z: 90
+// }
+// let key = {}
+// Object.keys(keyObjects).forEach(v => {
+//   key[v + 'Flag'] = false
+//   key[v] = 0
+// })
+// document.addEventListener('keydown', e => {
+//   Object.entries(keyObjects).forEach(([k, v]) => {
+//     if (k === 'space') {
+//       if (e.keyCode === v) {
+//         key[k + 'Flag'] = true
+//         if (e.preventDefault) e.preventDefault()
+//         else {
+//           e.keyCode = 0
+//           return false
+//         }
+//       }
+//     } else {
+//       if (e.keyCode === v) key[k + 'Flag'] = true
+//     }
+//   })
+// }, false)
+// document.addEventListener('keyup', e => {
+//   Object.entries(keyObjects).forEach(([k, v]) => {
+//     if (e.keyCode === v) {
+//       key[k + 'Flag'] = false
+//       key[k] = 0
+//     }
+//   })
+// }, false)
 const input = () => {
-  Object.keys(keyObjects).forEach(v => {
-    if (key[v + 'Flag']) key[v] += 1
-  })
+  // Object.keys(keyObjects).forEach(v => {
+  //   if (key[v + 'Flag']) key[v] += 1
+  // })
 }
 const modelUpdate = () => {
   const inGameInputProcess = () => {
     if (player.state === 'crouch') player.state = 'idle'
     const crouchProhibitionList = ['run']
     if (
-      action.down.some(v => key[v]) && player.landFlag && !player.grapFlag &&
+      action.down.some(v => key[v].flag) && player.landFlag && !player.grapFlag &&
       !crouchProhibitionList.some(v => v === player.state)
       ) {
-      if (action.down.some(v => key[v] === 1)) player.timeStamp.crouch = frame
+      if (action.down.some(v => key[v].flag === 1)) player.timeStamp.crouch = frame
       player.state = 'crouch'
     }
     const walkProhibitionList = ['crouch', 'punch', 'kick', 'damage']
     if ( // walk
       !walkProhibitionList.some(v => v === player.state) &&
-      !(action.left.some(v => key[v]) && action.right.some(v => key[v]))
+      !(action.left.some(v => key[v].flag) && action.right.some(v => key[v].flag))
     ) {
       let speed = dashConstant
-      speed = action.left.some(v => key[v]) && -speed < player.dx ? -speed
-      : key[action.left] && -dashThreshold < player.dx ? -speed / 4
-      : action.right.some(v => key[v]) && player.dx < speed ? speed
-      : action.right.some(v => key[v]) && player.dx < dashThreshold ? speed / 4
+      speed = action.left.some(v => key[v].flag) && -speed < player.dx ? -speed
+      : key[action.left].flag && -dashThreshold < player.dx ? -speed / 4
+      : action.right.some(v => key[v].flag) && player.dx < speed ? speed
+      : action.right.some(v => key[v].flag) && player.dx < dashThreshold ? speed / 4
       : 0
       speed = player.landFlag ? speed : speed / 3 // aerial brake
       player.dx += speed
     }
     { // jump
-      if (action.jump.some(v => key[v] === 1) && player.state !== 'damage') {
+      if (action.jump.some(v => {key[v].isFirst()}) && player.state !== 'damage') {
         if (jump.flag) {
           if (!jump.double && jump.time === 0 && !player.grapFlag) {
             player.dy = -jumpConstant
@@ -1026,7 +1026,7 @@ const modelUpdate = () => {
         }
         jump.time += 1
       }
-      if(!action.jump.some(v => key[v])) {
+      if(!action.jump.some(v => key[v].flag)) {
         if (settings.type.DECO) jump.time = 0
         else {
           if (5 < jump.time) {
@@ -1037,7 +1037,11 @@ const modelUpdate = () => {
       }
     }
     { // wall grap
-      if (player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v])) {
+      if (
+        player.wallFlag &&
+        !player.landFlag &&
+        0 < player.dy &&
+        action.up.some(v => key[v].flag)) {
         if (
           (player.wallFlag === 'left' && player.direction === 'right') ||
           (player.wallFlag === 'right' && player.direction === 'left')
@@ -1047,20 +1051,28 @@ const modelUpdate = () => {
           player.grapFlag = true
         }
       }
-      if (!(player.wallFlag && !player.landFlag && 0 < player.dy && action.up.some(v => key[v]))) {
+      if (!(
+        player.wallFlag &&
+        !player.landFlag &&
+        0 < player.dy &&
+        action.up.some(v => key[v].flag))) {
         player.grapFlag = false
       }
     }
     if (player.grapFlag) { // wall kick
       let flag = false
       if (
-        action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'right'
+        action.jump.some(v => key[v].isFirst()) &&
+        player.grapFlag &&
+        player.direction === 'right'
       ) {
         player.dx = -4
         player.direction = 'left'
         flag = true
       } else if (
-        action.jump.some(v => key[v] === 1) && player.grapFlag && player.direction === 'left'
+        action.jump.some(v => key[v].isFirst()) &&
+        player.grapFlag &&
+        player.direction === 'left'
       ) {
         player.dx = 4
         player.direction = 'right'
@@ -1078,9 +1090,9 @@ const modelUpdate = () => {
     { // attack
       const actionList = ['crouch', 'slide', 'punch', 'kick']
       if ( // punch
-        action.attack.some(v => key[v]) &&
-        !action.left.some(v => key[v]) &&
-        !action.right.some(v => key[v]) &&
+        action.attack.some(v => key[v].flag) &&
+        !action.left.some(v => key[v].flag) &&
+        !action.right.some(v => key[v].flag) &&
         player.landFlag &&
         !actionList.some(v => v === player.state) &&
         action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
@@ -1090,7 +1102,7 @@ const modelUpdate = () => {
         imageStat.punch.time = 0
       }
       if ( // kick
-        action.attack.some(v => key[v]) &&
+        action.attack.some(v => key[v].flag) &&
         player.landFlag &&
         !actionList.some(v => v === player.state) && (
         action.left.some(v => frame - 6 <= keyTimestamp.pressed[v]) ||
@@ -1103,8 +1115,8 @@ const modelUpdate = () => {
       }
       if (cooltime.slide === 0) {
         if ( // slide
-          action.attack.some(v => key[v]) &&
-          (action.left.some(v => key[v]) || action.right.some(v => key[v])) &&
+          action.attack.some(v => key[v].flag) &&
+          (action.left.some(v => key[v].flag) || action.right.some(v => key[v].flag)) &&
           !actionList.some(v => v === player.state) &&
           player.landFlag &&
           !player.wallFlag &&
@@ -1127,7 +1139,7 @@ const modelUpdate = () => {
         if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
         else cooltime.slide -= 1
       }
-      if (!action.accel.some(v => key[v])) slide.flag = false
+      if (!action.accel.some(v => key[v].flag)) slide.flag = false
       // if ( // accel
       //   player.action !== 'crouch' && !jump.step
       // ) {
@@ -1148,7 +1160,7 @@ const modelUpdate = () => {
   }
   if (!menuFlag) inGameInputProcess()
   Object.keys(toggle).forEach(v => {
-    if (key[toggle[v]] === 1) {
+    if (key[toggle[v]].isFirst()) {
       settings.type[v] = setStorage(v, !settings.type[v])
       inputDOM[v].checked = !inputDOM[v].checked
     }
@@ -1535,7 +1547,7 @@ const modelUpdate = () => {
     }
   }
   if (!menuFlag) Object.values(action).forEach(act => {
-    if (key[act]) {
+    if (act.some(v => key[v].flag)) {
       if (keyTimestamp.pressed[act] < keyTimestamp.released[act]) {
         keyTimestamp.pressed[act] = frame
       }
@@ -1582,7 +1594,7 @@ const modelUpdate = () => {
         player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
         player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
       ) {
-        if (action.up.some(v => key[v])) {
+        if (action.up.some(v => key[v].flag)) {
           enterGate(v.stage, v.address.x, v.address.y)
         }
       }
@@ -1591,17 +1603,17 @@ const modelUpdate = () => {
   if (!menuFlag) {
     const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
     player.direction = ((
-      action.left.some(v => key[v]) && action.right.some(v => key[v])) || !player.landFlag ||
+      action.left.some(v => key[v].flag) && action.right.some(v => key[v].flag)) || !player.landFlag ||
       turnProhibitionList.some(v => v === player.state)
     ) ? player.direction
-    : action.left.some(v => key[v]) ? 'left'
-    : action.right.some(v => key[v]) ? 'right'
+    : action.left.some(v => key[v].flag) ? 'left'
+    : action.right.some(v => key[v].flag) ? 'right'
     : player.direction
     if (!turnProhibitionList.some(v => v === player.state)) {
-      if (action.right.some(v => key[v]) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
-      if (action.left.some(v => key[v]) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
+      if (action.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
+      if (action.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
       if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-      if (action.left.some(v => key[v]) && action.right.some(v => key[v])) player.state = 'idle'
+      if (action.left.some(v => key[v].flag) && action.right.some(v => key[v].flag)) player.state = 'idle'
     }
   }
   const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
@@ -1685,8 +1697,8 @@ const viewUpdate = () => {
       i.time = 0
       if (!menuFlag) {
         if (
-          !(player.wallFlag && action.left.some(v => key[v]) &&
-          action.right.some(v => key[v]))) player.state = 'walk'
+          !(player.wallFlag && action.left.some(v => key[v].flag) &&
+          action.right.some(v => key[v].flag))) player.state = 'walk'
       }
     }
   } else if (player.state === 'run') {
@@ -2033,7 +2045,7 @@ const musicProcess = () => {
   }
   if (
     currentPlay !== setMusic() ||
-    !playFlag && Object.values(key).some(value => {return 0 < value})
+    !playFlag && Object.values(key).some(v => v.flag)
   ) {
     Object.keys(audio.music).forEach(v => audio.music[v].data.pause())
     if (!playFlag) playFlag = true
@@ -2051,7 +2063,7 @@ const musicProcess = () => {
   ) audio.music[currentPlay].data.currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
 const titleProcess = () => {
-  if (action.attack.some(v => key[v])) screenState = screenList[1]
+  if (action.attack.some(v => key[v].isFirst())) screenState = screenList[1]
 }
 const drawTitle = () => {
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -2086,7 +2098,7 @@ const inGame = () => {
 let floatMenuCursor = 0
 const floatMenuCursorMax = 3
 const floatMenuProcess = () => {
-  if (action.option.some(v => key[v] === 1)) {
+  if (action.option.some(v => key[v].isFirst())) {
     menuFlag = !menuFlag
     if (menuOpenTimestamp) {
       menuOpenTimestamp = 0
@@ -2106,17 +2118,17 @@ const floatMenuProcess = () => {
   ) menuGauge -= 1
   menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
   const config = () => {
-    if (action.down.some(v => key[v] === 1)) {
+    if (action.down.some(v => key[v].isFirst())) {
       floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
     }
-    if (action.up.some(v => key[v] === 1)) {
+    if (action.up.some(v => key[v].isFirst())) {
       floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
     }
     const k = Object.keys(settings.type)[floatMenuCursor]
     if (
-      (action.attack.some(v => key[v] === 1)) ||
-      (action.left.some(v => key[v] === 1) && settings.type[k]) ||
-      (action.right.some(v => key[v] === 1) && !settings.type[k])
+      (action.attack.some(v => key[v].isFirst())) ||
+      (action.left.some(v => key[v].isFirst()) && settings.type[k]) ||
+      (action.right.some(v => key[v].isFirst()) && !settings.type[k])
     ) {
       settings.type[k] = setStorage(k, !settings.type[k])
       inputDOM[k].checked = !inputDOM[k].checked
