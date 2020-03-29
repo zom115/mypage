@@ -170,10 +170,10 @@ const collisionDetect = () => {
       ownCondition.dy = 0
     }
     repeatFlag = false
-    for (let x = 0; x < mapObject.layers[0].width; x++) {
-      for (let y = 0; y < mapObject.layers[0].height; y++) {
-        const id = mapObject.layers[0].data[y * mapObject.layers[0].width + x] -
-          mapObject.tilesets[1].firstgid + 1
+    for (let x = 0; x < mapObject.layers[layerIndexObject.collision].width; x++) {
+      for (let y = 0; y < mapObject.layers[layerIndexObject.collision].height; y++) {
+        const id = mapObject.layers[layerIndexObject.collision].data[y * mapObject.layers[layerIndexObject.collision].width + x] -
+          mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
         let terrainIndex
         terrainIndex = 0 < id ? id : '0'
         terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
@@ -194,9 +194,9 @@ const collisionDetect = () => {
           let returnFlag = false
           findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
-              const target = terrainObject[mapObject.layers[0].data[(
-                y + vl[2][1]) * mapObject.layers[0].width + x + vl[2][0]] -
-                mapObject.tilesets[1].firstgid + 1]
+              const target = terrainObject[mapObject.layers[layerIndexObject.collision].data[(
+                y + vl[2][1]) * mapObject.layers[layerIndexObject.collision].width + x + vl[2][0]] -
+                mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1]
               if (target === undefined) return
               const vertex = i === 0 ? [1, ro[1]] :
               i === 1 ? [0, ro[1]] :
@@ -311,7 +311,7 @@ const draw = () => {
     // `x: ${ownCondition.x}`,
     `x(m): ${Math.floor(ownCondition.x * .04)}`,
     // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((mapObject.layers[1].height - 2) * size) - ownCondition.y) * .04)}`,
+    `y(m): ${Math.floor((((mapObject.layers[layerIndexObject.objects].height - 2) * size) - ownCondition.y) * .04)}`,
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx.toFixed(2)}`,
     `dy: ${ownCondition.dy.toFixed(2)}`,
@@ -326,10 +326,11 @@ const draw = () => {
     context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
   })
   context.fillStyle = 'hsl(240, 100%, 50%)'
-  for (let x = 0; x < mapObject.layers[1].width; x++) {
-    for (let y = 0; y < mapObject.layers[1].height; y++) {
-      const id = mapObject.layers[1].data[mapObject.layers[1].width * y + x] -
-        mapObject.tilesets[0].firstgid
+  for (let x = 0; x < mapObject.layers[layerIndexObject.objects].width; x++) {
+    for (let y = 0; y < mapObject.layers[layerIndexObject.objects].height; y++) {
+      const id = mapObject.layers[layerIndexObject.objects].data[
+        mapObject.layers[layerIndexObject.objects].width * y + x] -
+        mapObject.tilesets[tilesetIndexObject.tileset].firstgid
       if (id !== 0) {
         context.drawImage(
           resource.tileset,
@@ -361,10 +362,11 @@ const draw = () => {
   context.fill()
   if (collisionDisp) {
     context.fillStyle = 'hsla(300, 50%, 50%, 1)'
-    for (let x = 0; x < mapObject.layers[0].width; x++) {
-      for (let y = 0; y < mapObject.layers[0].height; y++) {
-        const id = mapObject.layers[0].data[y * mapObject.layers[0].width + x] -
-          resource.json.tilesets[1].firstgid + 1
+    for (let x = 0; x < mapObject.layers[layerIndexObject.collision].width; x++) {
+      for (let y = 0; y < mapObject.layers[layerIndexObject.collision].height; y++) {
+        const id = mapObject.layers[layerIndexObject.collision].data[y *
+          mapObject.layers[layerIndexObject.collision].width + x] -
+          mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
         if (0 < id) {
           const relativeCooldinates = {x: x * size, y: y * size}
           context.beginPath()
@@ -386,15 +388,23 @@ const draw = () => {
   }
 }
 let mapObject = {}
+const layerNameList = ['collision', 'objects']
+let layerIndexObject = {}
+const tilesetNameList = ['collision', 'tileset']
+let tilesetIndexObject = {}
 let mapInfoObject = {}
 let resource = []
 const initialize = () => {
   return new Promise(async resolve => {
     await mapLoader('main', 'resources/main.json').then(result => {
       mapObject = result.main
-      mapObject.tilesets.forEach(v => {
-        const str = v.source
-        resource.push(mapLoader(str.substring(0, str.indexOf('.')), 'resources/' + v.source))
+      mapObject.layers.forEach((v, i) => {
+        layerIndexObject[v.name] = i
+      })
+      mapObject.tilesets.forEach((v, i) => {
+        const str = v.source.substring(0, v.source.indexOf('.'))
+        tilesetIndexObject[str] = i
+        resource.push(mapLoader(str, 'resources/' + v.source))
       })
     })
     await Promise.all(resource).then(result => {
@@ -415,6 +425,7 @@ const initialize = () => {
   })
 }
 initialize().then(() => {
+  console.log(mapObject, mapInfoObject)
   main()
   draw()
 })
