@@ -1,6 +1,7 @@
 // import {key} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
+import {audioLoader} from '../../../modules/audioLoader.mjs'
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -228,12 +229,11 @@ let image = {
     },
   },
 }
-const resourceLoading = obj => {
+const imageListLoading = obj => {
   return new Promise(resolve => {
     let resource = []
     obj.src.forEach((v, i) => resource.push(imageLoader(i, v)))
     Promise.all(resource).then(result => {
-      resource = {}
       const object = {}
       result.forEach(v => {object[Object.keys(v)[0]] = Object.values(v)[0]})
       for (let i = 0; i < result.length; i++) {
@@ -243,14 +243,56 @@ const resourceLoading = obj => {
     })
   })
 }
-const resourceLoadingPromiseList = []
+const audioObjectLoading = obj => {
+  return new Promise(resolve => {
+    audioLoader('data', obj.src).then(result => {
+      obj.data = Object.values(result)[0]
+      resolve()
+    })
+  })
+}
+const audio = {
+  misaki: {
+    jump : {
+      data: '',
+      src: 'audio/Misaki/V2001.wav',
+    }, doubleJump: {
+      data: '',
+      src: 'audio/Misaki/V2002.wav'
+    }, punch : {
+      data: '',
+      src: 'audio/Misaki/V2005.wav'
+    }, kick : {
+      data: '',
+      src: 'audio/Misaki/V2006.wav'
+    }, win : {
+      data: '',
+      src: 'audio/Misaki/V2024.wav'
+    },
+  }, music: {
+    'テレフォン・ダンス': {
+      data: '',
+      src: 'audio/music/nc109026.wav',
+    }, 'アオイセカイ': {
+      data: '',
+      src: 'audio/music/nc110060.mp3',
+    },
+  },
+}
+const resourceList = []
 Object.keys(image).forEach(v => {
   Object.keys(image[v]).forEach(vl => {
-    resourceLoadingPromiseList.push(resourceLoading(image[v][vl]))
+    resourceList.push(imageListLoading(image[v][vl]))
   })
 })
-Promise.all(resourceLoadingPromiseList).then(() => {
+Object.keys(audio).forEach(v => {
+  Object.keys(audio[v]).forEach(vl => {
+    resourceList.push(audioObjectLoading(audio[v][vl]))
+  })
+})
+Promise.all(resourceList).then(() => {
   console.log('loading finished')
+  console.log(audio)
 })
 let imageStat = {
   idle  : {condition: 0, time: 0, maxInterval: 30, frame: 5, blinkTime: 3},
@@ -325,9 +367,9 @@ const timerId = setInterval(() => { // loading monitoring
 }, 100)
 let playFlag = false
 let currentPlay = musicStat['アオイセカイ']
-const playAudio = (path, startTime = 0) => {
-  voiceLoadedMap[path].currentTime = startTime
-  voiceLoadedMap[path].play()
+const playAudio = (element, startTime = 0) => {
+  element.currentTime = startTime
+  element.play()
 }
 let menuFlag = false
 const menuWidthMax = canvas.offsetWidth / 2
@@ -1003,7 +1045,7 @@ const modelUpdate = () => {
             player.state = 'jump'
             jump.double = true
             cooltime.aerialStep = 0
-            playAudio(voiceStat.doubleJump)
+            playAudio(audio.misaki.doubleJump.data)
             if (5 < player.breathInterval) player.breathInterval -= 1
             jump.time = 0
           }
@@ -1015,10 +1057,10 @@ const modelUpdate = () => {
           if (!player.landFlag && !player.grapFlag) {
             jump.double = true
             cooltime.aerialStep = 0
-            playAudio(voiceStat.doubleJump)
+            playAudio(audio.misaki.doubleJump.data)
           } else {
             player.dx *= .7
-            playAudio(voiceStat.jump)
+            playAudio(audio.misaki.jump.data)
           }
           if (10 < player.breathInterval) player.breathInterval -= 1
           player.landFlag = false
@@ -1645,9 +1687,9 @@ const viewUpdate = () => {
     }
     if (2 < i.condition && i.condition < 6 && player.breathInterval < 25) {
       const num = Math.random()
-      const list = num < .9 ? {value: voiceStat.punch, startTime: .3}
-      : num < .95 ? {value: voiceStat.jump, startTime: .3}
-      : {value: voiceStat.doubleJump, startTime: .33}
+      const list = num < .9 ? {value: audio.misaki.punch.data, startTime: .3}
+      : num < .95 ? {value: audio.misaki.jump.data, startTime: .3}
+      : {value: audio.misaki.doubleJump.data, startTime: .33}
       playAudio(list.value, list.startTime)
     }
     if (frame % i.frame === 0) { // eye blink
@@ -1710,7 +1752,7 @@ const viewUpdate = () => {
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.audioTrigger) playAudio(voiceStat[player.state])
+      if (i.condition === i.audioTrigger) playAudio(audio.misaki[player.state].data)
     }
     if (i.condition === image.misaki[player.state].data.length) {
       i.time = 0
@@ -1723,7 +1765,7 @@ const viewUpdate = () => {
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.audioTrigger) playAudio(voiceStat[player.state])
+      if (i.condition === i.audioTrigger) playAudio(audio.misaki[player.state].data)
     }
     if (i.condition === image.misaki[player.state].data.length) {
       i.time = 0
