@@ -878,12 +878,6 @@ let player = {
   x: stage.w * 1 / 8, y: stage.h * 15 / 16,
   dx: 0, dy: 0, state: 'idle', direction: 'right',
   landFlag: false, wallFlag: false, grapFlag: false,
-  timeStamp: {
-    crouch: 0,
-    jump: 0,
-    accel: 0,
-    attack: 0,
-  },
   hitbox: {x: 0, y: 0, w: 0, h: 0},
   attackBox: {x: 0, y: 0, w: 0, h: 0},
   invincibleTimer: 0,
@@ -991,7 +985,6 @@ const modelUpdate = () => {
       action.down.some(v => key[v].flag) && player.landFlag && !player.grapFlag &&
       !crouchProhibitionList.some(v => v === player.state)
       ) {
-      if (action.down.some(v => key[v].flag === 1)) player.timeStamp.crouch = frame
       player.state = 'crouch'
     }
     const walkProhibitionList = ['crouch', 'punch', 'kick', 'damage']
@@ -1021,7 +1014,6 @@ const modelUpdate = () => {
             jump.time = 0
           }
         } else if (jump.time === 0) {
-          player.timeStamp.jump = frame
           player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
           player.state = 'jump'
           jump.flag = true
@@ -1091,7 +1083,6 @@ const modelUpdate = () => {
         flag = true
       }
       if (flag) {
-        player.timeStamp.jump = frame
         player.dy = -jumpConstant
         player.wallFlag = false
         player.grapFlag = false
@@ -1108,7 +1099,6 @@ const modelUpdate = () => {
         player.landFlag &&
         !actionList.some(v => v === player.state)
       ) {
-        player.timeStamp.attack = frame
         player.state = 'punch'
         imageStat.punch.time = 0
       }
@@ -1120,7 +1110,6 @@ const modelUpdate = () => {
         action.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
         action.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
       ) {
-        player.timeStamp.attack = frame
         player.state = 'kick'
         imageStat.kick.time = 0
       }
@@ -1137,7 +1126,6 @@ const modelUpdate = () => {
           const slideSpeed = slideConstant < player.dx ? boostConstant
           : player.dx < -slideConstant ? -boostConstant : 0
           if (slideSpeed !== 0) {
-            player.timeStamp.attack = frame
             player.dx += slideSpeed
             player.state = 'slide'
             cooltime.slide = cooltime.slideLimit
