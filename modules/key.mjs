@@ -37,4 +37,4 @@ setInterval(() => {
     if (v.flag) v.holdtime = globalTimestamp - v.timestamp
   })
 }, 0)
-export {key}
+export {key, globalTimestamp}

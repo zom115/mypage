@@ -1,4 +1,4 @@
-import {key} from '../../../modules/key.mjs'
+import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
@@ -980,8 +980,10 @@ Object.values(action).forEach(act => {
 //   })
 // }, false)
 const modelUpdate = () => {
-  let keyFlag = {jump: action.jump.some(v => key[v].isFirst())}
-  console.log(keyFlag.jump, jump.flag)
+  let keyFirstFlag = {
+    attack: action.attack.some(v => key[v].isFirst()),
+    jump: action.jump.some(v => key[v].isFirst()),
+  }
   const inGameInputProcess = () => {
     if (player.state === 'crouch') player.state = 'idle'
     const crouchProhibitionList = ['run']
@@ -1007,7 +1009,7 @@ const modelUpdate = () => {
       player.dx += speed
     }
     { // jump
-      if (keyFlag.jump && player.state !== 'damage') {
+      if (keyFirstFlag.jump && player.state !== 'damage') {
         if (jump.flag) {
           if (!jump.double && jump.time === 0 && !player.grapFlag) {
             player.dy = -jumpConstant
@@ -1072,7 +1074,7 @@ const modelUpdate = () => {
     if (player.grapFlag) { // wall kick
       let flag = false
       if (
-        keyFlag.jump &&
+        keyFirstFlag.jump &&
         player.grapFlag &&
         player.direction === 'right'
       ) {
@@ -1080,7 +1082,7 @@ const modelUpdate = () => {
         player.direction = 'left'
         flag = true
       } else if (
-        keyFlag.jump &&
+        keyFirstFlag.jump &&
         player.grapFlag &&
         player.direction === 'left'
       ) {
@@ -1100,24 +1102,23 @@ const modelUpdate = () => {
     { // attack
       const actionList = ['crouch', 'slide', 'punch', 'kick']
       if ( // punch
-        action.attack.some(v => key[v].flag) &&
+        keyFirstFlag.attack &&
         !action.left.some(v => key[v].flag) &&
         !action.right.some(v => key[v].flag) &&
         player.landFlag &&
-        !actionList.some(v => v === player.state) &&
-        action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
+        !actionList.some(v => v === player.state)
       ) {
         player.timeStamp.attack = frame
         player.state = 'punch'
         imageStat.punch.time = 0
       }
+      const kickDeferment = 1000 / 60 * 6
       if ( // kick
-        action.attack.some(v => key[v].flag) &&
+        keyFirstFlag.attack &&
         player.landFlag &&
         !actionList.some(v => v === player.state) && (
-        action.left.some(v => frame - 6 <= keyTimestamp.pressed[v]) ||
-        action.right.some(v => frame - 6 <= keyTimestamp.pressed[v])) &&
-        action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
+        action.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
+        action.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
       ) {
         player.timeStamp.attack = frame
         player.state = 'kick'
@@ -1125,13 +1126,13 @@ const modelUpdate = () => {
       }
       if (cooltime.slide === 0) {
         if ( // slide
-          action.attack.some(v => key[v].flag) &&
-          (action.left.some(v => key[v].flag) || action.right.some(v => key[v].flag)) &&
+          keyFirstFlag.attack && (
+          action.left.some(v => key[v].flag) ||
+          action.right.some(v => key[v].flag)) &&
           !actionList.some(v => v === player.state) &&
           player.landFlag &&
           !player.wallFlag &&
-          !slide.flag &&
-          action.attack.some(v => player.timeStamp.attack <= keyTimestamp.released[v])
+          !slide.flag
         ) {
           const slideSpeed = slideConstant < player.dx ? boostConstant
           : player.dx < -slideConstant ? -boostConstant : 0
