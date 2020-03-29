@@ -21,6 +21,9 @@ context.imageSmoothingEnabled
 = context.msImageSmoothingEnabled
 = context.webkitImageSmoothingEnabled = false
 const storage = localStorage
+document.getElementById('clear').addEventListener('click', () => {
+  storage.clear()
+})
 const setDOM = (key, value) => {
   if (Object.keys(DOM).some(x => x === key)) DOM[key].innerHTML = value.toUpperCase()
 }
