@@ -375,15 +375,19 @@ const draw = () => {
   tilesetTilelayerIndexList.forEach(v => {
     for (let x = 0; x < mapObject.layers[v].width; x++) {
       for (let y = 0; y < mapObject.layers[v].height; y++) {
-        const id = mapObject.layers[v].data[
-          mapObject.layers[v].width * y + x] -
-          mapObject.tilesets[tilesetIndexObject.tileset].firstgid
-        if (id !== 0) {
-          context.drawImage(
-            resource.tileset,
-            (id % mapInfoObject.tileset.columns) * size,
-            (id - id % mapInfoObject.tileset.columns) / mapInfoObject.tileset.columns * size
-            , size, size, x * size, y * size, size, size)
+        let id = mapObject.layers[v].data[mapObject.layers[v].width * y + x]
+        if (0 < id) {
+          Object.entries(mapInfoObject).forEach(([k, vl]) => {
+            if (vl.tilecount < id) id -= vl.tilecount
+            else {
+              id -= mapObject.tilesets[tilesetIndexObject[k]].firstgid
+              context.drawImage(
+                resource[k],
+                (id % mapInfoObject[k].columns) * size,
+                (id - id % mapInfoObject[k].columns) / mapInfoObject[k].columns * size,
+                size, size, x * size, y * size, size, size)
+            }
+          })
         }
       }
     }
@@ -413,10 +417,14 @@ const draw = () => {
     collisionTilelayerIndexList.forEach(value => {
       for (let x = 0; x < mapObject.layers[value].width; x++) {
         for (let y = 0; y < mapObject.layers[value].height; y++) {
-          const id = mapObject.layers[value].data[y *
-            mapObject.layers[value].width + x] -
-            mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
+          let id = mapObject.layers[value].data[y *
+            mapObject.layers[value].width + x]
           if (0 < id) {
+            for(let j = mapObject.tilesets.length - 1; 0 <= j ; j--) {
+              if (Object.keys(terrainObject).length < id) {
+                id -= mapObject.tilesets[j].firstgid - 1
+              } else break
+            }
             const relativeCooldinates = {x: x * size, y: y * size}
             context.beginPath()
             terrainObject[id].forEach((v, i) => {
@@ -496,13 +504,6 @@ const initialize = () => {
   })
 }
 initialize().then(() => {
-  console.log(
-    // mapObject,
-    backgroundIndexObject,
-    tilesetIndexObject,
-    mapInfoObject,
-    // mapObject.tilesets[tilesetIndexObject['tileset']]
-    )
   main()
   draw()
 })
