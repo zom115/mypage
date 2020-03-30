@@ -13,8 +13,8 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
-let currentTime = Date.now()
-let globalElapsedTime = 1
+let currentTime = globalTimestamp
+let intervalDiffTime = 1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
@@ -80,7 +80,7 @@ const moveAcceleration = .01
 const normalConstant = .5
 const dashConstant = .75
 let moveConstant = normalConstant // 1 = 10 m / s
-let jumpFlag = false
+let landFlag = false
 const jumpConstant = 1
 const keyMapObject = {
   left: key.a,
@@ -117,26 +117,26 @@ const input = () => {
     ownCondition.dx = 0
     ownCondition.dy = 0
     const num = 10
-    if (keyMapObject.left.flag) ownCondition.dx -= moveAcceleration * globalElapsedTime * num
-    if (keyMapObject.right.flag) ownCondition.dx += moveAcceleration * globalElapsedTime * num
-    if (keyMapObject.up.flag) ownCondition.dy -= moveAcceleration * globalElapsedTime * num
-    if (keyMapObject.down.flag) ownCondition.dy += moveAcceleration * globalElapsedTime * num
+    if (keyMapObject.left.flag) ownCondition.dx -= moveAcceleration * intervalDiffTime * num
+    if (keyMapObject.right.flag) ownCondition.dx += moveAcceleration * intervalDiffTime * num
+    if (keyMapObject.up.flag) ownCondition.dy -= moveAcceleration * intervalDiffTime * num
+    if (keyMapObject.down.flag) ownCondition.dy += moveAcceleration * intervalDiffTime * num
   }
   if (keyMapObject.dash.flag) moveConstant = dashConstant
   else moveConstant = normalConstant
   if (keyMapObject.left.flag) {
     if (-moveConstant < ownCondition.dx - moveAcceleration) {
-      ownCondition.dx -= moveAcceleration * globalElapsedTime
+      ownCondition.dx -= moveAcceleration * intervalDiffTime
     } else ownCondition.dx = -moveConstant
   }
   if (keyMapObject.right.flag) {
     if (ownCondition.dx + moveAcceleration < moveConstant) {
-      ownCondition.dx += moveAcceleration * globalElapsedTime
+      ownCondition.dx += moveAcceleration * intervalDiffTime
     } else ownCondition.dx = moveConstant
   }
   if (keyMapObject.jump.isFirst()) {
-    if (jumpFlag) ownCondition.dy -= jumpConstant
-    jumpFlag = false
+    if (landFlag) ownCondition.dy -= jumpConstant
+    landFlag = false
   }
 }
 const ownBox = {w: size, h: size, r: size / 2 * .9,}
@@ -150,16 +150,16 @@ const collisionResponse = tilt => {
   if (tilt <= 1) frictionalForce = wallFF
   ownCondition.dx *= 1 - frictionalForce
   ownCondition.dy *= 1 - frictionalForce
-  if (1 < tilt) jumpFlag = true
+  if (1 < tilt) landFlag = true
 }
 const collisionDetect = () => {
   let count = 0
   let repeatFlag
   do {
     count++
-    if (100 < count) {
-      ownCondition.x = canvas.offsetWidth * 2 / 8
-      ownCondition.y = canvas.offsetHeight * 3 / 4
+    if (3 < count) {
+      // ownCondition.x = canvas.offsetWidth * 2 / 8
+      // ownCondition.y = canvas.offsetHeight * 3 / 4
       ownCondition.dx = 0
       ownCondition.dy = 0
     }
@@ -283,13 +283,13 @@ const collisionDetect = () => {
   ownCondition.y += ownCondition.dy
 }
 const stateUpdate = () => {
-  ownCondition.dy += gravitationalAcceleration * coefficient * globalElapsedTime
+  ownCondition.dy += gravitationalAcceleration * coefficient * intervalDiffTime
   frictionalForce = userFF
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
-  globalElapsedTime = Date.now() - currentTime
-  currentTime = Date.now()
+  intervalDiffTime = globalTimestamp - currentTime
+  currentTime = globalTimestamp
   input()
   collisionDetect()
   stateUpdate()
