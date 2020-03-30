@@ -131,11 +131,12 @@ const input = () => {
     } else ownCondition.dx = moveConstant
   }
   if (keyMapObject.jump.isFirst()) {
-    if (landFlag) ownCondition.dy = -jumpConstant
+    if (landFlag && jumpTrigger.flag) ownCondition.dy = -jumpConstant
     landFlag = false
   }
 }
-const ownBox = {w: size, h: size, r: size / 2 * .9,}
+const colliderRange = size / 2 * .9
+const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6 ,}
 const collisionResponse = tilt => {
   const nX = Math.cos(tilt * Math.PI)
   const nY = Math.sin(tilt * Math.PI)
@@ -150,6 +151,7 @@ const collisionResponse = tilt => {
 }
 const collisionDetect = () => {
   let count = 0
+  let onetimeLandFlag = false
   let repeatFlag
   do {
     count++
@@ -235,10 +237,37 @@ const collisionDetect = () => {
           if (0 < length) length = 1 / length
           nx *= length
           ny *= length
-          let nax = ax - nx * ownBox.r
-          let nay = ay - ny * ownBox.r
-          let nbx = bx - nx * ownBox.r
-          let nby = by - ny * ownBox.r
+          if (!onetimeLandFlag) {
+            const d = -(ax * nx + ay * ny)
+            const tm = -(nx * (ox - jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+              nx * dx + ny * (dy + jumpTrigger.h))
+            if (0 < tm && tm <= 1) {
+              const cx = (ox - jumpTrigger.w / 2) + dx * tm
+              const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tm
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc <= 0) onetimeLandFlag = true
+            }
+            const tp = -(nx * (ox + jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+              nx * dx + ny * (dy + jumpTrigger.h))
+            if (0 < tp && tp <= 1) {
+              const cx = (ox + jumpTrigger.w / 2) + dx * tp
+              const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tp
+              const acx = cx - ax
+              const acy = cy - ay
+              const bcx = cx - bx
+              const bcy = cy - by
+              const doc = acx * bcx + acy * bcy
+              if (doc <= 0) onetimeLandFlag = true
+            }
+          }
+          let nax = ax - nx * colliderRange
+          let nay = ay - ny * colliderRange
+          let nbx = bx - nx * colliderRange
+          let nby = by - ny * colliderRange
           const d = -(nax * nx + nay * ny)
           const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
           let detectFlag = false
@@ -261,7 +290,7 @@ const collisionDetect = () => {
           if (
             !detectFlag &&
             !vertexFlag &&
-            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.r ** 2
+            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= colliderRange ** 2
           ) {
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
             if (tilt < 0) landFlag = true
@@ -277,6 +306,7 @@ const collisionDetect = () => {
   } while(repeatFlag)
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
+  jumpTrigger.flag = onetimeLandFlag
 }
 const stateUpdate = () => {
   ownCondition.dy += gravitationalAcceleration * coefficient * intervalDiffTime
@@ -325,9 +355,9 @@ const draw = () => {
     // `y: ${ownCondition.y}`,
     `y(m): ${Math.floor((((mapObject.layers[layerIndexObject.objects].height - 2) * size) -
       ownCondition.y) * .04)}`,
-    `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx.toFixed(2)}`,
     `dy: ${ownCondition.dy.toFixed(2)}`,
+    `jumpTrigger: ${jumpTrigger.flag}`,
     `[${keyMapObject.gravity.key}]gravity: ${gravityFlag}`,
     `[${keyMapObject.collision.key}]collisionDisp: ${collisionDisp}`,
     `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
@@ -360,7 +390,7 @@ const draw = () => {
   context.fill()
   context.strokeStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y, ownBox.r, 0 , Math.PI * 2)
+  context.arc(ownCondition.x, ownCondition.y, colliderRange, 0 , Math.PI * 2)
   context.closePath()
   context.stroke()
   const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
@@ -400,6 +430,10 @@ const draw = () => {
         }
       }
     }
+    context.fillStyle = 'hsl(30, 100%, 50%)'
+    context.fillRect(
+      ownCondition.x - jumpTrigger.w / 2, ownCondition.y + jumpTrigger.y,
+      jumpTrigger.w, jumpTrigger.h)
   }
 }
 let mapObject = {}
