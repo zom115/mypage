@@ -64,11 +64,7 @@ terrainList.forEach(v => {
   }
 })
 // drawCollision(terrainObject)
-/*
-gravitational acceleration = 9.80665 m / s ** 2
-m / s ** 2 === 1000 / 1000 ** 1000 mm / ms ** 2
-1 dot === 40 mm, 1000 mm === 25 * 40 mm
-*/
+let collisionLayer
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
 let elasticModulus = 0 // 0 to 1
@@ -135,7 +131,7 @@ const input = () => {
     } else ownCondition.dx = moveConstant
   }
   if (keyMapObject.jump.isFirst()) {
-    if (landFlag) ownCondition.dy -= jumpConstant
+    if (landFlag) ownCondition.dy = -jumpConstant
     landFlag = false
   }
 }
@@ -144,13 +140,13 @@ const collisionResponse = tilt => {
   const nX = Math.cos(tilt * Math.PI)
   const nY = Math.sin(tilt * Math.PI)
   const t = -(
-    ownCondition.dx * nX + ownCondition.dy * nY) / (nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
+    ownCondition.dx * nX + ownCondition.dy * nY) / (
+    nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
   ownCondition.dx += 2 * t * nX
   ownCondition.dy += 2 * t * nY
   if (tilt <= 1) frictionalForce = wallFF
   ownCondition.dx *= 1 - frictionalForce
   ownCondition.dy *= 1 - frictionalForce
-  if (1 < tilt) landFlag = true
 }
 const collisionDetect = () => {
   let count = 0
@@ -158,15 +154,13 @@ const collisionDetect = () => {
   do {
     count++
     if (3 < count) {
-      // ownCondition.x = canvas.offsetWidth * 2 / 8
-      // ownCondition.y = canvas.offsetHeight * 3 / 4
       ownCondition.dx = 0
       ownCondition.dy = 0
     }
     repeatFlag = false
-    for (let x = 0; x < mapObject.layers[layerIndexObject.collision].width; x++) {
-      for (let y = 0; y < mapObject.layers[layerIndexObject.collision].height; y++) {
-        const id = mapObject.layers[layerIndexObject.collision].data[y * mapObject.layers[layerIndexObject.collision].width + x] -
+    for (let x = 0; x < collisionLayer.width; x++) {
+      for (let y = 0; y < collisionLayer.height; y++) {
+        const id = collisionLayer.data[y * collisionLayer.width + x] -
           mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
         let terrainIndex
         terrainIndex = 0 < id ? id : '0'
@@ -188,8 +182,8 @@ const collisionDetect = () => {
           let returnFlag = false
           findVertexList.forEach((vl, i) => {
             if (ro[vl[0]] === vl[1]) {
-              const target = terrainObject[mapObject.layers[layerIndexObject.collision].data[(
-                y + vl[2][1]) * mapObject.layers[layerIndexObject.collision].width + x + vl[2][0]] -
+              const target = terrainObject[collisionLayer.data[(
+                y + vl[2][1]) * collisionLayer.width + x + vl[2][0]] -
                 mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1]
               if (target === undefined) return
               const vertex = i === 0 ? [1, ro[1]] :
@@ -259,6 +253,7 @@ const collisionDetect = () => {
             if (doc <= 0) {
               detectFlag = true
               tilt += tilt < .5 ? 1.5 : -.5
+              if (1 < tilt) landFlag = true
             }
           }
           if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
@@ -269,6 +264,7 @@ const collisionDetect = () => {
             (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= ownBox.r ** 2
           ) {
             tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
+            if (tilt < 0) landFlag = true
             detectFlag = true
           }
           if (detectFlag) {
@@ -327,7 +323,8 @@ const draw = () => {
     // `x: ${ownCondition.x}`,
     `x(m): ${Math.floor(ownCondition.x * .04)}`,
     // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((mapObject.layers[layerIndexObject.objects].height - 2) * size) - ownCondition.y) * .04)}`,
+    `y(m): ${Math.floor((((mapObject.layers[layerIndexObject.objects].height - 2) * size) -
+      ownCondition.y) * .04)}`,
     `coefficient: ${coefficient}`,
     `dx: ${ownCondition.dx.toFixed(2)}`,
     `dy: ${ownCondition.dy.toFixed(2)}`,
@@ -335,7 +332,8 @@ const draw = () => {
     `[${keyMapObject.collision.key}]collisionDisp: ${collisionDisp}`,
     `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
     `elasticModulus: ${elasticModulus}`,
-    `[${keyMapObject.subFrictionalForce.key}: -, ${keyMapObject.addFrictionalForce.key}: +]` +
+    `[${keyMapObject.subFrictionalForce.key}: -, ${
+      keyMapObject.addFrictionalForce.key}: +]` +
     `frictionalForce: ${userFF}`,
   ]
   list.forEach((v, i) => {
@@ -378,10 +376,10 @@ const draw = () => {
   context.fill()
   if (collisionDisp) {
     context.fillStyle = 'hsla(300, 50%, 50%, 1)'
-    for (let x = 0; x < mapObject.layers[layerIndexObject.collision].width; x++) {
-      for (let y = 0; y < mapObject.layers[layerIndexObject.collision].height; y++) {
-        const id = mapObject.layers[layerIndexObject.collision].data[y *
-          mapObject.layers[layerIndexObject.collision].width + x] -
+    for (let x = 0; x < collisionLayer.width; x++) {
+      for (let y = 0; y < collisionLayer.height; y++) {
+        const id = collisionLayer.data[y *
+          collisionLayer.width + x] -
           mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
         if (0 < id) {
           const relativeCooldinates = {x: x * size, y: y * size}
@@ -394,7 +392,8 @@ const draw = () => {
               relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
             if (terrainObject[id].length === 2) {
             context.lineTo(
-              relativeCooldinates.x + v[0] * size + 1, relativeCooldinates.y + v[1] * size + 1)
+              relativeCooldinates.x + v[0] * size + 1,
+              relativeCooldinates.y + v[1] * size + 1)
             }
           })
           context.fill()
@@ -459,6 +458,7 @@ const initialize = () => {
   })
 }
 initialize().then(() => {
+  collisionLayer = mapObject.layers[layerIndexObject.collision]
   main()
   draw()
 })
