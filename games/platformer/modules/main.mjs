@@ -405,7 +405,7 @@ const draw = () => {
     context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
   context.fill()
   if (collisionDisp) {
-    context.fillStyle = 'hsla(300, 50%, 50%, 1)'
+    context.fillStyle = 'hsl(300, 50%, 50%)'
     for (let x = 0; x < collisionLayer.width; x++) {
       for (let y = 0; y < collisionLayer.height; y++) {
         const id = collisionLayer.data[y *
