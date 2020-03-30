@@ -64,7 +64,6 @@ terrainList.forEach(v => {
   }
 })
 // drawCollision(terrainObject)
-let collisionLayer
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
 let elasticModulus = 0 // 0 to 1
@@ -160,149 +159,152 @@ const collisionDetect = () => {
       ownCondition.dy = 0
     }
     repeatFlag = false
-    for (let x = 0; x < collisionLayer.width; x++) {
-      for (let y = 0; y < collisionLayer.height; y++) {
-        const id = collisionLayer.data[y * collisionLayer.width + x] -
-          mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
-        let terrainIndex
-        terrainIndex = 0 < id ? id : '0'
-        terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
-          if (ro.rength === 0) return
-          if (terrainObject[terrainIndex].length === 1) return
-          const rp = terrainObject[terrainIndex].slice(i - 1)[0]
-          const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
-            terrainObject[terrainIndex][0] : terrainObject[terrainIndex].slice(i + 1)[0]
-          let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
-          const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
-          const findVertexList = [
-            [0, 0, [-1, 0], [-1, -1]],
-            [0, 1, [1, 0], [1, 1]],
-            [1, 0, [0, -1], [1, -1]],
-            [1, 1, [0, 1], [-1, 1]],
-          ]
-          let vertexFlag = false
-          let returnFlag = false
-          findVertexList.forEach((vl, i) => {
-            if (ro[vl[0]] === vl[1]) {
-              const target = terrainObject[collisionLayer.data[(
-                y + vl[2][1]) * collisionLayer.width + x + vl[2][0]] -
-                mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1]
-              if (target === undefined) return
-              const vertex = i === 0 ? [1, ro[1]] :
-              i === 1 ? [0, ro[1]] :
-              i === 2 ? [ro[0], 1] : [ro[0], 0]
-              // x, y それぞれ0, 1が含まれている隣を調べる
-              const index = target.findIndex(val => {
-                return val[0] === vertex[0] && val[1] === vertex[1]
-              })
-              if (index !== -1) {
-                const previousIndex = index === 0 ? target.length - 1 : index - 1
-                const nextIndex = index === target.length - 1 ? 0 : index + 1
-                const previousVertex = i === 0 ? [1, rn[1]] :
-                i === 1 ? [0, rn[1]] :
-                i === 2 ? [rn[0], 1] : [rn[0], 0]
-                if ( // 隣に同じ線分があったら、この線分の判定は無効
-                  (ro[0] === rn[0] || ro[1] === rn[1]) &&
-                  target[previousIndex][0] === previousVertex[0] &&
-                  target[previousIndex][1] === previousVertex[1]
-                ) returnFlag = true
-                const cPreviousTilt = Math.atan2(
-                  target[index][1] - target[previousIndex][1],
-                  target[index][0] - target[previousIndex][0]) / Math.PI
-                const cNextTilt = Math.atan2(
-                  target[nextIndex][1] - target[index][1],
-                  target[nextIndex][0] - target[index][0]) / Math.PI
-                if (
-                  target.length !== 2 && (
-                  tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
-                  tilt === cNextTilt || previousTilt === cNextTilt)
-                ) vertexFlag = true
+    const collisionFn = collisionIndex => {
+      for (let x = 0; x < mapObject.layers[collisionIndex].width; x++) {
+        for (let y = 0; y < mapObject.layers[collisionIndex].height; y++) {
+          const id = mapObject.layers[collisionIndex].data[y * mapObject.layers[collisionIndex].width + x] -
+            mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
+          let terrainIndex
+          terrainIndex = 0 < id ? id : '0'
+          terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
+            if (ro.rength === 0) return
+            if (terrainObject[terrainIndex].length === 1) return
+            const rp = terrainObject[terrainIndex].slice(i - 1)[0]
+            const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
+              terrainObject[terrainIndex][0] : terrainObject[terrainIndex].slice(i + 1)[0]
+            let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
+            const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
+            const findVertexList = [
+              [0, 0, [-1, 0], [-1, -1]],
+              [0, 1, [1, 0], [1, 1]],
+              [1, 0, [0, -1], [1, -1]],
+              [1, 1, [0, 1], [-1, 1]],
+            ]
+            let vertexFlag = false
+            let returnFlag = false
+            findVertexList.forEach((vl, i) => {
+              if (ro[vl[0]] === vl[1]) {
+                const target = terrainObject[mapObject.layers[collisionIndex].data[(
+                  y + vl[2][1]) * mapObject.layers[collisionIndex].width + x + vl[2][0]] -
+                  mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1]
+                if (target === undefined) return
+                const vertex = i === 0 ? [1, ro[1]] :
+                i === 1 ? [0, ro[1]] :
+                i === 2 ? [ro[0], 1] : [ro[0], 0]
+                // x, y それぞれ0, 1が含まれている隣を調べる
+                const index = target.findIndex(val => {
+                  return val[0] === vertex[0] && val[1] === vertex[1]
+                })
+                if (index !== -1) {
+                  const previousIndex = index === 0 ? target.length - 1 : index - 1
+                  const nextIndex = index === target.length - 1 ? 0 : index + 1
+                  const previousVertex = i === 0 ? [1, rn[1]] :
+                  i === 1 ? [0, rn[1]] :
+                  i === 2 ? [rn[0], 1] : [rn[0], 0]
+                  if ( // 隣に同じ線分があったら、この線分の判定は無効
+                    (ro[0] === rn[0] || ro[1] === rn[1]) &&
+                    target[previousIndex][0] === previousVertex[0] &&
+                    target[previousIndex][1] === previousVertex[1]
+                  ) returnFlag = true
+                  const cPreviousTilt = Math.atan2(
+                    target[index][1] - target[previousIndex][1],
+                    target[index][0] - target[previousIndex][0]) / Math.PI
+                  const cNextTilt = Math.atan2(
+                    target[nextIndex][1] - target[index][1],
+                    target[nextIndex][0] - target[index][0]) / Math.PI
+                  if (
+                    target.length !== 2 && (
+                    tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
+                    tilt === cNextTilt || previousTilt === cNextTilt)
+                  ) vertexFlag = true
+                }
+              }
+            })
+            if (returnFlag) return
+            const ox = ownCondition.x
+            const oy = ownCondition.y
+            const dx = ownCondition.dx
+            const dy = ownCondition.dy
+            const ax = x * size + ro[0] * size
+            const ay = y * size + ro[1] * size
+            const bx = x * size + rn[0] * size
+            const by = y * size + rn[1] * size
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            if (!onetimeLandFlag) {
+              const d = -(ax * nx + ay * ny)
+              const tm = -(nx * (ox - jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+                nx * dx + ny * (dy + jumpTrigger.h))
+              if (0 < tm && tm <= 1) {
+                const cx = (ox - jumpTrigger.w / 2) + dx * tm
+                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tm
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc <= 0) onetimeLandFlag = true
+              }
+              const tp = -(nx * (ox + jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+                nx * dx + ny * (dy + jumpTrigger.h))
+              if (0 < tp && tp <= 1) {
+                const cx = (ox + jumpTrigger.w / 2) + dx * tp
+                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tp
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc <= 0) onetimeLandFlag = true
               }
             }
-          })
-          if (returnFlag) return
-          const ox = ownCondition.x
-          const oy = ownCondition.y
-          const dx = ownCondition.dx
-          const dy = ownCondition.dy
-          const ax = x * size + ro[0] * size
-          const ay = y * size + ro[1] * size
-          const bx = x * size + rn[0] * size
-          const by = y * size + rn[1] * size
-          const abx = bx - ax
-          const aby = by - ay
-          let nx = -aby
-          let ny = abx
-          let length = (nx ** 2 + ny ** 2) ** .5
-          if (0 < length) length = 1 / length
-          nx *= length
-          ny *= length
-          if (!onetimeLandFlag) {
-            const d = -(ax * nx + ay * ny)
-            const tm = -(nx * (ox - jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
-              nx * dx + ny * (dy + jumpTrigger.h))
-            if (0 < tm && tm <= 1) {
-              const cx = (ox - jumpTrigger.w / 2) + dx * tm
-              const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tm
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
+            let nax = ax - nx * colliderRange
+            let nay = ay - ny * colliderRange
+            let nbx = bx - nx * colliderRange
+            let nby = by - ny * colliderRange
+            const d = -(nax * nx + nay * ny)
+            const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
+            let detectFlag = false
+            if (0 < t && t <= 1) {
+              const cx = ox + dx * t
+              const cy = oy + dy * t
+              const acx = cx - nax
+              const acy = cy - nay
+              const bcx = cx - nbx
+              const bcy = cy - nby
               const doc = acx * bcx + acy * bcy
-              if (doc <= 0) onetimeLandFlag = true
+              if (doc <= 0) {
+                detectFlag = true
+                tilt += tilt < .5 ? 1.5 : -.5
+                if (1 < tilt) landFlag = true
+              }
             }
-            const tp = -(nx * (ox + jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
-              nx * dx + ny * (dy + jumpTrigger.h))
-            if (0 < tp && tp <= 1) {
-              const cx = (ox + jumpTrigger.w / 2) + dx * tp
-              const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tp
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc <= 0) onetimeLandFlag = true
-            }
-          }
-          let nax = ax - nx * colliderRange
-          let nay = ay - ny * colliderRange
-          let nbx = bx - nx * colliderRange
-          let nby = by - ny * colliderRange
-          const d = -(nax * nx + nay * ny)
-          const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
-          let detectFlag = false
-          if (0 < t && t <= 1) {
-            const cx = ox + dx * t
-            const cy = oy + dy * t
-            const acx = cx - nax
-            const acy = cy - nay
-            const bcx = cx - nbx
-            const bcy = cy - nby
-            const doc = acx * bcx + acy * bcy
-            if (doc <= 0) {
+            if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
+            if (terrainObject[terrainIndex].length === 2) vertexFlag = true
+            if (
+              !detectFlag &&
+              !vertexFlag &&
+              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= colliderRange ** 2
+            ) {
+              tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
+              if (tilt < 0) landFlag = true
               detectFlag = true
-              tilt += tilt < .5 ? 1.5 : -.5
-              if (1 < tilt) landFlag = true
             }
-          }
-          if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
-          if (terrainObject[terrainIndex].length === 2) vertexFlag = true
-          if (
-            !detectFlag &&
-            !vertexFlag &&
-            (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= colliderRange ** 2
-          ) {
-            tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-            if (tilt < 0) landFlag = true
-            detectFlag = true
-          }
-          if (detectFlag) {
-            collisionResponse(tilt)
-            repeatFlag = true
-          }
-        })
+            if (detectFlag) {
+              collisionResponse(tilt)
+              repeatFlag = true
+            }
+          })
+        }
       }
     }
+    collisionIndexList.forEach(v => collisionFn(v))
   } while(repeatFlag)
   ownCondition.x += ownCondition.dx
   ownCondition.y += ownCondition.dy
@@ -353,7 +355,7 @@ const draw = () => {
     // `x: ${ownCondition.x}`,
     `x(m): ${Math.floor(ownCondition.x * .04)}`,
     // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((mapObject.layers[layerIndexObject.objects].height - 2) * size) -
+    `y(m): ${Math.floor((((mapObject.layers[tilesetIndexList[0]].height - 2) * size) -
       ownCondition.y) * .04)}`,
     `dx: ${ownCondition.dx.toFixed(2)}`,
     `dy: ${ownCondition.dy.toFixed(2)}`,
@@ -370,20 +372,22 @@ const draw = () => {
     context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
   })
   context.fillStyle = 'hsl(240, 100%, 50%)'
-  for (let x = 0; x < mapObject.layers[layerIndexObject.objects].width; x++) {
-    for (let y = 0; y < mapObject.layers[layerIndexObject.objects].height; y++) {
-      const id = mapObject.layers[layerIndexObject.objects].data[
-        mapObject.layers[layerIndexObject.objects].width * y + x] -
-        mapObject.tilesets[tilesetIndexObject.tileset].firstgid
-      if (id !== 0) {
-        context.drawImage(
-          resource.tileset,
-          (id % mapInfoObject.tileset.columns) * size,
-          (id - id % mapInfoObject.tileset.columns) / mapInfoObject.tileset.columns * size
-          , size, size, x * size, y * size, size, size)
+  tilesetIndexList.forEach(v => {
+    for (let x = 0; x < mapObject.layers[v].width; x++) {
+      for (let y = 0; y < mapObject.layers[v].height; y++) {
+        const id = mapObject.layers[v].data[
+          mapObject.layers[v].width * y + x] -
+          mapObject.tilesets[tilesetIndexObject.tileset].firstgid
+        if (id !== 0) {
+          context.drawImage(
+            resource.tileset,
+            (id % mapInfoObject.tileset.columns) * size,
+            (id - id % mapInfoObject.tileset.columns) / mapInfoObject.tileset.columns * size
+            , size, size, x * size, y * size, size, size)
+        }
       }
     }
-  }
+  })
   context.fillStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
   context.arc(ownCondition.x, ownCondition.y, size / 32, 0, Math.PI * 2, false)
@@ -406,30 +410,32 @@ const draw = () => {
   context.fill()
   if (collisionDisp) {
     context.fillStyle = 'hsl(300, 50%, 50%)'
-    for (let x = 0; x < collisionLayer.width; x++) {
-      for (let y = 0; y < collisionLayer.height; y++) {
-        const id = collisionLayer.data[y *
-          collisionLayer.width + x] -
-          mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
-        if (0 < id) {
-          const relativeCooldinates = {x: x * size, y: y * size}
-          context.beginPath()
-          terrainObject[id].forEach((v, i) => {
-            i === 0 ?
-            context.moveTo(
-              relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
-            context.lineTo(
-              relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
-            if (terrainObject[id].length === 2) {
-            context.lineTo(
-              relativeCooldinates.x + v[0] * size + 1,
-              relativeCooldinates.y + v[1] * size + 1)
-            }
-          })
-          context.fill()
+    collisionIndexList.forEach(value => {
+      for (let x = 0; x < mapObject.layers[value].width; x++) {
+        for (let y = 0; y < mapObject.layers[value].height; y++) {
+          const id = mapObject.layers[value].data[y *
+            mapObject.layers[value].width + x] -
+            mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
+          if (0 < id) {
+            const relativeCooldinates = {x: x * size, y: y * size}
+            context.beginPath()
+            terrainObject[id].forEach((v, i) => {
+              i === 0 ?
+              context.moveTo(
+                relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
+              context.lineTo(
+                relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+              if (terrainObject[id].length === 2) {
+              context.lineTo(
+                relativeCooldinates.x + v[0] * size + 1,
+                relativeCooldinates.y + v[1] * size + 1)
+              }
+            })
+            context.fill()
+          }
         }
       }
-    }
+    })
     context.fillStyle = 'hsl(30, 100%, 50%)'
     context.fillRect(
       ownCondition.x - jumpTrigger.w / 2, ownCondition.y + jumpTrigger.y,
@@ -437,11 +443,9 @@ const draw = () => {
   }
 }
 let mapObject = {}
-const layerNameList = ['collision', 'objects', 'objectsLayer', 'sky', 'clouds', 'sea']
-let layerIndexObject = {}
-const bgNameList = ['sky', 'clouds', 'sea']
+let collisionIndexList = []
+let tilesetIndexList = []
 let bgIndexObject = {}
-const tilesetNameList = ['collision', 'tileset']
 let tilesetIndexObject = {}
 let mapInfoObject = {}
 let resource = []
@@ -450,22 +454,22 @@ const initialize = () => {
     await mapLoader('main', 'resources/main.json').then(result => {
       mapObject = result.main
       mapObject.layers.forEach((v, i) => {
-        layerIndexObject[v.name] = i
+        if(v.type === 'tilelayer') {
+          if (v.name.startsWith('collision')) collisionIndexList.push(i)
+          else tilesetIndexList.push(i)
+        } else if (v.type === 'objectgroup') {
+          const playerPosition = v.objects[v.objects.findIndex(v => {
+            return v.name === 'playerPosition'
+          })]
+          ownCondition.x = playerPosition.x
+          ownCondition.y = playerPosition.y
+        }
       })
       mapObject.tilesets.forEach((v, i) => {
         const str = v.source.substring(0, v.source.indexOf('.'))
         tilesetIndexObject[str] = i
         resource.push(mapLoader(str, 'resources/' + v.source))
       })
-      {
-        const objectsLayer = mapObject.layers[layerIndexObject.objectsLayer]
-        const playerPositionIndex = objectsLayer.objects.findIndex(v => {
-          return v.name === 'playerPosition'
-        })
-        const playerPosition = objectsLayer.objects[playerPositionIndex]
-        ownCondition.x = playerPosition.x
-        ownCondition.y = playerPosition.y
-      }
     })
     await Promise.all(resource).then(result => {
       resource = []
@@ -492,7 +496,15 @@ const initialize = () => {
   })
 }
 initialize().then(() => {
-  collisionLayer = mapObject.layers[layerIndexObject.collision]
+  console.log(
+
+    tilesetIndexList,
+    // mapObject,
+    // bgIndexObject,
+    // tilesetIndexObject,
+    // mapInfoObject,
+    // mapObject.tilesets[tilesetIndexObject['tileset']]
+    )
   main()
   draw()
 })

@@ -13,7 +13,18 @@
          "draworder":"topdown",
          "id":2,
          "name":"objectLayer",
-         "objects":[],
+         "objects":[
+                {
+                 "height":0,
+                 "id":1,
+                 "name":"playerPosition",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":106,
+                 "y":440
+                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -97,7 +108,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":1,
+ "nextobjectid":2,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"2020.03.18",
