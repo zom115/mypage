@@ -1,7 +1,7 @@
 import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
-// import {drawCollision} from './drawCollision.mjs'
+import {drawCollision} from './drawCollision.mjs'
 const mapObject = {}
 const imageObject = {}
 const internalFrameList = []
@@ -28,6 +28,8 @@ const terrainList = [
   [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
   [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
   [[1, 0], [1, .5], [0, .5],], // 22.5 harf
+  [[1, .5], [1, 1], [.5, 1],], // small triangle
+  [[0, .5], [.5, 0], [1, 0], [1, 1], [0, 1]], // chip rectangle
 ]
 const terrainObject = {'0': [[]],}
 const orgRound = (value, base) => {
@@ -65,7 +67,6 @@ terrainList.forEach(v => {
     id++
   }
 })
-// drawCollision(terrainObject)
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
 let elasticModulus = 0 // 0 to 1
@@ -555,4 +556,5 @@ Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() 
   )
   main()
   draw()
+  // drawCollision(terrainObject)
 })
