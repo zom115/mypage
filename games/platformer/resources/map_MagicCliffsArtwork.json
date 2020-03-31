@@ -41,6 +41,23 @@
                  "width":32,
                  "x":320,
                  "y":160
+                }, 
+                {
+                 "height":0,
+                 "id":6,
+                 "name":"color",
+                 "properties":[
+                        {
+                         "name":"value",
+                         "type":"color",
+                         "value":"#ffe1f9e9"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":10,
+                 "y":9
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -75,7 +92,7 @@
                  "value":30000
                 }],
          "type":"imagelayer",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -168,7 +185,7 @@
          "y":0
         }],
  "nextlayerid":20,
- "nextobjectid":6,
+ "nextobjectid":7,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"2020.03.18",

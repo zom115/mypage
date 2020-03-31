@@ -361,7 +361,9 @@ const main = () => setInterval(() => {
 const draw = () => {
   window.requestAnimationFrame(draw)
   frameCounter(animationFrameList)
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  context.fillStyle = mapColor
+  context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   mapObject[mapName].layersIndex.background.forEach(v => { // draw background
     const properties = mapObject[mapName].layers[v].properties
     // const offsetX = properties[properties.findIndex(vl => vl.name === 'offsetX')].value
@@ -547,12 +549,27 @@ let directoryList = [
   'map_MagicCliffsArtwork',
 ]
 let mapName = directoryList[0]
+let mapColor = 'rgb(127, 127, 127)'
+const getColor = (arg) => {
+  arg.layersIndex.objectgroup.forEach(v => {
+    const index = arg.layers[v].objects.findIndex(vl => vl.name === 'color')
+    if (index !== 0) {
+      let color = arg.layers[v].objects[index].properties[0].value
+      mapColor = `rgba(${
+        parseInt(color.slice(3, 5), 16)}, ${
+        parseInt(color.slice(5, 7), 16)}, ${
+        parseInt(color.slice(7, 9), 16)}, ${
+        parseInt(color.slice(1, 3), 16)})`
+    }
+  })
+}
 Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
   setStartPosition(mapObject[mapName])
+  getColor(mapObject[mapName])
   console.log(
-    mapObject,
-    imageObject,
-    mapName,
+    // mapObject,
+    // imageObject,
+    // mapName,
   )
   main()
   draw()
