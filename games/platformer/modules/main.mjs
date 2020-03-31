@@ -154,7 +154,7 @@ const input = () => {
     landFlag = false
   }
 }
-const colliderRange = size / 2 * .9
+const collisionRange = size / 2 * .9
 const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6 ,}
 const collisionResponse = tilt => {
   const nX = Math.cos(tilt * Math.PI)
@@ -288,10 +288,10 @@ const collisionDetect = () => {
                 if (doc <= 0) onetimeLandFlag = true
               }
             }
-            let nax = ax - nx * colliderRange
-            let nay = ay - ny * colliderRange
-            let nbx = bx - nx * colliderRange
-            let nby = by - ny * colliderRange
+            let nax = ax - nx * collisionRange
+            let nay = ay - ny * collisionRange
+            let nbx = bx - nx * collisionRange
+            let nby = by - ny * collisionRange
             const d = -(nax * nx + nay * ny)
             const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
             let detectFlag = false
@@ -314,7 +314,7 @@ const collisionDetect = () => {
             if (
               !detectFlag &&
               !vertexFlag &&
-              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= colliderRange ** 2
+              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= collisionRange ** 2
             ) {
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
               if (tilt < 0) landFlag = true
@@ -456,7 +456,7 @@ const draw = () => {
   context.fill()
   context.strokeStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y, colliderRange, 0 , Math.PI * 2)
+  context.arc(ownCondition.x, ownCondition.y, collisionRange, 0 , Math.PI * 2)
   context.closePath()
   context.stroke()
   const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
@@ -586,7 +586,6 @@ const getMusic = arg => {
     if (index !== 0) {
       let path = arg.layers[v].objects[index].properties[0].value
       path = setDirectory(path)
-      console.log(path)
       audioLoader(mapName, path).then(result => {
         Object.values(result)[0].volume = volumeController.value / 100
         Object.values(result)[0].play()
@@ -599,11 +598,6 @@ Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() 
   setStartPosition(mapObject[mapName])
   getColor(mapObject[mapName])
   getMusic(mapObject[mapName])
-  console.log(
-    // mapObject,
-    // imageObject,
-    // mapName,
-  )
   main()
   draw()
   // drawCollision(terrainObject)
