@@ -349,7 +349,7 @@ const draw = () => {
     const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
     const scrollTimePerSize =
       +properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
-    const image = resource[mapObject.layers[v].name]
+    const image = imageObject[mapObject.layers[v].name]
     const resetWidthTime = scrollTimePerSize * image.width / size
     let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
     if (direction === 'left') ratio = -ratio
@@ -397,7 +397,7 @@ const draw = () => {
             if (vl.tilecount < id) id -= vl.tilecount
             else {
               context.drawImage(
-                resource[k],
+                imageObject[k],
                 (id % tilesetsObject[k].columns) * size,
                 (id - id % tilesetsObject[k].columns) / tilesetsObject[k].columns * size,
                 size, size, x * size, y * size, size, size)
@@ -468,18 +468,19 @@ const draw = () => {
 }
 let mapList = []
 let mapObject = {}
-let layersIndexObject = {
+const layersIndexObject = {
   collision: [],
   tileset: [],
   objectgroup: [],
   background: [],
 }
-let tilesetsObject = {}
-let resource = []
+const tilesetsObject = {}
+const imageObject = {}
 let directory = 'map_GothicVaniaTown.json'
 const setDirectory = str => {return 'resources/' + str}
 const initialize = () => {
   return new Promise(async resolve => {
+    let resource = []
     await mapLoader('main', setDirectory(directory)).then(result => {
       mapObject = result.main
       mapObject.layers.forEach((v, i) => {
@@ -514,15 +515,13 @@ const initialize = () => {
       result.forEach(v => {
         Object.entries(v).forEach(([key, value]) => {
           Object.assign(tilesetsObject[key], value)
-          // mapObject.tilesets.findIndex(vl => )
           const src = value.image
           resource.push(imageLoader(key, setDirectory(src)))
         })
       })
     })
     await Promise.all(resource).then(result => {
-      resource = {}
-      result.forEach(v => resource[Object.keys(v)[0]] = Object.values(v)[0])
+      result.forEach(v => imageObject[Object.keys(v)[0]] = Object.values(v)[0])
       resolve()
     })
   })
@@ -530,8 +529,9 @@ const initialize = () => {
 initialize().then(() => {
   console.log(
     mapObject,
-    layersIndexObject,
-    tilesetsObject,
+    // layersIndexObject,
+    // tilesetsObject,
+    imageObject,
   )
   main()
   draw()
