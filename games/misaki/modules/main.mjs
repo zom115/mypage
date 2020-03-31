@@ -1695,7 +1695,28 @@ const draw = () => {
   }
   // drawFloatMenu()
 }
+let loadedFlag = false
+const loadingScreen = () => {
+  // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
+  const a = size * 10
+  const polygon = 3
+  const divide = 1
+  context.beginPath()
+  for (let i = 0; i < polygon; i++) {
+    const x =
+    offset.x + Math.cos(Math.PI * globalTimestamp / divide + Math.PI * i / polygon * 2) * a
+    const y =
+    offset.y + Math.sin(Math.PI * globalTimestamp / divide + Math.PI * i / polygon * 2) * a
+    i === 0 ? context.moveTo(x, y) : context.lineTo(x, y)
+  }
+  context.closePath()
+  context.stroke()
+  if (!loadedFlag) window.requestAnimationFrame(loadingScreen)
+}
+loadingScreen()
 Promise.all(resourceList).then(() => {
+  loadedFlag = true
   volumeController()
   setMapProcess(mapData.name)
   console.log(mapObject)
