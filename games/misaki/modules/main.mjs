@@ -68,7 +68,7 @@ let elasticModulus = 0 // 0 to 1
 const wallFF = 0
 let userFF = .1
 let frictionalForce = userFF // 0 to 1
-const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3 ,breathMax: 5e3}
+const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3, breathMax: 5e3}
 let player = {
   x: 0, y: 0,
   dx: 0, dy: 0, state: 'idle', direction: 'right',
@@ -110,11 +110,9 @@ let cooltime = {
   aerialStep: 0, aerialStepLimit: 10,
   slide: 2, slideLimit: 45
 }
-// 今押したか
-const isKeyFirst = list => {return list.some(v => key[v].isFirst())}
-const isKey = list => {return list.some(v => key[v].flag)}// 押しているか
-// どのくらい押しているか
-const howLongKey = list => {
+const isKeyFirst = list => {return list.some(v => key[v].isFirst())} // 今押したか
+const isKey = list => {return list.some(v => key[v].flag)} // 押しているか
+const howLongKey = list => { // どのくらい押しているか
   return list.reduce((acc, cur) => acc < key[cur].holdtime ? key[cur].holdtime : acc, 0)
 }
 let keyMap = {
@@ -132,9 +130,10 @@ let keyMap = {
   addFrictionalForce: ['p'],
   collision: ['c'],
   gravity: ['g'],
-}
-let toggle = {
-  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
+  DECO: ['e'],
+  status: ['t'],
+  hitbox: ['h'],
+  map: ['m'],
 }
 
 document.getElementsByTagName`audio`[0].volume = .1
@@ -1325,8 +1324,8 @@ const input = () => {
     })
   }
   if (false && !menuFlag) inGameInputProcess()
-  Object.keys(toggle).forEach(v => {
-    if (key[toggle[v]].isFirst()) {
+  Object.keys(settings.type).forEach(v => {
+    if (isKeyFirst(keyMap[v])) {
       settings.type[v] = setStorage(v, !settings.type[v])
       inputDOM[v].checked = !inputDOM[v].checked
     }
@@ -2162,6 +2161,7 @@ const draw = () => {
         }
       }
     })
+
     gate.forEach(v => {
       const X = multiple * (v.x - player.x) / size + 1
       const Y = multiple * (v.y - player.y) / size
