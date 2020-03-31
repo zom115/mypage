@@ -1129,8 +1129,8 @@ const input = () => {
   }
 
   let keyFirstFlag = {
-    attack: keyMap.attack.some(v => key[v].isFirst()),
-    jump: keyMap.jump.some(v => key[v].isFirst()),
+    attack: isKeyFirst(keyMap.attack),
+    jump: isKeyFirst(keyMap.jump),
   }
   const inGameInputProcess = () => {
     if (player.state === 'crouch') player.state = 'idle'
@@ -1803,7 +1803,7 @@ const musicProcess = () => {
   ) audio.music[currentPlay].data.currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
 const titleProcess = () => {
-  if (keyMap.attack.some(v => key[v].isFirst())) screenState = screenList[1]
+  if (isKeyFirst(keyMap.attack)) screenState = screenList[1]
 }
 const drawTitle = () => {
   context.fillStyle = 'hsl(0, 0%, 0%)'
@@ -1829,7 +1829,7 @@ const title = () => {
 let floatMenuCursor = 0
 const floatMenuCursorMax = 3
 const floatMenu = () => {
-  if (keyMap.option.some(v => key[v].isFirst())) {
+  if (isKeyFirst(keyMap.option)) {
     menuFlag = !menuFlag
     if (menuOpenTimestamp) {
       menuOpenTimestamp = 0
@@ -1849,17 +1849,17 @@ const floatMenu = () => {
   ) menuGauge -= 1
   menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
   const config = () => {
-    if (keyMap.down.some(v => key[v].isFirst())) {
+    if (isKeyFirst(keyMap.down)) {
       floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
     }
-    if (keyMap.up.some(v => key[v].isFirst())) {
+    if (isKeyFirst(keyMap.up)) {
       floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
     }
     const k = Object.keys(settings.type)[floatMenuCursor]
-    if (
-      (keyMap.attack.some(v => key[v].isFirst())) ||
-      (keyMap.left.some(v => key[v].isFirst()) && settings.type[k]) ||
-      (keyMap.right.some(v => key[v].isFirst()) && !settings.type[k])
+    if ((
+      isKeyFirst(keyMap.attack)) || (
+      isKeyFirst(keyMap.left) && settings.type[k]) || (
+      isKeyFirst(keyMap.right) && !settings.type[k])
     ) {
       settings.type[k] = setStorage(k, !settings.type[k])
       inputDOM[k].checked = !inputDOM[k].checked
