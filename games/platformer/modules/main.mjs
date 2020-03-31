@@ -333,11 +333,10 @@ const draw = () => {
     const direction = properties[properties.findIndex(vl => vl.name === 'direction')].value
     const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
     const scrollTimePerSize =
-      properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
-    scrollTimePerSize
+      +properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
     const image = resource[mapObject.layers[v].name]
     const resetWidthTime = scrollTimePerSize * image.width / size
-    let ratio = globalTimestamp % resetWidthTime / resetWidthTime
+    let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
     if (direction === 'left') ratio = -ratio
     let offsety = mapObject.layers[v].offsety
     if (offsety === undefined) offsety = 0
@@ -375,12 +374,11 @@ const draw = () => {
   tilesetTilelayerIndexList.forEach(v => {
     for (let x = 0; x < mapObject.layers[v].width; x++) {
       for (let y = 0; y < mapObject.layers[v].height; y++) {
-        let id = mapObject.layers[v].data[mapObject.layers[v].width * y + x]
+        let id = mapObject.layers[v].data[mapObject.layers[v].width * y + x] - 1
         if (0 < id) {
           Object.entries(mapInfoObject).forEach(([k, vl]) => {
             if (vl.tilecount < id) id -= vl.tilecount
             else {
-              id -= mapObject.tilesets[tilesetIndexObject[k]].firstgid
               context.drawImage(
                 resource[k],
                 (id % mapInfoObject[k].columns) * size,
@@ -457,13 +455,12 @@ let backgroundIndexObject = {}
 let tilesetIndexObject = {}
 let mapInfoObject = {}
 let resource = []
-let directory = 'map_MagicCliffsArtwork.json'
+let directory = 'map_GothicVaniaTown.json'
 const setDirectory = str => {return 'resources/' + str}
 const initialize = () => {
   return new Promise(async resolve => {
     await mapLoader('main', setDirectory(directory)).then(result => {
       mapObject = result.main
-      console.log(mapObject)
       mapObject.layers.forEach((v, i) => {
         if(v.type === 'tilelayer') {
           if (v.name.startsWith('collision')) collisionTilelayerIndexList.push(i)
@@ -478,7 +475,6 @@ const initialize = () => {
       })
       mapObject.tilesets.forEach((v, i) => {
         const str = v.source.substring(v.source.indexOf('_') + 1, v.source.indexOf('.'))
-        console.log(str, v.source)
         tilesetIndexObject[str] = i
         resource.push(mapLoader(str, setDirectory(v.source)))
       })
