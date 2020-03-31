@@ -587,10 +587,8 @@ const getMusic = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
     const index = arg.layers[v].objects.findIndex(vl => vl.name === 'audio')
     if (index !== -1) {
-      console.log(index)
       let path = arg.layers[v].objects[index].properties[0].value
       path = setDirectory(path)
-      console.log(Object.keys(audioObject).some(v => v === mapName))
       if (Object.keys(audioObject).some(v => v === mapName)) {
         audioObject[mapName].currentTime = 0
         audioObject[mapName].play()

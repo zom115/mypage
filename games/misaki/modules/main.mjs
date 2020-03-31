@@ -2,6 +2,110 @@ import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
+const mapObject = {}
+const imageObject = {}
+const audioObject = {}
+const setDirectory = str => {return 'resources/' + str}
+const getMapData = directory => {
+  return new Promise(async resolve => {
+    const mapInfoObject = {
+      layersIndex: {
+        collision: [],
+        tileset: [],
+        objectgroup: [],
+        background: [],
+      }, tilesetsIndex: {},
+    }
+    let resource = []
+    await mapLoader('main', setDirectory(directory + '.json')).then(result => {
+      Object.assign(mapInfoObject, result.main)
+      mapInfoObject.layers.forEach((v, i) => {
+        if(v.type === 'tilelayer') {
+          if (v.name.startsWith('collision')) mapInfoObject.layersIndex.collision.push(i)
+          else mapInfoObject.layersIndex.tileset.push(i)
+        } else if (v.type === 'objectgroup') {
+          mapInfoObject.layersIndex.objectgroup.push(i)
+        }
+      })
+      mapInfoObject.tilesets.forEach((v, i) => {
+        const str = v.source.substring(v.source.indexOf('_') + 1, v.source.indexOf('.'))
+        mapInfoObject.tilesetsIndex[str] = {}
+        mapInfoObject.tilesetsIndex[str].index = i
+        resource.push(mapLoader(str, setDirectory(v.source)))
+      })
+    })
+    await Promise.all(resource).then(result => {
+      resource = []
+      mapInfoObject.layers.forEach((v, i) => {
+        if (v.type === 'imagelayer') {
+          mapInfoObject.layersIndex.background.push(i)
+          const src = v.image
+          resource.push(imageLoader(v.name, setDirectory(src)))
+        }
+      })
+      result.forEach(v => {
+        Object.entries(v).forEach(([key, value]) => {
+          Object.assign(mapInfoObject.tilesetsIndex[key], value)
+          const src = value.image
+          resource.push(imageLoader(key, setDirectory(src)))
+        })
+      })
+    })
+    await Promise.all(resource).then(result => {
+      result.forEach(v => imageObject[Object.keys(v)[0]] = Object.values(v)[0])
+      mapObject[directory] = mapInfoObject
+      resolve()
+    })
+  })
+}
+let directoryList = [
+  'map_GothicVaniaTown',
+  'map_MagicCliffsArtwork',
+]
+let mapName = directoryList[0]
+let mapColor = 'rgb(127, 127, 127)'
+const getColor = arg => {
+  arg.layersIndex.objectgroup.forEach(v => {
+    const index = arg.layers[v].objects.findIndex(vl => vl.name === 'color')
+    if (index !== 0) {
+      let color = arg.layers[v].objects[index].properties[0].value
+      mapColor = `rgba(${
+        parseInt(color.slice(3, 5), 16)}, ${
+        parseInt(color.slice(5, 7), 16)}, ${
+        parseInt(color.slice(7, 9), 16)}, ${
+        parseInt(color.slice(1, 3), 16)})`
+    }
+  })
+}
+const getMusic = arg => {
+  arg.layersIndex.objectgroup.forEach(v => {
+    const index = arg.layers[v].objects.findIndex(vl => vl.name === 'audio')
+    if (index !== -1) {
+      console.log(index)
+      let path = arg.layers[v].objects[index].properties[0].value
+      path = setDirectory(path)
+      console.log(Object.keys(audioObject).some(v => v === mapName))
+      if (Object.keys(audioObject).some(v => v === mapName)) {
+        audioObject[mapName].currentTime = 0
+        audioObject[mapName].play()
+      } else {
+        audioLoader(mapName, path).then(result => {
+          Object.values(result)[0].volume = volumeController.value / 100
+          Object.values(result)[0].loop = true
+          Object.values(result)[0].play()
+          Object.assign(audioObject, result)
+        })
+      }
+    }
+  })
+}
+Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
+  console.log(mapObject)
+  // setMapProcess(mapName)
+  // main()
+  // draw()
+  // drawCollision(terrainObject)
+})
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
@@ -2090,7 +2194,6 @@ const draw = () => {
   drawFloatMenu()
 }
 Promise.all(resourceList).then(() => {
-  console.log('loading finished')
   volumeHandler()
   main()
   draw()

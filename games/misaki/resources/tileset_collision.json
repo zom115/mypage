@@ -1,0 +1,15 @@
+{ "columns":8,
+ "image":"misc\/collision.png",
+ "imageheight":144,
+ "imagewidth":128,
+ "margin":0,
+ "name":"collision",
+ "spacing":0,
+ "tilecount":72,
+ "tiledversion":"2020.03.18",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#003039",
+ "type":"tileset",
+ "version":1.2
+}
