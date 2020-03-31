@@ -376,7 +376,9 @@ const draw = () => {
       for (let y = 0; y < mapObject.layers[v].height; y++) {
         let id = mapObject.layers[v].data[mapObject.layers[v].width * y + x] - 1
         if (0 < id) {
+          let flag = false
           Object.entries(mapInfoObject).forEach(([k, vl]) => {
+            if (flag) return
             if (vl.tilecount < id) id -= vl.tilecount
             else {
               context.drawImage(
@@ -384,6 +386,7 @@ const draw = () => {
                 (id % mapInfoObject[k].columns) * size,
                 (id - id % mapInfoObject[k].columns) / mapInfoObject[k].columns * size,
                 size, size, x * size, y * size, size, size)
+              flag = true
             }
           })
         }
