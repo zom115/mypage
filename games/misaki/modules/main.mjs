@@ -2,6 +2,34 @@ import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
+
+const keyMap = {
+  up: ['w'],
+  right: ['d'],
+  down: ['s'],
+  left: ['a'],
+  jump: ['i', 'l', ' '],
+  attack: ['k'],
+  accel: ['j'],
+  option: ['o'],
+  subElasticModulus: ['y'],
+  addElasticModulus: ['u'],
+  subFrictionalForce: ['o'],
+  addFrictionalForce: ['p'],
+  collision: ['c'],
+  gravity: ['g'],
+  DECO: ['e'],
+  status: ['t'],
+  hitbox: ['h'],
+  map: ['m'],
+}
+const keyFirstFlagObject = {}
+const isKeyFirst = list => {return list.some(v => key[v].isFirst())} // 今押したか
+const isKey = list => {return list.some(v => key[v].flag)} // 押しているか
+const howLongKey = list => { // どのくらい押しているか
+  return list.reduce((acc, cur) => acc < key[cur].holdtime ? key[cur].holdtime : acc, 0)
+}
+
 const internalFrameList = []
 const animationFrameList = []
 let currentTime = globalTimestamp
@@ -110,31 +138,8 @@ let cooltime = {
   aerialStep: 0, aerialStepLimit: 10,
   slide: 2, slideLimit: 45
 }
-const isKeyFirst = list => {return list.some(v => key[v].isFirst())} // 今押したか
-const isKey = list => {return list.some(v => key[v].flag)} // 押しているか
-const howLongKey = list => { // どのくらい押しているか
-  return list.reduce((acc, cur) => acc < key[cur].holdtime ? key[cur].holdtime : acc, 0)
-}
-let keyMap = {
-  up: ['w'],
-  right: ['d'],
-  down: ['s'],
-  left: ['a'],
-  jump: ['i', 'l', ' '],
-  attack: ['k'],
-  accel: ['j'],
-  option: ['o'],
-  subElasticModulus: ['y'],
-  addElasticModulus: ['u'],
-  subFrictionalForce: ['o'],
-  addFrictionalForce: ['p'],
-  collision: ['c'],
-  gravity: ['g'],
-  DECO: ['e'],
-  status: ['t'],
-  hitbox: ['h'],
-  map: ['m'],
-}
+let floatMenuCursor = 0
+const floatMenuCursorMax = 3
 
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
@@ -600,7 +605,6 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
-const keyFirstFlagObject = {}
 const proposal = () => {
   if (keyFirstFlagObject.collision) collisionDisp = !collisionDisp
   if (keyFirstFlagObject.subElasticModulus && 0 < elasticModulus) {
@@ -851,19 +855,19 @@ const proposal = () => {
     }
   })
 }
-const collisionResponse = tilt => {
-  const nX = Math.cos(tilt * Math.PI)
-  const nY = Math.sin(tilt * Math.PI)
-  const t = -(
-    player.dx * nX + player.dy * nY) / (
-    nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
-  player.dx += 2 * t * nX
-  player.dy += 2 * t * nY
-  if (tilt <= 1) frictionalForce = wallFF
-  player.dx *= 1 - frictionalForce
-  player.dy *= 1 - frictionalForce
-}
 const judgement = () => {
+  const collisionResponse = tilt => {
+    const nX = Math.cos(tilt * Math.PI)
+    const nY = Math.sin(tilt * Math.PI)
+    const t = -(
+      player.dx * nX + player.dy * nY) / (
+      nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
+    player.dx += 2 * t * nX
+    player.dy += 2 * t * nY
+    if (tilt <= 1) frictionalForce = wallFF
+    player.dx *= 1 - frictionalForce
+    player.dy *= 1 - frictionalForce
+  }
   let count = 0
   let onetimeLandFlag = false
   let repeatFlag
@@ -1289,111 +1293,6 @@ const update = () => {
     }
   })
 }
-const musicProcess = () => {
-  const setMusic = () => {
-    return mapData.name === 'AthleticCourse' ? 'テレフォン・ダンス' : 'アオイセカイ'
-  }
-  if (
-    currentPlay !== setMusic() ||
-    !playFlag && Object.values(key).some(v => v.flag)
-  ) {
-    Object.keys(audio.music).forEach(v => audio.music[v].data.pause())
-    if (!playFlag) playFlag = true
-    currentPlay = setMusic()
-    audio.music[currentPlay].data.currentTime = 0
-    audio.music[currentPlay].data.play()
-  }
-  if (
-    currentPlay === 'テレフォン・ダンス' &&
-    32.74 < audio.music[currentPlay].data.currentTime
-  ) audio.music[currentPlay].data.currentTime = 7.14 + 4 / 60 // 4 frame delay?
-  else if (
-    currentPlay === 'アオイセカイ' &&
-    60 + 13 < audio.music[currentPlay].data.currentTime
-  ) audio.music[currentPlay].data.currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
-}
-const titleProcess = () => {
-  if (keyFirstFlagObject.attack) screenState = screenList[1]
-}
-const drawTitle = () => {
-  context.fillStyle = 'hsl(0, 0%, 0%)'
-  context.font = `${size * 4}px sans-serif`
-  context.textAlign = 'center'
-  const ow = -menuWidth / 2
-  context.fillText('Title', canvas.offsetWidth / 2 + ow, canvas.offsetHeight / 2)
-  context.font = `${size * 2}px sans-serif`
-  context.fillText(
-    `Press '${keyMap.attack[0].toUpperCase()}' to Start`,
-    canvas.offsetWidth / 2 - menuWidth / 2, canvas.offsetHeight * 3 / 4)
-  Object.entries(keyMap).forEach(([k, v], i) => {
-    context.fillText(
-      k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * size * 2)
-    context.fillText(
-      v, canvas.offsetWidth * 3 / 4 + size * 8 + ow,
-      canvas.offsetHeight * 1 / 4 + i * size * 2)
-  })
-}
-const title = () => {
-  if (!menuFlag) titleProcess()
-}
-let floatMenuCursor = 0
-const floatMenuCursorMax = 3
-const floatMenu = () => {
-  if (keyFirstFlagObject.option) {
-    menuFlag = !menuFlag
-    if (menuOpenTimestamp) {
-      menuOpenTimestamp = 0
-      menuCloseTimestamp = Date.now()
-    } else {
-      menuOpenTimestamp = Date.now()
-      menuCloseTimestamp = 0
-    }
-  }
-  if (!menuFlag && !menuGauge) return
-  if (menuGauge < 0) {return menuFlag = false}
-  if (menuFlag && menuGauge < menuGaugeMax &&
-    menuGauge * (1 / 75) < Date.now() - menuOpenTimestamp) menuGauge += 1
-  else if (
-    !menuFlag &&
-    menuGaugeMaxTime - menuGauge * (1 / 75) < Date.now() - menuCloseTimestamp
-  ) menuGauge -= 1
-  menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
-  const config = () => {
-    if (keyFirstFlagObject.down) {
-      floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
-    }
-    if (keyFirstFlagObject.up) {
-      floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
-    }
-    const k = Object.keys(settings.type)[floatMenuCursor]
-    if ((
-      keyFirstFlagObject.attack) || (
-      keyFirstFlagObject.left) && settings.type[k] || (
-      keyFirstFlagObject.right) && !settings.type[k]
-    ) {
-      settings.type[k] = setStorage(k, !settings.type[k])
-      inputDOM[k].checked = !inputDOM[k].checked
-    }
-  }
-  if (menuFlag) config()
-}
-const drawFloatMenu = () => {
-  context.save()
-  context.fillStyle = 'hsl(0, 0%, 25%)'
-  const ox = canvas.offsetWidth - menuWidth
-  context.fillRect( // BG
-    ox, 0, canvas.offsetWidth, canvas.offsetHeight)
-  context.font = `${size * 2}px sans-serif`
-  context.fillStyle = 'hsl(0, 0%, 100%)'
-  context.textAlign = 'left'
-  Object.entries(settings.type).forEach(([k, v], i) => {
-    context.fillText(k, ox + size * 2, size * 4 + i * size * 2)
-    context.fillText(v, ox + size * 10, size * 4 + i * size * 2)
-  })
-  context.fillText('[', ox + size, size * 4 + floatMenuCursor * size * 2)
-  context.fillText(']', ox + size * 15, size * 4 + floatMenuCursor * size * 2)
-  context.restore()
-}
 const main = () => setInterval(() => {
   Object.entries(keyMap).forEach(([k, v]) => keyFirstFlagObject[k] = isKeyFirst(v))
   frameCounter(internalFrameList)
@@ -1404,10 +1303,78 @@ const main = () => setInterval(() => {
   judgement()
   update()
 
+  const titleProcess = () => {
+    if (keyFirstFlagObject.attack) screenState = screenList[1]
+  }
+  const title = () => {
+    if (!menuFlag) titleProcess()
+  }
   // if (screenState === screenList[0]) title()
   // else if (screenState === screenList[1]) inGame()
-  // musicProcess()
+  const floatMenu = () => {
+    if (keyFirstFlagObject.option) {
+      menuFlag = !menuFlag
+      if (menuOpenTimestamp) {
+        menuOpenTimestamp = 0
+        menuCloseTimestamp = Date.now()
+      } else {
+        menuOpenTimestamp = Date.now()
+        menuCloseTimestamp = 0
+      }
+    }
+    if (!menuFlag && !menuGauge) return
+    if (menuGauge < 0) {return menuFlag = false}
+    if (menuFlag && menuGauge < menuGaugeMax &&
+      menuGauge * (1 / 75) < Date.now() - menuOpenTimestamp) menuGauge += 1
+    else if (
+      !menuFlag &&
+      menuGaugeMaxTime - menuGauge * (1 / 75) < Date.now() - menuCloseTimestamp
+    ) menuGauge -= 1
+    menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
+    const config = () => {
+      if (keyFirstFlagObject.down) {
+        floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
+      }
+      if (keyFirstFlagObject.up) {
+        floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
+      }
+      const k = Object.keys(settings.type)[floatMenuCursor]
+      if ((
+        keyFirstFlagObject.attack) || (
+        keyFirstFlagObject.left) && settings.type[k] || (
+        keyFirstFlagObject.right) && !settings.type[k]
+      ) {
+        settings.type[k] = setStorage(k, !settings.type[k])
+        inputDOM[k].checked = !inputDOM[k].checked
+      }
+    }
+    if (menuFlag) config()
+  }
   // floatMenu()
+  const musicProcess = () => {
+    const setMusic = () => {
+      return mapData.name === 'AthleticCourse' ? 'テレフォン・ダンス' : 'アオイセカイ'
+    }
+    if (
+      currentPlay !== setMusic() ||
+      !playFlag && Object.values(key).some(v => v.flag)
+    ) {
+      Object.keys(audio.music).forEach(v => audio.music[v].data.pause())
+      if (!playFlag) playFlag = true
+      currentPlay = setMusic()
+      audio.music[currentPlay].data.currentTime = 0
+      audio.music[currentPlay].data.play()
+    }
+    if (
+      currentPlay === 'テレフォン・ダンス' &&
+      32.74 < audio.music[currentPlay].data.currentTime
+    ) audio.music[currentPlay].data.currentTime = 7.14 + 4 / 60 // 4 frame delay?
+    else if (
+      currentPlay === 'アオイセカイ' &&
+      60 + 13 < audio.music[currentPlay].data.currentTime
+    ) audio.music[currentPlay].data.currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
+  }
+  // musicProcess()
 }, 0)
 const draw = () => {
   window.requestAnimationFrame(draw)
@@ -1689,8 +1656,43 @@ const draw = () => {
       }
     })
   }
+  const drawTitle = () => {
+    context.fillStyle = 'hsl(0, 0%, 0%)'
+    context.font = `${size * 4}px sans-serif`
+    context.textAlign = 'center'
+    const ow = -menuWidth / 2
+    context.fillText('Title', canvas.offsetWidth / 2 + ow, canvas.offsetHeight / 2)
+    context.font = `${size * 2}px sans-serif`
+    context.fillText(
+      `Press '${keyMap.attack[0].toUpperCase()}' to Start`,
+      canvas.offsetWidth / 2 - menuWidth / 2, canvas.offsetHeight * 3 / 4)
+    Object.entries(keyMap).forEach(([k, v], i) => {
+      context.fillText(
+        k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * size * 2)
+      context.fillText(
+        v, canvas.offsetWidth * 3 / 4 + size * 8 + ow,
+        canvas.offsetHeight * 1 / 4 + i * size * 2)
+    })
+  }
   // if (screenState === screenList[0]) drawTitle()
   // else if (screenState === screenList[1]) drawInGame()
+  const drawFloatMenu = () => {
+    context.save()
+    context.fillStyle = 'hsl(0, 0%, 25%)'
+    const ox = canvas.offsetWidth - menuWidth
+    context.fillRect( // BG
+      ox, 0, canvas.offsetWidth, canvas.offsetHeight)
+    context.font = `${size * 2}px sans-serif`
+    context.fillStyle = 'hsl(0, 0%, 100%)'
+    context.textAlign = 'left'
+    Object.entries(settings.type).forEach(([k, v], i) => {
+      context.fillText(k, ox + size * 2, size * 4 + i * size * 2)
+      context.fillText(v, ox + size * 10, size * 4 + i * size * 2)
+    })
+    context.fillText('[', ox + size, size * 4 + floatMenuCursor * size * 2)
+    context.fillText(']', ox + size * 15, size * 4 + floatMenuCursor * size * 2)
+    context.restore()
+  }
   // drawFloatMenu()
 }
 Promise.all(resourceList).then(() => {
