@@ -457,12 +457,13 @@ let backgroundIndexObject = {}
 let tilesetIndexObject = {}
 let mapInfoObject = {}
 let resource = []
-let directory = 'magicCliffsArtwork.json'
+let directory = 'map_MagicCliffsArtwork.json'
 const setDirectory = str => {return 'resources/' + str}
 const initialize = () => {
   return new Promise(async resolve => {
     await mapLoader('main', setDirectory(directory)).then(result => {
       mapObject = result.main
+      console.log(mapObject)
       mapObject.layers.forEach((v, i) => {
         if(v.type === 'tilelayer') {
           if (v.name.startsWith('collision')) collisionTilelayerIndexList.push(i)
@@ -476,7 +477,8 @@ const initialize = () => {
         }
       })
       mapObject.tilesets.forEach((v, i) => {
-        const str = v.source.substring(0, v.source.indexOf('.'))
+        const str = v.source.substring(v.source.indexOf('_') + 1, v.source.indexOf('.'))
+        console.log(str, v.source)
         tilesetIndexObject[str] = i
         resource.push(mapLoader(str, setDirectory(v.source)))
       })
@@ -507,10 +509,10 @@ const initialize = () => {
 }
 initialize().then(() => {
   console.log(
-    mapObject,
-    collisionTilelayerIndexList,
-    tilesetTilelayerIndexList,
-    backgroundIndexObject,
+    // mapObject,
+    // collisionTilelayerIndexList,
+    // tilesetTilelayerIndexList,
+    // backgroundIndexObject,
     tilesetIndexObject,
     mapInfoObject,
     resource,

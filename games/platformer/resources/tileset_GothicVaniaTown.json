@@ -4,10 +4,10 @@
      "export":
         {
          "format":"",
-         "target":"."
+         "target":"gothicVaniaTown"
         }
     },
- "image":"..\/GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
+ "image":"GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
  "imageheight":192,
  "imagewidth":592,
  "margin":0,
