@@ -1,0 +1,15 @@
+{ "columns":14,
+ "image":"MagicCliffsArtwork\/cave-tileset.png",
+ "imageheight":256,
+ "imagewidth":224,
+ "margin":0,
+ "name":"tileset_MagicCliffsArtwork_cave",
+ "spacing":0,
+ "tilecount":224,
+ "tiledversion":"2020.03.18",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#003039",
+ "type":"tileset",
+ "version":1.2
+}

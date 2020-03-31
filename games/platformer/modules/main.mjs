@@ -316,6 +316,22 @@ const collisionDetect = () => {
   ownCondition.y += ownCondition.dy
   jumpTrigger.flag = onetimeLandFlag
 }
+const setStartPosition = arg => {
+  arg.layersIndex.objectgroup.forEach(v => {
+    const index = arg.layers[v].objects.findIndex(vl => {
+      return vl.name === 'playerPosition'
+    })
+    if (index !== -1) {
+      const playerPosition = arg.layers[v].objects[index]
+      ownCondition.x = playerPosition.x
+      ownCondition.y = playerPosition.y
+    }
+  })
+}
+const setMapProcess = arg => {
+  mapName = arg
+  setStartPosition(mapObject[arg])
+}
 const mapObjectProcess = () => {
   mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
     if (v.name === 'gate' &&
@@ -323,9 +339,7 @@ const mapObjectProcess = () => {
       v.y < ownCondition.y && ownCondition.y < v.y + v.height
     ) {
       v.properties.forEach(vl => {
-        if (vl.name === 'address') {
-          console.log(vl.value)
-        }
+        if (vl.name === 'address') setMapProcess(vl.value)
       })
     }
   })
@@ -494,11 +508,6 @@ const getMapData = directory => {
           else mapInfoObject.layersIndex.tileset.push(i)
         } else if (v.type === 'objectgroup') {
           mapInfoObject.layersIndex.objectgroup.push(i)
-          const playerPosition = v.objects[v.objects.findIndex(v => {
-            return v.name === 'playerPosition'
-          })]
-          ownCondition.x = playerPosition.x
-          ownCondition.y = playerPosition.y
         }
       })
       mapInfoObject.tilesets.forEach((v, i) => {
@@ -538,6 +547,7 @@ let directoryList = [
 ]
 let mapName = directoryList[0]
 Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
+  setStartPosition(mapObject[mapName])
   console.log(
     mapObject,
     imageObject,
