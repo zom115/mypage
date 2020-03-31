@@ -11,8 +11,8 @@
  "layers":[
         {
          "id":4,
-         "image":"GothicVania-town-files\/PNG\/environment\/layers\/background.png",
-         "name":"background",
+         "image":"GothicVania-town-files\/PNG\/environment\/layers\/GothicVania-town-files_clouds.png",
+         "name":"gothicClouds",
          "opacity":1,
          "properties":[
                 {
@@ -27,8 +27,36 @@
                 }, 
                 {
                  "name":"scrollTimePerSize",
+                 "type":"int",
+                 "value":10000
+                }],
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":7,
+         "image":"GothicVania-town-files\/PNG\/environment\/layers\/GothicVania-town-files_mountains.png",
+         "name":"mountains",
+         "offsetx":0,
+         "offsety":123,
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"direction",
                  "type":"string",
-                 "value":"10000"
+                 "value":"left"
+                }, 
+                {
+                 "name":"offsetY",
+                 "type":"string",
+                 "value":"bottom"
+                }, 
+                {
+                 "name":"scrollTimePerSize",
+                 "type":"int",
+                 "value":0
                 }],
          "type":"imagelayer",
          "visible":true,
@@ -53,11 +81,11 @@
                 }, 
                 {
                  "name":"scrollTimePerSize",
-                 "type":"string",
-                 "value":"0"
+                 "type":"int",
+                 "value":0
                 }],
          "type":"imagelayer",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
@@ -136,7 +164,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":7,
+ "nextlayerid":8,
  "nextobjectid":5,
  "orientation":"orthogonal",
  "renderorder":"right-down",
