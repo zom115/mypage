@@ -458,7 +458,7 @@ const draw = () => {
           let id = mapObject[mapName].layers[value].data[y *
             mapObject[mapName].layers[value].width + x]
           if (0 < id) {
-            for(let j = mapObject[mapName].tilesets.length - 1; 0 <= j ; j--) {
+            for(let j = 0; j < mapObject[mapName].tilesets.length ; j++) {
               if (Object.keys(terrainObject).length < id) {
                 id -= mapObject[mapName].tilesets[j].firstgid - 1
               } else break
