@@ -1,5 +1,13 @@
 { "columns":8,
- "image":"..\/images\/collision.png",
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"",
+         "target":"."
+        }
+    },
+ "image":"misc\/collision.png",
  "imageheight":112,
  "imagewidth":128,
  "margin":0,

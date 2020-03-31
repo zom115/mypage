@@ -1,5 +1,13 @@
 { "columns":37,
- "image":"..\/..\/..\/..\/resources\/GothicVania-town-files\/GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"",
+         "target":"."
+        }
+    },
+ "image":"..\/GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
  "imageheight":192,
  "imagewidth":592,
  "margin":0,
