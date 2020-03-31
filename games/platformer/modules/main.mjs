@@ -341,7 +341,7 @@ const draw = () => {
   window.requestAnimationFrame(draw)
   frameCounter(animationFrameList)
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  Object.values(backgroundIndexObject).forEach(v => { // draw background
+  backgroundIndexList.forEach(v => { // draw background
     const properties = mapObject.layers[v].properties
     // const offsetX = properties[properties.findIndex(vl => vl.name === 'offsetX')].value
     // offsetX === 'left'
@@ -468,10 +468,16 @@ const draw = () => {
 }
 let mapList = []
 let mapObject = {}
+let indexObject = {
+  collision: [],
+  tileset: [],
+  objectgroup: [],
+  background: [],
+}
 let collisionTilelayerIndexList = []
 let tilesetTilelayerIndexList = []
 let objectgroupIndexList = []
-let backgroundIndexObject = {}
+let backgroundIndexList = []
 let mapInfoObject = {}
 let resource = []
 let directory = 'map_GothicVaniaTown.json'
@@ -504,7 +510,7 @@ const initialize = () => {
       resource = []
       mapObject.layers.forEach((v, i) => {
         if (v.type === 'imagelayer') {
-          backgroundIndexObject[v.name] = i
+          backgroundIndexList.push(i)
           const src = v.image
           resource.push(imageLoader(v.name, setDirectory(src)))
         }
@@ -527,12 +533,13 @@ const initialize = () => {
 }
 initialize().then(() => {
   console.log(
-  //   mapObject,
-  //   collisionTilelayerIndexList,
-  //   tilesetTilelayerIndexList,
-  //   objectgroupIndexList,
-  //   backgroundIndexObject,
-    mapInfoObject,)
+    // mapObject,
+    collisionTilelayerIndexList,
+    tilesetTilelayerIndexList,
+    objectgroupIndexList,
+    backgroundIndexList,
+    // mapInfoObject,
+  )
   main()
   draw()
 })
