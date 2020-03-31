@@ -349,6 +349,9 @@ const setStartPosition = arg => {
 const setMapProcess = arg => {
   mapName = arg
   setStartPosition(mapObject[arg])
+  setStartPosition(mapObject[arg])
+  getColor(mapObject[arg])
+  getMusic(mapObject[arg])
 }
 const mapObjectProcess = () => {
   mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
@@ -388,7 +391,7 @@ const draw = () => {
     const direction = properties[properties.findIndex(vl => vl.name === 'direction')].value
     const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
     const scrollTimePerSize =
-      +properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
+      properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
     const image = imageObject[mapObject[mapName].layers[v].name]
     const resetWidthTime = scrollTimePerSize * image.width / size
     let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
@@ -583,21 +586,27 @@ const getColor = arg => {
 const getMusic = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
     const index = arg.layers[v].objects.findIndex(vl => vl.name === 'audio')
-    if (index !== 0) {
+    if (index !== -1) {
+      console.log(index)
       let path = arg.layers[v].objects[index].properties[0].value
       path = setDirectory(path)
-      audioLoader(mapName, path).then(result => {
-        Object.values(result)[0].volume = volumeController.value / 100
-        Object.values(result)[0].play()
-        Object.assign(audioObject, result)
-      })
+      console.log(Object.keys(audioObject).some(v => v === mapName))
+      if (Object.keys(audioObject).some(v => v === mapName)) {
+        audioObject[mapName].currentTime = 0
+        audioObject[mapName].play()
+      } else {
+        audioLoader(mapName, path).then(result => {
+          Object.values(result)[0].volume = volumeController.value / 100
+          Object.values(result)[0].loop = true
+          Object.values(result)[0].play()
+          Object.assign(audioObject, result)
+        })
+      }
     }
   })
 }
 Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
-  setStartPosition(mapObject[mapName])
-  getColor(mapObject[mapName])
-  getMusic(mapObject[mapName])
+  setMapProcess(mapName)
   main()
   draw()
   // drawCollision(terrainObject)
