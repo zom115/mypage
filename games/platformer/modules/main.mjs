@@ -2,6 +2,8 @@ import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 // import {drawCollision} from './drawCollision.mjs'
+const mapObject = {}
+const imageObject = {}
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
@@ -472,14 +474,6 @@ const draw = () => {
       jumpTrigger.w, jumpTrigger.h)
   }
 }
-let directoryList = [
-  'map_GothicVaniaTown',
-  'map_MagicCliffsArtwork',
-]
-let mapName = directoryList[0]
-const mapObject = {}
-const imageObject = {}
-const initList = []
 const getMapData = directory => {
   return new Promise(async resolve => {
     const setDirectory = str => {return 'resources/' + str}
@@ -489,8 +483,7 @@ const getMapData = directory => {
         tileset: [],
         objectgroup: [],
         background: [],
-      },
-      tilesetsIndex: {},
+      }, tilesetsIndex: {},
     }
     let resource = []
     await mapLoader('main', setDirectory(directory + '.json')).then(result => {
@@ -539,10 +532,12 @@ const getMapData = directory => {
     })
   })
 }
-directoryList.forEach(v => {
-  initList.push(getMapData(v))
-})
-Promise.all(initList).then(() => {
+let directoryList = [
+  'map_GothicVaniaTown',
+  'map_MagicCliffsArtwork',
+]
+let mapName = directoryList[0]
+Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
   console.log(
     mapObject,
     imageObject,
