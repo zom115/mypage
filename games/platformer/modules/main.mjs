@@ -37,53 +37,55 @@ volumeController.addEventListener('input', (e) => {
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
-const terrainList = [
-  [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
-  [[0, 0], [1, 0]], // platform
-  [[1, 0], [1, 1], [0, 1],], // triangle
-  [[1, .5], [1, 1], [0, 1],], // 22.5 low
-  [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
-  [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
-  [[1, 0], [1, .5], [0, .5],], // 22.5 harf
-  [[1, .5], [1, 1], [.5, 1],], // small triangle
-  [[0, .5], [.5, 0], [1, 0], [1, 1], [0, 1]], // chip rectangle
-]
 const terrainObject = {'0': [[]],}
 const orgRound = (value, base) => {
   return Math.round(value * base) / base
 }
-const inversionTerrain = array => {
-  const terrain = JSON.parse(JSON.stringify(array))
-  terrain.forEach(v => {
-    v[0] = orgRound(1 - v[0], 10)
-  })
-  terrain.reverse() // 線分の向きを揃える
-  return terrain
-}
-const rotationTerrain = array => {
-  const terrain = JSON.parse(JSON.stringify(array))
-  terrain.forEach(v => {
-    v[0] -= .5
-    v[1] -= .5
-    ;[v[0], v[1]] = [
-      orgRound(v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2), 10),
-      orgRound(v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2), 10),]
-    v[0] += .5
-    v[1] += .5
-  })
-  return terrain
-}
-let id = 1
-terrainList.forEach(v => {
-  for (let i = 0; i < 4; i++) {
-    if (i === 0) {
-      terrainObject[id] = JSON.parse(JSON.stringify(v))
-    } else terrainObject[id] = rotationTerrain(terrainObject[id - 2])
-    id++
-    terrainObject[id] = inversionTerrain(terrainObject[id - 1])
-    id++
+{
+  const terrainList = [
+    [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
+    [[0, 0], [1, 0]], // platform
+    [[1, 0], [1, 1], [0, 1],], // triangle
+    [[1, .5], [1, 1], [0, 1],], // 22.5 low
+    [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
+    [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
+    [[1, 0], [1, .5], [0, .5],], // 22.5 harf
+    [[1, .5], [1, 1], [.5, 1],], // small triangle
+    [[0, .5], [.5, 0], [1, 0], [1, 1], [0, 1]], // chip rectangle
+  ]
+  const inversionTerrain = array => {
+    const terrain = JSON.parse(JSON.stringify(array))
+    terrain.forEach(v => {
+      v[0] = orgRound(1 - v[0], 10)
+    })
+    terrain.reverse() // 線分の向きを揃える
+    return terrain
   }
-})
+  const rotationTerrain = array => {
+    const terrain = JSON.parse(JSON.stringify(array))
+    terrain.forEach(v => {
+      v[0] -= .5
+      v[1] -= .5
+      ;[v[0], v[1]] = [
+        orgRound(v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2), 10),
+        orgRound(v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2), 10),]
+      v[0] += .5
+      v[1] += .5
+    })
+    return terrain
+  }
+  let id = 1
+  terrainList.forEach(v => {
+    for (let i = 0; i < 4; i++) {
+      if (i === 0) {
+        terrainObject[id] = JSON.parse(JSON.stringify(v))
+      } else terrainObject[id] = rotationTerrain(terrainObject[id - 2])
+      id++
+      terrainObject[id] = inversionTerrain(terrainObject[id - 1])
+      id++
+    }
+  })
+}
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
 let elasticModulus = 0 // 0 to 1

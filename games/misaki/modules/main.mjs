@@ -453,7 +453,7 @@ const voiceVolumeHandler = voice => {
 const musicVolumeHandler = music => {
   music.volume = settings.volume.master * settings.volume.music
 }
-const volumeHandler = () => {
+const volumeController = () => {
   Object.keys(audio).forEach(v => {
     Object.keys(audio[v]).forEach(vl => {
       if (v === 'misaki') {
@@ -470,7 +470,7 @@ Object.keys(settings.volume).forEach(v => {
   document.getElementById(`${v}Input`).addEventListener('input', e => {
     document.getElementById(`${v}Output`).value = e.target.value * 100|0
     settings.volume[v] = setStorage(v, e.target.value, false)
-    volumeHandler()
+    volumeController()
   })
 })
 let imageStat = {
@@ -527,8 +527,6 @@ let menuCloseTimestamp = 0
 const screenList = ['title', 'main']
 let screenState = screenList[1]
 let mapData = {name: directoryList[0], w: 0, h: 0, checkPoint: {x: 0, y: 0}}
-let field = []
-let fieldArray = []
 let gate = []
 const aftergrowLimit = {
   gate: 240,
@@ -593,250 +591,7 @@ const setMapProcess = arg => {
   getColor(mapObject[arg])
   getMusic(mapObject[arg])
 }
-const frameCounter = list => {
-  const now = Date.now()
-  list.push(now)
-  let flag = true
-  do {
-    if (list[0] + 1e3 < now) list.shift()
-    else flag = false
-  } while (flag)
-}
-const input = () => {
-  if (isKeyFirst(keyMap.collision)) collisionDisp = !collisionDisp
-  if (isKeyFirst(keyMap.subElasticModulus) && 0 < elasticModulus) {
-    elasticModulus = orgRound(elasticModulus - .1, 10)
-  }
-  if (isKeyFirst(keyMap.addElasticModulus) && elasticModulus < 1) {
-    elasticModulus = orgRound(elasticModulus + .1, 10)
-  }
-  if (isKeyFirst(keyMap.subFrictionalForce) && 0 < userFF) {
-    userFF = orgRound(userFF - .1, 10)
-  }
-  if (isKeyFirst(keyMap.addFrictionalForce) && userFF < 1) {
-    userFF = orgRound(userFF + .1, 10)
-  }
-  if (isKeyFirst(keyMap.gravity)) gravityFlag = !gravityFlag
-  if (!gravityFlag) {
-    player.dx = 0
-    player.dy = 0
-    const num = 10
-    if (isKey(keyMap.left)) player.dx -= moveAcceleration * intervalDiffTime * num
-    if (isKey(keyMap.right)) player.dx += moveAcceleration * intervalDiffTime * num
-    if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
-    if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
-  }
-  if (isKey(keyMap.accel)) moveConstant = dashConstant
-  else moveConstant = normalConstant
-  if (isKey(keyMap.left)) {
-    if (-moveConstant < player.dx - moveAcceleration) {
-      player.dx -= moveAcceleration * intervalDiffTime
-    } else player.dx = -moveConstant
-  }
-  if (isKey(keyMap.right)) {
-    if (player.dx + moveAcceleration < moveConstant) {
-      player.dx += moveAcceleration * intervalDiffTime
-    } else player.dx = moveConstant
-  }
-  if (isKeyFirst(keyMap.jump)) {
-    if (player.landFlag && jumpTrigger.flag) player.dy = -jumpConstant
-    player.landFlag = false
-  }
-}
-const collisionResponse = tilt => {
-  const nX = Math.cos(tilt * Math.PI)
-  const nY = Math.sin(tilt * Math.PI)
-  const t = -(
-    player.dx * nX + player.dy * nY) / (
-    nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
-  player.dx += 2 * t * nX
-  player.dy += 2 * t * nY
-  if (tilt <= 1) frictionalForce = wallFF
-  player.dx *= 1 - frictionalForce
-  player.dy *= 1 - frictionalForce
-}
-const collisionDetect = () => {
-  let count = 0
-  let onetimeLandFlag = false
-  let repeatFlag
-  do {
-    count++
-    if (3 < count) {
-      player.dx = 0
-      player.dy = 0
-    }
-    repeatFlag = false
-    const collisionFn = collisionIndex => {
-      for (let x = 0; x < mapObject[mapData.name].layers[collisionIndex].width; x++) {
-        for (let y = 0; y < mapObject[mapData.name].layers[collisionIndex].height; y++) {
-          const id =
-            mapObject[mapData.name].layers[collisionIndex].data[
-              y * mapObject[mapData.name].layers[collisionIndex].width + x] -
-            mapObject[mapData.name].tilesets[mapObject[
-              mapData.name].tilesetsIndex.collision.index].firstgid + 1
-          let terrainIndex
-          terrainIndex = 0 < id ? id : '0'
-          terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
-            if (ro.rength === 0) return
-            if (terrainObject[terrainIndex].length === 1) return
-            const rp = terrainObject[terrainIndex].slice(i - 1)[0]
-            const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
-              terrainObject[terrainIndex][0] : terrainObject[terrainIndex].slice(i + 1)[0]
-            let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
-            const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
-            const findVertexList = [
-              [0, 0, [-1, 0], [-1, -1]],
-              [0, 1, [1, 0], [1, 1]],
-              [1, 0, [0, -1], [1, -1]],
-              [1, 1, [0, 1], [-1, 1]],
-            ]
-            let vertexFlag = false
-            let returnFlag = false
-            findVertexList.forEach((vl, i) => {
-              if (ro[vl[0]] === vl[1]) {
-                const target = terrainObject[mapObject[mapData.name].layers[collisionIndex].data[(
-                  y + vl[2][1]) * mapObject[mapData.name].layers[collisionIndex].width + x + vl[2][0]] -
-                  mapObject[mapData.name].tilesets[mapObject[mapData.name].
-                  tilesetsIndex.collision.index].firstgid + 1]
-                if (target === undefined) return
-                const vertex = i === 0 ? [1, ro[1]] :
-                i === 1 ? [0, ro[1]] :
-                i === 2 ? [ro[0], 1] : [ro[0], 0]
-                // x, y それぞれ0, 1が含まれている隣を調べる
-                const index = target.findIndex(val => {
-                  return val[0] === vertex[0] && val[1] === vertex[1]
-                })
-                if (index !== -1) {
-                  const previousIndex = index === 0 ? target.length - 1 : index - 1
-                  const nextIndex = index === target.length - 1 ? 0 : index + 1
-                  const previousVertex = i === 0 ? [1, rn[1]] :
-                  i === 1 ? [0, rn[1]] :
-                  i === 2 ? [rn[0], 1] : [rn[0], 0]
-                  if ( // 隣に同じ線分があったら、この線分の判定は無効
-                    (ro[0] === rn[0] || ro[1] === rn[1]) &&
-                    target[previousIndex][0] === previousVertex[0] &&
-                    target[previousIndex][1] === previousVertex[1]
-                  ) returnFlag = true
-                  const cPreviousTilt = Math.atan2(
-                    target[index][1] - target[previousIndex][1],
-                    target[index][0] - target[previousIndex][0]) / Math.PI
-                  const cNextTilt = Math.atan2(
-                    target[nextIndex][1] - target[index][1],
-                    target[nextIndex][0] - target[index][0]) / Math.PI
-                  if (
-                    target.length !== 2 && (
-                    tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
-                    tilt === cNextTilt || previousTilt === cNextTilt)
-                  ) vertexFlag = true
-                }
-              }
-            })
-            if (returnFlag) return
-            const ox = player.x
-            const oy = player.y
-            const dx = player.dx
-            const dy = player.dy
-            const ax = x * size + ro[0] * size
-            const ay = y * size + ro[1] * size
-            const bx = x * size + rn[0] * size
-            const by = y * size + rn[1] * size
-            const abx = bx - ax
-            const aby = by - ay
-            let nx = -aby
-            let ny = abx
-            let length = (nx ** 2 + ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            ny *= length
-            if (!onetimeLandFlag) {
-              const d = -(ax * nx + ay * ny)
-              const tm = -(nx * (ox - jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
-                nx * dx + ny * (dy + jumpTrigger.h))
-              if (0 < tm && tm <= 1) {
-                const cx = (ox - jumpTrigger.w / 2) + dx * tm
-                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tm
-                const acx = cx - ax
-                const acy = cy - ay
-                const bcx = cx - bx
-                const bcy = cy - by
-                const doc = acx * bcx + acy * bcy
-                if (doc <= 0) onetimeLandFlag = true
-              }
-              const tp = -(nx * (ox + jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
-                nx * dx + ny * (dy + jumpTrigger.h))
-              if (0 < tp && tp <= 1) {
-                const cx = (ox + jumpTrigger.w / 2) + dx * tp
-                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tp
-                const acx = cx - ax
-                const acy = cy - ay
-                const bcx = cx - bx
-                const bcy = cy - by
-                const doc = acx * bcx + acy * bcy
-                if (doc <= 0) onetimeLandFlag = true
-              }
-            }
-            let nax = ax - nx * collisionRange
-            let nay = ay - ny * collisionRange
-            let nbx = bx - nx * collisionRange
-            let nby = by - ny * collisionRange
-            const d = -(nax * nx + nay * ny)
-            const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
-            let detectFlag = false
-            if (0 < t && t <= 1) {
-              const cx = ox + dx * t
-              const cy = oy + dy * t
-              const acx = cx - nax
-              const acy = cy - nay
-              const bcx = cx - nbx
-              const bcy = cy - nby
-              const doc = acx * bcx + acy * bcy
-              if (doc <= 0) {
-                detectFlag = true
-                tilt += tilt < .5 ? 1.5 : -.5
-                if (1 < tilt) player.landFlag = true
-              }
-            }
-            if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
-            if (terrainObject[terrainIndex].length === 2) vertexFlag = true
-            if (
-              !detectFlag &&
-              !vertexFlag &&
-              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= collisionRange ** 2
-            ) {
-              tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-              if (tilt < 0) player.landFlag = true
-              detectFlag = true
-            }
-            if (detectFlag) {
-              collisionResponse(tilt)
-              repeatFlag = true
-            }
-          })
-        }
-      }
-    }
-    mapObject[mapData.name].layersIndex.collision.forEach(v => collisionFn(v))
-  } while(repeatFlag)
-  player.x += player.dx
-  player.y += player.dy
-  jumpTrigger.flag = onetimeLandFlag
-}
-const mapObjectProcess = () => {
-  mapObject[mapData.name].layers[mapObject[mapData.name].layersIndex.objectgroup].objects.forEach(v => {
-    if (v.name === 'gate' &&
-      v.x < player.x && player.x < v.x + v.width &&
-      v.y < player.y && player.y < v.y + v.height
-    ) {
-      v.properties.forEach(vl => {
-        if (vl.name === 'address') setMapProcess(vl.value)
-      })
-    }
-  })
-}
-const stateUpdate = () => {
-  player.dy += gravitationalAcceleration * coefficient * intervalDiffTime
-  frictionalForce = userFF
-}
+
 const setStage = arg => {
   const mapData = {
     Opening: [
@@ -1182,24 +937,12 @@ const setStage = arg => {
       '111111111111111111111111111111111111111111111111111111'
     ]
   }
-  fieldArray = mapData[arg]
-  fieldArray.unshift('0'.repeat(mapData[arg][0].length))
-  fieldArray.push('0'.repeat(mapData[arg][0].length))
-  // stage = {
-  //   name: arg,
-  //   w: size * mapData[arg][0].length,
-  //   h: size * mapData[arg].length
-  // }
-  field = []
   enemies = []
-  const setGround = (x, y, w, h, id) => {
-    field.push({x: x * size, y: y * size, w: w * size, h: h * size, id: id})
-  }
-  mapData[arg].forEach((v, i) => {
-    for (let j = 0; j < mapData[arg][0].length; j++) {
-      if (v[j] === '1') setGround(j, i, 1, 1, 5 * Math.random()|0)
-    }
-  })
+  // mapData[arg].forEach((v, i) => {
+  //   for (let j = 0; j < mapData[arg][0].length; j++) {
+  //     if (v[j] === '1') setGround(j, i, 1, 1, 5 * Math.random()|0)
+  //   }
+  // })
   if (arg === 'DebugRoom') {
     let interval = 150
     for (let i = 12 ; 0 < i; i--) {
@@ -1335,13 +1078,57 @@ const setStage = arg => {
   }
   aftergrow.gate = aftergrowLimit.gate
 }
-setStage('Opening')
-const enterGate = (stage, x, y) => {
-  setStage(stage)
-  player.x = x
-  player.y = y
+
+const frameCounter = list => {
+  const now = Date.now()
+  list.push(now)
+  let flag = true
+  do {
+    if (list[0] + 1e3 < now) list.shift()
+    else flag = false
+  } while (flag)
 }
-const modelUpdate = () => {
+const input = () => {
+  if (isKeyFirst(keyMap.collision)) collisionDisp = !collisionDisp
+  if (isKeyFirst(keyMap.subElasticModulus) && 0 < elasticModulus) {
+    elasticModulus = orgRound(elasticModulus - .1, 10)
+  }
+  if (isKeyFirst(keyMap.addElasticModulus) && elasticModulus < 1) {
+    elasticModulus = orgRound(elasticModulus + .1, 10)
+  }
+  if (isKeyFirst(keyMap.subFrictionalForce) && 0 < userFF) {
+    userFF = orgRound(userFF - .1, 10)
+  }
+  if (isKeyFirst(keyMap.addFrictionalForce) && userFF < 1) {
+    userFF = orgRound(userFF + .1, 10)
+  }
+  if (isKeyFirst(keyMap.gravity)) gravityFlag = !gravityFlag
+  if (!gravityFlag) {
+    player.dx = 0
+    player.dy = 0
+    const num = 10
+    if (isKey(keyMap.left)) player.dx -= moveAcceleration * intervalDiffTime * num
+    if (isKey(keyMap.right)) player.dx += moveAcceleration * intervalDiffTime * num
+    if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
+    if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
+  }
+  if (isKey(keyMap.accel)) moveConstant = dashConstant
+  else moveConstant = normalConstant
+  if (isKey(keyMap.left)) {
+    if (-moveConstant < player.dx - moveAcceleration) {
+      player.dx -= moveAcceleration * intervalDiffTime
+    } else player.dx = -moveConstant
+  }
+  if (isKey(keyMap.right)) {
+    if (player.dx + moveAcceleration < moveConstant) {
+      player.dx += moveAcceleration * intervalDiffTime
+    } else player.dx = moveConstant
+  }
+  if (isKeyFirst(keyMap.jump)) {
+    if (player.landFlag && jumpTrigger.flag) player.dy = -jumpConstant
+    player.landFlag = false
+  }
+
   let keyFirstFlag = {
     attack: keyMap.attack.some(v => key[v].isFirst()),
     jump: keyMap.jump.some(v => key[v].isFirst()),
@@ -1525,6 +1312,18 @@ const modelUpdate = () => {
       // }
     }
   }
+  if (false && !menuFlag) { // gate process
+    gate.forEach(v => {
+      if (
+        player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
+        player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
+      ) {
+        if (keyMap.up.some(v => key[v].flag)) {
+          enterGate(v.stage, v.address.x, v.address.y)
+        }
+      }
+    })
+  }
   if (false && !menuFlag) inGameInputProcess()
   Object.keys(toggle).forEach(v => {
     if (key[toggle[v]].isFirst()) {
@@ -1532,362 +1331,198 @@ const modelUpdate = () => {
       inputDOM[v].checked = !inputDOM[v].checked
     }
   })
-  if (false) {
-    if (player.state === 'slide') { // collision detect
-      player.hitbox.x = player.x - size * 1.375
-      player.hitbox.y = player.y - size
-      player.hitbox.w = size * 2.75
-      player.hitbox.h = size
-    } else {
-      player.hitbox.x = player.x - size / 2
-      player.hitbox.y = player.y - size * 2.75
-      player.hitbox.w = size
-      player.hitbox.h = size * 2.75
-    }
-    let aerialFlag = true
-    if (player.dx !== 0) player.wallFlag = false
-    let flag = false // TODO: implementation ASAP
-    do {
-      fieldArray.forEach((y, iY) => {
-        for (let iX = 0; iX < fieldArray[0].length; iX++) {
-          if (y[iX] === '1') {
-            if (0 < player.dy && fieldArray[iY - 1][iX] !== '1') { // floor
-              const ax = iX * size - player.hitbox.w / 2
-              const ay = iY * size
-              const bx = iX * size + size + player.hitbox.w / 2
-              const by = iY * size
-              const abx = bx - ax
-              const aby = by - ay
-              let nx = -aby
-              let ny = abx
-              let length = (nx ** 2 + ny ** 2) ** .5
-              if (0 < length) length = 1 / length
-              nx *= length
-              ny *= length
-              const d = -(ax * nx + ay * ny)
-              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-              if (0 < t && t <= 1) {
-                const cx = player.x + player.dx * t
-                const cy = player.y + player.dy * t
-                const acx = cx - ax
-                const acy = cy - ay
-                const bcx = cx - bx
-                const bcy = cy - by
-                const doc = acx * bcx + acy * bcy
-                if (doc < 0) {
-                  player.y = iY * size - gravityConstant + 1e-12
-                  player.dy = 0
-                  aerialFlag = false
-                }
-              }
-            }
-            if (player.dy < 0 && fieldArray[iY + 1][iX] !== '1') { // ceiling
-              const ax = iX * size - player.hitbox.w / 2
-              const ay = iY * size + size + player.hitbox.h
-              const bx = iX * size + size + player.hitbox.w / 2
-              const by = iY * size + size + player.hitbox.h
-              const abx = bx - ax
-              const aby = by - ay
-              let nx = -aby
-              let ny = abx
-              let length = (nx ** 2 + ny ** 2) ** .5
-              if (0 < length) length = 1 / length
-              nx *= length
-              ny *= length
-              const d = -(ax * nx + ay * ny)
-              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-              if (0 < t && t <= 1) {
-                const cx = player.x + player.dx * t
-                const cy = player.y + player.dy * t
-                const acx = cx - ax
-                const acy = cy - ay
-                const bcx = cx - bx
-                const bcy = cy - by
-                const doc = acx * bcx + acy * bcy
-                if (doc < 0) {
-                  player.y = iY * size + size + player.hitbox.h
-                  player.dy = 0
-                }
-              }
-            }
-            if (0 < player.dx && y[iX - 1] !== '1') { // right wall
-              const ax = iX * size - player.hitbox.w / 2
-              const ay = iY * size
-              const bx = iX * size - player.hitbox.w / 2
-              const by = iY * size + size + player.hitbox.h
-              const abx = bx - ax
-              const aby = by - ay
-              let nx = -aby
-              let ny = abx
-              let length = (nx ** 2 + ny ** 2) ** .5
-              if (0 < length) length = 1 / length
-              nx *= length
-              ny *= length
-              const d = -(ax * nx + ay * ny)
-              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-              if (0 < t && t <= 1) {
-                const cx = player.x + player.dx * t
-                const cy = player.y + player.dy * t
-                const acx = cx - ax
-                const acy = cy - ay
-                const bcx = cx - bx
-                const bcy = cy - by
-                const doc = acx * bcx + acy * bcy
-                if (doc < 0) {
-                  player.x = iX * size - player.hitbox.w / 2 - 1
-                  player.dx = 0
-                  player.wallFlag = 'left'
-                }
-              }
-            } else if (player.dx !== 0 && y[iX + 1] !== '1') { // left wall
-              const ax = iX * size + size + player.hitbox.w / 2
-              const ay = iY * size
-              const bx = iX * size + size + player.hitbox.w / 2
-              const by = iY * size + size + player.hitbox.h
-              const abx = bx - ax
-              const aby = by - ay
-              let nx = -aby
-              let ny = abx
-              let length = (nx ** 2 + ny ** 2) ** .5
-              if (0 < length) length = 1 / length
-              nx *= length
-              ny *= length
-              const d = -(ax * nx + ay * ny)
-              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-              if (0 < t && t <= 1) {
-                const cx = player.x + player.dx * t
-                const cy = player.y + player.dy * t
-                const acx = cx - ax
-                const acy = cy - ay
-                const bcx = cx - bx
-                const bcy = cy - by
-                const doc = acx * bcx + acy * bcy
-                if (doc < 0) {
-                  player.x = iX * size + size + player.hitbox.w / 2 + 1
-                  player.dx = 0
-                  player.wallFlag = 'right'
-                }
-              }
-            }
-          }
-          if (
-            player.hitbox.x <= iX * size + size && iX * size <= player.hitbox.x + player.hitbox.w &&
-            player.hitbox.y <= iY * size + size && iY * size <= player.hitbox.y + player.hitbox.h &&
-            player.state === 'slide'
-          ) player.dx = 0
-        }
-      })
-    } while (flag)
-  }
-  if (false) { // enemy update
-    if (enemies.length < 1 && mapData.name === 'BattleField') {
-      const x = mapData.w * 3 / 4
-      const y = mapData.h * 15 / 16
-      enemies.push({
-        type: 'enemy',
-        x: x,
-        y: y,
-        minXRange: mapData.w * 1 / 4,
-        maxXRange: mapData.w * 3 / 8,
-        direction: 'left',
-        image: 0,
-        imageTimer: 0,
-        state: 'walk',
-        hitbox: {x: x - size * .5, y: y - size * 2.75, w: size, h: size * 2.75},
-        attackBox: {x: 0, y: 0, w: 0, h: 0},
-        life: 3,
-        invincibleTimer: 0
+  mapObject[mapData.name].layers[mapObject[mapData.name].layersIndex.objectgroup].objects.forEach(v => {
+    if (v.name === 'gate' &&
+      v.x < player.x && player.x < v.x + v.width &&
+      v.y < player.y && player.y < v.y + v.height
+    ) {
+      v.properties.forEach(vl => {
+        if (vl.name === 'address') setMapProcess(vl.value)
       })
     }
-    enemies.forEach((v, i) => {
-      if (v.type === 'object') {
-        const aftdx = evlt(v.dx)
-        const aftdy = evlt(v.dy)
-        const dx = aftdx - evlt(v.dx)
-        const dy = aftdy - evlt(v.dy)
-        const X = player.dx - dx
-        const Y = player.dy - dy
-        const axFloor = v.x + evlt(v.dx) - player.hitbox.w / 2 // y coordinate
-        const ayFloor = v.y + evlt(v.dy)
-        const bxFloor = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
-        const byFloor = v.y + evlt(v.dy)
-        const abxFloor = bxFloor - axFloor
-        const abyFloor = byFloor - ayFloor
-        let nxFloor = -abyFloor
-        let nyFloor = abxFloor
-        let lengthFloor = (nxFloor ** 2 + nyFloor ** 2) ** .5
-        if (0 < lengthFloor) lengthFloor = 1 / lengthFloor
-        nxFloor *= lengthFloor
-        nyFloor *= lengthFloor
-        const dFloor = -(axFloor * nxFloor + ayFloor * nyFloor)
-        const tFloor = -(
-          nxFloor * player.x + nyFloor * player.y + dFloor) / (
-          nxFloor * X + nyFloor * Y
-        )
-        const cxFloor = player.x + X * tFloor
-        const cyFloor = player.y + Y * tFloor
-        const acxFloor = cxFloor - axFloor
-        const acyFloor = cyFloor - ayFloor
-        const bcxFloor = cxFloor - bxFloor
-        const bcyFloor = cyFloor - byFloor
-        const docFloor = acxFloor * bcxFloor + acyFloor * bcyFloor
-        const axCeiling = v.x + evlt(v.dx) - player.hitbox.w / 2
-        const ayCeiling = v.y + v.h + evlt(v.dy) + player.hitbox.h
-        const bxCeiling = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
-        const byCeiling = v.y + v.h + evlt(v.dy) + player.hitbox.h
-        const abxCeiling = bxCeiling - axCeiling
-        const abyCeiling = byCeiling - ayCeiling
-        let nxCeiling = -abyCeiling
-        let nyCeiling = abxCeiling
-        let lengthCeiling = (nxCeiling ** 2 + nyCeiling ** 2) ** .5
-        if (0 < lengthCeiling) lengthCeiling = 1 / lengthCeiling
-        nxCeiling *= lengthCeiling
-        nyCeiling *= lengthCeiling
-        const dCeiling = -(axCeiling * nxCeiling + ayCeiling * nyCeiling)
-        const tCeiling = -(nxCeiling * player.x + nyCeiling * player.y + dCeiling) / (
-          nxCeiling * X + nyCeiling * Y
-        )
-        const cxCeiling = player.x + X * tCeiling
-        const cyCeiling = player.y + Y * tCeiling
-        const acxCeiling = cxCeiling - axCeiling
-        const acyCeiling = cyCeiling - ayCeiling
-        const bcxCeiling = cxCeiling - bxCeiling
-        const bcyCeiling = cyCeiling - byCeiling
-        const docCeiling = acxCeiling * bcxCeiling + acyCeiling * bcyCeiling
-        if (docFloor < 0 && 0 < tFloor && tFloor <= 1 && tFloor < tCeiling) {
-          player.y = v.y + evlt(v.dy) - gravityConstant / 2 + 1e-12
-          player.dy = dy
-          player.x += dx
-          aerialFlag = false
-        } else if (docCeiling < 0 && 0 < tCeiling && tCeiling <= 1) {
-          player.y = v.y + v.h + evlt(v.dy) + player.hitbox.h
-          player.dy = 0 < dy ? dy : 0
-        }
-        if (0 < X) { // left wall
-          const axLeft = v.x + evlt(v.dx) - player.hitbox.w / 2
-          const ayLeft = v.y + evlt(v.dy)
-          const bxLeft = v.x + evlt(v.dx) - player.hitbox.w / 2
-          const byLeft = v.y + v.h + evlt(v.dy) + player.hitbox.h
-          const abxLeft = bxLeft - axLeft
-          const abyLeft = byLeft - ayLeft
-          let nxLeft = -abyLeft
-          let nyLeft = abxLeft
-          let lengthLeft = (nxLeft ** 2 + nyLeft ** 2) ** .5
-          if (0 < lengthLeft) lengthLeft = 1 / lengthLeft
-          nxLeft *= lengthLeft
-          nyLeft *= lengthLeft
-          const dLeft = -(axLeft * nxLeft + ayLeft * nyLeft)
-          const tLeft = -(nxLeft * player.x + nyLeft * player.y + dLeft) / (nxLeft * X + nyLeft * Y)
-          if (0 < tLeft && tLeft <= 1) {
-            const cxLeft = player.x + player.dx * tLeft
-            const cyLeft = player.y + player.dy * tLeft
-            const acxLeft = cxLeft - axLeft
-            const acyLeft = cyLeft - ayLeft
-            const bcxLeft = cxLeft - bxLeft
-            const bcyLeft = cyLeft - byLeft
-            const docLeft = acxLeft * bcxLeft + acyLeft * bcyLeft
-            if (docLeft < 0) {
-              player.x = v.x + evlt(v.dx) + dx - player.hitbox.w / 2 - 1
-              player.dx = 0
-              player.wallFlag = 'left'
+  })
+}
+const collisionResponse = tilt => {
+  const nX = Math.cos(tilt * Math.PI)
+  const nY = Math.sin(tilt * Math.PI)
+  const t = -(
+    player.dx * nX + player.dy * nY) / (
+    nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
+  player.dx += 2 * t * nX
+  player.dy += 2 * t * nY
+  if (tilt <= 1) frictionalForce = wallFF
+  player.dx *= 1 - frictionalForce
+  player.dy *= 1 - frictionalForce
+}
+const collisionDetect = () => {
+  let count = 0
+  let onetimeLandFlag = false
+  let repeatFlag
+  do {
+    count++
+    if (3 < count) {
+      player.dx = 0
+      player.dy = 0
+    }
+    repeatFlag = false
+    const collisionFn = collisionIndex => {
+      for (let x = 0; x < mapObject[mapData.name].layers[collisionIndex].width; x++) {
+        for (let y = 0; y < mapObject[mapData.name].layers[collisionIndex].height; y++) {
+          const id =
+            mapObject[mapData.name].layers[collisionIndex].data[
+              y * mapObject[mapData.name].layers[collisionIndex].width + x] -
+            mapObject[mapData.name].tilesets[mapObject[
+              mapData.name].tilesetsIndex.collision.index].firstgid + 1
+          let terrainIndex
+          terrainIndex = 0 < id ? id : '0'
+          terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
+            if (ro.rength === 0) return
+            if (terrainObject[terrainIndex].length === 1) return
+            const rp = terrainObject[terrainIndex].slice(i - 1)[0]
+            const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
+              terrainObject[terrainIndex][0] : terrainObject[terrainIndex].slice(i + 1)[0]
+            let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
+            const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
+            const findVertexList = [
+              [0, 0, [-1, 0], [-1, -1]],
+              [0, 1, [1, 0], [1, 1]],
+              [1, 0, [0, -1], [1, -1]],
+              [1, 1, [0, 1], [-1, 1]],
+            ]
+            let vertexFlag = false
+            let returnFlag = false
+            findVertexList.forEach((vl, i) => {
+              if (ro[vl[0]] === vl[1]) {
+                const target = terrainObject[mapObject[mapData.name].layers[collisionIndex].data[(
+                  y + vl[2][1]) * mapObject[mapData.name].layers[collisionIndex].width + x + vl[2][0]] -
+                  mapObject[mapData.name].tilesets[mapObject[mapData.name].
+                  tilesetsIndex.collision.index].firstgid + 1]
+                if (target === undefined) return
+                const vertex = i === 0 ? [1, ro[1]] :
+                i === 1 ? [0, ro[1]] :
+                i === 2 ? [ro[0], 1] : [ro[0], 0]
+                // x, y それぞれ0, 1が含まれている隣を調べる
+                const index = target.findIndex(val => {
+                  return val[0] === vertex[0] && val[1] === vertex[1]
+                })
+                if (index !== -1) {
+                  const previousIndex = index === 0 ? target.length - 1 : index - 1
+                  const nextIndex = index === target.length - 1 ? 0 : index + 1
+                  const previousVertex = i === 0 ? [1, rn[1]] :
+                  i === 1 ? [0, rn[1]] :
+                  i === 2 ? [rn[0], 1] : [rn[0], 0]
+                  if ( // 隣に同じ線分があったら、この線分の判定は無効
+                    (ro[0] === rn[0] || ro[1] === rn[1]) &&
+                    target[previousIndex][0] === previousVertex[0] &&
+                    target[previousIndex][1] === previousVertex[1]
+                  ) returnFlag = true
+                  const cPreviousTilt = Math.atan2(
+                    target[index][1] - target[previousIndex][1],
+                    target[index][0] - target[previousIndex][0]) / Math.PI
+                  const cNextTilt = Math.atan2(
+                    target[nextIndex][1] - target[index][1],
+                    target[nextIndex][0] - target[index][0]) / Math.PI
+                  if (
+                    target.length !== 2 && (
+                    tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
+                    tilt === cNextTilt || previousTilt === cNextTilt)
+                  ) vertexFlag = true
+                }
+              }
+            })
+            if (returnFlag) return
+            const ox = player.x
+            const oy = player.y
+            const dx = player.dx
+            const dy = player.dy
+            const ax = x * size + ro[0] * size
+            const ay = y * size + ro[1] * size
+            const bx = x * size + rn[0] * size
+            const by = y * size + rn[1] * size
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            if (!onetimeLandFlag) {
+              const d = -(ax * nx + ay * ny)
+              const tm = -(nx * (ox - jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+                nx * dx + ny * (dy + jumpTrigger.h))
+              if (0 < tm && tm <= 1) {
+                const cx = (ox - jumpTrigger.w / 2) + dx * tm
+                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tm
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc <= 0) onetimeLandFlag = true
+              }
+              const tp = -(nx * (ox + jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+                nx * dx + ny * (dy + jumpTrigger.h))
+              if (0 < tp && tp <= 1) {
+                const cx = (ox + jumpTrigger.w / 2) + dx * tp
+                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tp
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc <= 0) onetimeLandFlag = true
+              }
             }
-          }
-        } else if (X !== 0) { // right wall
-          const ax = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
-          const ay = v.y + evlt(v.dy)
-          const bx = v.x + v.w + evlt(v.dx) + player.hitbox.w / 2
-          const by = v.y + v.h + evlt(v.dy) + player.hitbox.h
-          const abx = bx - ax
-          const aby = by - ay
-          let nx = -aby
-          let ny = abx
-          let length = (nx ** 2 + ny ** 2) ** .5
-          if (0 < length) length = 1 / length
-          nx *= length
-          ny *= length
-          const d = -(ax * nx + ay * ny)
-          const t = -(nx * player.x + ny * player.y + d) / (nx * X + ny * Y)
-          if (0 < t && t <= 1) {
-            const cx = player.x + player.dx * t
-            const cy = player.y + player.dy * t
-            const acx = cx - ax
-            const acy = cy - ay
-            const bcx = cx - bx
-            const bcy = cy - by
-            const doc = acx * bcx + acy * bcy
-            if (doc < 0) {
-              player.x = v.x + v.w + evlt(v.dx) + dx + player.hitbox.w / 2 + 1
-              player.dx = 0
-              player.wallFlag = 'right'
+            let nax = ax - nx * collisionRange
+            let nay = ay - ny * collisionRange
+            let nbx = bx - nx * collisionRange
+            let nby = by - ny * collisionRange
+            const d = -(nax * nx + nay * ny)
+            const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
+            let detectFlag = false
+            if (0 < t && t <= 1) {
+              const cx = ox + dx * t
+              const cy = oy + dy * t
+              const acx = cx - nax
+              const acy = cy - nay
+              const bcx = cx - nbx
+              const bcy = cy - nby
+              const doc = acx * bcx + acy * bcy
+              if (doc <= 0) {
+                detectFlag = true
+                tilt += tilt < .5 ? 1.5 : -.5
+                if (1 < tilt) player.landFlag = true
+              }
             }
-          }
+            if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
+            if (terrainObject[terrainIndex].length === 2) vertexFlag = true
+            if (
+              !detectFlag &&
+              !vertexFlag &&
+              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= collisionRange ** 2
+            ) {
+              tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
+              if (tilt < 0) player.landFlag = true
+              detectFlag = true
+            }
+            if (detectFlag) {
+              collisionResponse(tilt)
+              repeatFlag = true
+            }
+          })
         }
-      } else if (v.type === 'enemy') {
-        let flag = false
-        v.hitbox = v.state === 'damage'
-        ? {x: v.x - size * 1, y: v.y - size, w: size * 2, h: size}
-        : {x: v.x - size * .5, y: v.y - size * 2.75, w: size, h: size * 2.75}
-        field.forEach(obj => {
-          if (
-            v.hitbox.x <= obj.x + obj.w && obj.x <= v.hitbox.x + v.hitbox.w &&
-            v.hitbox.y <= obj.y + obj.h && obj.y <= v.hitbox.y + v.hitbox.h
-          ) flag = true
-        })
-        if (!flag) v.y += 1
-        const moveConstant = .7
-        const gap = size * 2
-        if (v.state === 'walk' || v.state === 'idle') {
-          if (player.x + gap < v.x) {
-            v.x -= moveConstant
-            v.state = 'walk'
-          } else if (v.x + gap < player.x) {
-            v.x += moveConstant
-            v.state = 'walk'
-          } else {
-            if (v.state === 'walk') v.image = 0
-            if (v.state !== 'idle') v.state = 'sword'
-          }
-          v.direction = player.x < v.x ? 'left' : 'right'
-        }
-        if (0 < v.invincibleTimer) v.invincibleTimer -= 1
-        if (
-          v.invincibleTimer === 0 &&
-          v.hitbox.x < player.attackBox.x + player.attackBox.w &&
-          player.attackBox.x < v.hitbox.x + v.hitbox.w &&
-          v.hitbox.y <= player.attackBox.y + player.attackBox.h &&
-          player.attackBox.y <= v.hitbox.y + v.hitbox.h
-        ) {
-          v.life -= 1
-          v.invincibleTimer = 30
-          v.state = 'damage'
-        }
-        if (
-          player.invincibleTimer === 0 &&
-          player.hitbox.x < v.attackBox.x + v.attackBox.w &&
-          v.attackBox.x < player.hitbox.x + player.hitbox.w &&
-          player.hitbox.y <= v.attackBox.y + v.attackBox.h &&
-          v.attackBox.y <= player.hitbox.y + player.hitbox.h
-        ) {
-          player.state = 'damage'
-          player.invincibleTimer = 30
-        }
-        if (
-          v.state === 'sword' &&
-          v.image <=  unityChanStat[v.state].startUpLength &&
-          unityChanStat[v.state].activeLength < v.image
-        ) {
-          v.attackBox = {
-            y: v.y - size * 1.5,
-            w: size * 1.5,
-            h: size
-          }
-          const l = size * .5
-          v.attackBox.x = v.direction === 'left' ? v.x - (v.attackBox.w + l) : v.x + l
-        } else v.attackBox = {x: 0, y: 0, w: 0, h: 0}
-        if (v.life <= 0) enemies.splice(i, 1)
       }
-    })
-  }
+    }
+    mapObject[mapData.name].layersIndex.collision.forEach(v => collisionFn(v))
+  } while(repeatFlag)
+  player.x += player.dx
+  player.y += player.dy
+  jumpTrigger.flag = onetimeLandFlag
+}
+const modelUpdate = () => {
+  player.dy += gravitationalAcceleration * coefficient * intervalDiffTime
+  frictionalForce = userFF
   if (false) {
     player.landFlag = aerialFlag ? false : true
     if (player.grapFlag) player.dx = 0
@@ -1944,18 +1579,6 @@ const modelUpdate = () => {
     if (0 < player.invincibleTimer) player.invincibleTimer -= 1
   }
   if (false) {
-    if (!menuFlag) { // gate process
-      gate.forEach(v => {
-        if (
-          player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
-          player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
-        ) {
-          if (keyMap.up.some(v => key[v].flag)) {
-            enterGate(v.stage, v.address.x, v.address.y)
-          }
-        }
-      })
-    }
     if (!menuFlag) {
       const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
       player.direction = ((
@@ -1981,8 +1604,6 @@ const modelUpdate = () => {
       : 'run'
     }
   }
-}
-const viewUpdate = () => {
   if (player.state === 'jump') {
     imageStat.jump.condition = 6 < player.dy ? 7
     :  4 < player.dy ? 6
@@ -2159,205 +1780,6 @@ const viewUpdate = () => {
     }
   })
 }
-const drawInGame = () => {
-  const stageOffset = {x: 0, y: 0}
-  const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
-  stageOffset.x = player.x < ratio.x ? 0 :
-  mapData.w - ratio.x < player.x ? mapData.w - canvas.offsetWidth : ((
-    player.x - ratio.x) / (mapData.w - ratio.x * 2)) * (mapData.w - canvas.offsetWidth)
-  stageOffset.y = player.y < ratio.y ? 0 :
-  mapData.h - ratio.y < player.y ? mapData.h - canvas.offsetHeight : ((
-    player.y - ratio.y) / (mapData.h - ratio.y * 2)) * (mapData.h - canvas.offsetHeight)
-  if (false) { // draw gate
-    context.fillStyle = 'hsl(0, 0%, 25%)'
-    gate.forEach(obj => {
-      context.fillRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
-    })
-    context.strokeStyle = 'hsl(270, 100%, 50%)'
-    gate.forEach(obj => {
-      context.strokeRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
-    })
-  }
-  if (false) { // draw ground
-    const tileset = image.bg.tileset.data[0]
-    field.forEach(obj => {
-      if (obj.w === size && obj.h === size) {
-        if (
-            0 <= obj.y / size - 1 &&
-            0 <= obj.x / size &&
-          fieldArray[obj.y / size - 1][obj.x / size] === '1'
-        ) {
-          context.drawImage(
-            tileset, size * (1+obj.id),
-            size * 10, size, size,
-            obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
-            size, size
-          )
-        } else {
-          context.drawImage(
-            tileset, size * (1+obj.id),
-            size * 9 - size, size, size * 2,
-            obj.x - stageOffset.x|0, obj.y - stageOffset.y - size|0,
-            size, size * 2
-          )
-        }
-      } else {
-        context.drawImage(
-          tileset, size * 33, size * 7, size, size,
-          obj.x - stageOffset.x|0, obj.y - stageOffset.y|0,
-          obj.w|0, obj.h|0
-        )
-      }
-    })
-  }
-  const imageOffset = {x: 64, y: 124}
-  context.fillStyle = 'hsl(30, 100%, 50%)'
-  if (false) enemies.forEach(v => {
-    if (v.type === 'object') {
-      context.fillRect(
-        v.x + evlt(v.dx) - stageOffset.x|0, v.y + evlt(v.dy) - stageOffset.y|0, v.w|0, v.h|0
-      )
-    }
-    if (v.type === 'enemy') {
-      let ex = v.x - imageOffset.x - stageOffset.x
-      const ey = v.y - imageOffset.y - stageOffset.y
-      const img = image.kohaku[v.state].data[v.image]
-      context.save()
-      if (v.direction === 'left') {
-        context.scale(-1, 1)
-        ex = -ex - img.width
-      }
-      context.drawImage(img, ex|0, ey|0)
-      context.restore()
-    }
-  })
-  if (false && 0 < aftergrow.gate) {
-    context.save()
-    context.font = `italic ${size * 2}px sans-serif`
-    const start = 60
-    const alpha = aftergrow.gate < start ? aftergrow.gate / start : 1
-    context.fillStyle = `hsla(0, 0%, 100%, ${alpha})`
-    context.textAlign = 'center'
-    context.fillText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
-    context.strokeStyle = `hsla(0, 0%, 50%, ${alpha})`
-    context.strokeText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
-    context.restore()
-    aftergrow.gate -= 1
-  }
-  let x = player.x - imageOffset.x - stageOffset.x
-  const img = image.misaki[player.state].data[imageStat[player.state].condition]
-  context.save()
-  if (player.direction === 'left') {
-    context.scale(-1, 1)
-    x = -x - img.width
-  }
-  context.drawImage(img, x|0, player.y - imageOffset.y - stageOffset.y|0)
-  context.restore()
-  if (settings.type.hitbox) {
-    context.fillStyle = 'hsla(300, 100%, 50%, .5)'
-    context.fillRect(
-      player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
-      player.hitbox.w|0, player.hitbox.h|0
-    )
-    context.fillRect(
-      player.attackBox.x - stageOffset.x, player.attackBox.y - stageOffset.y,
-      player.attackBox.w, player.attackBox.h
-    )
-    enemies.forEach(v => {
-      if (v.type === 'enemy') {
-        if (v.invincibleTimer === 0) {
-          context.fillStyle = 'hsla(30, 100%, 50%, .5)'
-          context.fillRect(
-            v.hitbox.x - stageOffset.x|0, v.hitbox.y - stageOffset.y|0,
-            v.hitbox.w, v.hitbox.h
-          )
-        }
-        context.fillStyle = 'hsla(0, 100%, 50%, .5)'
-        context.fillRect(
-          v.attackBox.x - stageOffset.x|0, v.attackBox.y - stageOffset.y|0,
-          v.attackBox.w, v.attackBox.h
-        )
-      }
-    })
-    context.fillStyle = 'hsla(180, 100%, 50%, .5)'
-    field.forEach(v => {
-      context.fillRect(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.w|0, v.h|0)
-    })
-  }
-  if (settings.type.status) {
-    const columnOffset = canvas.offsetWidth * .75
-    const rowOffset = size * 8
-    context.fillStyle = 'hsl(240, 100%, 50%)'
-    context.font = `${size}px sans-serif`
-    context.fillText(`stamina: ${player.breathInterval}`, columnOffset, rowOffset + size)
-    context.fillText('cooltime', columnOffset, rowOffset + size * 3)
-    context.fillText(`slide: ${cooltime.slide}`, columnOffset + size * 8, rowOffset + size * 3)
-    context.fillText('double jump :', columnOffset, rowOffset + size * 5)
-    if (jump.double) context.fillText('unenable', columnOffset + size * 8, rowOffset + size * 5)
-    else context.fillText('enable', columnOffset + size * 8, rowOffset + size * 5)
-  }
-  if (settings.type.map) {
-    const multiple = 2
-    const mapSize = {x: canvas.offsetWidth / 5, y: canvas.offsetHeight / 5}
-    const mapOffset = {x: canvas.offsetWidth - mapSize.x - size, y: size}
-    context.fillStyle = 'hsla(0, 0%, 0%, .1)'
-    context.fillRect(mapOffset.x|0, mapOffset.y|0, mapSize.x|0, mapSize.y|0)
-    context.fillStyle = 'hsla(10, 100%, 50%, .4)'
-    const playerSize = {x: 1, y: 3}
-    context.fillRect(
-      mapOffset.x + mapSize.x / 2|0, mapOffset.y + mapSize.y / 2 - multiple * playerSize.y|0,
-      multiple * playerSize.x|0, multiple * playerSize.y|0
-    )
-    context.fillStyle = 'hsla(240, 100%, 50%, .4)'
-    field.forEach(obj => {
-      const X = multiple * (obj.x - player.x) / size
-      const Y = multiple * (obj.y - player.y) / size
-      if (
-        -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
-        -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
-      ) {
-        context.fillRect(
-          mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
-          multiple * obj.w / size|0, multiple * obj.h / size|0
-        )
-      }
-    })
-    enemies.forEach(v => {
-      const X = v.type === 'enemy' ? multiple * (v.x - player.x) / size + 1
-      : multiple * (v.x + evlt(v.dx) - player.x) / size + 1
-      const Y = v.type === 'enemy'
-      ? multiple * (v.y - player.y) / size - playerSize.y * multiple
-      : multiple * (v.y + evlt(v.dy) - player.y) / size
-      if (
-        -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
-        -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
-      ) {
-        context.fillStyle = v.type === 'enemy' ? 'hsla(0, 100%, 50%, .4)'
-        : 'hsla(30, 100%, 50%, .4)'
-        const W = v.type === 'enemy' ? size * playerSize.x : v.w
-        const H = v.type === 'enemy' ? size * playerSize.y : v.h
-        context.fillRect(
-          mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
-          multiple * W / size|0, multiple * H / size|0
-        )
-      }
-    })
-    gate.forEach(v => {
-      const X = multiple * (v.x - player.x) / size + 1
-      const Y = multiple * (v.y - player.y) / size
-      if (
-        -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
-        -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
-      ) {
-        context.fillStyle = 'hsla(0, 0%, 0%, .4)'
-        context.fillRect(
-          mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
-          multiple * v.w / size|0, multiple * v.h / size|0
-        )
-      }
-    })
-  }
-}
 const musicProcess = () => {
   const setMusic = () => {
     return mapData.name === 'AthleticCourse' ? 'テレフォン・ダンス' : 'アオイセカイ'
@@ -2469,17 +1891,11 @@ const main = () => setInterval(() => {
   currentTime = globalTimestamp
   input()
   collisionDetect()
-  mapObjectProcess()
-  stateUpdate()
+  modelUpdate()
 
-  const inGame = () => {
-    modelUpdate()
-    // viewUpdate()
-    // musicProcess()
-  }
   // if (screenState === screenList[0]) title()
   // else if (screenState === screenList[1]) inGame()
-  inGame()
+  // musicProcess()
   floatMenu()
 }, 0)
 const draw = () => {
@@ -2625,13 +2041,148 @@ const draw = () => {
       jumpTrigger.h)
   }
 
+  if (false) { // draw gate
+    context.fillStyle = 'hsl(0, 0%, 25%)'
+    gate.forEach(obj => {
+      context.fillRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
+    })
+    context.strokeStyle = 'hsl(270, 100%, 50%)'
+    gate.forEach(obj => {
+      context.strokeRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
+    })
+  }
+  const imageOffset = {x: 64, y: 124}
+  context.fillStyle = 'hsl(30, 100%, 50%)'
+  if (false) enemies.forEach(v => {
+    if (v.type === 'object') {
+      context.fillRect(
+        v.x + evlt(v.dx) - stageOffset.x|0, v.y + evlt(v.dy) - stageOffset.y|0, v.w|0, v.h|0
+      )
+    }
+    if (v.type === 'enemy') {
+      let ex = v.x - imageOffset.x - stageOffset.x
+      const ey = v.y - imageOffset.y - stageOffset.y
+      const img = image.kohaku[v.state].data[v.image]
+      context.save()
+      if (v.direction === 'left') {
+        context.scale(-1, 1)
+        ex = -ex - img.width
+      }
+      context.drawImage(img, ex|0, ey|0)
+      context.restore()
+    }
+  })
+  if (false && 0 < aftergrow.gate) {
+    context.save()
+    context.font = `italic ${size * 2}px sans-serif`
+    const start = 60
+    const alpha = aftergrow.gate < start ? aftergrow.gate / start : 1
+    context.fillStyle = `hsla(0, 0%, 100%, ${alpha})`
+    context.textAlign = 'center'
+    context.fillText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
+    context.strokeStyle = `hsla(0, 0%, 50%, ${alpha})`
+    context.strokeText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
+    context.restore()
+    aftergrow.gate -= 1
+  }
+  let x = player.x - imageOffset.x - stageOffset.x
+  const img = image.misaki[player.state].data[imageStat[player.state].condition]
+  context.save()
+  if (player.direction === 'left') {
+    context.scale(-1, 1)
+    x = -x - img.width
+  }
+  context.drawImage(img, x|0, player.y - imageOffset.y - stageOffset.y|0)
+  context.restore()
+  if (settings.type.hitbox) {
+    context.fillStyle = 'hsla(300, 100%, 50%, .5)'
+    context.fillRect(
+      player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
+      player.hitbox.w|0, player.hitbox.h|0
+    )
+    context.fillRect(
+      player.attackBox.x - stageOffset.x, player.attackBox.y - stageOffset.y,
+      player.attackBox.w, player.attackBox.h
+    )
+    enemies.forEach(v => {
+      if (v.type === 'enemy') {
+        if (v.invincibleTimer === 0) {
+          context.fillStyle = 'hsla(30, 100%, 50%, .5)'
+          context.fillRect(
+            v.hitbox.x - stageOffset.x|0, v.hitbox.y - stageOffset.y|0,
+            v.hitbox.w, v.hitbox.h
+          )
+        }
+        context.fillStyle = 'hsla(0, 100%, 50%, .5)'
+        context.fillRect(
+          v.attackBox.x - stageOffset.x|0, v.attackBox.y - stageOffset.y|0,
+          v.attackBox.w, v.attackBox.h
+        )
+      }
+    })
+  }
+  if (settings.type.status) {
+    context.save()
+    const columnOffset = canvas.offsetWidth * .75
+    const rowOffset = size * 8
+    context.fillStyle = 'hsl(240, 100%, 50%)'
+    context.font = `${size}px sans-serif`
+    context.fillText(`stamina: ${player.breathInterval}`, columnOffset, rowOffset + size)
+    context.fillText('cooltime', columnOffset, rowOffset + size * 3)
+    context.fillText(`slide: ${cooltime.slide}`, columnOffset + size * 8, rowOffset + size * 3)
+    context.fillText('double jump :', columnOffset, rowOffset + size * 5)
+    if (jump.double) context.fillText('unenable', columnOffset + size * 8, rowOffset + size * 5)
+    else context.fillText('enable', columnOffset + size * 8, rowOffset + size * 5)
+    context.restore()
+  }
+  if (settings.type.map) {
+    const multiple = 2
+    const mapSize = {x: canvas.offsetWidth / 5, y: canvas.offsetHeight / 5}
+    const mapOffset = {x: canvas.offsetWidth - mapSize.x - size, y: size}
+    context.fillStyle = 'hsla(0, 0%, 0%, .1)'
+    context.fillRect(mapOffset.x|0, mapOffset.y|0, mapSize.x|0, mapSize.y|0)
+    context.fillStyle = 'hsla(10, 100%, 50%, .4)'
+    const playerSize = {x: 1, y: 3}
+    context.fillRect(
+      mapOffset.x + mapSize.x / 2|0, mapOffset.y + mapSize.y / 2 - multiple * playerSize.y|0,
+      multiple * playerSize.x|0, multiple * playerSize.y|0
+    )
+    context.fillStyle = 'hsla(240, 100%, 50%, .4)'
+    mapObject[mapData.name].layersIndex.tileset.forEach(v => {
+      for (let x = 0; x < mapObject[mapData.name].layers[v].width; x++) {
+        for (let y = 0; y < mapObject[mapData.name].layers[v].height; y++) {
+          let id = mapObject[mapData.name].layers[v
+          ].data[mapObject[mapData.name].layers[v].width * y + x] - 1
+          if (0 < id) {
+            context.fillRect(
+              mapOffset.x + mapSize.x / 2 + multiple * (x * size - player.x) / size|0,
+              mapOffset.y + mapSize.y / 2 + multiple * (y * size - player.y) / size|0,
+              multiple|0, multiple|0)
+          }
+        }
+      }
+    })
+    gate.forEach(v => {
+      const X = multiple * (v.x - player.x) / size + 1
+      const Y = multiple * (v.y - player.y) / size
+      if (
+        -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
+        -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
+      ) {
+        context.fillStyle = 'hsla(0, 0%, 0%, .4)'
+        context.fillRect(
+          mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
+          multiple * v.w / size|0, multiple * v.h / size|0
+        )
+      }
+    })
+  }
   // if (screenState === screenList[0]) drawTitle()
   // else if (screenState === screenList[1]) drawInGame()
-  drawInGame()
-  drawFloatMenu()
+  // drawFloatMenu()
 }
 Promise.all(resourceList).then(() => {
-  volumeHandler()
+  volumeController()
   setMapProcess(mapData.name)
   console.log(mapObject)
   main()
