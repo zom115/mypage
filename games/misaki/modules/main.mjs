@@ -926,65 +926,6 @@ let action = {
 let toggle = {
   DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
 }
-// const keyObjects = {
-//   shift: 16,
-//   space: 32,
-//   a: 65,
-//   b: 66,
-//   c: 67,
-//   d: 68,
-//   e: 69,
-//   f: 70,
-//   g: 71,
-//   h: 72,
-//   i: 73,
-//   j: 74,
-//   k: 75,
-//   l: 76,
-//   m: 77,
-//   n: 78,
-//   o: 79,
-//   p: 80,
-//   q: 81,
-//   r: 82,
-//   s: 83,
-//   t: 84,
-//   u: 85,
-//   v: 86,
-//   w: 87,
-//   x: 88,
-//   y: 89,
-//   z: 90
-// }
-// let key = {}
-// Object.keys(keyObjects).forEach(v => {
-//   key[v + 'Flag'] = false
-//   key[v] = 0
-// })
-// document.addEventListener('keydown', e => {
-//   Object.entries(keyObjects).forEach(([k, v]) => {
-//     if (k === 'space') {
-//       if (e.keyCode === v) {
-//         key[k + 'Flag'] = true
-//         if (e.preventDefault) e.preventDefault()
-//         else {
-//           e.keyCode = 0
-//           return false
-//         }
-//       }
-//     } else {
-//       if (e.keyCode === v) key[k + 'Flag'] = true
-//     }
-//   })
-// }, false)
-// document.addEventListener('keyup', e => {
-//   Object.entries(keyObjects).forEach(([k, v]) => {
-//     if (e.keyCode === v) {
-//       key[k + 'Flag'] = false
-//       key[k] = 0
-//     }
-//   })
-// }, false)
 const modelUpdate = () => {
   let keyFirstFlag = {
     attack: action.attack.some(v => key[v].isFirst()),
