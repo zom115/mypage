@@ -449,11 +449,144 @@ const main = () => setInterval(() => {
   mapObjectProcess()
   stateUpdate()
 }, 0)
+const draw = () => {
+  window.requestAnimationFrame(draw)
+  frameCounter(animationFrameList)
+  context.fillStyle = mapColor
+  context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  mapObject[mapName].layersIndex.background.forEach(v => { // draw background
+    const properties = mapObject[mapName].layers[v].properties
+    // const offsetX = properties[properties.findIndex(vl => vl.name === 'offsetX')].value
+    // offsetX === 'left'
+    const direction = properties[properties.findIndex(vl => vl.name === 'direction')].value
+    const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
+    const scrollTimePerSize =
+      properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
+    const image = imageObject[mapObject[mapName].layers[v].name]
+    const resetWidthTime = scrollTimePerSize * image.width / size
+    let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
+    if (direction === 'left') ratio = -ratio
+    let offsety = mapObject[mapName].layers[v].offsety
+    if (offsety === undefined) offsety = 0
+    let imageOffsetY = 0
+    if (offsetY === 'bottom') imageOffsetY = canvas.offsetHeight - image.height - offsety
+    else if (offsetY === 'top') imageOffsetY = offsety
+    for (let i = 0; i < Math.ceil(canvas.offsetWidth / image.width) + 1; i++) {
+      context.drawImage(image, image.width * (i + ratio), imageOffsetY)
+    }
+  })
+  context.fillStyle = 'hsl(0, 0%, 0%)'
+  const list = [
+    `internalFPS: ${internalFrameList.length - 1}`,
+    `FPS: ${animationFrameList.length - 1}`,
+    // `x: ${ownCondition.x}`,
+    `x(m): ${Math.floor(ownCondition.x * .04)}`,
+    // `y: ${ownCondition.y}`,
+    `y(m): ${Math.floor((((
+      mapObject[mapName].layers[mapObject[mapName].layersIndex.tileset[0]].height - 2) * size) -
+      ownCondition.y) * .04)}`,
+    `dx: ${ownCondition.dx.toFixed(2)}`,
+    `dy: ${ownCondition.dy.toFixed(2)}`,
+    `jumpTrigger: ${jumpTrigger.flag}`,
+    `[${keyMapObject.gravity.key}]gravity: ${gravityFlag}`,
+    `[${keyMapObject.collision.key}]collisionDisp: ${collisionDisp}`,
+    `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
+    `elasticModulus: ${elasticModulus}`,
+    `[${keyMapObject.subFrictionalForce.key}: -, ${
+      keyMapObject.addFrictionalForce.key}: +]` +
+    `frictionalForce: ${userFF}`,
+  ]
+  list.forEach((v, i) => {
+    context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
+  })
+  context.fillStyle = 'hsl(240, 100%, 50%)'
+  mapObject[mapName].layersIndex.tileset.forEach(v => {
+    for (let x = 0; x < mapObject[mapName].layers[v].width; x++) {
+      for (let y = 0; y < mapObject[mapName].layers[v].height; y++) {
+        let id = mapObject[mapName].layers[v].data[mapObject[mapName].layers[v].width * y + x] - 1
+        if (0 < id) {
+          let flag = false
+          Object.entries(mapObject[mapName].tilesetsIndex).forEach(([k, vl]) => {
+            if (flag) return
+            if (vl.tilecount < id) id -= vl.tilecount
+            else {
+              context.drawImage(
+                imageObject[k],
+                (id % mapObject[mapName].tilesetsIndex[k].columns) * size,
+                (id - id % mapObject[mapName].tilesetsIndex[k].columns) /
+                  mapObject[mapName].tilesetsIndex[k].columns * size,
+                size, size, x * size, y * size, size, size)
+              flag = true
+            }
+          })
+        }
+      }
+    }
+  })
+  context.fillStyle = 'hsl(0, 100%, 50%)'
+  context.beginPath()
+  context.arc(ownCondition.x, ownCondition.y, size / 32, 0, Math.PI * 2, false)
+  context.fill()
+  context.strokeStyle = 'hsl(0, 100%, 50%)'
+  context.beginPath()
+  context.arc(ownCondition.x, ownCondition.y, collisionRange, 0 , Math.PI * 2)
+  context.closePath()
+  context.stroke()
+  const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
+  context.beginPath()
+  context.moveTo(ownCondition.x, ownCondition.y)
+  context.lineTo(
+    ownCondition.x + size * r * ownCondition.dx / r,
+    ownCondition.y + size * r * ownCondition.dy / r)
+  context.lineTo(
+    ownCondition.x + size * r * ownCondition.dx / r + 1,
+    ownCondition.y + size * r * ownCondition.dy / r + 1)
+    context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
+  context.fill()
+  if (collisionDisp) {
+    context.fillStyle = 'hsl(300, 50%, 50%)'
+    mapObject[mapName].layersIndex.collision.forEach(value => {
+      for (let x = 0; x < mapObject[mapName].layers[value].width; x++) {
+        for (let y = 0; y < mapObject[mapName].layers[value].height; y++) {
+          let id = mapObject[mapName].layers[value].data[y *
+            mapObject[mapName].layers[value].width + x]
+          if (0 < id) {
+            for(let j = 0; j < mapObject[mapName].tilesets.length ; j++) {
+              if (Object.keys(terrainObject).length < id) {
+                id -= mapObject[mapName].tilesets[j].firstgid - 1
+              } else break
+            }
+            const relativeCooldinates = {x: x * size, y: y * size}
+            context.beginPath()
+            terrainObject[id].forEach((v, i) => {
+              i === 0 ?
+              context.moveTo(
+                relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
+              context.lineTo(
+                relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
+              if (terrainObject[id].length === 2) {
+              context.lineTo(
+                relativeCooldinates.x + v[0] * size + 1,
+                relativeCooldinates.y + v[1] * size + 1)
+              }
+            })
+            context.fill()
+          }
+        }
+      }
+    })
+    context.fillStyle = 'hsl(30, 100%, 50%)'
+    context.fillRect(
+      ownCondition.x - jumpTrigger.w / 2, ownCondition.y + jumpTrigger.y,
+      jumpTrigger.w, jumpTrigger.h)
+  }
+}
 Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
   console.log(mapObject)
   setMapProcess(mapName)
   main()
-  // draw()
+  draw()
   // drawCollision(terrainObject)
 })
 const internalFrameList = []
