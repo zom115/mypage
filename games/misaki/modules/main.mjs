@@ -163,6 +163,11 @@ let settings = { // initial value
     map   : setStorage('map', false, true),
   }
 }
+const keySettingElementList = document.getElementsByClassName`key-setting`
+Object.keys(settings.type).forEach(v => {
+  keySettingElementList['key-' + v].textContent = keyMap[v].map(vl => vl.toUpperCase())
+})
+Object.keys(settings.type).forEach(v => {})
 const inputDOM = document.getElementsByTagName`input`
 Object.keys(settings.type).forEach(v => {
   inputDOM[v].checked = settings.type[v]
@@ -1697,6 +1702,7 @@ const draw = () => {
 }
 let loadedFlag = false
 const loadingScreen = () => {
+  if (!loadedFlag) window.requestAnimationFrame(loadingScreen)
   // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
   const a = size * 10
@@ -1712,7 +1718,6 @@ const loadingScreen = () => {
   }
   context.closePath()
   context.stroke()
-  if (!loadedFlag) window.requestAnimationFrame(loadingScreen)
 }
 loadingScreen()
 Promise.all(resourceList).then(() => {
