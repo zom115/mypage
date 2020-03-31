@@ -348,7 +348,6 @@ const setStartPosition = arg => {
 const setMapProcess = arg => {
   mapName = arg
   setStartPosition(mapObject[arg])
-  setStartPosition(mapObject[arg])
   getColor(mapObject[arg])
   getMusic(mapObject[arg])
 }

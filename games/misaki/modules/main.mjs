@@ -59,7 +59,6 @@ let directoryList = [
   'map_GothicVaniaTown',
   'map_MagicCliffsArtwork',
 ]
-let mapName = directoryList[0]
 let mapColor = 'rgb(127, 127, 127)'
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
@@ -515,7 +514,7 @@ let menuOpenTimestamp = 0
 let menuCloseTimestamp = 0
 const screenList = ['title', 'main']
 let screenState = screenList[1]
-let stage = {name: '', time: 0, w: 0, h: 0, checkPoint: {x: 0, y: 0}}
+let mapData = {name: directoryList[0], w: 0, h: 0, checkPoint: {x: 0, y: 0}}
 let field = []
 let fieldArray = []
 let gate = []
@@ -536,8 +535,8 @@ const setStartPosition = arg => {
     })
     if (index !== -1) {
       const playerPosition = arg.layers[v].objects[index]
-      player.x = playerPosition.x
-      player.y = playerPosition.y
+      player.x = mapData.checkPoint.x = playerPosition.x
+      player.y = mapData.checkPoint.y = playerPosition.y
     }
   })
 }
@@ -560,12 +559,13 @@ const getMusic = arg => {
     if (index !== -1) {
       let path = arg.layers[v].objects[index].properties[0].value
       path = setDirectory(path)
-      if (Object.keys(audioObject).some(v => v === mapName)) {
-        audioObject[mapName].currentTime = 0
-        audioObject[mapName].play()
+      if (Object.keys(audioObject).some(v => v === mapData.name)) {
+        audioObject[mapData.name].currentTime = 0
+        audioObject[mapData.name].play()
       } else {
-        audioLoader(mapName, path).then(result => {
+        audioLoader(mapData.name, path).then(result => {
           musicVolumeHandler(Object.values(result)[0])
+          console.log(Object.values(result)[0])
           Object.values(result)[0].loop = true
           Object.values(result)[0].play()
           Object.assign(audioObject, result)
@@ -575,8 +575,9 @@ const getMusic = arg => {
   })
 }
 const setMapProcess = arg => {
-  mapName = arg
-  setStartPosition(mapObject[arg])
+  mapData.name = arg
+  mapData.w = mapObject[arg].tilewidth * mapObject[arg].width
+  mapData.h = mapObject[arg].tileheight * mapObject[arg].height
   setStartPosition(mapObject[arg])
   getColor(mapObject[arg])
   getMusic(mapObject[arg])
@@ -655,13 +656,13 @@ const collisionDetect = () => {
     }
     repeatFlag = false
     const collisionFn = collisionIndex => {
-      for (let x = 0; x < mapObject[mapName].layers[collisionIndex].width; x++) {
-        for (let y = 0; y < mapObject[mapName].layers[collisionIndex].height; y++) {
+      for (let x = 0; x < mapObject[mapData.name].layers[collisionIndex].width; x++) {
+        for (let y = 0; y < mapObject[mapData.name].layers[collisionIndex].height; y++) {
           const id =
-            mapObject[mapName].layers[collisionIndex].data[
-              y * mapObject[mapName].layers[collisionIndex].width + x] -
-            mapObject[mapName].tilesets[mapObject[
-              mapName].tilesetsIndex.collision.index].firstgid + 1
+            mapObject[mapData.name].layers[collisionIndex].data[
+              y * mapObject[mapData.name].layers[collisionIndex].width + x] -
+            mapObject[mapData.name].tilesets[mapObject[
+              mapData.name].tilesetsIndex.collision.index].firstgid + 1
           let terrainIndex
           terrainIndex = 0 < id ? id : '0'
           terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
@@ -682,9 +683,9 @@ const collisionDetect = () => {
             let returnFlag = false
             findVertexList.forEach((vl, i) => {
               if (ro[vl[0]] === vl[1]) {
-                const target = terrainObject[mapObject[mapName].layers[collisionIndex].data[(
-                  y + vl[2][1]) * mapObject[mapName].layers[collisionIndex].width + x + vl[2][0]] -
-                  mapObject[mapName].tilesets[mapObject[mapName].
+                const target = terrainObject[mapObject[mapData.name].layers[collisionIndex].data[(
+                  y + vl[2][1]) * mapObject[mapData.name].layers[collisionIndex].width + x + vl[2][0]] -
+                  mapObject[mapData.name].tilesets[mapObject[mapData.name].
                   tilesetsIndex.collision.index].firstgid + 1]
                 if (target === undefined) return
                 const vertex = i === 0 ? [1, ro[1]] :
@@ -803,14 +804,14 @@ const collisionDetect = () => {
         }
       }
     }
-    mapObject[mapName].layersIndex.collision.forEach(v => collisionFn(v))
+    mapObject[mapData.name].layersIndex.collision.forEach(v => collisionFn(v))
   } while(repeatFlag)
   player.x += player.dx
   player.y += player.dy
   jumpTrigger.flag = onetimeLandFlag
 }
 const mapObjectProcess = () => {
-  mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
+  mapObject[mapData.name].layers[mapObject[mapData.name].layersIndex.objectgroup].objects.forEach(v => {
     if (v.name === 'gate' &&
       v.x < player.x && player.x < v.x + v.width &&
       v.y < player.y && player.y < v.y + v.height
@@ -824,151 +825,6 @@ const mapObjectProcess = () => {
 const stateUpdate = () => {
   player.dy += gravitationalAcceleration * coefficient * intervalDiffTime
   frictionalForce = userFF
-}
-const main = () => setInterval(() => {
-  frameCounter(internalFrameList)
-  intervalDiffTime = globalTimestamp - currentTime
-  currentTime = globalTimestamp
-  input()
-  collisionDetect()
-  mapObjectProcess()
-  stateUpdate()
-}, 0)
-const draw = () => {
-  window.requestAnimationFrame(draw)
-  frameCounter(animationFrameList)
-  context.fillStyle = mapColor
-  context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  mapObject[mapName].layersIndex.background.forEach(v => { // draw background
-    const properties = mapObject[mapName].layers[v].properties
-    // const offsetX = properties[properties.findIndex(vl => vl.name === 'offsetX')].value
-    // offsetX === 'left'
-    const direction = properties[properties.findIndex(vl => vl.name === 'direction')].value
-    const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
-    const scrollTimePerSize =
-      properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
-    const image = imageObject[mapObject[mapName].layers[v].name]
-    const resetWidthTime = scrollTimePerSize * image.width / size
-    let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
-    if (direction === 'left') ratio = -ratio
-    let offsety = mapObject[mapName].layers[v].offsety
-    if (offsety === undefined) offsety = 0
-    let imageOffsetY = 0
-    if (offsetY === 'bottom') imageOffsetY = canvas.offsetHeight - image.height - offsety
-    else if (offsetY === 'top') imageOffsetY = offsety
-    for (let i = 0; i < Math.ceil(canvas.offsetWidth / image.width) + 1; i++) {
-      context.drawImage(image, image.width * (i + ratio), imageOffsetY)
-    }
-  })
-
-  context.fillStyle = 'hsla(0, 50%, 100%, .5)'
-  context.fillRect(canvas.offsetWidth * .8 - size / 2, 0, size * 10, size * 8)
-  context.fillStyle = 'hsl(0, 0%, 0%)'
-  const list = [
-    `internalFPS: ${internalFrameList.length - 1}`,
-    `FPS: ${animationFrameList.length - 1}`,
-    // `x: ${ownCondition.x}`,
-    `x(m): ${Math.floor(player.x * .04)}`,
-    // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((
-      mapObject[mapName].layers[mapObject[mapName].layersIndex.tileset[0]].height - 2) * size) -
-      player.y) * .04)}`,
-    `dx: ${player.dx.toFixed(2)}`,
-    `dy: ${player.dy.toFixed(2)}`,
-    `jumpTrigger: ${jumpTrigger.flag}`,
-    `[${keyMapObject.gravity.key}]gravity: ${gravityFlag}`,
-    `[${keyMapObject.collision.key}]collisionDisp: ${collisionDisp}`,
-    `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
-    `elasticModulus: ${elasticModulus}`,
-    `[${keyMapObject.subFrictionalForce.key}: -, ${
-      keyMapObject.addFrictionalForce.key}: +]` +
-    `frictionalForce: ${userFF}`,
-  ]
-  list.forEach((v, i) => {
-    context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
-  })
-  context.fillStyle = 'hsl(240, 100%, 50%)'
-  mapObject[mapName].layersIndex.tileset.forEach(v => {
-    for (let x = 0; x < mapObject[mapName].layers[v].width; x++) {
-      for (let y = 0; y < mapObject[mapName].layers[v].height; y++) {
-        let id = mapObject[mapName].layers[v].data[mapObject[mapName].layers[v].width * y + x] - 1
-        if (0 < id) {
-          let flag = false
-          Object.entries(mapObject[mapName].tilesetsIndex).forEach(([k, vl]) => {
-            if (flag) return
-            if (vl.tilecount < id) id -= vl.tilecount
-            else {
-              context.drawImage(
-                imageObject[k],
-                (id % mapObject[mapName].tilesetsIndex[k].columns) * size,
-                (id - id % mapObject[mapName].tilesetsIndex[k].columns) /
-                  mapObject[mapName].tilesetsIndex[k].columns * size,
-                size, size, x * size, y * size, size, size)
-              flag = true
-            }
-          })
-        }
-      }
-    }
-  })
-  context.fillStyle = 'hsl(0, 100%, 50%)'
-  context.beginPath()
-  context.arc(player.x, player.y, size / 32, 0, Math.PI * 2, false)
-  context.fill()
-  context.strokeStyle = 'hsl(0, 100%, 50%)'
-  context.beginPath()
-  context.arc(player.x, player.y, collisionRange, 0 , Math.PI * 2)
-  context.closePath()
-  context.stroke()
-  const r = (player.dx ** 2 + player.dy ** 2) ** .5
-  context.beginPath()
-  context.moveTo(player.x, player.y)
-  context.lineTo(
-    player.x + size * r * player.dx / r,
-    player.y + size * r * player.dy / r)
-  context.lineTo(
-    player.x + size * r * player.dx / r + 1,
-    player.y + size * r * player.dy / r + 1)
-    context.lineTo(player.x + 1, player.y + 1)
-  context.fill()
-  if (collisionDisp) {
-    context.fillStyle = 'hsl(300, 50%, 50%)'
-    mapObject[mapName].layersIndex.collision.forEach(value => {
-      for (let x = 0; x < mapObject[mapName].layers[value].width; x++) {
-        for (let y = 0; y < mapObject[mapName].layers[value].height; y++) {
-          let id = mapObject[mapName].layers[value].data[y *
-            mapObject[mapName].layers[value].width + x]
-          if (0 < id) {
-            for(let j = 0; j < mapObject[mapName].tilesets.length ; j++) {
-              if (Object.keys(terrainObject).length < id) {
-                id -= mapObject[mapName].tilesets[j].firstgid - 1
-              } else break
-            }
-            const relativeCooldinates = {x: x * size, y: y * size}
-            context.beginPath()
-            terrainObject[id].forEach((v, i) => {
-              i === 0 ?
-              context.moveTo(
-                relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size) :
-              context.lineTo(
-                relativeCooldinates.x + v[0] * size, relativeCooldinates.y + v[1] * size)
-              if (terrainObject[id].length === 2) {
-              context.lineTo(
-                relativeCooldinates.x + v[0] * size + 1,
-                relativeCooldinates.y + v[1] * size + 1)
-              }
-            })
-            context.fill()
-          }
-        }
-      }
-    })
-    context.fillStyle = 'hsl(30, 100%, 50%)'
-    context.fillRect(
-      player.x - jumpTrigger.w / 2, player.y + jumpTrigger.y,
-      jumpTrigger.w, jumpTrigger.h)
-  }
 }
 const setStage = arg => {
   const mapData = {
@@ -1318,14 +1174,11 @@ const setStage = arg => {
   fieldArray = mapData[arg]
   fieldArray.unshift('0'.repeat(mapData[arg][0].length))
   fieldArray.push('0'.repeat(mapData[arg][0].length))
-  stage = {
-    name: arg,
-    time: 0,
-    w: size * mapData[arg][0].length,
-    h: size * mapData[arg].length,
-    checkPoint: {x: size * 10, y: 0}
-  }
-  stage.checkPoint.y = stage.h - size * 2
+  // stage = {
+  //   name: arg,
+  //   w: size * mapData[arg][0].length,
+  //   h: size * mapData[arg].length
+  // }
   field = []
   enemies = []
   const setGround = (x, y, w, h, id) => {
@@ -1446,28 +1299,28 @@ const setStage = arg => {
   }
   if (arg === 'Opening') {
     setGate(
-      9, stage.h / size - 5 - 24, 3, 4, 'SMB', 8, mapData.SMB.length - 2
+      9, mapData.h / size - 5 - 24, 3, 4, 'SMB', 8, mapData.SMB.length - 2
     )
     setGate(
-      9, stage.h / size - 5 - 18, 3, 4, 'DebugRoom', 8, mapData.DebugRoom.length - 2
+      9, mapData.h / size - 5 - 18, 3, 4, 'DebugRoom', 8, mapData.DebugRoom.length - 2
     )
     setGate(
-      9, stage.h / size - 5 - 12, 3, 4, 'DynamicTest', 8, mapData.DynamicTest.length - 2
+      9, mapData.h / size - 5 - 12, 3, 4, 'DynamicTest', 8, mapData.DynamicTest.length - 2
     )
     setGate(
-      9, stage.h / size - 5 - 6, 3, 4, 'AthleticCourse', 8, mapData.AthleticCourse.length - 2
+      9, mapData.h / size - 5 - 6, 3, 4, 'AthleticCourse', 8, mapData.AthleticCourse.length - 2
     )
     setGate(
-      9, stage.h / size - 5, 3, 4, 'BattleField', 8, mapData.BattleField.length - 2
+      9, mapData.h / size - 5, 3, 4, 'BattleField', 8, mapData.BattleField.length - 2
     )
   } else if (arg === 'SMB') {
-    setGate(3, stage.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 26)
+    setGate(3, mapData.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 26)
   } else if (arg === 'DebugRoom') {
-    setGate(3, stage.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 20)
+    setGate(3, mapData.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 20)
   } else if (arg === 'DynamicTest') {
-    setGate(3, stage.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 14)
+    setGate(3, mapData.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 14)
   } else if (arg === 'AthleticCourse') {
-    setGate(3, stage.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 8)
+    setGate(3, mapData.h / size - 5, 3, 4, 'Opening', 8, mapData.Opening.length - 8)
   }
   aftergrow.gate = aftergrowLimit.gate
 }
@@ -1838,16 +1691,15 @@ const modelUpdate = () => {
     })
   } while (flag);
   { // enemy update
-    stage.time += 1
-    if (enemies.length < 1 && stage.name === 'BattleField') {
-      const x = stage.w * 3 / 4
-      const y = stage.h * 15 / 16
+    if (enemies.length < 1 && mapData.name === 'BattleField') {
+      const x = mapData.w * 3 / 4
+      const y = mapData.h * 15 / 16
       enemies.push({
         type: 'enemy',
         x: x,
         y: y,
-        minXRange: stage.w * 1 / 4,
-        maxXRange: stage.w * 3 / 8,
+        minXRange: mapData.w * 1 / 4,
+        maxXRange: mapData.w * 3 / 8,
         direction: 'left',
         image: 0,
         imageTimer: 0,
@@ -1862,7 +1714,6 @@ const modelUpdate = () => {
       if (v.type === 'object') {
         const aftdx = evlt(v.dx)
         const aftdy = evlt(v.dy)
-        stage.time -= 1
         const dx = aftdx - evlt(v.dx)
         const dy = aftdy - evlt(v.dy)
         const X = player.dx - dx
@@ -1982,7 +1833,6 @@ const modelUpdate = () => {
             }
           }
         }
-        stage.time += 1
       } else if (v.type === 'enemy') {
         let flag = false
         v.hitbox = v.state === 'damage'
@@ -2067,9 +1917,9 @@ const modelUpdate = () => {
   } else {
     jump.flag = true
     if (player.state !== 'slide') player.state = 'jump'
-    if (stage.h + size * 10 < player.y) { // game over
-      player.x = stage.checkPoint.x
-      player.y = stage.checkPoint.y
+    if (mapData.h + size * 10 < player.y) { // game over
+      player.x = mapData.checkPoint.x
+      player.y = mapData.checkPoint.y
     }
   }
   if (player.state === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
@@ -2319,12 +2169,12 @@ const viewUpdate = () => {
 const drawInGame = () => {
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
-  stageOffset.x = player.x < ratio.x ? 0
-  : stage.w - ratio.x < player.x ? stage.w - canvas.offsetWidth
-  : ((player.x - ratio.x) / (stage.w - ratio.x * 2)) * (stage.w - canvas.offsetWidth)
-  stageOffset.y = player.y < ratio.y ? 0
-  : stage.h - ratio.y < player.y ? stage.h - canvas.offsetHeight
-  : ((player.y - ratio.y) / (stage.h - ratio.y * 2)) * (stage.h - canvas.offsetHeight)
+  stageOffset.x = player.x < ratio.x ? 0 :
+  mapData.w - ratio.x < player.x ? mapData.w - canvas.offsetWidth : ((
+    player.x - ratio.x) / (mapData.w - ratio.x * 2)) * (mapData.w - canvas.offsetWidth)
+  stageOffset.y = player.y < ratio.y ? 0 :
+  mapData.h - ratio.y < player.y ? mapData.h - canvas.offsetHeight : ((
+    player.y - ratio.y) / (mapData.h - ratio.y * 2)) * (mapData.h - canvas.offsetHeight)
   { // draw gate
     context.fillStyle = 'hsl(0, 0%, 25%)'
     gate.forEach(obj => {
@@ -2335,7 +2185,7 @@ const drawInGame = () => {
       context.strokeRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
     })
   }
-  { // draw ground
+  if (false) { // draw ground
     const tileset = image.bg.tileset.data[0]
     field.forEach(obj => {
       if (obj.w === size && obj.h === size) {
@@ -2395,9 +2245,9 @@ const drawInGame = () => {
     const alpha = aftergrow.gate < start ? aftergrow.gate / start : 1
     context.fillStyle = `hsla(0, 0%, 100%, ${alpha})`
     context.textAlign = 'center'
-    context.fillText(stage.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
+    context.fillText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
     context.strokeStyle = `hsla(0, 0%, 50%, ${alpha})`
-    context.strokeText(stage.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
+    context.strokeText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
     context.restore()
     aftergrow.gate -= 1
   }
@@ -2517,7 +2367,7 @@ const drawInGame = () => {
 }
 const musicProcess = () => {
   const setMusic = () => {
-    return stage.name === 'AthleticCourse' ? 'テレフォン・ダンス' : 'アオイセカイ'
+    return mapData.name === 'AthleticCourse' ? 'テレフォン・ダンス' : 'アオイセカイ'
   }
   if (
     currentPlay !== setMusic() ||
@@ -2625,15 +2475,162 @@ const drawFloatMenu = () => {
   context.fillText(']', ox + size * 15, size * 4 + floatMenuCursor * size * 2)
   context.restore()
 }
-const nativeMain = () => setInterval(() => {
+const main = () => setInterval(() => {
+  frameCounter(internalFrameList)
+  intervalDiffTime = globalTimestamp - currentTime
+  currentTime = globalTimestamp
+  input()
+  collisionDetect()
+  mapObjectProcess()
+  stateUpdate()
+
   // if (screenState === screenList[0]) title()
   // else if (screenState === screenList[1]) inGame()
-  // inGame()
   floatMenu()
 }, 0)
-const nativeDraw = () => {
-  window.requestAnimationFrame(nativeDraw)
-  // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+const draw = () => {
+  window.requestAnimationFrame(draw)
+  frameCounter(animationFrameList)
+  context.fillStyle = mapColor
+  context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  mapObject[mapData.name].layersIndex.background.forEach(v => { // draw background
+    const properties = mapObject[mapData.name].layers[v].properties
+    // const offsetX = properties[properties.findIndex(vl => vl.name === 'offsetX')].value
+    // offsetX === 'left'
+    const direction = properties[properties.findIndex(vl => vl.name === 'direction')].value
+    const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
+    const scrollTimePerSize =
+      properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
+    const image = imageObject[mapObject[mapData.name].layers[v].name]
+    const resetWidthTime = scrollTimePerSize * image.width / size
+    let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
+    if (direction === 'left') ratio = -ratio
+    let offsety = mapObject[mapData.name].layers[v].offsety
+    if (offsety === undefined) offsety = 0
+    let imageOffsetY = 0
+    if (offsetY === 'bottom') imageOffsetY = canvas.offsetHeight - image.height - offsety
+    else if (offsetY === 'top') imageOffsetY = offsety
+    for (let i = 0; i < Math.ceil(canvas.offsetWidth / image.width) + 1; i++) {
+      context.drawImage(image, image.width * (i + ratio), imageOffsetY)
+    }
+  })
+  context.fillStyle = 'hsla(0, 50%, 100%, .5)'
+  context.fillRect(canvas.offsetWidth * .8 - size / 2, 0, size * 10, size * 8)
+  context.fillStyle = 'hsl(0, 0%, 0%)'
+  const list = [
+    `internalFPS: ${internalFrameList.length - 1}`,
+    `FPS: ${animationFrameList.length - 1}`,
+    // `x: ${ownCondition.x}`,
+    `x(m): ${Math.floor(player.x * .04)}`,
+    // `y: ${ownCondition.y}`,
+    `y(m): ${Math.floor((((
+      mapObject[mapData.name].layers[mapObject[mapData.name].layersIndex.tileset[0]].height - 2) * size) -
+      player.y) * .04)}`,
+    `dx: ${player.dx.toFixed(2)}`,
+    `dy: ${player.dy.toFixed(2)}`,
+    `jumpTrigger: ${jumpTrigger.flag}`,
+    `[${keyMapObject.gravity.key}]gravity: ${gravityFlag}`,
+    `[${keyMapObject.collision.key}]collisionDisp: ${collisionDisp}`,
+    `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
+    `elasticModulus: ${elasticModulus}`,
+    `[${keyMapObject.subFrictionalForce.key}: -, ${
+      keyMapObject.addFrictionalForce.key}: +]` +
+    `frictionalForce: ${userFF}`,
+  ]
+  list.forEach((v, i) => {
+    context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
+  })
+  const stageOffset = {x: 0, y: 0}
+  const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
+  stageOffset.x = player.x < ratio.x ? 0 :
+  mapData.w - ratio.x < player.x ? mapData.w - canvas.offsetWidth : ((
+    player.x - ratio.x) / (mapData.w - ratio.x * 2)) * (mapData.w - canvas.offsetWidth)
+  stageOffset.y = player.y < ratio.y ? 0 :
+  mapData.h - ratio.y < player.y ? mapData.h - canvas.offsetHeight : ((
+    player.y - ratio.y) / (mapData.h - ratio.y * 2)) * (mapData.h - canvas.offsetHeight)
+  mapObject[mapData.name].layersIndex.tileset.forEach(v => {
+    for (let x = 0; x < mapObject[mapData.name].layers[v].width; x++) {
+      for (let y = 0; y < mapObject[mapData.name].layers[v].height; y++) {
+        let id = mapObject[mapData.name].layers[v].data[mapObject[mapData.name].layers[v].width * y + x] - 1
+        if (0 < id) {
+          let flag = false
+          Object.entries(mapObject[mapData.name].tilesetsIndex).forEach(([k, vl]) => {
+            if (flag) return
+            if (vl.tilecount < id) id -= vl.tilecount
+            else {
+              context.drawImage(
+                imageObject[k],
+                (id % mapObject[mapData.name].tilesetsIndex[k].columns) * size,
+                (id - id % mapObject[mapData.name].tilesetsIndex[k].columns) /
+                  mapObject[mapData.name].tilesetsIndex[k].columns * size,
+                size, size, (x * size - stageOffset.x)|0, (y * size - stageOffset.y)|0, size, size)
+              flag = true
+            }
+          })
+        }
+      }
+    }
+  })
+  context.fillStyle = 'hsl(0, 100%, 50%)'
+  context.beginPath()
+  context.arc(player.x - stageOffset.x, player.y - stageOffset.y, size / 32, 0, Math.PI * 2, false)
+  context.fill()
+  context.strokeStyle = 'hsl(0, 100%, 50%)'
+  context.beginPath()
+  context.arc(player.x - stageOffset.x, player.y - stageOffset.y, collisionRange, 0 , Math.PI * 2)
+  context.closePath()
+  context.stroke()
+  const r = (player.dx ** 2 + player.dy ** 2) ** .5
+  context.beginPath()
+  context.moveTo(player.x - stageOffset.x, player.y - stageOffset.y)
+  context.lineTo(
+    player.x - stageOffset.x + size * r * player.dx / r,
+    player.y - stageOffset.y + size * r * player.dy / r)
+  context.lineTo(
+    player.x - stageOffset.x + size * r * player.dx / r + 1,
+    player.y - stageOffset.y + size * r * player.dy / r + 1)
+    context.lineTo(player.x - stageOffset.x + 1, player.y - stageOffset.y + 1)
+  context.fill()
+  if (collisionDisp) {
+    context.fillStyle = 'hsl(300, 50%, 50%)'
+    mapObject[mapData.name].layersIndex.collision.forEach(value => {
+      for (let x = 0; x < mapObject[mapData.name].layers[value].width; x++) {
+        for (let y = 0; y < mapObject[mapData.name].layers[value].height; y++) {
+          let id = mapObject[mapData.name].layers[value].data[y *
+            mapObject[mapData.name].layers[value].width + x]
+          if (0 < id) {
+            for(let j = 0; j < mapObject[mapData.name].tilesets.length ; j++) {
+              if (Object.keys(terrainObject).length < id) {
+                id -= mapObject[mapData.name].tilesets[j].firstgid - 1
+              } else break
+            }
+            const relativeCooldinates = {x: x * size - stageOffset.x, y: y * size - stageOffset.y}
+            context.beginPath()
+            terrainObject[id].forEach((v, i) => {
+              i === 0 ?
+              context.moveTo(
+                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0) :
+              context.lineTo(
+                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0)
+              if (terrainObject[id].length === 2) {
+              context.lineTo(
+                (relativeCooldinates.x + v[0] * size + 1)|0,
+                (relativeCooldinates.y + v[1] * size + 1)|0)
+              }
+            })
+            context.fill()
+          }
+        }
+      }
+    })
+    context.fillStyle = 'hsl(30, 100%, 50%)'
+    context.fillRect(
+      player.x - stageOffset.x - jumpTrigger.w / 2,
+      player.y - stageOffset.y + jumpTrigger.y,
+      jumpTrigger.w,
+      jumpTrigger.h)
+  }
+
   // if (screenState === screenList[0]) drawTitle()
   // else if (screenState === screenList[1]) drawInGame()
   drawInGame()
@@ -2641,11 +2638,9 @@ const nativeDraw = () => {
 }
 Promise.all(resourceList).then(() => {
   volumeHandler()
-  setMapProcess(mapName)
+  setMapProcess(mapData.name)
   console.log(mapObject)
   main()
   draw()
-  nativeMain()
-  nativeDraw()
   // drawCollision(terrainObject)
 })
