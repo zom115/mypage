@@ -2,6 +2,56 @@ import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
+let currentTime = globalTimestamp
+let intervalDiffTime = 1
+const size = 16
+const terrainList = [
+  [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
+  [[0, 0], [1, 0]], // platform
+  [[1, 0], [1, 1], [0, 1],], // triangle
+  [[1, .5], [1, 1], [0, 1],], // 22.5 low
+  [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
+  [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
+  [[1, 0], [1, .5], [0, .5],], // 22.5 harf
+  [[1, .5], [1, 1], [.5, 1],], // small triangle
+  [[0, .5], [.5, 0], [1, 0], [1, 1], [0, 1]], // chip rectangle
+]
+const terrainObject = {'0': [[]],}
+const orgRound = (value, base) => {
+  return Math.round(value * base) / base
+}
+const inversionTerrain = array => {
+  const terrain = JSON.parse(JSON.stringify(array))
+  terrain.forEach(v => {
+    v[0] = orgRound(1 - v[0], 10)
+  })
+  terrain.reverse() // 線分の向きを揃える
+  return terrain
+}
+const rotationTerrain = array => {
+  const terrain = JSON.parse(JSON.stringify(array))
+  terrain.forEach(v => {
+    v[0] -= .5
+    v[1] -= .5
+    ;[v[0], v[1]] = [
+      orgRound(v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2), 10),
+      orgRound(v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2), 10),]
+    v[0] += .5
+    v[1] += .5
+  })
+  return terrain
+}
+let id = 1
+terrainList.forEach(v => {
+  for (let i = 0; i < 4; i++) {
+    if (i === 0) {
+      terrainObject[id] = JSON.parse(JSON.stringify(v))
+    } else terrainObject[id] = rotationTerrain(terrainObject[id - 2])
+    id++
+    terrainObject[id] = inversionTerrain(terrainObject[id - 1])
+    id++
+  }
+})
 const mapObject = {}
 const imageObject = {}
 const audioObject = {}
@@ -11,23 +61,36 @@ let directoryList = [
 ]
 let mapName = directoryList[0]
 let mapColor = 'rgb(127, 127, 127)'
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
+let coefficient = 5
+let elasticModulus = 0 // 0 to 1
+const wallFF = 0
+let userFF = .1
+let frictionalForce = userFF // 0 to 1
 const ownCondition = {x: 0, y: 0, dx: 0, dy: 0, landFlag: false, jumpFlag: false,} // temporary
-const mapObjectProcess = () => {
-  mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
-    if (v.name === 'gate' &&
-      v.x < ownCondition.x && ownCondition.x < v.x + v.width &&
-      v.y < ownCondition.y && ownCondition.y < v.y + v.height
-    ) {
-      v.properties.forEach(vl => {
-        if (vl.name === 'address') setMapProcess(vl.value)
-      })
-    }
-  })
+const collisionRange = size / 2 * .9
+const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6 ,}
+const moveAcceleration = .01
+const normalConstant = .5
+const dashConstant = .75
+let moveConstant = normalConstant // 1 = 10 m / s
+const jumpConstant = 1
+const keyMapObject = {
+  left: key.a,
+  right: key.d,
+  up: key.w,
+  down: key.s,
+  jump: key.j,
+  dash: key.k,
+  collision: key.h,
+  subElasticModulus: key.u,
+  addElasticModulus: key.i,
+  subFrictionalForce: key.o,
+  addFrictionalForce: key.p,
+  gravity: key.g,
 }
-const stateUpdate = () => {
-  ownCondition.dy += gravitationalAcceleration * coefficient * intervalDiffTime
-  frictionalForce = userFF
-}
+let gravityFlag = true // temporary
+let collisionDisp = false
 const setDirectory = str => {return 'resources/' + str}
 const getMapData = directory => {
   return new Promise(async resolve => {
@@ -133,15 +196,6 @@ const setMapProcess = arg => {
   getColor(mapObject[arg])
   getMusic(mapObject[arg])
 }
-Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
-  console.log(mapObject)
-  setMapProcess(mapName)
-  // main()
-  // draw()
-  // drawCollision(terrainObject)
-})
-const internalFrameList = []
-const animationFrameList = []
 const frameCounter = list => {
   const now = Date.now()
   list.push(now)
@@ -151,10 +205,262 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
+const input = () => {
+  if (keyMapObject.collision.isFirst()) collisionDisp = !collisionDisp
+  if (keyMapObject.subElasticModulus.isFirst() && 0 < elasticModulus) {
+    elasticModulus = orgRound(elasticModulus - .1, 10)
+  }
+  if (keyMapObject.addElasticModulus.isFirst() && elasticModulus < 1) {
+    elasticModulus = orgRound(elasticModulus + .1, 10)
+  }
+  if (keyMapObject.subFrictionalForce.isFirst() && 0 < userFF) {
+    userFF = orgRound(userFF - .1, 10)
+  }
+  if (keyMapObject.addFrictionalForce.isFirst() && userFF < 1) {
+    userFF = orgRound(userFF + .1, 10)
+  }
+  if (keyMapObject.gravity.isFirst()) gravityFlag = !gravityFlag
+  if (!gravityFlag) {
+    ownCondition.dx = 0
+    ownCondition.dy = 0
+    const num = 10
+    if (keyMapObject.left.flag) ownCondition.dx -= moveAcceleration * intervalDiffTime * num
+    if (keyMapObject.right.flag) ownCondition.dx += moveAcceleration * intervalDiffTime * num
+    if (keyMapObject.up.flag) ownCondition.dy -= moveAcceleration * intervalDiffTime * num
+    if (keyMapObject.down.flag) ownCondition.dy += moveAcceleration * intervalDiffTime * num
+  }
+  if (keyMapObject.dash.flag) moveConstant = dashConstant
+  else moveConstant = normalConstant
+  if (keyMapObject.left.flag) {
+    if (-moveConstant < ownCondition.dx - moveAcceleration) {
+      ownCondition.dx -= moveAcceleration * intervalDiffTime
+    } else ownCondition.dx = -moveConstant
+  }
+  if (keyMapObject.right.flag) {
+    if (ownCondition.dx + moveAcceleration < moveConstant) {
+      ownCondition.dx += moveAcceleration * intervalDiffTime
+    } else ownCondition.dx = moveConstant
+  }
+  if (keyMapObject.jump.isFirst()) {
+    if (ownCondition.landFlag && jumpTrigger.flag) ownCondition.dy = -jumpConstant
+    ownCondition.landFlag = false
+  }
+}
+const collisionResponse = tilt => {
+  const nX = Math.cos(tilt * Math.PI)
+  const nY = Math.sin(tilt * Math.PI)
+  const t = -(
+    ownCondition.dx * nX + ownCondition.dy * nY) / (
+    nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
+  ownCondition.dx += 2 * t * nX
+  ownCondition.dy += 2 * t * nY
+  if (tilt <= 1) frictionalForce = wallFF
+  ownCondition.dx *= 1 - frictionalForce
+  ownCondition.dy *= 1 - frictionalForce
+}
+const collisionDetect = () => {
+  let count = 0
+  let onetimeLandFlag = false
+  let repeatFlag
+  do {
+    count++
+    if (3 < count) {
+      ownCondition.dx = 0
+      ownCondition.dy = 0
+    }
+    repeatFlag = false
+    const collisionFn = collisionIndex => {
+      for (let x = 0; x < mapObject[mapName].layers[collisionIndex].width; x++) {
+        for (let y = 0; y < mapObject[mapName].layers[collisionIndex].height; y++) {
+          const id =
+            mapObject[mapName].layers[collisionIndex].data[
+              y * mapObject[mapName].layers[collisionIndex].width + x] -
+            mapObject[mapName].tilesets[mapObject[
+              mapName].tilesetsIndex.collision.index].firstgid + 1
+          let terrainIndex
+          terrainIndex = 0 < id ? id : '0'
+          terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
+            if (ro.rength === 0) return
+            if (terrainObject[terrainIndex].length === 1) return
+            const rp = terrainObject[terrainIndex].slice(i - 1)[0]
+            const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
+              terrainObject[terrainIndex][0] : terrainObject[terrainIndex].slice(i + 1)[0]
+            let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
+            const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
+            const findVertexList = [
+              [0, 0, [-1, 0], [-1, -1]],
+              [0, 1, [1, 0], [1, 1]],
+              [1, 0, [0, -1], [1, -1]],
+              [1, 1, [0, 1], [-1, 1]],
+            ]
+            let vertexFlag = false
+            let returnFlag = false
+            findVertexList.forEach((vl, i) => {
+              if (ro[vl[0]] === vl[1]) {
+                const target = terrainObject[mapObject[mapName].layers[collisionIndex].data[(
+                  y + vl[2][1]) * mapObject[mapName].layers[collisionIndex].width + x + vl[2][0]] -
+                  mapObject[mapName].tilesets[mapObject[mapName].
+                  tilesetsIndex.collision.index].firstgid + 1]
+                if (target === undefined) return
+                const vertex = i === 0 ? [1, ro[1]] :
+                i === 1 ? [0, ro[1]] :
+                i === 2 ? [ro[0], 1] : [ro[0], 0]
+                // x, y それぞれ0, 1が含まれている隣を調べる
+                const index = target.findIndex(val => {
+                  return val[0] === vertex[0] && val[1] === vertex[1]
+                })
+                if (index !== -1) {
+                  const previousIndex = index === 0 ? target.length - 1 : index - 1
+                  const nextIndex = index === target.length - 1 ? 0 : index + 1
+                  const previousVertex = i === 0 ? [1, rn[1]] :
+                  i === 1 ? [0, rn[1]] :
+                  i === 2 ? [rn[0], 1] : [rn[0], 0]
+                  if ( // 隣に同じ線分があったら、この線分の判定は無効
+                    (ro[0] === rn[0] || ro[1] === rn[1]) &&
+                    target[previousIndex][0] === previousVertex[0] &&
+                    target[previousIndex][1] === previousVertex[1]
+                  ) returnFlag = true
+                  const cPreviousTilt = Math.atan2(
+                    target[index][1] - target[previousIndex][1],
+                    target[index][0] - target[previousIndex][0]) / Math.PI
+                  const cNextTilt = Math.atan2(
+                    target[nextIndex][1] - target[index][1],
+                    target[nextIndex][0] - target[index][0]) / Math.PI
+                  if (
+                    target.length !== 2 && (
+                    tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
+                    tilt === cNextTilt || previousTilt === cNextTilt)
+                  ) vertexFlag = true
+                }
+              }
+            })
+            if (returnFlag) return
+            const ox = ownCondition.x
+            const oy = ownCondition.y
+            const dx = ownCondition.dx
+            const dy = ownCondition.dy
+            const ax = x * size + ro[0] * size
+            const ay = y * size + ro[1] * size
+            const bx = x * size + rn[0] * size
+            const by = y * size + rn[1] * size
+            const abx = bx - ax
+            const aby = by - ay
+            let nx = -aby
+            let ny = abx
+            let length = (nx ** 2 + ny ** 2) ** .5
+            if (0 < length) length = 1 / length
+            nx *= length
+            ny *= length
+            if (!onetimeLandFlag) {
+              const d = -(ax * nx + ay * ny)
+              const tm = -(nx * (ox - jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+                nx * dx + ny * (dy + jumpTrigger.h))
+              if (0 < tm && tm <= 1) {
+                const cx = (ox - jumpTrigger.w / 2) + dx * tm
+                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tm
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc <= 0) onetimeLandFlag = true
+              }
+              const tp = -(nx * (ox + jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
+                nx * dx + ny * (dy + jumpTrigger.h))
+              if (0 < tp && tp <= 1) {
+                const cx = (ox + jumpTrigger.w / 2) + dx * tp
+                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tp
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc <= 0) onetimeLandFlag = true
+              }
+            }
+            let nax = ax - nx * collisionRange
+            let nay = ay - ny * collisionRange
+            let nbx = bx - nx * collisionRange
+            let nby = by - ny * collisionRange
+            const d = -(nax * nx + nay * ny)
+            const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
+            let detectFlag = false
+            if (0 < t && t <= 1) {
+              const cx = ox + dx * t
+              const cy = oy + dy * t
+              const acx = cx - nax
+              const acy = cy - nay
+              const bcx = cx - nbx
+              const bcy = cy - nby
+              const doc = acx * bcx + acy * bcy
+              if (doc <= 0) {
+                detectFlag = true
+                tilt += tilt < .5 ? 1.5 : -.5
+                if (1 < tilt) ownCondition.landFlag = true
+              }
+            }
+            if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
+            if (terrainObject[terrainIndex].length === 2) vertexFlag = true
+            if (
+              !detectFlag &&
+              !vertexFlag &&
+              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= collisionRange ** 2
+            ) {
+              tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
+              if (tilt < 0) ownCondition.landFlag = true
+              detectFlag = true
+            }
+            if (detectFlag) {
+              collisionResponse(tilt)
+              repeatFlag = true
+            }
+          })
+        }
+      }
+    }
+    mapObject[mapName].layersIndex.collision.forEach(v => collisionFn(v))
+  } while(repeatFlag)
+  ownCondition.x += ownCondition.dx
+  ownCondition.y += ownCondition.dy
+  jumpTrigger.flag = onetimeLandFlag
+}
+const mapObjectProcess = () => {
+  mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
+    if (v.name === 'gate' &&
+      v.x < ownCondition.x && ownCondition.x < v.x + v.width &&
+      v.y < ownCondition.y && ownCondition.y < v.y + v.height
+    ) {
+      v.properties.forEach(vl => {
+        if (vl.name === 'address') setMapProcess(vl.value)
+      })
+    }
+  })
+}
+const stateUpdate = () => {
+  ownCondition.dy += gravitationalAcceleration * coefficient * intervalDiffTime
+  frictionalForce = userFF
+}
+const main = () => setInterval(() => {
+  frameCounter(internalFrameList)
+  intervalDiffTime = globalTimestamp - currentTime
+  currentTime = globalTimestamp
+  input()
+  collisionDetect()
+  mapObjectProcess()
+  stateUpdate()
+}, 0)
+Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
+  console.log(mapObject)
+  setMapProcess(mapName)
+  main()
+  // draw()
+  // drawCollision(terrainObject)
+})
+const internalFrameList = []
+const animationFrameList = []
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
-const size = 16
 const evlt = (obj) => {return Function('return (' + obj + ')')()}
 const setStorage = (key, value, firstFlag = false) => {
   const exists = localStorage.getItem(key)
@@ -1041,7 +1347,7 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const walkConstant = .7 // dx := 1.4
-const dashConstant = 2.1
+// const dashConstant = 2.1
 const dashThreshold = 3.5
 const stepConstant = 4
 const slideConstant = 2
@@ -1049,7 +1355,7 @@ const boostConstant = 6
 const brakeConstant = .75
 const slideBrakeConstant = .95
 const gravityConstant = .272
-const jumpConstant = 5
+// const jumpConstant = 5
 let jump = {flag: false, double: false, step: false, time: 0}
 let slide = {flag: false}
 let cooltime = {
@@ -2213,22 +2519,22 @@ const drawFloatMenu = () => {
 const floatMenu = () => {
   floatMenuProcess()
 }
-const main = () => setInterval(() => {
-  frameCounter(internalFrameList)
-  if (screenState === screenList[0]) title()
-  else if (screenState === screenList[1]) inGame()
-  floatMenu()
+const nativeMain = () => setInterval(() => {
+  // frameCounter(internalFrameList)
+  // if (screenState === screenList[0]) title()
+  // else if (screenState === screenList[1]) inGame()
+  // floatMenu()
 }, 0)
-const draw = () => {
-  window.requestAnimationFrame(draw)
-  frameCounter(animationFrameList)
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  if (screenState === screenList[0]) drawTitle()
-  else if (screenState === screenList[1]) drawInGame()
-  drawFloatMenu()
+const nativeDraw = () => {
+  // window.requestAnimationFrame(nativeDraw)
+  // frameCounter(animationFrameList)
+  // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  // if (screenState === screenList[0]) drawTitle()
+  // else if (screenState === screenList[1]) drawInGame()
+  // drawFloatMenu()
 }
 Promise.all(resourceList).then(() => {
   volumeHandler()
-  main()
-  draw()
+  nativeMain()
+  nativeDraw()
 })

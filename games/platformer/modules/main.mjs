@@ -91,6 +91,8 @@ const wallFF = 0
 let userFF = .1
 let frictionalForce = userFF // 0 to 1
 const ownCondition = {x: 0, y: 0, dx: 0, dy: 0, landFlag: false, jumpFlag: false,}
+const collisionRange = size / 2 * .9
+const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6 ,}
 const moveAcceleration = .01
 const normalConstant = .5
 const dashConstant = .75
@@ -153,8 +155,6 @@ const input = () => {
     ownCondition.landFlag = false
   }
 }
-const collisionRange = size / 2 * .9
-const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6 ,}
 const collisionResponse = tilt => {
   const nX = Math.cos(tilt * Math.PI)
   const nY = Math.sin(tilt * Math.PI)
