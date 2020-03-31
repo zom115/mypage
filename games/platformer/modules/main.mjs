@@ -1,9 +1,11 @@
 import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
+import {audioLoader} from '../../../modules/audioLoader.mjs'
 import {drawCollision} from './drawCollision.mjs'
 const mapObject = {}
 const imageObject = {}
+const audioObject = {}
 const internalFrameList = []
 const animationFrameList = []
 const frameCounter = list => {
@@ -17,6 +19,21 @@ const frameCounter = list => {
 }
 let currentTime = globalTimestamp
 let intervalDiffTime = 1
+const volume = document.getElementById('volume')
+const span = document.createElement`span`
+volume.appendChild(span)
+span.textContent = 'Volume'
+const volumeController = document.createElement`input`
+volume.appendChild(volumeController)
+volumeController.type = 'range'
+volumeController.value = 0
+const volumeIndecator = document.createElement`span`
+volume.appendChild(volumeIndecator)
+volumeIndecator.textContent = volumeController.value
+volumeController.addEventListener('input', (e) => {
+  volumeIndecator.textContent = e.target.value
+  Object.values(audioObject).forEach(v => v.volume = e.target.value / 100)
+})
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
@@ -491,9 +508,9 @@ const draw = () => {
       jumpTrigger.w, jumpTrigger.h)
   }
 }
+const setDirectory = str => {return 'resources/' + str}
 const getMapData = directory => {
   return new Promise(async resolve => {
-    const setDirectory = str => {return 'resources/' + str}
     const mapInfoObject = {
       layersIndex: {
         collision: [],
@@ -550,7 +567,7 @@ let directoryList = [
 ]
 let mapName = directoryList[0]
 let mapColor = 'rgb(127, 127, 127)'
-const getColor = (arg) => {
+const getColor = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
     const index = arg.layers[v].objects.findIndex(vl => vl.name === 'color')
     if (index !== 0) {
@@ -563,9 +580,25 @@ const getColor = (arg) => {
     }
   })
 }
+const getMusic = arg => {
+  arg.layersIndex.objectgroup.forEach(v => {
+    const index = arg.layers[v].objects.findIndex(vl => vl.name === 'audio')
+    if (index !== 0) {
+      let path = arg.layers[v].objects[index].properties[0].value
+      path = setDirectory(path)
+      console.log(path)
+      audioLoader(mapName, path).then(result => {
+        Object.values(result)[0].volume = volumeController.value / 100
+        Object.values(result)[0].play()
+        Object.assign(audioObject, result)
+      })
+    }
+  })
+}
 Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
   setStartPosition(mapObject[mapName])
   getColor(mapObject[mapName])
+  getMusic(mapObject[mapName])
   console.log(
     // mapObject,
     // imageObject,

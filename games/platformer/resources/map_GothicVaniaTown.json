@@ -174,6 +174,23 @@
                  "width":0,
                  "x":0,
                  "y":0
+                }, 
+                {
+                 "height":0,
+                 "id":6,
+                 "name":"audio",
+                 "properties":[
+                        {
+                         "name":"path",
+                         "type":"file",
+                         "value":"GothicVania-town-files\/Music\/rpg_village02__loop.ogg"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":24,
+                 "y":0
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -182,7 +199,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":6,
+ "nextobjectid":7,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"2020.03.18",
