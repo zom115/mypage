@@ -163,7 +163,7 @@ const collisionDetect = () => {
       for (let x = 0; x < mapObject.layers[collisionIndex].width; x++) {
         for (let y = 0; y < mapObject.layers[collisionIndex].height; y++) {
           const id = mapObject.layers[collisionIndex].data[y * mapObject.layers[collisionIndex].width + x] -
-            mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1
+            mapObject.tilesets[mapInfoObject.collision.index].firstgid + 1
           let terrainIndex
           terrainIndex = 0 < id ? id : '0'
           terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
@@ -186,7 +186,7 @@ const collisionDetect = () => {
               if (ro[vl[0]] === vl[1]) {
                 const target = terrainObject[mapObject.layers[collisionIndex].data[(
                   y + vl[2][1]) * mapObject.layers[collisionIndex].width + x + vl[2][0]] -
-                  mapObject.tilesets[tilesetIndexObject.collision].firstgid + 1]
+                  mapObject.tilesets[mapInfoObject.collision.index].firstgid + 1]
                 if (target === undefined) return
                 const vertex = i === 0 ? [1, ro[1]] :
                 i === 1 ? [0, ro[1]] :
@@ -466,12 +466,12 @@ const draw = () => {
       jumpTrigger.w, jumpTrigger.h)
   }
 }
+let mapList = []
 let mapObject = {}
 let collisionTilelayerIndexList = []
 let tilesetTilelayerIndexList = []
 let objectgroupIndexList = []
 let backgroundIndexObject = {}
-let tilesetIndexObject = {}
 let mapInfoObject = {}
 let resource = []
 let directory = 'map_GothicVaniaTown.json'
@@ -495,7 +495,8 @@ const initialize = () => {
       })
       mapObject.tilesets.forEach((v, i) => {
         const str = v.source.substring(v.source.indexOf('_') + 1, v.source.indexOf('.'))
-        tilesetIndexObject[str] = i
+        mapInfoObject[str] = {}
+        mapInfoObject[str].index = i
         resource.push(mapLoader(str, setDirectory(v.source)))
       })
     })
@@ -510,7 +511,8 @@ const initialize = () => {
       })
       result.forEach(v => {
         Object.entries(v).forEach(([key, value]) => {
-          mapInfoObject[key] = value
+          Object.assign(mapInfoObject[key], value)
+          // mapObject.tilesets.findIndex(vl => )
           const src = value.image
           resource.push(imageLoader(key, setDirectory(src)))
         })
@@ -524,6 +526,13 @@ const initialize = () => {
   })
 }
 initialize().then(() => {
+  console.log(
+  //   mapObject,
+  //   collisionTilelayerIndexList,
+  //   tilesetTilelayerIndexList,
+  //   objectgroupIndexList,
+  //   backgroundIndexObject,
+    mapInfoObject,)
   main()
   draw()
 })
