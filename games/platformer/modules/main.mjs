@@ -90,12 +90,11 @@ let elasticModulus = 0 // 0 to 1
 const wallFF = 0
 let userFF = .1
 let frictionalForce = userFF // 0 to 1
-const ownCondition = {x: 0, y: 0, dx: 0, dy: 0, jumpFlag: false,}
+const ownCondition = {x: 0, y: 0, dx: 0, dy: 0, landFlag: false, jumpFlag: false,}
 const moveAcceleration = .01
 const normalConstant = .5
 const dashConstant = .75
 let moveConstant = normalConstant // 1 = 10 m / s
-let landFlag = false
 const jumpConstant = 1
 const keyMapObject = {
   left: key.a,
@@ -150,8 +149,8 @@ const input = () => {
     } else ownCondition.dx = moveConstant
   }
   if (keyMapObject.jump.isFirst()) {
-    if (landFlag && jumpTrigger.flag) ownCondition.dy = -jumpConstant
-    landFlag = false
+    if (ownCondition.landFlag && jumpTrigger.flag) ownCondition.dy = -jumpConstant
+    ownCondition.landFlag = false
   }
 }
 const collisionRange = size / 2 * .9
@@ -306,7 +305,7 @@ const collisionDetect = () => {
               if (doc <= 0) {
                 detectFlag = true
                 tilt += tilt < .5 ? 1.5 : -.5
-                if (1 < tilt) landFlag = true
+                if (1 < tilt) ownCondition.landFlag = true
               }
             }
             if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
@@ -317,7 +316,7 @@ const collisionDetect = () => {
               (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= collisionRange ** 2
             ) {
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-              if (tilt < 0) landFlag = true
+              if (tilt < 0) ownCondition.landFlag = true
               detectFlag = true
             }
             if (detectFlag) {

@@ -5,6 +5,29 @@ import {audioLoader} from '../../../modules/audioLoader.mjs'
 const mapObject = {}
 const imageObject = {}
 const audioObject = {}
+let directoryList = [
+  'map_GothicVaniaTown',
+  'map_MagicCliffsArtwork',
+]
+let mapName = directoryList[0]
+let mapColor = 'rgb(127, 127, 127)'
+const ownCondition = {x: 0, y: 0, dx: 0, dy: 0, landFlag: false, jumpFlag: false,} // temporary
+const mapObjectProcess = () => {
+  mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
+    if (v.name === 'gate' &&
+      v.x < ownCondition.x && ownCondition.x < v.x + v.width &&
+      v.y < ownCondition.y && ownCondition.y < v.y + v.height
+    ) {
+      v.properties.forEach(vl => {
+        if (vl.name === 'address') setMapProcess(vl.value)
+      })
+    }
+  })
+}
+const stateUpdate = () => {
+  ownCondition.dy += gravitationalAcceleration * coefficient * intervalDiffTime
+  frictionalForce = userFF
+}
 const setDirectory = str => {return 'resources/' + str}
 const getMapData = directory => {
   return new Promise(async resolve => {
@@ -58,12 +81,18 @@ const getMapData = directory => {
     })
   })
 }
-let directoryList = [
-  'map_GothicVaniaTown',
-  'map_MagicCliffsArtwork',
-]
-let mapName = directoryList[0]
-let mapColor = 'rgb(127, 127, 127)'
+const setStartPosition = arg => {
+  arg.layersIndex.objectgroup.forEach(v => {
+    const index = arg.layers[v].objects.findIndex(vl => {
+      return vl.name === 'playerPosition'
+    })
+    if (index !== -1) {
+      const playerPosition = arg.layers[v].objects[index]
+      ownCondition.x = playerPosition.x
+      ownCondition.y = playerPosition.y
+    }
+  })
+}
 const getColor = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
     const index = arg.layers[v].objects.findIndex(vl => vl.name === 'color')
@@ -81,16 +110,14 @@ const getMusic = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
     const index = arg.layers[v].objects.findIndex(vl => vl.name === 'audio')
     if (index !== -1) {
-      console.log(index)
       let path = arg.layers[v].objects[index].properties[0].value
       path = setDirectory(path)
-      console.log(Object.keys(audioObject).some(v => v === mapName))
       if (Object.keys(audioObject).some(v => v === mapName)) {
         audioObject[mapName].currentTime = 0
         audioObject[mapName].play()
       } else {
         audioLoader(mapName, path).then(result => {
-          Object.values(result)[0].volume = volumeController.value / 100
+          musicVolumeHandler(Object.values(result)[0])
           Object.values(result)[0].loop = true
           Object.values(result)[0].play()
           Object.assign(audioObject, result)
@@ -99,9 +126,16 @@ const getMusic = arg => {
     }
   })
 }
+const setMapProcess = arg => {
+  mapName = arg
+  setStartPosition(mapObject[arg])
+  setStartPosition(mapObject[arg])
+  getColor(mapObject[arg])
+  getMusic(mapObject[arg])
+}
 Promise.all(Array.from(directoryList.map(v => {return getMapData(v)}))).then(() => {
   console.log(mapObject)
-  // setMapProcess(mapName)
+  setMapProcess(mapName)
   // main()
   // draw()
   // drawCollision(terrainObject)
