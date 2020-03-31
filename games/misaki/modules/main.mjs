@@ -2,56 +2,58 @@ import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
+const internalFrameList = []
+const animationFrameList = []
 let currentTime = globalTimestamp
 let intervalDiffTime = 1
 const size = 16
-const terrainList = [
-  [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
-  [[0, 0], [1, 0]], // platform
-  [[1, 0], [1, 1], [0, 1],], // triangle
-  [[1, .5], [1, 1], [0, 1],], // 22.5 low
-  [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
-  [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
-  [[1, 0], [1, .5], [0, .5],], // 22.5 harf
-  [[1, .5], [1, 1], [.5, 1],], // small triangle
-  [[0, .5], [.5, 0], [1, 0], [1, 1], [0, 1]], // chip rectangle
-]
 const terrainObject = {'0': [[]],}
-const orgRound = (value, base) => {
-  return Math.round(value * base) / base
-}
-const inversionTerrain = array => {
-  const terrain = JSON.parse(JSON.stringify(array))
-  terrain.forEach(v => {
-    v[0] = orgRound(1 - v[0], 10)
-  })
-  terrain.reverse() // 線分の向きを揃える
-  return terrain
-}
-const rotationTerrain = array => {
-  const terrain = JSON.parse(JSON.stringify(array))
-  terrain.forEach(v => {
-    v[0] -= .5
-    v[1] -= .5
-    ;[v[0], v[1]] = [
-      orgRound(v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2), 10),
-      orgRound(v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2), 10),]
-    v[0] += .5
-    v[1] += .5
-  })
-  return terrain
-}
-let id = 1
-terrainList.forEach(v => {
-  for (let i = 0; i < 4; i++) {
-    if (i === 0) {
-      terrainObject[id] = JSON.parse(JSON.stringify(v))
-    } else terrainObject[id] = rotationTerrain(terrainObject[id - 2])
-    id++
-    terrainObject[id] = inversionTerrain(terrainObject[id - 1])
-    id++
+const orgRound = (value, base) => {return Math.round(value * base) / base}
+{
+  const terrainList = [
+    [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
+    [[0, 0], [1, 0]], // platform
+    [[1, 0], [1, 1], [0, 1],], // triangle
+    [[1, .5], [1, 1], [0, 1],], // 22.5 low
+    [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
+    [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
+    [[1, 0], [1, .5], [0, .5],], // 22.5 harf
+    [[1, .5], [1, 1], [.5, 1],], // small triangle
+    [[0, .5], [.5, 0], [1, 0], [1, 1], [0, 1]], // chip rectangle
+  ]
+  const inversionTerrain = array => {
+    const terrain = JSON.parse(JSON.stringify(array))
+    terrain.forEach(v => {
+      v[0] = orgRound(1 - v[0], 10)
+    })
+    terrain.reverse() // 線分の向きを揃える
+    return terrain
   }
-})
+  const rotationTerrain = array => {
+    const terrain = JSON.parse(JSON.stringify(array))
+    terrain.forEach(v => {
+      v[0] -= .5
+      v[1] -= .5
+      ;[v[0], v[1]] = [
+        orgRound(v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2), 10),
+        orgRound(v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2), 10),]
+      v[0] += .5
+      v[1] += .5
+    })
+    return terrain
+  }
+  let id = 1
+  terrainList.forEach(v => {
+    for (let i = 0; i < 4; i++) {
+      if (i === 0) {
+        terrainObject[id] = JSON.parse(JSON.stringify(v))
+      } else terrainObject[id] = rotationTerrain(terrainObject[id - 2])
+      id++
+      terrainObject[id] = inversionTerrain(terrainObject[id - 1])
+      id++
+    }
+  })
+}
 const mapObject = {}
 const imageObject = {}
 const audioObject = {}
@@ -83,31 +85,58 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const collisionRange = size / 2 * .9
-const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6 ,}
+const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6,}
 const moveAcceleration = .01
 const normalConstant = .5
 const dashConstant = .75
 let moveConstant = normalConstant // 1 = 10 m / s
 const jumpConstant = 1
-const keyMapObject = {
-  left: key.a,
-  right: key.d,
-  up: key.w,
-  down: key.s,
-  jump: key.j,
-  dash: key.k,
-  collision: key.h,
-  subElasticModulus: key.u,
-  addElasticModulus: key.i,
-  subFrictionalForce: key.o,
-  addFrictionalForce: key.p,
-  gravity: key.g,
-}
 let gravityFlag = true // temporary
 let collisionDisp = false
 
-const internalFrameList = []
-const animationFrameList = []
+const walkConstant = .7 // dx := 1.4
+// const dashConstant = 2.1
+const dashThreshold = 3.5
+const slideConstant = 2
+const boostConstant = 6
+const brakeConstant = .75
+const slideBrakeConstant = .95
+const gravityConstant = .272
+// const jumpConstant = 5
+let jump = {flag: false, double: false, step: false, time: 0}
+let slide = {flag: false}
+let cooltime = {
+  step: 0, stepLimit: 15, stepDeferment: 15,
+  aerialStep: 0, aerialStepLimit: 10,
+  slide: 2, slideLimit: 45
+}
+// 今押したか
+const isKeyFirst = list => {return list.some(v => key[v].isFirst())}
+const isKey = list => {return list.some(v => key[v].flag)}// 押しているか
+// どのくらい押しているか
+const howLongKey = list => {
+  return list.reduce((acc, cur) => acc < key[cur].holdtime ? key[cur].holdtime : acc, 0)
+}
+let keyMap = {
+  up: ['w'],
+  right: ['d'],
+  down: ['s'],
+  left: ['a'],
+  jump: ['i', 'l', ' '],
+  attack: ['k'],
+  accel: ['j'],
+  option: ['o'],
+  subElasticModulus: ['y'],
+  addElasticModulus: ['u'],
+  subFrictionalForce: ['o'],
+  addFrictionalForce: ['p'],
+  collision: ['c'],
+  gravity: ['g'],
+}
+let toggle = {
+  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
+}
+
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
@@ -356,23 +385,6 @@ let image = {
         'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
       ],
     },
-  }, bg : {
-    tileset : {
-      data: [],
-      src: ['images/MagicCliffsArtwork/tileset.png'],
-    }, farGrounds: {
-      data: [],
-      src: ['images/MagicCliffsArtwork/far-grounds.png'],
-    }, clouds : {
-      data: [],
-      src: ['images/MagicCliffsArtwork/clouds.png'],
-    }, sea : {
-      data: [],
-      src: ['images/MagicCliffsArtwork/sea.png'],
-    }, sky : {
-      data: [],
-      src: ['images/MagicCliffsArtwork/sky.png'],
-    },
   },
 }
 const imageListLoader = obj => {
@@ -565,7 +577,6 @@ const getMusic = arg => {
       } else {
         audioLoader(mapData.name, path).then(result => {
           musicVolumeHandler(Object.values(result)[0])
-          console.log(Object.values(result)[0])
           Object.values(result)[0].loop = true
           Object.values(result)[0].play()
           Object.assign(audioObject, result)
@@ -592,42 +603,42 @@ const frameCounter = list => {
   } while (flag)
 }
 const input = () => {
-  if (keyMapObject.collision.isFirst()) collisionDisp = !collisionDisp
-  if (keyMapObject.subElasticModulus.isFirst() && 0 < elasticModulus) {
+  if (isKeyFirst(keyMap.collision)) collisionDisp = !collisionDisp
+  if (isKeyFirst(keyMap.subElasticModulus) && 0 < elasticModulus) {
     elasticModulus = orgRound(elasticModulus - .1, 10)
   }
-  if (keyMapObject.addElasticModulus.isFirst() && elasticModulus < 1) {
+  if (isKeyFirst(keyMap.addElasticModulus) && elasticModulus < 1) {
     elasticModulus = orgRound(elasticModulus + .1, 10)
   }
-  if (keyMapObject.subFrictionalForce.isFirst() && 0 < userFF) {
+  if (isKeyFirst(keyMap.subFrictionalForce) && 0 < userFF) {
     userFF = orgRound(userFF - .1, 10)
   }
-  if (keyMapObject.addFrictionalForce.isFirst() && userFF < 1) {
+  if (isKeyFirst(keyMap.addFrictionalForce) && userFF < 1) {
     userFF = orgRound(userFF + .1, 10)
   }
-  if (keyMapObject.gravity.isFirst()) gravityFlag = !gravityFlag
+  if (isKeyFirst(keyMap.gravity)) gravityFlag = !gravityFlag
   if (!gravityFlag) {
     player.dx = 0
     player.dy = 0
     const num = 10
-    if (keyMapObject.left.flag) player.dx -= moveAcceleration * intervalDiffTime * num
-    if (keyMapObject.right.flag) player.dx += moveAcceleration * intervalDiffTime * num
-    if (keyMapObject.up.flag) player.dy -= moveAcceleration * intervalDiffTime * num
-    if (keyMapObject.down.flag) player.dy += moveAcceleration * intervalDiffTime * num
+    if (isKey(keyMap.left)) player.dx -= moveAcceleration * intervalDiffTime * num
+    if (isKey(keyMap.right)) player.dx += moveAcceleration * intervalDiffTime * num
+    if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
+    if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
   }
-  if (keyMapObject.dash.flag) moveConstant = dashConstant
+  if (isKey(keyMap.accel)) moveConstant = dashConstant
   else moveConstant = normalConstant
-  if (keyMapObject.left.flag) {
+  if (isKey(keyMap.left)) {
     if (-moveConstant < player.dx - moveAcceleration) {
       player.dx -= moveAcceleration * intervalDiffTime
     } else player.dx = -moveConstant
   }
-  if (keyMapObject.right.flag) {
+  if (isKey(keyMap.right)) {
     if (player.dx + moveAcceleration < moveConstant) {
       player.dx += moveAcceleration * intervalDiffTime
     } else player.dx = moveConstant
   }
-  if (keyMapObject.jump.isFirst()) {
+  if (isKeyFirst(keyMap.jump)) {
     if (player.landFlag && jumpTrigger.flag) player.dy = -jumpConstant
     player.landFlag = false
   }
@@ -1330,40 +1341,16 @@ const enterGate = (stage, x, y) => {
   player.x = x
   player.y = y
 }
-const walkConstant = .7 // dx := 1.4
-// const dashConstant = 2.1
-const dashThreshold = 3.5
-const stepConstant = 4
-const slideConstant = 2
-const boostConstant = 6
-const brakeConstant = .75
-const slideBrakeConstant = .95
-const gravityConstant = .272
-// const jumpConstant = 5
-let jump = {flag: false, double: false, step: false, time: 0}
-let slide = {flag: false}
-let cooltime = {
-  step: 0, stepLimit: 15, stepDeferment: 15,
-  aerialStep: 0, aerialStepLimit: 10,
-  slide: 2, slideLimit: 45
-}
-let action = {
-  up: ['w'], right: ['d'], down: ['s'], left: ['a'], jump: ['i', 'l', ' '],
-  attack: ['k'], accel: ['j'], option: ['o']
-}
-let toggle = {
-  DECO: 'e', status: 'g', hitbox: 'h', map: 'm'
-}
 const modelUpdate = () => {
   let keyFirstFlag = {
-    attack: action.attack.some(v => key[v].isFirst()),
-    jump: action.jump.some(v => key[v].isFirst()),
+    attack: keyMap.attack.some(v => key[v].isFirst()),
+    jump: keyMap.jump.some(v => key[v].isFirst()),
   }
   const inGameInputProcess = () => {
     if (player.state === 'crouch') player.state = 'idle'
     const crouchProhibitionList = ['run']
     if (
-      action.down.some(v => key[v].flag) && player.landFlag && !player.grapFlag &&
+      keyMap.down.some(v => key[v].flag) && player.landFlag && !player.grapFlag &&
       !crouchProhibitionList.some(v => v === player.state)
       ) {
       player.state = 'crouch'
@@ -1371,13 +1358,13 @@ const modelUpdate = () => {
     const walkProhibitionList = ['crouch', 'punch', 'kick', 'damage']
     if ( // walk
       !walkProhibitionList.some(v => v === player.state) &&
-      !(action.left.some(v => key[v].flag) && action.right.some(v => key[v].flag))
+      !(keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag))
     ) {
       let speed = dashConstant
-      speed = action.left.some(v => key[v].flag) && -speed < player.dx ? -speed
-      : key[action.left].flag && -dashThreshold < player.dx ? -speed / 4
-      : action.right.some(v => key[v].flag) && player.dx < speed ? speed
-      : action.right.some(v => key[v].flag) && player.dx < dashThreshold ? speed / 4
+      speed = keyMap.left.some(v => key[v].flag) && -speed < player.dx ? -speed
+      : key[keyMap.left].flag && -dashThreshold < player.dx ? -speed / 4
+      : keyMap.right.some(v => key[v].flag) && player.dx < speed ? speed
+      : keyMap.right.some(v => key[v].flag) && player.dx < dashThreshold ? speed / 4
       : 0
       speed = player.landFlag ? speed : speed / 3 // aerial brake
       player.dx += speed
@@ -1411,7 +1398,7 @@ const modelUpdate = () => {
         }
         jump.time += 1
       }
-      if(!action.jump.some(v => key[v].flag)) {
+      if(!keyMap.jump.some(v => key[v].flag)) {
         if (settings.type.DECO) jump.time = 0
         else {
           if (5 < jump.time) {
@@ -1426,7 +1413,7 @@ const modelUpdate = () => {
         player.wallFlag &&
         !player.landFlag &&
         0 < player.dy &&
-        action.up.some(v => key[v].flag)) {
+        keyMap.up.some(v => key[v].flag)) {
         if (
           (player.wallFlag === 'left' && player.direction === 'right') ||
           (player.wallFlag === 'right' && player.direction === 'left')
@@ -1440,7 +1427,7 @@ const modelUpdate = () => {
         player.wallFlag &&
         !player.landFlag &&
         0 < player.dy &&
-        action.up.some(v => key[v].flag))) {
+        keyMap.up.some(v => key[v].flag))) {
         player.grapFlag = false
       }
     }
@@ -1475,8 +1462,8 @@ const modelUpdate = () => {
       const actionList = ['crouch', 'slide', 'punch', 'kick']
       if ( // punch
         keyFirstFlag.attack &&
-        !action.left.some(v => key[v].flag) &&
-        !action.right.some(v => key[v].flag) &&
+        !keyMap.left.some(v => key[v].flag) &&
+        !keyMap.right.some(v => key[v].flag) &&
         player.landFlag &&
         !actionList.some(v => v === player.state)
       ) {
@@ -1488,8 +1475,8 @@ const modelUpdate = () => {
         keyFirstFlag.attack &&
         player.landFlag &&
         !actionList.some(v => v === player.state) && (
-        action.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
-        action.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
+        keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
+        keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
       ) {
         player.state = 'kick'
         imageStat.kick.time = 0
@@ -1497,8 +1484,8 @@ const modelUpdate = () => {
       if (cooltime.slide === 0) {
         if ( // slide
           keyFirstFlag.attack && (
-          action.left.some(v => key[v].flag) ||
-          action.right.some(v => key[v].flag)) &&
+          keyMap.left.some(v => key[v].flag) ||
+          keyMap.right.some(v => key[v].flag)) &&
           !actionList.some(v => v === player.state) &&
           player.landFlag &&
           !player.wallFlag &&
@@ -1519,7 +1506,7 @@ const modelUpdate = () => {
         if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
         else cooltime.slide -= 1
       }
-      if (!action.accel.some(v => key[v].flag)) slide.flag = false
+      if (!keyMap.accel.some(v => key[v].flag)) slide.flag = false
       // if ( // accel
       //   player.action !== 'crouch' && !jump.step
       // ) {
@@ -1538,159 +1525,161 @@ const modelUpdate = () => {
       // }
     }
   }
-  if (!menuFlag) inGameInputProcess()
+  if (false && !menuFlag) inGameInputProcess()
   Object.keys(toggle).forEach(v => {
     if (key[toggle[v]].isFirst()) {
       settings.type[v] = setStorage(v, !settings.type[v])
       inputDOM[v].checked = !inputDOM[v].checked
     }
   })
-  if (player.state === 'slide') { // collision detect
-    player.hitbox.x = player.x - size * 1.375
-    player.hitbox.y = player.y - size
-    player.hitbox.w = size * 2.75
-    player.hitbox.h = size
-  } else {
-    player.hitbox.x = player.x - size / 2
-    player.hitbox.y = player.y - size * 2.75
-    player.hitbox.w = size
-    player.hitbox.h = size * 2.75
-  }
-  let aerialFlag = true
-  if (player.dx !== 0) player.wallFlag = false
-  let flag = false // TODO: implementation ASAP
-  do {
-    fieldArray.forEach((y, iY) => {
-      for (let iX = 0; iX < fieldArray[0].length; iX++) {
-        if (y[iX] === '1') {
-          if (0 < player.dy && fieldArray[iY - 1][iX] !== '1') { // floor
-            const ax = iX * size - player.hitbox.w / 2
-            const ay = iY * size
-            const bx = iX * size + size + player.hitbox.w / 2
-            const by = iY * size
-            const abx = bx - ax
-            const aby = by - ay
-            let nx = -aby
-            let ny = abx
-            let length = (nx ** 2 + ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            ny *= length
-            const d = -(ax * nx + ay * ny)
-            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-            if (0 < t && t <= 1) {
-              const cx = player.x + player.dx * t
-              const cy = player.y + player.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
-                player.y = iY * size - gravityConstant + 1e-12
-                player.dy = 0
-                aerialFlag = false
+  if (false) {
+    if (player.state === 'slide') { // collision detect
+      player.hitbox.x = player.x - size * 1.375
+      player.hitbox.y = player.y - size
+      player.hitbox.w = size * 2.75
+      player.hitbox.h = size
+    } else {
+      player.hitbox.x = player.x - size / 2
+      player.hitbox.y = player.y - size * 2.75
+      player.hitbox.w = size
+      player.hitbox.h = size * 2.75
+    }
+    let aerialFlag = true
+    if (player.dx !== 0) player.wallFlag = false
+    let flag = false // TODO: implementation ASAP
+    do {
+      fieldArray.forEach((y, iY) => {
+        for (let iX = 0; iX < fieldArray[0].length; iX++) {
+          if (y[iX] === '1') {
+            if (0 < player.dy && fieldArray[iY - 1][iX] !== '1') { // floor
+              const ax = iX * size - player.hitbox.w / 2
+              const ay = iY * size
+              const bx = iX * size + size + player.hitbox.w / 2
+              const by = iY * size
+              const abx = bx - ax
+              const aby = by - ay
+              let nx = -aby
+              let ny = abx
+              let length = (nx ** 2 + ny ** 2) ** .5
+              if (0 < length) length = 1 / length
+              nx *= length
+              ny *= length
+              const d = -(ax * nx + ay * ny)
+              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+              if (0 < t && t <= 1) {
+                const cx = player.x + player.dx * t
+                const cy = player.y + player.dy * t
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc < 0) {
+                  player.y = iY * size - gravityConstant + 1e-12
+                  player.dy = 0
+                  aerialFlag = false
+                }
+              }
+            }
+            if (player.dy < 0 && fieldArray[iY + 1][iX] !== '1') { // ceiling
+              const ax = iX * size - player.hitbox.w / 2
+              const ay = iY * size + size + player.hitbox.h
+              const bx = iX * size + size + player.hitbox.w / 2
+              const by = iY * size + size + player.hitbox.h
+              const abx = bx - ax
+              const aby = by - ay
+              let nx = -aby
+              let ny = abx
+              let length = (nx ** 2 + ny ** 2) ** .5
+              if (0 < length) length = 1 / length
+              nx *= length
+              ny *= length
+              const d = -(ax * nx + ay * ny)
+              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+              if (0 < t && t <= 1) {
+                const cx = player.x + player.dx * t
+                const cy = player.y + player.dy * t
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc < 0) {
+                  player.y = iY * size + size + player.hitbox.h
+                  player.dy = 0
+                }
+              }
+            }
+            if (0 < player.dx && y[iX - 1] !== '1') { // right wall
+              const ax = iX * size - player.hitbox.w / 2
+              const ay = iY * size
+              const bx = iX * size - player.hitbox.w / 2
+              const by = iY * size + size + player.hitbox.h
+              const abx = bx - ax
+              const aby = by - ay
+              let nx = -aby
+              let ny = abx
+              let length = (nx ** 2 + ny ** 2) ** .5
+              if (0 < length) length = 1 / length
+              nx *= length
+              ny *= length
+              const d = -(ax * nx + ay * ny)
+              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+              if (0 < t && t <= 1) {
+                const cx = player.x + player.dx * t
+                const cy = player.y + player.dy * t
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc < 0) {
+                  player.x = iX * size - player.hitbox.w / 2 - 1
+                  player.dx = 0
+                  player.wallFlag = 'left'
+                }
+              }
+            } else if (player.dx !== 0 && y[iX + 1] !== '1') { // left wall
+              const ax = iX * size + size + player.hitbox.w / 2
+              const ay = iY * size
+              const bx = iX * size + size + player.hitbox.w / 2
+              const by = iY * size + size + player.hitbox.h
+              const abx = bx - ax
+              const aby = by - ay
+              let nx = -aby
+              let ny = abx
+              let length = (nx ** 2 + ny ** 2) ** .5
+              if (0 < length) length = 1 / length
+              nx *= length
+              ny *= length
+              const d = -(ax * nx + ay * ny)
+              const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
+              if (0 < t && t <= 1) {
+                const cx = player.x + player.dx * t
+                const cy = player.y + player.dy * t
+                const acx = cx - ax
+                const acy = cy - ay
+                const bcx = cx - bx
+                const bcy = cy - by
+                const doc = acx * bcx + acy * bcy
+                if (doc < 0) {
+                  player.x = iX * size + size + player.hitbox.w / 2 + 1
+                  player.dx = 0
+                  player.wallFlag = 'right'
+                }
               }
             }
           }
-          if (player.dy < 0 && fieldArray[iY + 1][iX] !== '1') { // ceiling
-            const ax = iX * size - player.hitbox.w / 2
-            const ay = iY * size + size + player.hitbox.h
-            const bx = iX * size + size + player.hitbox.w / 2
-            const by = iY * size + size + player.hitbox.h
-            const abx = bx - ax
-            const aby = by - ay
-            let nx = -aby
-            let ny = abx
-            let length = (nx ** 2 + ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            ny *= length
-            const d = -(ax * nx + ay * ny)
-            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-            if (0 < t && t <= 1) {
-              const cx = player.x + player.dx * t
-              const cy = player.y + player.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
-                player.y = iY * size + size + player.hitbox.h
-                player.dy = 0
-              }
-            }
-          }
-          if (0 < player.dx && y[iX - 1] !== '1') { // right wall
-            const ax = iX * size - player.hitbox.w / 2
-            const ay = iY * size
-            const bx = iX * size - player.hitbox.w / 2
-            const by = iY * size + size + player.hitbox.h
-            const abx = bx - ax
-            const aby = by - ay
-            let nx = -aby
-            let ny = abx
-            let length = (nx ** 2 + ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            ny *= length
-            const d = -(ax * nx + ay * ny)
-            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-            if (0 < t && t <= 1) {
-              const cx = player.x + player.dx * t
-              const cy = player.y + player.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
-                player.x = iX * size - player.hitbox.w / 2 - 1
-                player.dx = 0
-                player.wallFlag = 'left'
-              }
-            }
-          } else if (player.dx !== 0 && y[iX + 1] !== '1') { // left wall
-            const ax = iX * size + size + player.hitbox.w / 2
-            const ay = iY * size
-            const bx = iX * size + size + player.hitbox.w / 2
-            const by = iY * size + size + player.hitbox.h
-            const abx = bx - ax
-            const aby = by - ay
-            let nx = -aby
-            let ny = abx
-            let length = (nx ** 2 + ny ** 2) ** .5
-            if (0 < length) length = 1 / length
-            nx *= length
-            ny *= length
-            const d = -(ax * nx + ay * ny)
-            const t = -(nx * player.x + ny * player.y + d) / (nx * player.dx + ny * player.dy)
-            if (0 < t && t <= 1) {
-              const cx = player.x + player.dx * t
-              const cy = player.y + player.dy * t
-              const acx = cx - ax
-              const acy = cy - ay
-              const bcx = cx - bx
-              const bcy = cy - by
-              const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
-                player.x = iX * size + size + player.hitbox.w / 2 + 1
-                player.dx = 0
-                player.wallFlag = 'right'
-              }
-            }
-          }
+          if (
+            player.hitbox.x <= iX * size + size && iX * size <= player.hitbox.x + player.hitbox.w &&
+            player.hitbox.y <= iY * size + size && iY * size <= player.hitbox.y + player.hitbox.h &&
+            player.state === 'slide'
+          ) player.dx = 0
         }
-        if (
-          player.hitbox.x <= iX * size + size && iX * size <= player.hitbox.x + player.hitbox.w &&
-          player.hitbox.y <= iY * size + size && iY * size <= player.hitbox.y + player.hitbox.h &&
-          player.state === 'slide'
-        ) player.dx = 0
-      }
-    })
-  } while (flag);
-  { // enemy update
+      })
+    } while (flag)
+  }
+  if (false) { // enemy update
     if (enemies.length < 1 && mapData.name === 'BattleField') {
       const x = mapData.w * 3 / 4
       const y = mapData.h * 15 / 16
@@ -1899,94 +1888,98 @@ const modelUpdate = () => {
       }
     })
   }
-  player.landFlag = aerialFlag ? false : true
-  if (player.grapFlag) player.dx = 0
-  player.x += player.dx
-  if (-.01 < player.dx && player.dx < .01) player.dx = 0
-  player.y += player.dy
-  player.dy += gravityConstant
-  if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
-  if (player.landFlag) {
-    if (player.state === 'slide') {
-      player.dx *= slideBrakeConstant
-    } else player.dx *= brakeConstant
-    jump.flag = false
-    jump.double = false
-    const list = ['punch', 'kick', 'run', 'crouch', 'walk', 'turn', 'slide', 'damage']
-    if (!list.some(v => v === player.state)) player.state = 'idle'
-  } else {
-    jump.flag = true
-    if (player.state !== 'slide') player.state = 'jump'
-    if (mapData.h + size * 10 < player.y) { // game over
-      player.x = mapData.checkPoint.x
-      player.y = mapData.checkPoint.y
-    }
-  }
-  if (player.state === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
-    player.attackBox = player.direction === 'left' ? {
-      x: player.x - size,
-      y: player.y - size * 2,
-      w: size / 2,
-      h: size
-    } : {
-      x: player.x + size / 2,
-      y: player.y - size * 2,
-      w: size / 2,
-      h: size
-    }
-  } else if (
-    player.state === 'kick' &&
-    imageStat.kick.frame * 3 < imageStat.kick.time &&
-    imageStat.kick.time < imageStat.kick.frame * 5
-  ) {
-    player.attackBox = player.direction === 'left' ? {
-      x: player.x - size * 2,
-      y: player.y - size * 2,
-      w: size * 1.5,
-      h: size
-    } : {
-      x: player.x + size / 2,
-      y: player.y - size * 2,
-      w: size * 1.5,
-      h: size
-    }
-  } else player.attackBox = {x: 0, y: 0, w: 0, h: 0}
-  if (0 < player.invincibleTimer) player.invincibleTimer -= 1
-  if (!menuFlag) { // gate process
-    gate.forEach(v => {
-      if (
-        player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
-        player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
-      ) {
-        if (action.up.some(v => key[v].flag)) {
-          enterGate(v.stage, v.address.x, v.address.y)
-        }
+  if (false) {
+    player.landFlag = aerialFlag ? false : true
+    if (player.grapFlag) player.dx = 0
+    player.x += player.dx
+    if (-.01 < player.dx && player.dx < .01) player.dx = 0
+    player.y += player.dy
+    player.dy += gravityConstant
+    if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
+    if (player.landFlag) {
+      if (player.state === 'slide') {
+        player.dx *= slideBrakeConstant
+      } else player.dx *= brakeConstant
+      jump.flag = false
+      jump.double = false
+      const list = ['punch', 'kick', 'run', 'crouch', 'walk', 'turn', 'slide', 'damage']
+      if (!list.some(v => v === player.state)) player.state = 'idle'
+    } else {
+      jump.flag = true
+      if (player.state !== 'slide') player.state = 'jump'
+      if (mapData.h + size * 10 < player.y) { // game over
+        player.x = mapData.checkPoint.x
+        player.y = mapData.checkPoint.y
       }
-    })
-  }
-  if (!menuFlag) {
-    const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
-    player.direction = ((
-      action.left.some(v => key[v].flag) && action.right.some(v => key[v].flag)) || !player.landFlag ||
-      turnProhibitionList.some(v => v === player.state)
-    ) ? player.direction
-    : action.left.some(v => key[v].flag) ? 'left'
-    : action.right.some(v => key[v].flag) ? 'right'
-    : player.direction
-    if (!turnProhibitionList.some(v => v === player.state)) {
-      if (action.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
-      if (action.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
-      if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-      if (action.left.some(v => key[v].flag) && action.right.some(v => key[v].flag)) player.state = 'idle'
     }
+    if (player.state === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
+      player.attackBox = player.direction === 'left' ? {
+        x: player.x - size,
+        y: player.y - size * 2,
+        w: size / 2,
+        h: size
+      } : {
+        x: player.x + size / 2,
+        y: player.y - size * 2,
+        w: size / 2,
+        h: size
+      }
+    } else if (
+      player.state === 'kick' &&
+      imageStat.kick.frame * 3 < imageStat.kick.time &&
+      imageStat.kick.time < imageStat.kick.frame * 5
+    ) {
+      player.attackBox = player.direction === 'left' ? {
+        x: player.x - size * 2,
+        y: player.y - size * 2,
+        w: size * 1.5,
+        h: size
+      } : {
+        x: player.x + size / 2,
+        y: player.y - size * 2,
+        w: size * 1.5,
+        h: size
+      }
+    } else player.attackBox = {x: 0, y: 0, w: 0, h: 0}
+    if (0 < player.invincibleTimer) player.invincibleTimer -= 1
   }
-  const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
-  if (!stateList.some(v => v === player.state)) {
-    player.state = (player.state === 'turn') ? 'turn'
-    : (player.state === 'slide' && (player.dx < -3.5 || 3.5 < player.dx)) ? 'slide'
-    : (-.2 < player.dx && player.dx < .2) ? 'idle'
-    : (-1.4 < player.dx && player.dx < 1.4) ? 'walk'
-    : 'run'
+  if (false) {
+    if (!menuFlag) { // gate process
+      gate.forEach(v => {
+        if (
+          player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
+          player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
+        ) {
+          if (keyMap.up.some(v => key[v].flag)) {
+            enterGate(v.stage, v.address.x, v.address.y)
+          }
+        }
+      })
+    }
+    if (!menuFlag) {
+      const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
+      player.direction = ((
+        keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) || !player.landFlag ||
+        turnProhibitionList.some(v => v === player.state)
+      ) ? player.direction
+      : keyMap.left.some(v => key[v].flag) ? 'left'
+      : keyMap.right.some(v => key[v].flag) ? 'right'
+      : player.direction
+      if (!turnProhibitionList.some(v => v === player.state)) {
+        if (keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
+        if (keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
+        if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
+        if (keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) player.state = 'idle'
+      }
+    }
+    const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
+    if (!stateList.some(v => v === player.state)) {
+      player.state = (player.state === 'turn') ? 'turn'
+      : (player.state === 'slide' && (player.dx < -3.5 || 3.5 < player.dx)) ? 'slide'
+      : (-.2 < player.dx && player.dx < .2) ? 'idle'
+      : (-1.4 < player.dx && player.dx < 1.4) ? 'walk'
+      : 'run'
+    }
   }
 }
 const viewUpdate = () => {
@@ -2064,8 +2057,8 @@ const viewUpdate = () => {
       i.time = 0
       if (!menuFlag) {
         if (
-          !(player.wallFlag && action.left.some(v => key[v].flag) &&
-          action.right.some(v => key[v].flag))) player.state = 'walk'
+          !(player.wallFlag && keyMap.left.some(v => key[v].flag) &&
+          keyMap.right.some(v => key[v].flag))) player.state = 'walk'
       }
     }
   } else if (player.state === 'run') {
@@ -2175,7 +2168,7 @@ const drawInGame = () => {
   stageOffset.y = player.y < ratio.y ? 0 :
   mapData.h - ratio.y < player.y ? mapData.h - canvas.offsetHeight : ((
     player.y - ratio.y) / (mapData.h - ratio.y * 2)) * (mapData.h - canvas.offsetHeight)
-  { // draw gate
+  if (false) { // draw gate
     context.fillStyle = 'hsl(0, 0%, 25%)'
     gate.forEach(obj => {
       context.fillRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
@@ -2219,7 +2212,7 @@ const drawInGame = () => {
   }
   const imageOffset = {x: 64, y: 124}
   context.fillStyle = 'hsl(30, 100%, 50%)'
-  enemies.forEach(v => {
+  if (false) enemies.forEach(v => {
     if (v.type === 'object') {
       context.fillRect(
         v.x + evlt(v.dx) - stageOffset.x|0, v.y + evlt(v.dy) - stageOffset.y|0, v.w|0, v.h|0
@@ -2238,7 +2231,7 @@ const drawInGame = () => {
       context.restore()
     }
   })
-  if (0 < aftergrow.gate) {
+  if (false && 0 < aftergrow.gate) {
     context.save()
     context.font = `italic ${size * 2}px sans-serif`
     const start = 60
@@ -2389,7 +2382,7 @@ const musicProcess = () => {
   ) audio.music[currentPlay].data.currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
 }
 const titleProcess = () => {
-  if (action.attack.some(v => key[v].isFirst())) screenState = screenList[1]
+  if (keyMap.attack.some(v => key[v].isFirst())) screenState = screenList[1]
 }
 const drawTitle = () => {
   context.fillStyle = 'hsl(0, 0%, 0%)'
@@ -2399,9 +2392,9 @@ const drawTitle = () => {
   context.fillText('Title', canvas.offsetWidth / 2 + ow, canvas.offsetHeight / 2)
   context.font = `${size * 2}px sans-serif`
   context.fillText(
-    `Press '${action.attack[0].toUpperCase()}' to Start`,
+    `Press '${keyMap.attack[0].toUpperCase()}' to Start`,
     canvas.offsetWidth / 2 - menuWidth / 2, canvas.offsetHeight * 3 / 4)
-  Object.entries(action).forEach(([k, v], i) => {
+  Object.entries(keyMap).forEach(([k, v], i) => {
     context.fillText(
       k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * size * 2)
     context.fillText(
@@ -2412,15 +2405,10 @@ const drawTitle = () => {
 const title = () => {
   if (!menuFlag) titleProcess()
 }
-const inGame = () => {
-  modelUpdate()
-  viewUpdate()
-  musicProcess()
-}
 let floatMenuCursor = 0
 const floatMenuCursorMax = 3
 const floatMenu = () => {
-  if (action.option.some(v => key[v].isFirst())) {
+  if (keyMap.option.some(v => key[v].isFirst())) {
     menuFlag = !menuFlag
     if (menuOpenTimestamp) {
       menuOpenTimestamp = 0
@@ -2440,17 +2428,17 @@ const floatMenu = () => {
   ) menuGauge -= 1
   menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
   const config = () => {
-    if (action.down.some(v => key[v].isFirst())) {
+    if (keyMap.down.some(v => key[v].isFirst())) {
       floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
     }
-    if (action.up.some(v => key[v].isFirst())) {
+    if (keyMap.up.some(v => key[v].isFirst())) {
       floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
     }
     const k = Object.keys(settings.type)[floatMenuCursor]
     if (
-      (action.attack.some(v => key[v].isFirst())) ||
-      (action.left.some(v => key[v].isFirst()) && settings.type[k]) ||
-      (action.right.some(v => key[v].isFirst()) && !settings.type[k])
+      (keyMap.attack.some(v => key[v].isFirst())) ||
+      (keyMap.left.some(v => key[v].isFirst()) && settings.type[k]) ||
+      (keyMap.right.some(v => key[v].isFirst()) && !settings.type[k])
     ) {
       settings.type[k] = setStorage(k, !settings.type[k])
       inputDOM[k].checked = !inputDOM[k].checked
@@ -2484,8 +2472,14 @@ const main = () => setInterval(() => {
   mapObjectProcess()
   stateUpdate()
 
+  const inGame = () => {
+    modelUpdate()
+    // viewUpdate()
+    // musicProcess()
+  }
   // if (screenState === screenList[0]) title()
   // else if (screenState === screenList[1]) inGame()
+  inGame()
   floatMenu()
 }, 0)
 const draw = () => {
@@ -2529,12 +2523,12 @@ const draw = () => {
     `dx: ${player.dx.toFixed(2)}`,
     `dy: ${player.dy.toFixed(2)}`,
     `jumpTrigger: ${jumpTrigger.flag}`,
-    `[${keyMapObject.gravity.key}]gravity: ${gravityFlag}`,
-    `[${keyMapObject.collision.key}]collisionDisp: ${collisionDisp}`,
-    `[${keyMapObject.subElasticModulus.key}: -, ${keyMapObject.addElasticModulus.key}: +]` +
+    `[${keyMap.gravity}]gravity: ${gravityFlag}`,
+    `[${keyMap.collision}]collisionDisp: ${collisionDisp}`,
+    `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
     `elasticModulus: ${elasticModulus}`,
-    `[${keyMapObject.subFrictionalForce.key}: -, ${
-      keyMapObject.addFrictionalForce.key}: +]` +
+    `[${keyMap.subFrictionalForce}: -, ${
+      keyMap.addFrictionalForce}: +]` +
     `frictionalForce: ${userFF}`,
   ]
   list.forEach((v, i) => {
