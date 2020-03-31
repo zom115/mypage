@@ -310,6 +310,20 @@ const collisionDetect = () => {
   ownCondition.y += ownCondition.dy
   jumpTrigger.flag = onetimeLandFlag
 }
+const mapObjectProcess = () => {
+  mapObject.layers[objectgroupIndexList].objects.forEach(v => {
+    if (v.name === 'gate' &&
+      v.x < ownCondition.x && ownCondition.x < v.x + v.width &&
+      v.y < ownCondition.y && ownCondition.y < v.y + v.height
+    ) {
+      v.properties.forEach(vl => {
+        if (vl.name === 'address') {
+          console.log(vl.value)
+        }
+      })
+    }
+  })
+}
 const stateUpdate = () => {
   ownCondition.dy += gravitationalAcceleration * coefficient * intervalDiffTime
   frictionalForce = userFF
@@ -320,6 +334,7 @@ const main = () => setInterval(() => {
   currentTime = globalTimestamp
   input()
   collisionDetect()
+  mapObjectProcess()
   stateUpdate()
 }, 0)
 const draw = () => {
@@ -454,6 +469,7 @@ const draw = () => {
 let mapObject = {}
 let collisionTilelayerIndexList = []
 let tilesetTilelayerIndexList = []
+let objectgroupIndexList = []
 let backgroundIndexObject = {}
 let tilesetIndexObject = {}
 let mapInfoObject = {}
@@ -469,6 +485,7 @@ const initialize = () => {
           if (v.name.startsWith('collision')) collisionTilelayerIndexList.push(i)
           else tilesetTilelayerIndexList.push(i)
         } else if (v.type === 'objectgroup') {
+          objectgroupIndexList.push(i)
           const playerPosition = v.objects[v.objects.findIndex(v => {
             return v.name === 'playerPosition'
           })]
@@ -507,15 +524,6 @@ const initialize = () => {
   })
 }
 initialize().then(() => {
-  console.log(
-    // mapObject,
-    // collisionTilelayerIndexList,
-    // tilesetTilelayerIndexList,
-    // backgroundIndexObject,
-    tilesetIndexObject,
-    mapInfoObject,
-    resource,
-  )
   main()
   draw()
 })
