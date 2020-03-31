@@ -472,14 +472,17 @@ const draw = () => {
       jumpTrigger.w, jumpTrigger.h)
   }
 }
+let directoryList = [
+  'map_GothicVaniaTown',
+  'map_MagicCliffsArtwork',
+]
+let mapName = directoryList[0]
+const mapObject = {}
 const imageObject = {}
-let directory = 'map_GothicVaniaTown'
-let mapName = directory
-let mapObject = {}
-directory += '.json'
-const setDirectory = str => {return 'resources/' + str}
-const initialize = () => {
+const initList = []
+const getMapData = directory => {
   return new Promise(async resolve => {
+    const setDirectory = str => {return 'resources/' + str}
     const mapInfoObject = {
       layersIndex: {
         collision: [],
@@ -490,7 +493,7 @@ const initialize = () => {
       tilesetsIndex: {},
     }
     let resource = []
-    await mapLoader('main', setDirectory(directory)).then(result => {
+    await mapLoader('main', setDirectory(directory + '.json')).then(result => {
       Object.assign(mapInfoObject, result.main)
       mapInfoObject.layers.forEach((v, i) => {
         if(v.type === 'tilelayer') {
@@ -531,15 +534,19 @@ const initialize = () => {
     })
     await Promise.all(resource).then(result => {
       result.forEach(v => imageObject[Object.keys(v)[0]] = Object.values(v)[0])
-      mapObject[mapName] = mapInfoObject
+      mapObject[directory] = mapInfoObject
       resolve()
     })
   })
 }
-initialize().then(() => {
+directoryList.forEach(v => {
+  initList.push(getMapData(v))
+})
+Promise.all(initList).then(() => {
   console.log(
     mapObject,
     imageObject,
+    mapName,
   )
   main()
   draw()
