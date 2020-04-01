@@ -99,9 +99,9 @@ const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3, breathMa
 let player = {
   x: 0, y: 0,
   dx: 0, dy: 0,
-  r: size / 2,
+  r: size / 2 * .9,
   state: 'idle', direction: 'right',
-  landFlag: false, wallFlag: false, grapFlag: false,
+  landFlag: false, wallFlag: false, grabFlag: false,
   hitbox: {x: 0, y: 0, w: 0, h: 0},
   attackBox: {x: 0, y: 0, w: 0, h: 0},
   invincibleTimer: 0,
@@ -113,19 +113,14 @@ let player = {
   breathTimestamp: globalTimestamp,
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
-const collisionRange = size / 2 * .9
 const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6,}
-const moveAcceleration = .01
-const normalConstant = .5
-const dashConstant = .75
-let moveConstant = normalConstant // 1 = 10 m / s
+const normalConstant = .01
+const dashConstant = .02
+let moveAcceleration = normalConstant
+const dashThreshold = 1
 const jumpConstant = 1
 let gravityFlag = true // temporary
-let collisionDisp = false
 
-const walkConstant = .7 // dx := 1.4
-// const dashConstant = 2.1
-const dashThreshold = 3.5
 const slideConstant = 2
 const boostConstant = 6
 const brakeConstant = .75
@@ -607,73 +602,67 @@ const frameCounter = list => {
   } while (flag)
 }
 const proposal = () => {
-  if (keyFirstFlagObject.collision) collisionDisp = !collisionDisp
-  if (keyFirstFlagObject.subElasticModulus && 0 < elasticModulus) {
-    elasticModulus = orgRound(elasticModulus - .1, 10)
+  { // dash
+    if (isKey(keyMap.accel)) moveAcceleration = dashConstant
+    else moveAcceleration = normalConstant
   }
-  if (keyFirstFlagObject.addElasticModulus && elasticModulus < 1) {
-    elasticModulus = orgRound(elasticModulus + .1, 10)
+  { // walk, aerial control
+    let speed = moveAcceleration * intervalDiffTime
+    const aerialBrake = 1 / 3
+    speed *= ['crouch', 'punch', 'kick', 'damage'].some(v => v === player.state) ? 0 :
+    player.landFlag ? 1 : aerialBrake
+    const attenuationRatio = .95
+    player.dx -= isKey(keyMap.left) && player.dx < -dashThreshold ? speed * (1 - attenuationRatio) :
+    isKey(keyMap.left) ? speed : 0
+    player.dx += isKey(keyMap.right) && dashThreshold < player.dx ? speed * (1 - attenuationRatio) :
+    isKey(keyMap.right) ? speed : 0
   }
-  if (keyFirstFlagObject.subFrictionalForce && 0 < userFF) {
-    userFF = orgRound(userFF - .1, 10)
+  { // jump
+    if (keyFirstFlagObject.jump) {
+      if (player.landFlag && jumpTrigger.flag) player.dy = -jumpConstant
+      player.landFlag = false
+    }
   }
-  if (keyFirstFlagObject.addFrictionalForce && userFF < 1) {
-    userFF = orgRound(userFF + .1, 10)
-  }
-  if (keyFirstFlagObject.gravity) gravityFlag = !gravityFlag
-  if (!gravityFlag) {
-    player.dx = 0
-    player.dy = 0
-    const num = 10
-    if (isKey(keyMap.left)) player.dx -= moveAcceleration * intervalDiffTime * num
-    if (isKey(keyMap.right)) player.dx += moveAcceleration * intervalDiffTime * num
-    if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
-    if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
-  }
-  if (isKey(keyMap.accel)) moveConstant = dashConstant
-  else moveConstant = normalConstant
-  if (isKey(keyMap.left)) {
-    if (-moveConstant < player.dx - moveAcceleration) {
-      player.dx -= moveAcceleration * intervalDiffTime
-    } else player.dx = -moveConstant
-  }
-  if (isKey(keyMap.right)) {
-    if (player.dx + moveAcceleration < moveConstant) {
-      player.dx += moveAcceleration * intervalDiffTime
-    } else player.dx = moveConstant
-  }
-  if (keyFirstFlagObject.jump) {
-    if (player.landFlag && jumpTrigger.flag) player.dy = -jumpConstant
-    player.landFlag = false
+  { // for debug
+    if (keyFirstFlagObject.subElasticModulus && 0 < elasticModulus) {
+      elasticModulus = orgRound(elasticModulus - .1, 10)
+    }
+    if (keyFirstFlagObject.addElasticModulus && elasticModulus < 1) {
+      elasticModulus = orgRound(elasticModulus + .1, 10)
+    }
+    if (keyFirstFlagObject.subFrictionalForce && 0 < userFF) {
+      userFF = orgRound(userFF - .1, 10)
+    }
+    if (keyFirstFlagObject.addFrictionalForce && userFF < 1) {
+      userFF = orgRound(userFF + .1, 10)
+    }
+    if (keyFirstFlagObject.gravity) gravityFlag = !gravityFlag
+    if (!gravityFlag) {
+      player.dx = 0
+      player.dy = 0
+      const num = 10
+      if (isKey(keyMap.left)) player.dx -= moveAcceleration * intervalDiffTime * num
+      if (isKey(keyMap.right)) player.dx += moveAcceleration * intervalDiffTime * num
+      if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
+      if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
+    }
   }
 
-  const inGameInputProcess = () => {
+  if (false) {
     if (player.state === 'crouch') player.state = 'idle'
     const crouchProhibitionList = ['run']
     if (
-      keyMap.down.some(v => key[v].flag) && player.landFlag && !player.grapFlag &&
+      keyMap.down.some(v => key[v].flag) && player.landFlag && !player.grabFlag &&
       !crouchProhibitionList.some(v => v === player.state)
       ) {
       player.state = 'crouch'
     }
-    const walkProhibitionList = ['crouch', 'punch', 'kick', 'damage']
-    if ( // walk
-      !walkProhibitionList.some(v => v === player.state) &&
-      !(keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag))
-    ) {
-      let speed = dashConstant
-      speed = keyMap.left.some(v => key[v].flag) && -speed < player.dx ? -speed
-      : key[keyMap.left].flag && -dashThreshold < player.dx ? -speed / 4
-      : keyMap.right.some(v => key[v].flag) && player.dx < speed ? speed
-      : keyMap.right.some(v => key[v].flag) && player.dx < dashThreshold ? speed / 4
-      : 0
-      speed = player.landFlag ? speed : speed / 3 // aerial brake
-      player.dx += speed
-    }
+  }
+  const inGameInputProcess = () => {
     { // jump
       if (keyFirstFlagObject.jump && player.state !== 'damage') {
         if (jump.flag) {
-          if (!jump.double && jump.time === 0 && !player.grapFlag) {
+          if (!jump.double && jump.time === 0 && !player.grabFlag) {
             player.dy = -jumpConstant
             player.state = 'jump'
             jump.double = true
@@ -686,7 +675,7 @@ const proposal = () => {
           player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
           player.state = 'jump'
           jump.flag = true
-          if (!player.landFlag && !player.grapFlag) {
+          if (!player.landFlag && !player.grabFlag) {
             jump.double = true
             cooltime.aerialStep = 0
             playAudio(audio.misaki.doubleJump.data)
@@ -709,7 +698,7 @@ const proposal = () => {
         }
       }
     }
-    { // wall grap
+    { // wall grab
       if (
         player.wallFlag &&
         !player.landFlag &&
@@ -721,7 +710,7 @@ const proposal = () => {
         ) {
           player.dy *= .5
           player.dx = player.direction === 'left' ? -dashConstant : dashConstant
-          player.grapFlag = true
+          player.grabFlag = true
         }
       }
       if (!(
@@ -729,14 +718,14 @@ const proposal = () => {
         !player.landFlag &&
         0 < player.dy &&
         keyMap.up.some(v => key[v].flag))) {
-        player.grapFlag = false
+        player.grabFlag = false
       }
     }
-    if (player.grapFlag) { // wall kick
+    if (player.grabFlag) { // wall kick
       let flag = false
       if (
         keyFirstFlagObject.jump &&
-        player.grapFlag &&
+        player.grabFlag &&
         player.direction === 'right'
       ) {
         player.dx = -4
@@ -744,7 +733,7 @@ const proposal = () => {
         flag = true
       } else if (
         keyFirstFlagObject.jump &&
-        player.grapFlag &&
+        player.grabFlag &&
         player.direction === 'left'
       ) {
         player.dx = 4
@@ -754,7 +743,7 @@ const proposal = () => {
       if (flag) {
         player.dy = -jumpConstant
         player.wallFlag = false
-        player.grapFlag = false
+        player.grabFlag = false
         jump.flag = true
         player.state = 'jump'
       }
@@ -980,10 +969,10 @@ const judgement = () => {
                 if (doc <= 0) onetimeLandFlag = true
               }
             }
-            let nax = ax - nx * collisionRange
-            let nay = ay - ny * collisionRange
-            let nbx = bx - nx * collisionRange
-            let nby = by - ny * collisionRange
+            let nax = ax - nx * player.r
+            let nay = ay - ny * player.r
+            let nbx = bx - nx * player.r
+            let nby = by - ny * player.r
             const d = -(nax * nx + nay * ny)
             const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
             let detectFlag = false
@@ -1006,7 +995,7 @@ const judgement = () => {
             if (
               !detectFlag &&
               !vertexFlag &&
-              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= collisionRange ** 2
+              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= player.r ** 2
             ) {
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
               if (tilt < 0) player.landFlag = true
@@ -1031,7 +1020,7 @@ const update = () => {
   frictionalForce = userFF
   if (false) {
     player.landFlag = aerialFlag ? false : true
-    if (player.grapFlag) player.dx = 0
+    if (player.grabFlag) player.dx = 0
     player.x += player.dx
     if (-.01 < player.dx && player.dx < .01) player.dx = 0
     player.y += player.dy
@@ -1525,7 +1514,7 @@ const draw = () => {
     {
       context.strokeStyle = 'hsl(0, 100%, 50%)'
       context.beginPath()
-      context.arc(player.x - stageOffset.x, player.y - stageOffset.y, collisionRange, 0 , Math.PI * 2)
+      context.arc(player.x - stageOffset.x, player.y - stageOffset.y, player.r, 0 , Math.PI * 2)
       context.closePath()
       context.stroke()
       context.beginPath()
@@ -1633,6 +1622,7 @@ const draw = () => {
         player.y) * .04)}`,
       `dx: ${player.dx.toFixed(2)}`,
       `dy: ${player.dy.toFixed(2)}`,
+      `landFlag: ${player.landFlag}`,
       `jumpTrigger: ${jumpTrigger.flag}`,
       `[${keyMap.gravity}]gravity: ${gravityFlag}`,
       `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +

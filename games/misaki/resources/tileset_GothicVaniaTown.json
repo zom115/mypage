@@ -1,13 +1,5 @@
 { "columns":37,
- "editorsettings":
-    {
-     "export":
-        {
-         "format":"",
-         "target":"gothicVaniaTown"
-        }
-    },
- "image":"GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
+ "image":"..\/..\/platformer\/resources\/GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
  "imageheight":192,
  "imagewidth":592,
  "margin":0,
