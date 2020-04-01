@@ -114,7 +114,7 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const jumpCondition = {h: size / 2, y: size / 4, w: size * .6,}
-const normalConstant = .01
+const normalConstant = .008 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .02
 let moveAcceleration = normalConstant
 const dashThreshold = 1
@@ -489,9 +489,9 @@ let imageStat = {
     breathTimestamp: globalTimestamp,
     condition: 0,
   },
-  walk  : {condition: 0, time: 0, frame: 10},
+  walk  : {condition: 0, distance: 0, stride: 14}, // in rearistic, stride = 7
+  run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
   turn  : {condition: 0, time: 0, frame: 5},
-  run   : {condition: 0, time: 0, frame: 7},
   crouch: {condition: 0, time: 0, frame: 7},
   jump  : {condition: 0},
   slide : {condition: 0},
@@ -1076,24 +1076,24 @@ const update = () => {
     } else player.attackBox = {x: 0, y: 0, w: 0, h: 0}
     if (0 < player.invincibleTimer) player.invincibleTimer -= 1
   }
-  if (false) {
-    if (!menuFlag) {
-      const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
-      player.direction = ((
-        keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) || !player.landFlag ||
-        turnProhibitionList.some(v => v === player.state)
-        ) ? player.direction
-      : keyMap.left.some(v => key[v].flag) ? 'left'
-      : keyMap.right.some(v => key[v].flag) ? 'right'
-      : player.direction
-      if (!turnProhibitionList.some(v => v === player.state)) {
-        if (keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
-        if (keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
-        if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-        if (keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) player.state = 'idle'
-      }
+
+  if (!menuFlag) {
+    const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
+    player.direction = ((
+      keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) || !player.landFlag ||
+      turnProhibitionList.some(v => v === player.state)
+      ) ? player.direction
+    : keyMap.left.some(v => key[v].flag) ? 'left'
+    : keyMap.right.some(v => key[v].flag) ? 'right'
+    : player.direction
+    if (!turnProhibitionList.some(v => v === player.state)) {
+      if (keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
+      if (keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
+      if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
+      if (keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) player.state = 'idle'
     }
   }
+
   const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
   if (!stateList.some(v => v === player.state)) {
     player.state = player.state === 'turn' ? 'turn' :
@@ -1113,7 +1113,6 @@ const update = () => {
   }
   if (player.state === 'idle') {
     const i = imageStat[player.state]
-    const l = image.misaki[player.state].data.length
     if ( // breath
       player.breathTimestamp + player.breathInterval / i.breathMax * player.breathCount <=
       globalTimestamp
@@ -1148,13 +1147,12 @@ const update = () => {
       : {value: audio.misaki.doubleJump.data, startTime: .33}
       playAudio(list.value, list.startTime)
     }
-  } else if (player.state === 'walk') {
+  } else if (player.state === 'walk' || player.state === 'run') {
     const i = imageStat[player.state]
-    i.time += intervalDiffTime
-    const value = 200
-    if (0 < (i.time / value|0)) {
+    i.distance += Math.abs(player.dx)
+    if (i.stride < i.distance) {
+      i.distance -= i.stride
       i.condition++
-      i.time = 0
     }
     if (image.misaki[player.state].data.length <= i.condition) {
       i.condition -= image.misaki[player.state].data.length
@@ -1182,15 +1180,6 @@ const update = () => {
           !(player.wallFlag && keyMap.left.some(v => key[v].flag) &&
           keyMap.right.some(v => key[v].flag))) player.state = 'walk'
       }
-    }
-  } else if (player.state === 'run') {
-    const i = imageStat[player.state]
-    i.time += 1
-    if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === image.misaki[player.state].data.length) {
-      i.condition -= image.misaki[player.state].data.length
-      if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1
-      else if (player.breathInterval < playerData.breathMin) player.breathInterval += 1
     }
   } else if (player.state === 'crouch') {
     const i = imageStat[player.state]
