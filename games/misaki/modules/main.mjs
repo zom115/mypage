@@ -1575,40 +1575,6 @@ const draw = () => {
       }
     })
   }
-  if (settings.type.status) {
-    context.save()
-    const list = [
-      `internalFPS: ${internalFrameList.length - 1}`,
-      `FPS: ${animationFrameList.length - 1}`,
-      // `x: ${ownCondition.x}`,
-      `x(m): ${Math.floor(player.x * .04)}`,
-      // `y: ${ownCondition.y}`,
-      `y(m): ${Math.floor((((
-        mapObject[mapData.name].layers[mapObject[
-        mapData.name].layersIndex.tileset[0]].height - 2) * size) -
-        player.y) * .04)}`,
-      `dx: ${player.dx.toFixed(2)}`,
-      `dy: ${player.dy.toFixed(2)}`,
-      `jumpTrigger: ${jumpTrigger.flag}`,
-      `[${keyMap.gravity}]gravity: ${gravityFlag}`,
-      `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
-      `elasticModulus: ${elasticModulus}`,
-      `[${keyMap.subFrictionalForce}: -, ${
-        keyMap.addFrictionalForce}: +]` +
-      `frictionalForce: ${userFF}`,
-      `stamina: ${player.breathInterval}`,
-      `slide cooltime: ${cooltime.slide}`,
-      `double jump: ${!jump.double}`,
-    ]
-    context.fillStyle = 'hsla(0, 50%, 100%, .5)'
-    const fontsize = 10
-    context.fillRect(canvas.offsetWidth * .8 - size / 2, 0, size * 10, fontsize * (list.length + 1))
-    context.fillStyle = 'hsl(0, 0%, 0%)'
-    list.forEach((v, i) => {
-      context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
-    })
-    context.restore()
-  }
   if (settings.type.map) {
     const multiple = 2
     const mapSize = {x: canvas.offsetWidth / 5, y: canvas.offsetHeight / 5}
@@ -1651,6 +1617,42 @@ const draw = () => {
         )
       }
     })
+  }
+  if (settings.type.status) {
+    context.save()
+    const offsetY = size * 8
+    const list = [
+      `internalFPS: ${internalFrameList.length - 1}`,
+      `FPS: ${animationFrameList.length - 1}`,
+      // `x: ${ownCondition.x}`,
+      `x(m): ${Math.floor(player.x * .04)}`,
+      // `y: ${ownCondition.y}`,
+      `y(m): ${Math.floor((((
+        mapObject[mapData.name].layers[mapObject[
+        mapData.name].layersIndex.tileset[0]].height - 2) * size) -
+        player.y) * .04)}`,
+      `dx: ${player.dx.toFixed(2)}`,
+      `dy: ${player.dy.toFixed(2)}`,
+      `jumpTrigger: ${jumpTrigger.flag}`,
+      `[${keyMap.gravity}]gravity: ${gravityFlag}`,
+      `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
+      `elasticModulus: ${elasticModulus}`,
+      `[${keyMap.subFrictionalForce}: -, ${
+        keyMap.addFrictionalForce}: +]` +
+      `frictionalForce: ${userFF}`,
+      `stamina: ${player.breathInterval}`,
+      `slide cooltime: ${cooltime.slide}`,
+      `double jump: ${!jump.double}`,
+    ]
+    context.fillStyle = 'hsla(0, 50%, 100%, .5)'
+    const fontsize = 10
+    context.fillRect(
+      canvas.offsetWidth * .8 - size / 2, offsetY, size * 10, fontsize * (list.length + 1))
+    context.fillStyle = 'hsl(0, 0%, 0%)'
+    list.forEach((v, i) => {
+      context.fillText(v, canvas.offsetWidth * .8, offsetY + fontsize * (1 + i))
+    })
+    context.restore()
   }
   const drawTitle = () => {
     context.fillStyle = 'hsl(0, 0%, 0%)'
