@@ -1407,32 +1407,6 @@ const draw = () => {
       context.drawImage(image, image.width * (i + ratio), imageOffsetY)
     }
   })
-  context.fillStyle = 'hsla(0, 50%, 100%, .5)'
-  context.fillRect(canvas.offsetWidth * .8 - size / 2, 0, size * 10, size * 8)
-  context.fillStyle = 'hsl(0, 0%, 0%)'
-  const list = [
-    `internalFPS: ${internalFrameList.length - 1}`,
-    `FPS: ${animationFrameList.length - 1}`,
-    // `x: ${ownCondition.x}`,
-    `x(m): ${Math.floor(player.x * .04)}`,
-    // `y: ${ownCondition.y}`,
-    `y(m): ${Math.floor((((
-      mapObject[mapData.name].layers[mapObject[mapData.name].layersIndex.tileset[0]].height - 2) * size) -
-      player.y) * .04)}`,
-    `dx: ${player.dx.toFixed(2)}`,
-    `dy: ${player.dy.toFixed(2)}`,
-    `jumpTrigger: ${jumpTrigger.flag}`,
-    `[${keyMap.gravity}]gravity: ${gravityFlag}`,
-    `[${keyMap.collision}]collisionDisp: ${collisionDisp}`,
-    `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
-    `elasticModulus: ${elasticModulus}`,
-    `[${keyMap.subFrictionalForce}: -, ${
-      keyMap.addFrictionalForce}: +]` +
-    `frictionalForce: ${userFF}`,
-  ]
-  list.forEach((v, i) => {
-    context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
-  })
   const stageOffset = {x: 0, y: 0}
   const ratio = {x: canvas.offsetWidth / 3, y: canvas.offsetHeight / 3}
   stageOffset.x = player.x < ratio.x ? 0 :
@@ -1606,16 +1580,37 @@ const draw = () => {
   }
   if (settings.type.status) {
     context.save()
-    const columnOffset = canvas.offsetWidth * .75
-    const rowOffset = size * 8
-    context.fillStyle = 'hsl(240, 100%, 50%)'
-    context.font = `${size}px sans-serif`
-    context.fillText(`stamina: ${player.breathInterval}`, columnOffset, rowOffset + size)
-    context.fillText('cooltime', columnOffset, rowOffset + size * 3)
-    context.fillText(`slide: ${cooltime.slide}`, columnOffset + size * 8, rowOffset + size * 3)
-    context.fillText('double jump :', columnOffset, rowOffset + size * 5)
-    if (jump.double) context.fillText('unenable', columnOffset + size * 8, rowOffset + size * 5)
-    else context.fillText('enable', columnOffset + size * 8, rowOffset + size * 5)
+    const list = [
+      `internalFPS: ${internalFrameList.length - 1}`,
+      `FPS: ${animationFrameList.length - 1}`,
+      // `x: ${ownCondition.x}`,
+      `x(m): ${Math.floor(player.x * .04)}`,
+      // `y: ${ownCondition.y}`,
+      `y(m): ${Math.floor((((
+        mapObject[mapData.name].layers[mapObject[
+        mapData.name].layersIndex.tileset[0]].height - 2) * size) -
+        player.y) * .04)}`,
+      `dx: ${player.dx.toFixed(2)}`,
+      `dy: ${player.dy.toFixed(2)}`,
+      `jumpTrigger: ${jumpTrigger.flag}`,
+      `[${keyMap.gravity}]gravity: ${gravityFlag}`,
+      `[${keyMap.collision}]collisionDisp: ${collisionDisp}`,
+      `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
+      `elasticModulus: ${elasticModulus}`,
+      `[${keyMap.subFrictionalForce}: -, ${
+        keyMap.addFrictionalForce}: +]` +
+      `frictionalForce: ${userFF}`,
+      `stamina: ${player.breathInterval}`,
+      `slide cooltime: ${cooltime.slide}`,
+      `double jump: ${!jump.double}`,
+    ]
+    context.fillStyle = 'hsla(0, 50%, 100%, .5)'
+    const fontsize = 10
+    context.fillRect(canvas.offsetWidth * .8 - size / 2, 0, size * 10, fontsize * (list.length + 1))
+    context.fillStyle = 'hsl(0, 0%, 0%)'
+    list.forEach((v, i) => {
+      context.fillText(v, canvas.offsetWidth * .8, 10 * (1 + i))
+    })
     context.restore()
   }
   if (settings.type.map) {
