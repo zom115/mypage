@@ -16,7 +16,6 @@ const keyMap = {
   addElasticModulus: ['u'],
   subFrictionalForce: ['o'],
   addFrictionalForce: ['p'],
-  collision: ['c'],
   gravity: ['g'],
   DECO: ['e'],
   status: ['t'],
@@ -1458,45 +1457,6 @@ const draw = () => {
     player.y - stageOffset.y + size * r * player.dy / r + 1)
     context.lineTo(player.x - stageOffset.x + 1, player.y - stageOffset.y + 1)
   context.fill()
-  if (collisionDisp) {
-    context.fillStyle = 'hsl(300, 50%, 50%)'
-    mapObject[mapData.name].layersIndex.collision.forEach(value => {
-      for (let x = 0; x < mapObject[mapData.name].layers[value].width; x++) {
-        for (let y = 0; y < mapObject[mapData.name].layers[value].height; y++) {
-          let id = mapObject[mapData.name].layers[value].data[y *
-            mapObject[mapData.name].layers[value].width + x]
-          if (0 < id) {
-            for(let j = 0; j < mapObject[mapData.name].tilesets.length ; j++) {
-              if (Object.keys(terrainObject).length < id) {
-                id -= mapObject[mapData.name].tilesets[j].firstgid - 1
-              } else break
-            }
-            const relativeCooldinates = {x: x * size - stageOffset.x, y: y * size - stageOffset.y}
-            context.beginPath()
-            terrainObject[id].forEach((v, i) => {
-              i === 0 ?
-              context.moveTo(
-                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0) :
-              context.lineTo(
-                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0)
-              if (terrainObject[id].length === 2) {
-              context.lineTo(
-                (relativeCooldinates.x + v[0] * size + 1)|0,
-                (relativeCooldinates.y + v[1] * size + 1)|0)
-              }
-            })
-            context.fill()
-          }
-        }
-      }
-    })
-    context.fillStyle = 'hsl(30, 100%, 50%)'
-    context.fillRect(
-      player.x - stageOffset.x - jumpTrigger.w / 2,
-      player.y - stageOffset.y + jumpTrigger.y,
-      jumpTrigger.w,
-      jumpTrigger.h)
-  }
 
   if (false) { // draw gate
     context.fillStyle = 'hsl(0, 0%, 25%)'
@@ -1552,6 +1512,43 @@ const draw = () => {
   context.drawImage(img, x|0, player.y - imageOffset.y - stageOffset.y|0)
   context.restore()
   if (settings.type.hitbox) {
+    context.fillStyle = 'hsl(300, 50%, 50%)'
+    mapObject[mapData.name].layersIndex.collision.forEach(value => {
+      for (let x = 0; x < mapObject[mapData.name].layers[value].width; x++) {
+        for (let y = 0; y < mapObject[mapData.name].layers[value].height; y++) {
+          let id = mapObject[mapData.name].layers[value].data[y *
+            mapObject[mapData.name].layers[value].width + x]
+          if (0 < id) {
+            for(let j = 0; j < mapObject[mapData.name].tilesets.length ; j++) {
+              if (Object.keys(terrainObject).length < id) {
+                id -= mapObject[mapData.name].tilesets[j].firstgid - 1
+              } else break
+            }
+            const relativeCooldinates = {x: x * size - stageOffset.x, y: y * size - stageOffset.y}
+            context.beginPath()
+            terrainObject[id].forEach((v, i) => {
+              i === 0 ?
+              context.moveTo(
+                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0) :
+              context.lineTo(
+                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0)
+              if (terrainObject[id].length === 2) {
+              context.lineTo(
+                (relativeCooldinates.x + v[0] * size + 1)|0,
+                (relativeCooldinates.y + v[1] * size + 1)|0)
+              }
+            })
+            context.fill()
+          }
+        }
+      }
+    })
+    context.fillStyle = 'hsl(30, 100%, 50%)'
+    context.fillRect(
+      player.x - stageOffset.x - jumpTrigger.w / 2,
+      player.y - stageOffset.y + jumpTrigger.y,
+      jumpTrigger.w,
+      jumpTrigger.h)
     context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     context.fillRect(
       player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
@@ -1594,7 +1591,6 @@ const draw = () => {
       `dy: ${player.dy.toFixed(2)}`,
       `jumpTrigger: ${jumpTrigger.flag}`,
       `[${keyMap.gravity}]gravity: ${gravityFlag}`,
-      `[${keyMap.collision}]collisionDisp: ${collisionDisp}`,
       `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
       `elasticModulus: ${elasticModulus}`,
       `[${keyMap.subFrictionalForce}: -, ${
