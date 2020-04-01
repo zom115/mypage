@@ -113,7 +113,7 @@ let player = {
   breathTimestamp: globalTimestamp,
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
-const jumpTrigger = {flag: false, h: size / 2, y: size / 4, w: size * .6,}
+const jumpCondition = {h: size / 2, y: size / 4, w: size * .6,}
 const normalConstant = .01
 const dashConstant = .02
 let moveAcceleration = normalConstant
@@ -618,7 +618,7 @@ const proposal = () => {
   }
   { // jump
     if (keyFirstFlagObject.jump) {
-      if (player.landFlag && jumpTrigger.flag) player.dy = -jumpConstant
+      if (player.landFlag && player.state !== 'jump') player.dy = -jumpConstant
       player.landFlag = false
     }
   }
@@ -943,11 +943,11 @@ const judgement = () => {
             ny *= length
             if (!onetimeLandFlag) {
               const d = -(ax * nx + ay * ny)
-              const tm = -(nx * (ox - jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
-                nx * dx + ny * (dy + jumpTrigger.h))
+              const tm = -(nx * (ox - jumpCondition.w / 2) + ny * (oy + jumpCondition.y) + d) / (
+                nx * dx + ny * (dy + jumpCondition.h))
               if (0 < tm && tm <= 1) {
-                const cx = (ox - jumpTrigger.w / 2) + dx * tm
-                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tm
+                const cx = (ox - jumpCondition.w / 2) + dx * tm
+                const cy = (oy + jumpCondition.y) + (dy + jumpCondition.h) * tm
                 const acx = cx - ax
                 const acy = cy - ay
                 const bcx = cx - bx
@@ -955,11 +955,11 @@ const judgement = () => {
                 const doc = acx * bcx + acy * bcy
                 if (doc <= 0) onetimeLandFlag = true
               }
-              const tp = -(nx * (ox + jumpTrigger.w / 2) + ny * (oy + jumpTrigger.y) + d) / (
-                nx * dx + ny * (dy + jumpTrigger.h))
+              const tp = -(nx * (ox + jumpCondition.w / 2) + ny * (oy + jumpCondition.y) + d) / (
+                nx * dx + ny * (dy + jumpCondition.h))
               if (0 < tp && tp <= 1) {
-                const cx = (ox + jumpTrigger.w / 2) + dx * tp
-                const cy = (oy + jumpTrigger.y) + (dy + jumpTrigger.h) * tp
+                const cx = (ox + jumpCondition.w / 2) + dx * tp
+                const cy = (oy + jumpCondition.y) + (dy + jumpCondition.h) * tp
                 const acx = cx - ax
                 const acy = cy - ay
                 const bcx = cx - bx
@@ -986,7 +986,7 @@ const judgement = () => {
               if (doc <= 0) {
                 detectFlag = true
                 tilt += tilt < .5 ? 1.5 : -.5
-                if (1 < tilt) player.landFlag = true
+                if (1 < tilt) onetimeLandFlag = true
               }
             }
             if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
@@ -997,7 +997,7 @@ const judgement = () => {
               (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= player.r ** 2
             ) {
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-              if (tilt < 0) player.landFlag = true
+              if (tilt < 0) onetimeLandFlag = true
               detectFlag = true
             }
             if (detectFlag) {
@@ -1012,7 +1012,7 @@ const judgement = () => {
   } while(repeatFlag)
   player.x += player.dx
   player.y += player.dy
-  jumpTrigger.flag = onetimeLandFlag
+  player.landFlag = onetimeLandFlag
 }
 const update = () => {
   player.dy += gravitationalAcceleration * coefficient * intervalDiffTime
@@ -1025,20 +1025,24 @@ const update = () => {
   {
     if (player.grabFlag) player.dx = 0
     if (player.landFlag) {
-      if (player.state === 'slide') {
-        player.dx *= slideBrakeConstant
-      }
-      jump.flag = false
-      jump.double = false
       if (player.state === 'jump' && 0 < player.dy) player.state = 'idle' // landing
+      {
+        if (player.state === 'slide') {
+          player.dx *= slideBrakeConstant
+        }
+        jump.flag = false
+        jump.double = false
+      }
     } else {
       if (0 < player.dy) player.state = 'jump'
-      jump.flag = true
-      if (player.state !== 'slide') player.state = 'jump'
-      const gameoverThreshold = size * 10
-      if (mapData.h + gameoverThreshold < player.y) {
-        player.x = mapData.checkPoint.x
-        player.y = mapData.checkPoint.y
+      {
+        jump.flag = true
+        if (player.state !== 'slide') player.state = 'jump'
+        const gameoverThreshold = size * 10
+        if (mapData.h + gameoverThreshold < player.y) {
+          player.x = mapData.checkPoint.x
+          player.y = mapData.checkPoint.y
+        }
       }
     }
     if (player.state === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
@@ -1097,8 +1101,7 @@ const update = () => {
     player.dx === 0 ? 'idle' :
     isKey(keyMap.dash) ? 'run' : 'walk'
   }
-  player.state === 'jump'
-  if (jumpTrigger.flag || !player.landFlag) {
+  if (player.state === 'jump' || !player.landFlag) {
     imageStat.jump.condition = 6 < player.dy ? 7
     :  4 < player.dy ? 6
     :  2 < player.dy ? 5
@@ -1107,7 +1110,8 @@ const update = () => {
     : -2 < player.dy ? 2
     : -4 < player.dy ? 1
     : -6 < player.dy ? 0 : 8
-  } else if (player.state === 'idle') {
+  }
+  if (player.state === 'idle') {
     const i = imageStat[player.state]
     const l = image.misaki[player.state].data.length
     if ( // breath
@@ -1146,11 +1150,14 @@ const update = () => {
     }
   } else if (player.state === 'walk') {
     const i = imageStat[player.state]
-    i.time += 1
-    if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === image.misaki[player.state].data.length) {
-      i.condition -= image.misaki[player.state].data.length
+    i.time += intervalDiffTime
+    const value = 200
+    if (0 < (i.time / value|0)) {
+      i.condition++
       i.time = 0
+    }
+    if (image.misaki[player.state].data.length <= i.condition) {
+      i.condition -= image.misaki[player.state].data.length
       if (player.midBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
@@ -1506,10 +1513,10 @@ const draw = () => {
     })
     context.fillStyle = 'hsla(30, 100%, 50%, .5)'
     context.fillRect(
-      player.x - stageOffset.x - jumpTrigger.w / 2,
-      player.y - stageOffset.y + jumpTrigger.y,
-      jumpTrigger.w,
-      jumpTrigger.h)
+      player.x - stageOffset.x - jumpCondition.w / 2,
+      player.y - stageOffset.y + jumpCondition.y,
+      jumpCondition.w,
+      jumpCondition.h)
     {
       context.strokeStyle = 'hsl(0, 100%, 50%)'
       context.beginPath()
@@ -1622,7 +1629,6 @@ const draw = () => {
       `dx: ${player.dx.toFixed(2)}`,
       `dy: ${player.dy.toFixed(2)}`,
       `landFlag: ${player.landFlag}`,
-      `jumpTrigger: ${jumpTrigger.flag}`,
       `[${keyMap.gravity}]gravity: ${gravityFlag}`,
       `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
       `elasticModulus: ${elasticModulus}`,
