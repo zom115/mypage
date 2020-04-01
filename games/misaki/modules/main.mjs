@@ -10,7 +10,7 @@ const keyMap = {
   left: ['a'],
   jump: ['i', 'l', ' '],
   attack: ['k'],
-  accel: ['j'],
+  dash: ['j'],
   option: ['o'],
   subElasticModulus: ['y'],
   addElasticModulus: ['u'],
@@ -125,7 +125,6 @@ const slideConstant = 2
 const boostConstant = 6
 const brakeConstant = .75
 const slideBrakeConstant = .95
-const gravityConstant = .272
 // const jumpConstant = 5
 let jump = {flag: false, double: false, step: false, time: 0}
 let slide = {flag: false}
@@ -603,7 +602,7 @@ const frameCounter = list => {
 }
 const proposal = () => {
   { // dash
-    if (isKey(keyMap.accel)) moveAcceleration = dashConstant
+    if (isKey(keyMap.dash)) moveAcceleration = dashConstant
     else moveAcceleration = normalConstant
   }
   { // walk, aerial control
@@ -796,7 +795,7 @@ const proposal = () => {
         if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
         else cooltime.slide -= 1
       }
-      if (!keyMap.accel.some(v => key[v].flag)) slide.flag = false
+      if (!keyMap.dash.some(v => key[v].flag)) slide.flag = false
       // if ( // accel
       //   player.action !== 'crouch' && !jump.step
       // ) {
@@ -1018,26 +1017,26 @@ const judgement = () => {
 const update = () => {
   player.dy += gravitationalAcceleration * coefficient * intervalDiffTime
   frictionalForce = userFF
-  if (false) {
-    player.landFlag = aerialFlag ? false : true
+  const terminalSpeed = size
+  if (terminalSpeed < player.dy) player.dy = terminalSpeed
+  const floorThreshold = .01
+  if (-floorThreshold < player.dx && player.dx < floorThreshold) player.dx = 0
+
+  {
     if (player.grabFlag) player.dx = 0
-    player.x += player.dx
-    if (-.01 < player.dx && player.dx < .01) player.dx = 0
-    player.y += player.dy
-    player.dy += gravityConstant
-    if (size * 2.5 < player.dy) player.dy = size * 2.5 // terminal speed
     if (player.landFlag) {
       if (player.state === 'slide') {
         player.dx *= slideBrakeConstant
-      } else player.dx *= brakeConstant
+      }
       jump.flag = false
       jump.double = false
-      const list = ['punch', 'kick', 'run', 'crouch', 'walk', 'turn', 'slide', 'damage']
-      if (!list.some(v => v === player.state)) player.state = 'idle'
+      if (player.state === 'jump' && 0 < player.dy) player.state = 'idle' // landing
     } else {
+      if (0 < player.dy) player.state = 'jump'
       jump.flag = true
       if (player.state !== 'slide') player.state = 'jump'
-      if (mapData.h + size * 10 < player.y) { // game over
+      const gameoverThreshold = size * 10
+      if (mapData.h + gameoverThreshold < player.y) {
         player.x = mapData.checkPoint.x
         player.y = mapData.checkPoint.y
       }
@@ -1079,7 +1078,7 @@ const update = () => {
       player.direction = ((
         keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) || !player.landFlag ||
         turnProhibitionList.some(v => v === player.state)
-      ) ? player.direction
+        ) ? player.direction
       : keyMap.left.some(v => key[v].flag) ? 'left'
       : keyMap.right.some(v => key[v].flag) ? 'right'
       : player.direction
@@ -1090,16 +1089,16 @@ const update = () => {
         if (keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) player.state = 'idle'
       }
     }
-    const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
-    if (!stateList.some(v => v === player.state)) {
-      player.state = (player.state === 'turn') ? 'turn'
-      : (player.state === 'slide' && (player.dx < -3.5 || 3.5 < player.dx)) ? 'slide'
-      : (-.2 < player.dx && player.dx < .2) ? 'idle'
-      : (-1.4 < player.dx && player.dx < 1.4) ? 'walk'
-      : 'run'
-    }
   }
-  if (player.state === 'jump') {
+  const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
+  if (!stateList.some(v => v === player.state)) {
+    player.state = player.state === 'turn' ? 'turn' :
+    player.state === 'slide' && (player.dx < -3.5 || 3.5 < player.dx) ? 'slide' :
+    player.dx === 0 ? 'idle' :
+    isKey(keyMap.dash) ? 'run' : 'walk'
+  }
+  player.state === 'jump'
+  if (jumpTrigger.flag || !player.landFlag) {
     imageStat.jump.condition = 6 < player.dy ? 7
     :  4 < player.dy ? 6
     :  2 < player.dy ? 5
@@ -1633,6 +1632,7 @@ const draw = () => {
       `stamina: ${player.breathInterval}`,
       `slide cooltime: ${cooltime.slide}`,
       `double jump: ${!jump.double}`,
+      `player state: ${player.state}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
     const fontsize = 10
