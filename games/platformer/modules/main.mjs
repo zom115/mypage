@@ -453,26 +453,21 @@ const draw = () => {
       }
     }
   })
-  context.fillStyle = 'hsl(0, 100%, 50%)'
-  context.beginPath()
-  context.arc(ownCondition.x, ownCondition.y, size / 32, 0, Math.PI * 2, false)
-  context.fill()
   context.strokeStyle = 'hsl(0, 100%, 50%)'
   context.beginPath()
   context.arc(ownCondition.x, ownCondition.y, collisionRange, 0 , Math.PI * 2)
   context.closePath()
   context.stroke()
-  const r = (ownCondition.dx ** 2 + ownCondition.dy ** 2) ** .5
   context.beginPath()
   context.moveTo(ownCondition.x, ownCondition.y)
   context.lineTo(
-    ownCondition.x + size * r * ownCondition.dx / r,
-    ownCondition.y + size * r * ownCondition.dy / r)
-  context.lineTo(
-    ownCondition.x + size * r * ownCondition.dx / r + 1,
-    ownCondition.y + size * r * ownCondition.dy / r + 1)
-    context.lineTo(ownCondition.x + 1, ownCondition.y + 1)
-  context.fill()
+    ownCondition.x + size * ownCondition.dx,
+    ownCondition.y + size * ownCondition.dy)
+  context.closePath()
+  context.save()
+  context.lineWidth = size / 8
+  context.stroke()
+  context.restore()
   if (collisionDisp) {
     context.fillStyle = 'hsl(300, 50%, 50%)'
     mapObject[mapName].layersIndex.collision.forEach(value => {

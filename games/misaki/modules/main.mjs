@@ -1437,26 +1437,6 @@ const draw = () => {
       }
     }
   })
-  context.fillStyle = 'hsl(0, 100%, 50%)'
-  context.beginPath()
-  context.arc(player.x - stageOffset.x, player.y - stageOffset.y, size / 32, 0, Math.PI * 2, false)
-  context.fill()
-  context.strokeStyle = 'hsl(0, 100%, 50%)'
-  context.beginPath()
-  context.arc(player.x - stageOffset.x, player.y - stageOffset.y, collisionRange, 0 , Math.PI * 2)
-  context.closePath()
-  context.stroke()
-  const r = (player.dx ** 2 + player.dy ** 2) ** .5
-  context.beginPath()
-  context.moveTo(player.x - stageOffset.x, player.y - stageOffset.y)
-  context.lineTo(
-    player.x - stageOffset.x + size * r * player.dx / r,
-    player.y - stageOffset.y + size * r * player.dy / r)
-  context.lineTo(
-    player.x - stageOffset.x + size * r * player.dx / r + 1,
-    player.y - stageOffset.y + size * r * player.dy / r + 1)
-    context.lineTo(player.x - stageOffset.x + 1, player.y - stageOffset.y + 1)
-  context.fill()
 
   if (false) { // draw gate
     context.fillStyle = 'hsl(0, 0%, 25%)'
@@ -1468,7 +1448,7 @@ const draw = () => {
       context.strokeRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
     })
   }
-  const imageOffset = {x: 64, y: 124}
+  const imageOffset = {x: 64, y: 119}
   context.fillStyle = 'hsl(30, 100%, 50%)'
   if (false) enemies.forEach(v => {
     if (v.type === 'object') {
@@ -1543,12 +1523,30 @@ const draw = () => {
         }
       }
     })
-    context.fillStyle = 'hsl(30, 100%, 50%)'
+    context.fillStyle = 'hsla(30, 100%, 50%, .5)'
     context.fillRect(
       player.x - stageOffset.x - jumpTrigger.w / 2,
       player.y - stageOffset.y + jumpTrigger.y,
       jumpTrigger.w,
       jumpTrigger.h)
+    {
+      context.strokeStyle = 'hsl(0, 100%, 50%)'
+      context.beginPath()
+      context.arc(player.x - stageOffset.x, player.y - stageOffset.y, collisionRange, 0 , Math.PI * 2)
+      context.closePath()
+      context.stroke()
+      context.beginPath()
+      context.moveTo(player.x - stageOffset.x, player.y - stageOffset.y)
+      context.lineTo(
+        player.x - stageOffset.x + size * player.dx,
+        player.y - stageOffset.y + size * player.dy)
+      context.closePath()
+      context.save()
+      context.lineWidth = size / 8
+      context.stroke()
+      context.restore()
+    }
+
     context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     context.fillRect(
       player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
