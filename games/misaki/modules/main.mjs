@@ -1574,13 +1574,20 @@ const draw = () => {
     mapObject[mapData.name].layersIndex.tileset.forEach(v => {
       for (let x = 0; x < mapObject[mapData.name].layers[v].width; x++) {
         for (let y = 0; y < mapObject[mapData.name].layers[v].height; y++) {
-          let id = mapObject[mapData.name].layers[v
-          ].data[mapObject[mapData.name].layers[v].width * y + x] - 1
-          if (0 < id) {
-            context.fillRect(
-              mapOffset.x + mapSize.x / 2 + multiple * (x * size - player.x) / size|0,
-              mapOffset.y + mapSize.y / 2 + multiple * (y * size - player.y) / size|0,
-              multiple|0, multiple|0)
+          const X = multiple * (x * size - player.x) / size
+          const Y = multiple * (y * size - player.y) / size
+          if (
+            -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
+            -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
+          ) {
+            let id = mapObject[mapData.name].layers[v
+            ].data[mapObject[mapData.name].layers[v].width * y + x] - 1
+            if (0 < id) {
+              context.fillRect(
+                mapOffset.x + mapSize.x / 2 + X|0,
+                mapOffset.y + mapSize.y / 2 + Y|0,
+                multiple|0, multiple|0)
+            }
           }
         }
       }
