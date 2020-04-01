@@ -829,18 +829,6 @@ const proposal = () => {
       // }
     }
   }
-  if (false && !menuFlag) { // gate process
-    gate.forEach(v => {
-      if (
-        player.hitbox.x <= v.x + v.w && v.x <= player.hitbox.x + player.hitbox.w &&
-        player.hitbox.y <= v.y + v.h && v.y <= player.hitbox.y + player.hitbox.h
-      ) {
-        if (keyMap.up.some(v => key[v].flag)) {
-          enterGate(v.stage, v.address.x, v.address.y)
-        }
-      }
-    })
-  }
   if (false && !menuFlag) inGameInputProcess()
   Object.keys(settings.type).forEach(v => {
     if (keyFirstFlagObject[v]) {
@@ -848,13 +836,15 @@ const proposal = () => {
       inputDOM[v].checked = !inputDOM[v].checked
     }
   })
-  mapObject[mapData.name].layers[mapObject[mapData.name].layersIndex.objectgroup].objects.forEach(v => {
+  gate
+  mapObject[mapData.name].layers[mapObject[
+  mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
     if (v.name === 'gate' &&
       v.x < player.x && player.x < v.x + v.width &&
       v.y < player.y && player.y < v.y + v.height
     ) {
       v.properties.forEach(vl => {
-        if (vl.name === 'address') setMapProcess(vl.value)
+        if (vl.name === 'address' && isKey(keyMap.up)) setMapProcess(vl.value)
       })
     }
   })
@@ -1438,16 +1428,11 @@ const draw = () => {
     }
   })
 
-  if (false) { // draw gate
-    context.fillStyle = 'hsl(0, 0%, 25%)'
-    gate.forEach(obj => {
-      context.fillRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
+  mapObject[mapData.name].layers[mapObject[
+    mapData.name].layersIndex.objectgroup].objects.forEach(v => { // draw gate
+      context.fillStyle = `hsla(0, 0%, 0%, .4)`
+      context.fillRect(v.x - stageOffset.x, v.y - stageOffset.y, v.width, v.height)
     })
-    context.strokeStyle = 'hsl(270, 100%, 50%)'
-    gate.forEach(obj => {
-      context.strokeRect(obj.x - stageOffset.x|0, obj.y - stageOffset.y|0, obj.w|0, obj.h|0)
-    })
-  }
   const imageOffset = {x: 64, y: 119}
   context.fillStyle = 'hsl(30, 100%, 50%)'
   if (false) enemies.forEach(v => {
@@ -1601,7 +1586,8 @@ const draw = () => {
       }
     })
 
-    gate.forEach(v => {
+    mapObject[mapData.name].layers[mapObject[
+    mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
       const X = multiple * (v.x - player.x) / size + 1
       const Y = multiple * (v.y - player.y) / size
       if (
@@ -1611,7 +1597,7 @@ const draw = () => {
         context.fillStyle = 'hsla(0, 0%, 0%, .4)'
         context.fillRect(
           mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
-          multiple * v.w / size|0, multiple * v.h / size|0
+          multiple * v.width / size|0, multiple * v.height / size|0
         )
       }
     })
@@ -1718,5 +1704,4 @@ Promise.all(resourceList).then(() => {
   console.log(mapObject)
   main()
   draw()
-  // drawCollision(terrainObject)
 })

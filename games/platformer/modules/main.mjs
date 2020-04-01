@@ -2,7 +2,7 @@ import {key, globalTimestamp} from '../../../modules/key.mjs'
 import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
-import {drawCollision} from './drawCollision.mjs'
+// import {drawCollision} from './drawCollision.mjs'
 const mapObject = {}
 const imageObject = {}
 const audioObject = {}
