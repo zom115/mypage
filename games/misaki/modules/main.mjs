@@ -537,11 +537,8 @@ let menuCloseTimestamp = 0
 const screenList = ['title', 'main']
 let screenState = screenList[1]
 let mapData = {name: directoryList[0], w: 0, h: 0, checkPoint: {x: 0, y: 0}}
-let aftergrow = {
-  gateLimit: 240,
-  loadingLimit: 90,
+const timestamp = {
   gate: 0,
-  loading: 0,
 }
 let enemies = []
 
@@ -591,6 +588,7 @@ const getMusic = arg => {
   })
 }
 const setMapProcess = arg => {
+  timestamp.gate = globalTimestamp
   mapData.name = arg
   mapData.w = mapObject[arg].tilewidth * mapObject[arg].width
   mapData.h = mapObject[arg].tileheight * mapObject[arg].height
@@ -837,12 +835,15 @@ const proposal = () => {
   })
   mapObject[mapData.name].layers[mapObject[
   mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
-    if (v.name === 'gate' &&
+    if (
+      v.name === 'gate' &&
       v.x < player.x && player.x < v.x + v.width &&
       v.y < player.y && player.y < v.y + v.height
     ) {
       v.properties.forEach(vl => {
-        if (vl.name === 'address' && isKey(keyMap.up)) setMapProcess(vl.value)
+        if (vl.name === 'address' && isKey(keyMap.up)) {
+          setMapProcess(vl.value)
+        }
       })
     }
   })
@@ -1459,18 +1460,20 @@ const draw = () => {
       context.restore()
     }
   })
-  if (false && 0 < aftergrow.gate) {
+  if (0 < timestamp.gate) {
     context.save()
     context.font = `italic ${size * 2}px sans-serif`
-    const start = 60
-    const alpha = aftergrow.gate < start ? aftergrow.gate / start : 1
+    const start = 1e3
+    const end = 5e3
+    const elapsedTime = globalTimestamp - timestamp.gate
+    const alpha = start < elapsedTime ? (end - start - elapsedTime) / (end - start) : 1
     context.fillStyle = `hsla(0, 0%, 100%, ${alpha})`
     context.textAlign = 'center'
     context.fillText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
     context.strokeStyle = `hsla(0, 0%, 50%, ${alpha})`
     context.strokeText(mapData.name, canvas.offsetWidth / 2, canvas.offsetHeight / 6)
     context.restore()
-    aftergrow.gate -= 1
+    if (end < elapsedTime) timestamp.gate = 0
   }
   let x = player.x - imageOffset.x - stageOffset.x
   const img = image.misaki[player.state].data[imageStat[player.state].condition]
