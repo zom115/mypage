@@ -1102,14 +1102,16 @@ const update = () => {
     isKey(keyMap.dash) ? 'run' : 'walk'
   }
   if (player.state === 'jump' || !player.landFlag) {
-    imageStat.jump.condition = 6 < player.dy ? 7
-    :  4 < player.dy ? 6
-    :  2 < player.dy ? 5
-    :  0 < player.dy ? 4
-    : -1 < player.dy ? 3
-    : -2 < player.dy ? 2
-    : -4 < player.dy ? 1
-    : -6 < player.dy ? 0 : 8
+    const number = 3
+    imageStat.jump.condition =
+     number * 2 ** -1 < player.dy ? 7 :
+     number * 2 ** -2 < player.dy ? 6 :
+     number * 2 ** -3 < player.dy ? 5 :
+                    0 < player.dy ? 4 :
+    -number * 2 ** -3 < player.dy ? 3 :
+    -number * 2 ** -2 < player.dy ? 2 :
+    -number * 2 ** -1 < player.dy ? 1 :
+    -number * 2 **  0 < player.dy ? 0 : 8
   }
   if (player.state === 'idle') {
     const i = imageStat[player.state]
