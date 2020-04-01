@@ -492,7 +492,7 @@ let imageStat = {
   walk  : {condition: 0, distance: 0, stride: 14}, // in rearistic, stride = 7
   run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
   turn  : {condition: 0, time: 0, frame: 5},
-  crouch: {condition: 0, time: 0, frame: 7},
+  crouch: {condition: 0, rotate: [0, 1, 2, 1, 0], stopFrame: 2, index: 0, time: 0, frame: 50, release: true},
   jump  : {condition: 0},
   slide : {condition: 0},
   push  : {condition: 0},
@@ -607,9 +607,9 @@ const proposal = () => {
   }
   { // walk, aerial control
     let speed = moveAcceleration * intervalDiffTime
-    const aerialBrake = 1 / 3
+    const aerialBrake = 1 / 4
     speed *= ['crouch', 'punch', 'kick', 'damage'].some(v => v === player.state) ? 0 :
-    player.landFlag ? 1 : aerialBrake
+    player.state !== 'jump' ? 1 : aerialBrake
     const attenuationRatio = .95
     player.dx -= isKey(keyMap.left) && player.dx < -dashThreshold ? speed * (1 - attenuationRatio) :
     isKey(keyMap.left) ? speed : 0
@@ -621,6 +621,17 @@ const proposal = () => {
       if (player.landFlag && player.state !== 'jump') player.dy = -jumpConstant
       player.landFlag = false
     }
+  }
+  { // crouch
+    if (
+      isKey(keyMap.down) && player.landFlag && !player.grabFlag
+    ) {
+      const crouchPermissionList = ['idle', 'walk']
+      if (crouchPermissionList.some(v => v === player.state)) {
+        player.state = 'crouch'
+        imageStat.crouch.release = false
+      }
+    } else if (player.state === 'crouch') imageStat.crouch.release = true
   }
   { // for debug
     if (keyFirstFlagObject.subElasticModulus && 0 < elasticModulus) {
@@ -644,17 +655,6 @@ const proposal = () => {
       if (isKey(keyMap.right)) player.dx += moveAcceleration * intervalDiffTime * num
       if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
       if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
-    }
-  }
-
-  if (false) {
-    if (player.state === 'crouch') player.state = 'idle'
-    const crouchProhibitionList = ['run']
-    if (
-      keyMap.down.some(v => key[v].flag) && player.landFlag && !player.grabFlag &&
-      !crouchProhibitionList.some(v => v === player.state)
-      ) {
-      player.state = 'crouch'
     }
   }
   const inGameInputProcess = () => {
@@ -829,7 +829,7 @@ const proposal = () => {
       v.y < player.y && player.y < v.y + v.height
     ) {
       v.properties.forEach(vl => {
-        if (vl.name === 'address' && isKey(keyMap.up)) {
+        if (vl.name === 'address' && keyFirstFlagObject.up) {
           setMapProcess(vl.value)
         }
       })
@@ -1161,6 +1161,19 @@ const update = () => {
       if (player.midBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
+  } else if (player.state === 'crouch') {
+    const i = imageStat[player.state]
+    const index = Math.floor(i.time / i.frame)
+    if ((index < i.stopFrame) || i.release) {
+      i.time += intervalDiffTime
+    }
+    i.index = index
+    if (i.index === i.rotate.length) {
+      i.index = 0
+      i.time = 0
+      player.state = 'idle'
+    }
+    i.condition = i.rotate[i.index]
   } else if (player.state === 'damage') {
     const i = imageStat[player.state]
     i.time += 1
@@ -1182,14 +1195,6 @@ const update = () => {
           !(player.wallFlag && keyMap.left.some(v => key[v].flag) &&
           keyMap.right.some(v => key[v].flag))) player.state = 'walk'
       }
-    }
-  } else if (player.state === 'crouch') {
-    const i = imageStat[player.state]
-    i.time += 1
-    if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === image.misaki[player.state].data.length) {
-      i.condition -= 1
-      i.time = 0
     }
   } else if (player.state === 'punch') {
     const i = imageStat[player.state]
