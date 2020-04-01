@@ -98,7 +98,9 @@ let frictionalForce = userFF // 0 to 1
 const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3, breathMax: 5e3}
 let player = {
   x: 0, y: 0,
-  dx: 0, dy: 0, state: 'idle', direction: 'right',
+  dx: 0, dy: 0,
+  r: size / 2,
+  state: 'idle', direction: 'right',
   landFlag: false, wallFlag: false, grapFlag: false,
   hitbox: {x: 0, y: 0, w: 0, h: 0},
   attackBox: {x: 0, y: 0, w: 0, h: 0},
@@ -535,12 +537,9 @@ let menuCloseTimestamp = 0
 const screenList = ['title', 'main']
 let screenState = screenList[1]
 let mapData = {name: directoryList[0], w: 0, h: 0, checkPoint: {x: 0, y: 0}}
-let gate = []
-const aftergrowLimit = {
-  gate: 240,
-  loading: 90,
-}
 let aftergrow = {
+  gateLimit: 240,
+  loadingLimit: 90,
   gate: 0,
   loading: 0,
 }
@@ -836,7 +835,6 @@ const proposal = () => {
       inputDOM[v].checked = !inputDOM[v].checked
     }
   })
-  gate
   mapObject[mapData.name].layers[mapObject[
   mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
     if (v.name === 'gate' &&
@@ -1427,12 +1425,19 @@ const draw = () => {
       }
     }
   })
-
   mapObject[mapData.name].layers[mapObject[
-    mapData.name].layersIndex.objectgroup].objects.forEach(v => { // draw gate
-      context.fillStyle = `hsla(0, 0%, 0%, .4)`
-      context.fillRect(v.x - stageOffset.x, v.y - stageOffset.y, v.width, v.height)
-    })
+  mapData.name].layersIndex.objectgroup].objects.forEach(v => {
+    if (v.name !== 'gate') return
+    const oneRound = 5e3
+    const ratio = (Math.sin(Math.PI * 2 * (globalTimestamp % oneRound / oneRound)) + 1) / 2
+    context.fillStyle = `hsla(0, 0%, 50%, ${ratio / 4})`
+    context.fillRect(
+      v.x - stageOffset.x + player.r,
+      v.y - stageOffset.y + player.r,
+      v.width - player.r * 2,
+      v.height - player.r * 2)
+  })
+
   const imageOffset = {x: 64, y: 119}
   context.fillStyle = 'hsl(30, 100%, 50%)'
   if (false) enemies.forEach(v => {
@@ -1595,6 +1600,7 @@ const draw = () => {
 
     mapObject[mapData.name].layers[mapObject[
     mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
+      if (v !== 'gate') return
       const X = multiple * (v.x - player.x) / size + 1
       const Y = multiple * (v.y - player.y) / size
       if (
