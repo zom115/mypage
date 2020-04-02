@@ -21,6 +21,7 @@ const keyMap = {
   status: ['t'],
   hitbox: ['h'],
   map: ['m'],
+  reset: ['r']
 }
 const keyFirstFlagObject = {}
 const isKeyFirst = list => {return list.some(v => key[v].isFirst())} // 今押したか
@@ -145,6 +146,10 @@ let moveAcceleration = normalConstant
 const dashThreshold = 1
 const jumpConstant = 1
 let gravityFlag = true // temporary
+const maxLog = {
+  dx: 0,
+  dy: 0,
+}
 
 const slideConstant = 2
 const boostConstant = 6
@@ -644,7 +649,7 @@ const proposal = () => {
     isKey(keyMap.right) ? speed : 0
   }
   { // jump
-    if (keyFirstFlagObject.jump && player.state !== 'damage') {
+    if (keyFirstFlagObject.jump && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
       if (jump.flag) {
         if (!jump.double && jump.time === 0 && !player.grabFlag) {
           player.dy = -jumpConstant
@@ -656,7 +661,9 @@ const proposal = () => {
           jump.time = 0 // temporary
         }
       } else if (jump.time === 0) {
-        player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
+        const jumpCoefficient = 5
+        console.log((1 + Math.abs(player.dx) / jumpCoefficient) ** .5, (1 + Math.abs(player.dx) / jumpCoefficient))
+        player.dy = -jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5
         player.state = 'jump' // temporary
         jump.flag = true
         if (!player.landFlag && !player.grabFlag) {
@@ -682,29 +689,27 @@ const proposal = () => {
     }
   }
   { // crouch, down force
-    if (
-      isKey(keyMap.down) && player.landFlag && !player.grabFlag
-    ) {
-      const crouchPermissionList = ['idle', 'walk']
-      if (crouchPermissionList.some(v => v === player.state)) {
-        player.state = 'crouch'
+    if (isKey(keyMap.down) && !player.grabFlag) {
+      if (player.landFlag) {
+        const crouchPermissionList = ['idle', 'walk']
+        if (crouchPermissionList.some(v => v === player.state)) {
+          player.state = 'crouch'
+        }
+      }
+    }
+    if (player.state === 'jump') {
+      if (isKey(keyMap.down)) {
+        const downForce = .05
+        const restrictValue = 2
+        player.dy += player.dy < restrictValue ? downForce : 0
       }
     }
   }
-  // { // crouch, down force
-  //   if (isKey(keyMap.down)) {
-  //     const crouchPermissionList = ['idle', 'walk']
-  //     if (player.landFlag) {
-  //       if (
-  //         !player.grabFlag && crouchPermissionList.some(v => v === player.state)
-  //       ) player.state = 'crouch'
-  //     } else {
-  //       const downForce = .05
-  //       player.dy += downForce
-  //     }
-  //   }
-  // }
   { // for debug
+    if (keyFirstFlagObject.reset) {
+      maxLog.dx = 0
+      maxLog.dy = 0
+    }
     if (keyFirstFlagObject.subElasticModulus && 0 < elasticModulus) {
       elasticModulus = orgRound(elasticModulus - .1, 10)
     }
@@ -1049,6 +1054,8 @@ const judgement = () => {
   } while(repeatFlag)
   player.x += player.dx
   player.y += player.dy
+  if (maxLog.dx < Math.abs(player.dx)) maxLog.dx = Math.abs(player.dx)
+  if (maxLog.dy < Math.abs(player.dy)) maxLog.dy = Math.abs(player.dy)
   player.landFlag = onetimeLandFlag
 }
 const update = () => {
@@ -1117,24 +1124,31 @@ const update = () => {
   if (!menuFlag) {
     const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
     player.direction = ((
-      keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) || !player.landFlag ||
+      keyMap.left.some(v => key[v].flag) &&
+      keyMap.right.some(v => key[v].flag)) ||
+      !player.landFlag ||
       turnProhibitionList.some(v => v === player.state)
       ) ? player.direction
     : keyMap.left.some(v => key[v].flag) ? 'left'
     : keyMap.right.some(v => key[v].flag) ? 'right'
     : player.direction
     if (!turnProhibitionList.some(v => v === player.state)) {
-      if (keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant) player.state = 'turn'
-      if (keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx) player.state = 'turn'
+      if (
+        keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant
+      ) player.state = 'turn'
+      if (
+        keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx
+      ) player.state = 'turn'
       if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-      if (keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)) player.state = 'idle'
+      if (
+        keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)
+      ) player.state = 'idle'
     }
   }
 
-  const stateList = ['jump', 'push', 'punch', 'kick', 'crouch', 'damage']
+  const stateList = ['crouch', 'jump', 'turn', 'push', 'punch', 'kick', 'damage']
   if (!stateList.some(v => v === player.state)) {
-    player.state = player.state === 'turn' ? 'turn' :
-    player.state === 'slide' && (player.dx < -3.5 || 3.5 < player.dx) ? 'slide' :
+    player.state = player.state === 'slide' && (player.dx < -3.5 || 3.5 < player.dx) ? 'slide' :
     player.dx === 0 ? 'idle' :
     isKey(keyMap.dash) ? 'run' : 'walk'
   }
@@ -1665,8 +1679,8 @@ const draw = () => {
         mapObject[mapData.name].layers[mapObject[
         mapData.name].layersIndex.tileset[0]].height - 2) * size) -
         player.y) * .04)}`,
-      `dx: ${player.dx.toFixed(2)}`,
-      `dy: ${player.dy.toFixed(2)}`,
+      `dx: ${maxLog.dx.toFixed(2)} ${player.dx.toFixed(2)}`,
+      `dy: ${maxLog.dy.toFixed(2)} ${player.dy.toFixed(2)}`,
       `landFlag: ${player.landFlag}`,
       `[${keyMap.gravity}]gravity: ${gravityFlag}`,
       `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
