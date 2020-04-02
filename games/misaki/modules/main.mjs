@@ -38,22 +38,31 @@ const terrainObject = {'0': [[]],}
 const orgRound = (value, base) => {return Math.round(value * base) / base}
 {
   const terrainList = [
-    [[0, 0], [1, 0], [1, 1], [0, 1],], // rectangle
+    [[0, 1], [0, 0], [1, 0], [1, 1],], // rectangle
+    [[0, 1], [1, 0], [1, 1],], // triangle
+    [[0, 1], [1, .5], [1, 1],], // 22.5 low
+    [[0, 1], [1, 0], [1, .5],],
+    [[0, .5], [1, 0], [1, .5],], // 22.5 high
+    [[0, 1], [0, .5], [1, .5], [1, 1],], // harf rectangle
+    [[0, 1], [0, .5], [.5, .5], [.5, 1],], // quarter rectangle
+    [[0, 1], [.5, .5], [.5, 1],], // small triangle - bottom left
+    [[.5, 1], [1, .5], [1, 1],], // small triangle - bottom right
+    [[0, .5], [.5, 0], [.5, .5],], // small triangle - top left
     [[0, 0], [1, 0]], // platform
-    [[1, 0], [1, 1], [0, 1],], // triangle
-    [[1, .5], [1, 1], [0, 1],], // 22.5 low
-    [[0, .5], [1, 0], [1, 1], [0, 1],], // 22.5 high
-    [[0, .5], [1, .5], [1, 1], [0, 1],], // harf rectangle
-    [[1, 0], [1, .5], [0, .5],], // 22.5 harf
-    [[1, .5], [1, 1], [.5, 1],], // small triangle
-    [[0, .5], [.5, 0], [1, 0], [1, 1], [0, 1]], // chip rectangle
+    [[0, 1], [1, 0],],
+    [[0, .5], [1, .5],],
+    [[0, 1], [1, .5],],
+    [[0, .5], [.5, .5],],
+    [[0, 0], [.5, 0],],
+    [[0, 1], [.5, .5],],
+    [[.5, 1],[1, .5]],
   ]
-  const inversionTerrain = array => {
+  const horizontallyInversionTerrain = array => {
     const terrain = JSON.parse(JSON.stringify(array))
     terrain.forEach(v => {
-      v[0] = orgRound(1 - v[0], 10)
+      v[1] = orgRound(1 - v[1], 10)
     })
-    terrain.reverse() // 線分の向きを揃える
+    terrain.reverse()
     return terrain
   }
   const rotationTerrain = array => {
@@ -71,12 +80,28 @@ const orgRound = (value, base) => {return Math.round(value * base) / base}
   }
   let id = 1
   terrainList.forEach(v => {
+    const isExist = arg => {
+      return Object.values(terrainObject).some(val => {
+        return arg.every(v => {
+          return arg.length === val.length && val.some(valu => {
+            return valu.every((value, i) => {
+              return v[i] === value
+            })
+          })
+        })
+      })
+    }
     for (let i = 0; i < 4; i++) {
-      if (i === 0) {
-        terrainObject[id] = JSON.parse(JSON.stringify(v))
-      } else terrainObject[id] = rotationTerrain(terrainObject[id - 2])
+      let terrain = v
+      for (let ix = 0; ix < i; ix++) terrain = rotationTerrain(terrain)
+      terrainObject[id] = isExist(terrain) ? [] : terrain
       id++
-      terrainObject[id] = inversionTerrain(terrainObject[id - 1])
+    }
+    for (let i = 0; i < 4; i++) {
+      let terrain = v
+      for (let ix = 0; ix < i; ix++) terrain = rotationTerrain(terrain)
+      terrain = horizontallyInversionTerrain(terrain)
+      terrainObject[id] = isExist(terrain) ? [] : terrain
       id++
     }
   })
@@ -1477,6 +1502,7 @@ const draw = () => {
   context.restore()
   if (settings.type.hitbox) {
     context.fillStyle = 'hsl(300, 50%, 50%)'
+    context.strokeStyle = 'hsl(300, 50%, 50%)'
     mapObject[mapData.name].layersIndex.collision.forEach(value => {
       for (let x = 0; x < mapObject[mapData.name].layers[value].width; x++) {
         for (let y = 0; y < mapObject[mapData.name].layers[value].height; y++) {
@@ -1491,18 +1517,23 @@ const draw = () => {
             const relativeCooldinates = {x: x * size - stageOffset.x, y: y * size - stageOffset.y}
             context.beginPath()
             terrainObject[id].forEach((v, i) => {
+              const m = {x: 0, y: 0}
+              if (terrainObject[id].length === 2) {
+                m.x = v[0] === 0 ? 1 : v[0] === 1 ? -1 : 0
+                m.y = v[1] === 0 ? 1 : v[1] === 1 ? -1 : 0
+              }
               i === 0 ?
               context.moveTo(
-                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0) :
+                relativeCooldinates.x + v[0] * size + m.x,
+                relativeCooldinates.y + v[1] * size + m.y) :
               context.lineTo(
-                (relativeCooldinates.x + v[0] * size)|0, (relativeCooldinates.y + v[1] * size)|0)
-              if (terrainObject[id].length === 2) {
-              context.lineTo(
-                (relativeCooldinates.x + v[0] * size + 1)|0,
-                (relativeCooldinates.y + v[1] * size + 1)|0)
-              }
+                relativeCooldinates.x + v[0] * size + m.x,
+                relativeCooldinates.y + v[1] * size + m.y)
             })
-            context.fill()
+            if (terrainObject[id].length === 2) {
+              context.closePath()
+              context.stroke()
+            } else context.fill()
           }
         }
       }
