@@ -11,7 +11,7 @@ const keyMap = {
   jump: ['i', 'l', ' '],
   attack: ['k'],
   dash: ['j'],
-  option: ['o'],
+  option: ['n'],
   subElasticModulus: ['y'],
   addElasticModulus: ['u'],
   subFrictionalForce: ['o'],
@@ -639,14 +639,16 @@ const proposal = () => {
   }
   { // walk, aerial control
     let speed = moveAcceleration * intervalDiffTime
-    const aerialBrake = 1 / 4
-    speed *= ['crouch', 'punch', 'kick', 'damage'].some(v => v === player.state) ? 0 :
-    player.state !== 'jump' ? 1 : aerialBrake
     const attenuationRatio = .95
-    player.dx -= isKey(keyMap.left) && player.dx < -dashThreshold ? speed * (1 - attenuationRatio) :
-    isKey(keyMap.left) ? speed : 0
-    player.dx += isKey(keyMap.right) && dashThreshold < player.dx ? speed * (1 - attenuationRatio) :
-    isKey(keyMap.right) ? speed : 0
+    speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
+    const aerialBrake = .2
+    speed *= ['crouch', 'punch', 'kick', 'damage'].some(v => v === player.state) ? 0 :
+    player.state === 'jump' ? aerialBrake : 1
+    if (isKey(keyMap.left)) player.dx -= speed
+    if (isKey(keyMap.right)) player.dx += speed
+    const ristrict = isKey(keyMap.dash) ? 1 : .5
+    if (ristrict < player.dx) player.dx -= speed
+    if (player.dx < -ristrict) player.dx += speed
   }
   { // jump
     if (keyFirstFlagObject.jump && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
@@ -662,7 +664,6 @@ const proposal = () => {
         }
       } else if (jump.time === 0) {
         const jumpCoefficient = 5
-        console.log((1 + Math.abs(player.dx) / jumpCoefficient) ** .5, (1 + Math.abs(player.dx) / jumpCoefficient))
         player.dy = -jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5
         player.state = 'jump' // temporary
         jump.flag = true
@@ -671,7 +672,7 @@ const proposal = () => {
           cooltime.aerialStep = 0 // temporary
           playAudio(audio.misaki.doubleJump.data) // temporary
         } else {
-          player.dx *= .7 // temporary
+          player.dx /= Math.SQRT2
           playAudio(audio.misaki.jump.data) // temporary
         }
         if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
