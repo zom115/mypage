@@ -517,7 +517,7 @@ let imageStat = {
   walk  : {condition: 0, distance: 0, stride: 14}, // in rearistic, stride = 7
   run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
   turn  : {condition: 0, time: 0, frame: 5},
-  crouch: {condition: 0, rotate: [0, 1, 2, 1, 0], stopFrame: 2, index: 0, time: 0, frame: 50, release: true},
+  crouch: {condition: 0, time: 0, intervalTime: 50},
   jump  : {condition: 0},
   slide : {condition: 0},
   push  : {condition: 0},
@@ -626,6 +626,8 @@ const frameCounter = list => {
   } while (flag)
 }
 const proposal = () => {
+  // rule: value control only [
+  // dx, dy, state]
   { // dash
     if (isKey(keyMap.dash)) moveAcceleration = dashConstant
     else moveAcceleration = normalConstant
@@ -679,17 +681,29 @@ const proposal = () => {
       }
     }
   }
-  { // crouch
+  { // crouch, down force
     if (
       isKey(keyMap.down) && player.landFlag && !player.grabFlag
     ) {
       const crouchPermissionList = ['idle', 'walk']
       if (crouchPermissionList.some(v => v === player.state)) {
         player.state = 'crouch'
-        imageStat.crouch.release = false
       }
-    } else if (player.state === 'crouch') imageStat.crouch.release = true
+    }
   }
+  // { // crouch, down force
+  //   if (isKey(keyMap.down)) {
+  //     const crouchPermissionList = ['idle', 'walk']
+  //     if (player.landFlag) {
+  //       if (
+  //         !player.grabFlag && crouchPermissionList.some(v => v === player.state)
+  //       ) player.state = 'crouch'
+  //     } else {
+  //       const downForce = .05
+  //       player.dy += downForce
+  //     }
+  //   }
+  // }
   { // for debug
     if (keyFirstFlagObject.subElasticModulus && 0 < elasticModulus) {
       elasticModulus = orgRound(elasticModulus - .1, 10)
@@ -1186,17 +1200,17 @@ const update = () => {
     }
   } else if (player.state === 'crouch') {
     const i = imageStat[player.state]
-    const index = Math.floor(i.time / i.frame)
-    if ((index < i.stopFrame) || i.release) {
-      i.time += intervalDiffTime
+    const index = Math.floor(i.time / i.intervalTime)
+    if (isKey(keyMap.down)) {
+      if ((index < image.misaki.crouch.data.length - 1)) i.time += intervalDiffTime
+    } else {
+      i.time -= intervalDiffTime
+      if (i.time <= 0) {
+        i.time = 0
+        player.state = 'idle'
+      }
     }
-    i.index = index
-    if (i.index === i.rotate.length) {
-      i.index = 0
-      i.time = 0
-      player.state = 'idle'
-    }
-    i.condition = i.rotate[i.index]
+    i.condition = index
   } else if (player.state === 'damage') {
     const i = imageStat[player.state]
     i.time += 1
