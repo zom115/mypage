@@ -138,7 +138,7 @@ let player = {
   breathTimestamp: globalTimestamp,
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
-const jumpCondition = {h: size / 2, y: size / 4, w: size * .6,}
+const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
 const normalConstant = .008 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .02
 let moveAcceleration = normalConstant
@@ -151,7 +151,7 @@ const boostConstant = 6
 const brakeConstant = .75
 const slideBrakeConstant = .95
 // const jumpConstant = 5
-let jump = {flag: false, double: false, step: false, time: 0}
+let jump = {flag: false, double: false, step: false, time: 0, speed: 0}
 let slide = {flag: false}
 let cooltime = {
   step: 0, stepLimit: 15, stepDeferment: 15,
@@ -642,9 +642,41 @@ const proposal = () => {
     isKey(keyMap.right) ? speed : 0
   }
   { // jump
-    if (keyFirstFlagObject.jump) {
-      if (player.landFlag && player.state !== 'jump') player.dy = -jumpConstant
-      player.landFlag = false
+    if (keyFirstFlagObject.jump && player.state !== 'damage') {
+      if (jump.flag) {
+        if (!jump.double && jump.time === 0 && !player.grabFlag) {
+          player.dy = -jumpConstant
+          player.state = 'jump' // temporary
+          jump.double = true
+          cooltime.aerialStep = 0 // temporary
+          playAudio(audio.misaki.doubleJump.data) // temporary
+          if (5 < player.breathInterval) player.breathInterval -= 1 // temporary
+          jump.time = 0 // temporary
+        }
+      } else if (jump.time === 0) {
+        player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
+        player.state = 'jump' // temporary
+        jump.flag = true
+        if (!player.landFlag && !player.grabFlag) {
+          jump.double = true
+          cooltime.aerialStep = 0 // temporary
+          playAudio(audio.misaki.doubleJump.data) // temporary
+        } else {
+          player.dx *= .7 // temporary
+          playAudio(audio.misaki.jump.data) // temporary
+        }
+        if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
+      }
+      jump.time += 1 // temporary
+    }
+    if(!isKey(keyMap.jump)) { // temporary
+      if (settings.type.DECO) jump.time = 0
+      else {
+        if (5 < jump.time) { // temporary
+          if (player.dy < 0) player.dy = 0
+          jump.time = 0
+        } else if (jump.time !== 0) jump.time += 1
+      }
     }
   }
   { // crouch
@@ -683,45 +715,6 @@ const proposal = () => {
     }
   }
   const inGameInputProcess = () => {
-    { // jump
-      if (keyFirstFlagObject.jump && player.state !== 'damage') {
-        if (jump.flag) {
-          if (!jump.double && jump.time === 0 && !player.grabFlag) {
-            player.dy = -jumpConstant
-            player.state = 'jump'
-            jump.double = true
-            cooltime.aerialStep = 0
-            playAudio(audio.misaki.doubleJump.data)
-            if (5 < player.breathInterval) player.breathInterval -= 1
-            jump.time = 0
-          }
-        } else if (jump.time === 0) {
-          player.dy = -jumpConstant * (1+Math.abs(player.dx)/20) ** .5
-          player.state = 'jump'
-          jump.flag = true
-          if (!player.landFlag && !player.grabFlag) {
-            jump.double = true
-            cooltime.aerialStep = 0
-            playAudio(audio.misaki.doubleJump.data)
-          } else {
-            player.dx *= .7
-            playAudio(audio.misaki.jump.data)
-          }
-          if (10 < player.breathInterval) player.breathInterval -= 1
-          player.landFlag = false
-        }
-        jump.time += 1
-      }
-      if(!keyMap.jump.some(v => key[v].flag)) {
-        if (settings.type.DECO) jump.time = 0
-        else {
-          if (5 < jump.time) {
-            if (player.dy < 0) player.dy = 0
-            jump.time = 0
-          } else if (jump.time !== 0) jump.time += 1
-        }
-      }
-    }
     { // wall grab
       if (
         player.wallFlag &&
@@ -968,29 +961,34 @@ const judgement = () => {
             ny *= length
             if (!onetimeLandFlag) {
               const d = -(ax * nx + ay * ny)
-              const tm = -(nx * (ox - jumpCondition.w / 2) + ny * (oy + jumpCondition.y) + d) / (
-                nx * dx + ny * (dy + jumpCondition.h))
+              const tm = -(nx * (ox - landCondition.w / 2) + ny * (oy + landCondition.y) + d) / (
+                nx * dx + ny * (dy + landCondition.h))
+              const permisstionValue = -.1
               if (0 < tm && tm <= 1) {
-                const cx = (ox - jumpCondition.w / 2) + dx * tm
-                const cy = (oy + jumpCondition.y) + (dy + jumpCondition.h) * tm
+                const cx = (ox - landCondition.w / 2) + dx * tm
+                const cy = (oy + landCondition.y) + (dy + landCondition.h) * tm
                 const acx = cx - ax
                 const acy = cy - ay
                 const bcx = cx - bx
                 const bcy = cy - by
                 const doc = acx * bcx + acy * bcy
-                if (doc <= 0) onetimeLandFlag = true
+                if (
+                  doc <= 0 && (terrainObject[terrainIndex].length !== 2 ||
+                  permisstionValue < player.dy)) onetimeLandFlag = true
               }
-              const tp = -(nx * (ox + jumpCondition.w / 2) + ny * (oy + jumpCondition.y) + d) / (
-                nx * dx + ny * (dy + jumpCondition.h))
+              const tp = -(nx * (ox + landCondition.w / 2) + ny * (oy + landCondition.y) + d) / (
+                nx * dx + ny * (dy + landCondition.h))
               if (0 < tp && tp <= 1) {
-                const cx = (ox + jumpCondition.w / 2) + dx * tp
-                const cy = (oy + jumpCondition.y) + (dy + jumpCondition.h) * tp
+                const cx = (ox + landCondition.w / 2) + dx * tp
+                const cy = (oy + landCondition.y) + (dy + landCondition.h) * tp
                 const acx = cx - ax
                 const acy = cy - ay
                 const bcx = cx - bx
                 const bcy = cy - by
                 const doc = acx * bcx + acy * bcy
-                if (doc <= 0) onetimeLandFlag = true
+                if (
+                  doc <= 0 && (terrainObject[terrainIndex].length !== 2 ||
+                  permisstionValue < player.dy)) onetimeLandFlag = true
               }
             }
             let nax = ax - nx * player.r
@@ -1011,7 +1009,7 @@ const judgement = () => {
               if (doc <= 0) {
                 detectFlag = true
                 tilt += tilt < .5 ? 1.5 : -.5
-                if (1 < tilt) onetimeLandFlag = true
+                // if (1 < tilt) onetimeLandFlag = true
               }
             }
             if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
@@ -1022,7 +1020,7 @@ const judgement = () => {
               (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= player.r ** 2
             ) {
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-              if (tilt < 0) onetimeLandFlag = true
+              // if (tilt < 0) onetimeLandFlag = true
               detectFlag = true
             }
             if (detectFlag) {
@@ -1050,7 +1048,7 @@ const update = () => {
   {
     if (player.grabFlag) player.dx = 0
     if (player.landFlag) {
-      if (player.state === 'jump' && 0 < player.dy) player.state = 'idle' // landing
+      if (player.state === 'jump') player.state = 'idle' // landing
       {
         if (player.state === 'slide') {
           player.dx *= slideBrakeConstant
@@ -1524,11 +1522,11 @@ const draw = () => {
               }
               i === 0 ?
               context.moveTo(
-                relativeCooldinates.x + v[0] * size + m.x,
-                relativeCooldinates.y + v[1] * size + m.y) :
+                relativeCooldinates.x + v[0] * size + m.x|0,
+                relativeCooldinates.y + v[1] * size + m.y|0) :
               context.lineTo(
-                relativeCooldinates.x + v[0] * size + m.x,
-                relativeCooldinates.y + v[1] * size + m.y)
+                relativeCooldinates.x + v[0] * size + m.x|0,
+                relativeCooldinates.y + v[1] * size + m.y|0)
             })
             if (terrainObject[id].length === 2) {
               context.closePath()
@@ -1540,10 +1538,10 @@ const draw = () => {
     })
     context.fillStyle = 'hsla(30, 100%, 50%, .5)'
     context.fillRect(
-      player.x - stageOffset.x - jumpCondition.w / 2,
-      player.y - stageOffset.y + jumpCondition.y,
-      jumpCondition.w,
-      jumpCondition.h)
+      player.x - stageOffset.x - landCondition.w / 2,
+      player.y - stageOffset.y + landCondition.y,
+      landCondition.w,
+      landCondition.h)
     {
       context.strokeStyle = 'hsl(0, 100%, 50%)'
       context.beginPath()
@@ -1664,6 +1662,7 @@ const draw = () => {
       `frictionalForce: ${userFF}`,
       `stamina: ${player.breathInterval}`,
       `slide cooltime: ${cooltime.slide}`,
+      `jump flag: ${jump.flag}`,
       `double jump: ${!jump.double}`,
       `player state: ${player.state}`,
     ]

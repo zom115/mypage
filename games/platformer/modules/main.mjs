@@ -542,11 +542,11 @@ const draw = () => {
               }
               i === 0 ?
               context.moveTo(
-                relativeCooldinates.x + v[0] * size + m.x,
-                relativeCooldinates.y + v[1] * size + m.y) :
+                relativeCooldinates.x + v[0] * size + m.x|0,
+                relativeCooldinates.y + v[1] * size + m.y|0) :
               context.lineTo(
-                relativeCooldinates.x + v[0] * size + m.x,
-                relativeCooldinates.y + v[1] * size + m.y)
+                relativeCooldinates.x + v[0] * size + m.x|0,
+                relativeCooldinates.y + v[1] * size + m.y|0)
             })
             if (terrainObject[id].length === 2) {
               context.closePath()
