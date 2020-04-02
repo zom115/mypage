@@ -166,6 +166,12 @@
          "id":1,
          "name":"tile",
          "opacity":1,
+         "properties":[
+                {
+                 "name":"foreground",
+                 "type":"bool",
+                 "value":false
+                }],
          "type":"tilelayer",
          "visible":true,
          "width":64,
