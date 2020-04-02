@@ -1141,7 +1141,7 @@ const update = () => {
   if (player.state === 'idle') {
     const i = imageStat[player.state]
     if ( // breath
-      player.breathTimestamp + player.breathInterval / i.breathMax * player.breathCount <=
+      player.breathTimestamp + player.breathInterval / i.breathMax * (player.breathCount + 1) <=
       globalTimestamp
     ) {
       player.breathCount++
