@@ -1,11 +1,19 @@
 { "columns":37,
- "image":"..\/..\/platformer\/resources\/GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
- "imageheight":192,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"",
+         "target":"."
+        }
+    },
+ "image":"GothicVania-town-files\/PNG\/environment\/layers\/tileset_edit.png",
+ "imageheight":384,
  "imagewidth":592,
  "margin":0,
- "name":"tileset_GothicVaniaTown",
+ "name":"GothicVania-town_tileset_edit",
  "spacing":0,
- "tilecount":444,
+ "tilecount":888,
  "tiledversion":"2020.03.18",
  "tileheight":16,
  "tilewidth":16,

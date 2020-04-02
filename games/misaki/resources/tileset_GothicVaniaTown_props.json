@@ -1,11 +1,19 @@
-{ "columns":22,
- "image":"..\/..\/platformer\/resources\/GothicVania-town-files\/PNG\/environment\/props\/props.png",
- "imageheight":192,
- "imagewidth":352,
+{ "columns":25,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"",
+         "target":"."
+        }
+    },
+ "image":"GothicVania-town-files\/PNG\/environment\/props\/props_edit.png",
+ "imageheight":400,
+ "imagewidth":400,
  "margin":0,
- "name":"props",
+ "name":"GothicVania-town_props_edit",
  "spacing":0,
- "tilecount":264,
+ "tilecount":625,
  "tiledversion":"2020.03.18",
  "tileheight":16,
  "tilewidth":16,

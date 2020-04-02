@@ -1062,8 +1062,8 @@ const judgement = () => {
 const update = () => {
   player.dy += gravitationalAcceleration * coefficient * intervalDiffTime
   frictionalForce = userFF
-  const terminalSpeed = size
-  if (terminalSpeed < player.dy) player.dy = terminalSpeed
+  const terminalVelocity = size
+  if (terminalVelocity < player.dy) player.dy = terminalVelocity
   const floorThreshold = .01
   if (-floorThreshold < player.dx && player.dx < floorThreshold) player.dx = 0
 
@@ -1534,6 +1534,36 @@ const draw = () => {
   }
   context.drawImage(img, x|0, player.y - imageOffset.y - stageOffset.y|0)
   context.restore()
+  mapObject[mapData.name].layersIndex.tileset.forEach(v => {
+    let flag = false
+    mapObject[mapData.name].layers[v].properties.forEach(vl => {
+      if (vl.name === 'foreground') {
+        flag = !vl.value
+      }
+    })
+    if (flag) return
+    for (let x = 0; x < mapObject[mapData.name].layers[v].width; x++) {
+      for (let y = 0; y < mapObject[mapData.name].layers[v].height; y++) {
+        let id = mapObject[mapData.name].layers[v].data[mapObject[mapData.name].layers[v].width * y + x] - 1
+        if (0 < id) {
+          let flag = false
+          Object.entries(mapObject[mapData.name].tilesetsIndex).forEach(([k, vl]) => {
+            if (flag) return
+            if (vl.tilecount < id) id -= vl.tilecount
+            else {
+              context.drawImage(
+                imageObject[k],
+                (id % mapObject[mapData.name].tilesetsIndex[k].columns) * size,
+                (id - id % mapObject[mapData.name].tilesetsIndex[k].columns) /
+                  mapObject[mapData.name].tilesetsIndex[k].columns * size,
+                size, size, (x * size - stageOffset.x)|0, (y * size - stageOffset.y)|0, size, size)
+              flag = true
+            }
+          })
+        }
+      }
+    }
+  })
   if (settings.type.hitbox) {
     context.fillStyle = 'hsl(300, 50%, 50%)'
     context.strokeStyle = 'hsl(300, 50%, 50%)'
@@ -1549,6 +1579,10 @@ const draw = () => {
               } else break
             }
             const relativeCooldinates = {x: x * size - stageOffset.x, y: y * size - stageOffset.y}
+            if (
+              relativeCooldinates.x + size < 0 || canvas.offsetWidth < relativeCooldinates.x ||
+              relativeCooldinates.y + size < 0 || canvas.offsetHeight < relativeCooldinates.y
+            ) continue
             context.beginPath()
             terrainObject[id].forEach((v, i) => {
               const m = {x: 0, y: 0}
@@ -1622,36 +1656,6 @@ const draw = () => {
       }
     })
   }
-  mapObject[mapData.name].layersIndex.tileset.forEach(v => {
-    let flag = false
-    mapObject[mapData.name].layers[v].properties.forEach(vl => {
-      if (vl.name === 'foreground') {
-        flag = !vl.value
-      }
-    })
-    if (flag) return
-    for (let x = 0; x < mapObject[mapData.name].layers[v].width; x++) {
-      for (let y = 0; y < mapObject[mapData.name].layers[v].height; y++) {
-        let id = mapObject[mapData.name].layers[v].data[mapObject[mapData.name].layers[v].width * y + x] - 1
-        if (0 < id) {
-          let flag = false
-          Object.entries(mapObject[mapData.name].tilesetsIndex).forEach(([k, vl]) => {
-            if (flag) return
-            if (vl.tilecount < id) id -= vl.tilecount
-            else {
-              context.drawImage(
-                imageObject[k],
-                (id % mapObject[mapData.name].tilesetsIndex[k].columns) * size,
-                (id - id % mapObject[mapData.name].tilesetsIndex[k].columns) /
-                  mapObject[mapData.name].tilesetsIndex[k].columns * size,
-                size, size, (x * size - stageOffset.x)|0, (y * size - stageOffset.y)|0, size, size)
-              flag = true
-            }
-          })
-        }
-      }
-    }
-  })
   if (settings.type.map) {
     const multiple = 2
     const mapSize = {x: canvas.offsetWidth / 5, y: canvas.offsetHeight / 5}
@@ -1806,13 +1810,6 @@ Promise.all(resourceList).then(() => {
   volumeController()
   setMapProcess(mapData.name)
   console.log(mapObject)
-  mapObject[mapData.name].layersIndex.tileset.forEach(v => {
-    mapObject[mapData.name].layers[v].properties.forEach(vl => {
-      if (vl.name === 'foreground') {
-        console.log(vl.value === false)
-      }
-    })
-  })
   main()
   draw()
 })
