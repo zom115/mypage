@@ -905,14 +905,11 @@ const judgement = () => {
               y * mapObject[mapData.name].layers[collisionIndex].width + x] -
             mapObject[mapData.name].tilesets[mapObject[
               mapData.name].tilesetsIndex.collision.index].firstgid + 1
-          let terrainIndex
-          terrainIndex = 0 < id ? id : '0'
-          terrainObject[terrainIndex].forEach((ro, i) => { // relative origin
-            if (ro.rength === 0) return
-            if (terrainObject[terrainIndex].length === 1) return
-            const rp = terrainObject[terrainIndex].slice(i - 1)[0]
-            const rn = terrainObject[terrainIndex].length - 1 === i ? // relative next
-              terrainObject[terrainIndex][0] : terrainObject[terrainIndex].slice(i + 1)[0]
+          if (id === 0) continue
+          terrainObject[id].forEach((ro, i) => { // relative origin
+            const rp = terrainObject[id].slice(i - 1)[0]
+            const rn = terrainObject[id].length - 1 === i ? // relative next
+              terrainObject[id][0] : terrainObject[id].slice(i + 1)[0]
             let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
             const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
             const findVertexList = [
@@ -927,8 +924,8 @@ const judgement = () => {
               if (ro[vl[0]] === vl[1]) {
                 const target = terrainObject[mapObject[mapData.name].layers[collisionIndex].data[(
                   y + vl[2][1]) * mapObject[mapData.name].layers[collisionIndex].width + x + vl[2][0]] -
-                  mapObject[mapData.name].tilesets[mapObject[mapData.name].
-                  tilesetsIndex.collision.index].firstgid + 1]
+                  mapObject[mapData.name].tilesets[mapObject[
+                  mapData.name].tilesetsIndex.collision.index].firstgid + 1]
                 if (target === undefined) return
                 const vertex = i === 0 ? [1, ro[1]] :
                 i === 1 ? [0, ro[1]] :
@@ -955,9 +952,10 @@ const judgement = () => {
                     target[nextIndex][1] - target[index][1],
                     target[nextIndex][0] - target[index][0]) / Math.PI
                   if (
-                    target.length !== 2 && (
+                    // target.length !== 2 && (
                     tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
-                    tilt === cNextTilt || previousTilt === cNextTilt)
+                    tilt === cNextTilt || previousTilt === cNextTilt
+                    // )
                   ) vertexFlag = true
                 }
               }
@@ -993,7 +991,7 @@ const judgement = () => {
                 const bcy = cy - by
                 const doc = acx * bcx + acy * bcy
                 if (
-                  doc <= 0 && (terrainObject[terrainIndex].length !== 2 ||
+                  doc < 0 && (terrainObject[id].length !== 2 ||
                   permisstionValue < player.dy)) onetimeLandFlag = true
               }
               const tp = -(nx * (ox + landCondition.w / 2) + ny * (oy + landCondition.y) + d) / (
@@ -1007,7 +1005,7 @@ const judgement = () => {
                 const bcy = cy - by
                 const doc = acx * bcx + acy * bcy
                 if (
-                  doc <= 0 && (terrainObject[terrainIndex].length !== 2 ||
+                  doc < 0 && (terrainObject[id].length !== 2 ||
                   permisstionValue < player.dy)) onetimeLandFlag = true
               }
             }
@@ -1026,14 +1024,17 @@ const judgement = () => {
               const bcx = cx - nbx
               const bcy = cy - nby
               const doc = acx * bcx + acy * bcy
-              if (doc <= 0) {
+              if (doc < 0) {
                 detectFlag = true
                 tilt += tilt < .5 ? 1.5 : -.5
+                const innerProduct = 0
+                console.log('detect')
                 // if (1 < tilt) onetimeLandFlag = true
               }
             }
-            if (terrainObject[terrainIndex].length === 2 && (dy < 0 || i === 1)) return // temporary
-            if (terrainObject[terrainIndex].length === 2) vertexFlag = true
+            if (terrainObject[id].length === 2 && (i === 0)) return // temporary
+            // if (terrainObject[id].length === 2 && (dy < 0 && i === 1)) return // temporary
+            // if (terrainObject[id].length === 2) vertexFlag = true
             if (
               !detectFlag &&
               !vertexFlag &&
@@ -1810,6 +1811,11 @@ Promise.all(resourceList).then(() => {
   volumeController()
   setMapProcess(mapData.name)
   console.log(mapObject)
+  const a1 = 2
+  const a2 = -1
+  const b1 = 3
+  const b2 = 1
+  console.log((a1*b1+a2*b2)/((a1**2+a2**2)**.5*(b1**2+b2**2)**.5))
   main()
   draw()
 })
