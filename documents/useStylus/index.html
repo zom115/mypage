@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>すたいらす | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <script src="../../scripts/main.js" defer></script>
+  </head>
+  <script async src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">ほーむ</a><span> / </span><span>すたいらす</span>
+      </nav>
+      <article>
+        <h1>Stylus篇</h1>
+        <p>Sassが意味もなくコンパイルエラー吐くときがあるので、</p>
+        <p>原因究明するよりはいっそ、よりスタイリッシュそうなStylusに乗り換える。</p>
+        <h2>Sassとの相違点</h2>
+        <p>より無駄を省いて書ける。</p>
+        <p>Stylus単体だと階層を潜って監視してくれないみたい(2020/04/04現在)。</p><a href="http://memowomome.hatenablog.com/entry/2016/07/20/001744">メモを揉め | chokidarを使ってファイルの変更をwatchする</a>
+        <p>このページの横スクロールバー、バグってますよ。</p>
+        <p>Windows環境だとchokidar使おうにも置換が面倒なのでパス。</p>
+        <p>1階層のwatchでいいならnpm run scriptsで完結する。</p>
+        <p>指定ディレクトリより深い階層も変換したいなら、gulpとか使えばいいんじゃない？</p>
+        <h2>前提</h2>
+        <p>Node.jsの設定は済ませている。</p>
+        <h2>詳解</h2>
+        <p>npmでStylusをインストールする。</p>
+        <pre class="prettyprint lang-bash linenums">npm i stylus</pre>
+        <p>package.jsonを編集してStylusを使えるようにする。</p>
+        <pre class="prettyprint lang-json linenums">{
+  &quot;scripts&quot;: {
+    &quot;Stylus&quot;: &quot;Stylus&quot;,
+  }
+}</pre>
+        <p>ヘルプをみるときはこれ。</p>
+        <pre class="prettyprint lang-bash linenums">npm run stylus -- -h</pre>
+        <p>*.stylを同じ階層に出力するならこうする。</p>
+        <pre class="prettyprint lang-json linenums">{
+  &quot;scripts&quot;: {
+    &quot;watch&quot;: &quot;stylus &lt;input dir&gt;&quot;
+  }
+}</pre>
+        <p>異なる階層に出力するならこうする。</p>
+        <pre class="prettyprint lang-json linenums">{
+  &quot;scripts&quot;: {
+    &quot;watch&quot;: &quot;stylus &lt;input dir&gt; -o &lt;otuput dir&gt;&quot;
+  }
+}</pre>
+        <p>監視させるならこうする。</p>
+        <pre class="prettyprint lang-json linenums">{
+  &quot;scripts&quot;: {
+    &quot;watch&quot;: &quot;stylus &lt;input dir&gt; -o &lt;otuput dir&gt; -w&quot;
+  }
+}</pre>
+        <p>丁寧すぎたかな。おわり。</p>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>
