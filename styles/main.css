@@ -1,133 +1,155 @@
 a:hover {
-  color: #999999; }
-  a:hover img {
-    opacity: .9; }
-
+  color: #999;
+}
+a:hover img {
+  opacity: 0.9;
+}
 a:link {
-  color: #00d5ff; }
-
+  color: #00d4ff;
+}
 a:visited {
-  color: magenta; }
-
+  color: #f0f;
+}
 b {
-  color: yellow; }
-
+  color: #ff0;
+}
 blockquote:before {
   content: '"';
-  display: block; }
-
+  display: block;
+}
 blockquote {
-  border: 1px #666666 solid;
-  margin: .5rem 1rem;
-  padding: .5rem .5rem 1.5rem .5rem;
-  position: relative; }
-
+  border: 1px #666 solid;
+  margin: 0.5rem 1rem;
+  padding: 0.5rem 0.5rem 1.5rem 0.5rem;
+  position: relative;
+}
 blockquote:after {
   content: '"';
-  float: right; }
-
+  float: right;
+}
 canvas {
-  background: #999999;
+  background: #999;
   display: block;
   margin: 0 auto;
   touch-action: none;
   user-select: none;
-  -webkit-touch-callout: none; }
-
-h1, h2 {
-  color: #99cc33; }
-
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-touch-callout: none;
+}
+h1,
+h2 {
+  color: #9c3;
+}
 h1 {
   font-size: 2rem;
   margin: 0 0 1rem 0;
-  text-align: center; }
-
+  text-align: center;
+}
 h2 {
-  border-bottom: 1px solid #666666; }
-
+  border-bottom: 1px solid #666;
+}
 h3 {
-  margin: .5rem 0; }
-
-p, ul, li {
-  margin: 0; }
-
+  margin: 0.5rem 0;
+}
+p,
+ul,
+li {
+  margin: 0;
+}
 td {
-  padding: 0 1px; }
-
+  padding: 0 1px;
+}
 .prettyprint ul.limenums > li {
-  list-style-type: decimal; }
-
+  list-style-type: decimal;
+}
 .container {
   display: flex;
-  justify-content: space-around; }
-  .container table {
-    min-width: 250px; }
-    .container table tr td.fix {
-      min-width: 2rem;
-      text-align: right; }
-
+  justify-content: space-around;
+}
+.container table {
+  min-width: 250px;
+}
+.container table tr td.fix {
+  min-width: 2rem;
+  text-align: right;
+}
 body {
-  background: #666666;
-  color: white;
+  background: #666;
+  color: #fff;
   display: grid;
   grid-template-rows: 4rem 1fr 4rem;
   margin: 0;
-  min-height: 100vh; }
-
-header, article, footer {
-  background: #333333; }
-
+  min-height: 100vh;
+}
+header,
+article,
+footer {
+  background: #333;
+}
 header {
-  padding: 1rem; }
-  header a {
-    float: left;
-    font-size: 2rem; }
-    header a:link, header a:visited {
-      color: #00d5ff; }
-  header details {
-    float: right; }
-    header details a {
-      font-size: 1rem;
-      float: right; }
-    header details ul {
-      list-style-type: none;
-      padding: 0; }
-    header details nav {
-      background: gray;
-      position: absolute;
-      right: 0;
-      left: auto;
-      margin: 0 1rem;
-      padding: 1rem; }
-    header details summary {
-      outline: none; }
-      header details summary:hover {
-        cursor: pointer;
-        opacity: .9; }
-
+  padding: 1rem;
+}
+header a {
+  float: left;
+  font-size: 2rem;
+}
+header a:link,
+header a:visited {
+  color: #00d4ff;
+}
+header details {
+  float: right;
+}
+header details a {
+  font-size: 1rem;
+  float: right;
+}
+header details ul {
+  list-style-type: none;
+  padding: 0;
+}
+header details nav {
+  background: #808080;
+  position: absolute;
+  right: 0;
+  left: auto;
+  margin: 0 1rem;
+  padding: 1rem;
+}
+header details summary {
+  outline: none;
+}
+header details summary:hover {
+  cursor: pointer;
+  opacity: 0.9;
+}
 main {
   justify-self: center;
   max-width: 1370px;
-  width: 100%; }
-  main nav {
-    padding: 1rem; }
-
+  width: 100%;
+}
+main nav {
+  padding: 1rem;
+}
 article {
-  padding: 1rem; }
-
+  padding: 1rem;
+}
 .wrapper {
   display: grid;
   justify-content: center;
   grid-template-columns: repeat(auto-fill, 16rem);
-  grid-auto-rows: minmax(100px, auto); }
-  .wrapper div {
-    border: 1px solid #666666;
-    margin-bottom: 1rem;
-    justify-self: center;
-    width: 15rem;
-    text-align: center; }
-    .wrapper div p {
-      text-align: left; }
-
+  grid-auto-rows: minmax(100px, auto);
+}
+.wrapper div {
+  border: 1px solid #666;
+  margin-bottom: 1rem;
+  justify-self: center;
+  width: 15rem;
+  text-align: center;
+}
+.wrapper div p {
+  text-align: left;
+}
 footer {
-  margin-top: 1rem; }
+  margin-top: 1rem;
+}
