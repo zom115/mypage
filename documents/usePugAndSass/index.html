@@ -26,7 +26,7 @@
       <article>
         <h1>Pug &amp; Sass篇</h1>
         <p>PugやSassをnpm-Scriptsで監視するまでをさくっと体系的に書いているところが少なかったので書きます。</p>
-        <p>Stylus篇は<a href="../useStylus/">こちら</a></p>
+        <p>Stylus篇は<a href="../useStylus/">こちら</a>。</p>
         <h2>誰が読者対象？</h2>
         <p>htmlを複数ページ作成して，ヘッダーやフッターなどの共通部分を</p>
         <p>自動生成したいなっていう欲に駆られたらまず読んでほしいです。</p>
@@ -40,10 +40,10 @@
         <p><b>Sass</b>(SCSSではない)を使えばCSSの無駄を省いて書けます。</p>
         <p>それだけです。</p>
         <h2>個人的に何をしてはいけないのか</h2>
-        <p>CSSに似てるからって<b>SCSS</b>に流されるな。</p>
-        <p><b>gulp</b>は使うな。</p>
+        <p>CSSに似てるからって<b>SCSS</b>に流されない。</p>
+        <p><b>gulp</b>は使わない。</p>
         <pre class="prettyprint lang-bash linenums">npm i <b>-g</b></pre>
-        <p>は極力控える。</p>
+        <p>は極力避ける。</p>
         <p><a href="https://mosapride.com/index.php/2018/02/06/post-681/">mosaの胃薬 | 【npm】グローバルインストールは控えるべき</a></p>
         <h2>詳解</h2>
         <p>Node.jsをインストール，初期化する。</p>
@@ -61,14 +61,28 @@
         <pre class="prettyprint lang-bash linenums">npm run &lt;script name&gt;</pre>
         <p>引数をつけたい時は</p>
         <pre class="prettyprint lang-bash linenums">npm run &lt;script name&gt; -- &lt;option command&gt;</pre>
+        <p>ヘルプはこれで見られるよ。</p>
         <pre class="prettyprint lang-bash linenums">npm run pug -- -h</pre>
         <pre class="prettyprint lang-bash linenums">npm run npde-sass -- --help</pre>
-        <p>でオプション見れるよ。</p>
-        <p>npmでconcurrentlyをインストールしてPugとnode-sassを並列監視する。なくても並列で走らせることはできる。</p>
-        <p>preタグを複数行にまたいで使いたいときにいれる</p><a href="https://kuroeveryday.blogspot.com/2018/08/how-to-display-raw-html-and-script-code-in-pug.html">Black Everyday Company | pug(Jade)でエスケープせずhtmlタグやscriptをそのまま表示させる方法</a><br><br>
-        <p><a href="https://ics.media/entry/12226/">Node.jsユーザーなら押さえておきたい npm-scriptsのタスク実行方法まとめ | ics.media</a></p>
-        <p><a href="https://webcake.stars.ne.jp/npm-scripts-pug-sass-watch.html">npm scriptsでPugとSassを同時にwatchする | WEB CAKE</a></p><br>
-        <p>これだけ書いておいてくれれば調べる時間1/15くらいで済んだ自信ある。</p>
+        <p>npm-run-allをインストールして、</p>
+        <pre class="prettyprint lang-bash linenums">npm i npm-run-all</pre>
+        <p>直列: serial、</p>
+        <pre class="prettyprint lang-bash linenums">run-s &lt;script name&gt; &lt;script name&gt;</pre>
+        <p>並列: parallelで実行。</p>
+        <pre class="prettyprint lang-bash linenums">run-p &lt;script name&gt; &lt;script name&gt;</pre>
+        <p>こんな感じに書く。</p>
+        <pre class="prettyprint lang-json linenums">&quot;scripts&quot;: {
+  &quot;build-pug&quot;: &quot;pug &lt;input directory&gt; -b &lt;input directory&gt; -o &lt;output directory&gt; -P&quot;,
+  &quot;build-sass&quot;: &quot;node-sass &lt;input directory&gt; -o &lt;output directory&gt;&quot;,
+  &quot;build&quot;: &quot;run-p build-*&quot;,
+  &quot;watch-pug&quot;: &quot;pug &lt;input directory&gt; -b &lt;input directory&gt; -o &lt;output directory&gt; -w -P&quot;,
+  &quot;watch-sass&quot;: &quot;node-sass &lt;input directory&gt; -o &lt;output directory&gt; -w&quot;,
+  &quot;start&quot;: &quot;run-p watch-*&quot;
+}</pre>
+        <p>start restart stop testはrunがいらない。これで監視開始なのだ。</p>
+        <pre class="prettyprint lang-bash linenums">npm start</pre>
+        <p>preタグを複数行にまたいで使いたいときにはこれもいれよう。</p>
+        <pre class="prettyprint lang-bash linenums">npm i jstransformer-escape-html</pre><a href="https://kuroeveryday.blogspot.com/2018/08/how-to-display-raw-html-and-script-code-in-pug.html">Black Everyday Company | pug(Jade)でエスケープせずhtmlタグやscriptをそのまま表示させる方法</a><br><br>
         <p>ローカルサーバー立ち上げたりいろいろできるけど，とりあえずこんなもん。</p>
         <p>記法は各々調べよう。おわり。</p>
         <h2>似たようなやつ</h2>
