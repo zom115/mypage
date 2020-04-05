@@ -652,7 +652,7 @@ const proposal = () => {
   { // jump
     if (keyFirstFlagObject.jump && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
       if (jump.flag) {
-        if (!jump.double && jump.time === 0 && !player.grabFlag) {
+        if (!jump.double && jump.time === 0 && !player.grabFlag && !isKey(keyMap.up)) {
           player.dy = -jumpConstant
           player.state = 'jump' // temporary
           jump.double = true
@@ -666,7 +666,7 @@ const proposal = () => {
         player.dy = -jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5
         player.state = 'jump' // temporary
         jump.flag = true
-        if (!player.landFlag && !player.grabFlag) {
+        if (!player.landFlag && !player.grabFlag && !isKey(keyMap.up)) {
           jump.double = true
           cooltime.aerialStep = 0 // temporary
           playAudio(audio.misaki.doubleJump.data) // temporary
@@ -1072,9 +1072,10 @@ const update = () => {
   if (terminalVelocity < player.dy) player.dy = terminalVelocity
   const floorThreshold = .01
   if (-floorThreshold < player.dx && player.dx < floorThreshold) player.dx = 0
+  if (player.grabFlag) player.dx = 0
+  if (player.dx !== 0) player.wallFlag = false
 
   {
-    if (player.grabFlag) player.dx = 0
     if (player.landFlag) {
       if (player.state === 'jump') player.state = 'idle' // landing
       {
