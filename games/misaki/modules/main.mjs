@@ -891,12 +891,13 @@ const judgement = () => {
   let onetimeLandFlag = false
   let repeatFlag
   do {
+    repeatFlag = false
     count++
     if (3 < count) {
       player.dx = 0
       player.dy = 0
+      break
     }
-    repeatFlag = false
     const collisionFn = collisionIndex => {
       for (let x = 0; x < mapObject[mapData.name].layers[collisionIndex].width; x++) {
         if (x * size + size * 2 < player.x) continue
@@ -909,7 +910,6 @@ const judgement = () => {
               mapData.name].tilesetsIndex.collision.index].firstgid + 1
           if (id <= 0) continue
           terrainObject[id].forEach((ro, i) => { // relative origin
-            if (terrainObject[id].length === 2 && i === 1) return
             const rp = terrainObject[id].slice(i - 1)[0]
             const rn = terrainObject[id].length - 1 === i ? // relative next
               terrainObject[id][0] : terrainObject[id].slice(i + 1)[0]
@@ -955,10 +955,8 @@ const judgement = () => {
                     target[nextIndex][1] - target[index][1],
                     target[nextIndex][0] - target[index][0]) / Math.PI
                   if (
-                    // target.length !== 2 && (
                     tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
                     tilt === cNextTilt || previousTilt === cNextTilt
-                    // )
                   ) vertexFlag = true
                 }
               }
@@ -1019,7 +1017,7 @@ const judgement = () => {
             const d = -(nax * nx + nay * ny)
             const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
             let detectFlag = false
-            if (0 <= t && t <= 1) {
+            if (0 < t && t <= 1) {
               const cx = ox + dx * t
               const cy = oy + dy * t
               const acx = cx - nax
@@ -1027,31 +1025,35 @@ const judgement = () => {
               const bcx = cx - nbx
               const bcy = cy - nby
               const doc = acx * bcx + acy * bcy
-              if (doc <= 0) {
+              if (doc < 0 && (2 < terrainObject[id].length || i !== 1)) {
                 detectFlag = true
                 if (terrainObject[id].length === 2) {
                   const compareTilt = Math.atan2(dy, dx) / Math.PI
-                  const diffTilt = compareTilt - tilt
-                  const relativeTilt = diffTilt < -1 ? diffTilt + 2 :
+                  let diffTilt = compareTilt - tilt
+                  diffTilt = diffTilt < -1 ? diffTilt + 2 :
                   1 < diffTilt ? diffTilt - 2 : diffTilt
-                  if (relativeTilt <= 0) {
-                    console.log(tilt, diffTilt / Math.PI, relativeTilt / Math.PI)
-                    return
-                  }
+                  if (diffTilt < 0) return
                 }
                 tilt += tilt < .5 ? 1.5 : -.5
                 if (1 < tilt) onetimeLandFlag = true
               }
             }
-            if (terrainObject[id].length === 2) vertexFlag = true
             if (
               !detectFlag &&
               !vertexFlag &&
               (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= player.r ** 2
             ) {
+              if (terrainObject[id].length === 2) {
+                if ((ax - ox) ** 2 + (ay - oy) ** 2 <= player.r ** 2) return
+                const compareTilt = Math.atan2(dy, dx) / Math.PI
+                let diffTilt = i === 0 ? compareTilt - tilt : tilt - compareTilt
+                diffTilt = diffTilt < -1 ? diffTilt + 2 :
+                1 < diffTilt ? diffTilt - 2 : diffTilt
+                if (diffTilt < 0) return
+              }
+              detectFlag = true
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
               if (tilt < 0) onetimeLandFlag = true
-              detectFlag = true
             }
             if (detectFlag) {
               collisionResponse(tilt)
