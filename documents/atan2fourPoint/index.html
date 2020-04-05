@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>atan2fourPoint | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.ico">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <script src="../../scripts/main.js" defer></script>
+    <script src="modules/unitCircle.mjs" type="module"></script>
+    <script src="modules/fourPoints.mjs" type="module"></script>
+  </head>
+  <body>
+    <header><a href="../../">あいうえおch.</a>
+      <details>
+        <summary>Members Link</summary>
+        <nav>
+          <ul>
+            <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+            <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+          </ul>
+        </nav>
+      </details>
+    </header>
+    <main>
+      <nav><a href="../../">ほーむ</a><span> / </span><span>atan2fourPoint</span>
+      </nav>
+      <article>
+        <section>
+          <h1>Math.atan2(y, x)で交差する4点から角度を求める</h1>
+          <p>アクションゲームですり抜ける足場(以下、プラットフォーム)を作ろうとした時、</p>
+          <p>dyを条件にしていたら不都合が生じた。</p><img src="images/holizontallyPlatform.png" alt="水平の場合">
+          <p>左は下方向なので遮断される。</p>
+          <p>右は上方向なので通過できる。</p><br>
+          <p>具体的には、地面が平坦でない場合。</p><img src="images/diagonallyPlatform.png" alt="斜めの場合">
+          <p>角度がついた坂のプラットフォームでは、dxとともにdyも変化するために、判定をすり抜けてしまった。</p>
+          <h2>下調べ</h2>
+          <p>シューティングゲーム的に2点から求めるものは多々見かけた。</p>
+          <p>これでは実現できない。</p>
+          <p>アクションゲームは点ではなく線なのだ。</p>
+          <p>地形の線分から自機の座標とdx, dyを元に、上下を判定したい。</p>
+          <h2>arctanの理解</h2>
+          <p>まずこれがわかりにくい。</p><a href="https://mathwords.net/atan2">具体例で学ぶ数学 | atan関数とatan2関数の意味と違い</a>
+          <p>argumentで比較すればすぐにわかる。</p>
+          <p>これがすべて。実に端的に表せている。</p>
+          <blockquote>Math.atan2() は、x と y が別々に渡され、x と y の符号によって象限を決定します。Math.atan() は、それらの 2 つの引数の比率 y/x が渡され、-PI/2 から PI/2 までの数値を返します。
+            <ul>
+              <li><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Math/atan2">MDM web docs moz://a | Math.atan2()</a></li>
+            </ul>
+          </blockquote>
+          <h3>とりあえず動かしてみよう</h3>
+          <canvas id="atan"></canvas>
+          <div id="div-atan">
+            <p>atan(y / x) =<span id="atan-value">0.00</span></p>
+            <p>atan / PI =<span id="atan-PI-value">0.00</span></p>
+            <p>cos(atan) =<span id="atan-cos-value">0.00</span></p>
+            <p>sin(atan) =<span id="atan-sin-value">0.00</span></p>
+          </div>
+          <p><span>x =</span><span id="x">0</span><span>, y =</span><span id="y">0</span></p>
+          <canvas id="atan2"></canvas>
+          <div id="div-atan2">
+            <p>atan2(y, x) =<span id="atan2-value">0.00</span></p>
+            <p>atan2 / PI =<span id="atan2-PI-value">0.00</span></p>
+            <p>cos(atan2) =<span id="atan2-cos-value">0.00</span></p>
+            <p>sin(atan2) =<span id="atan2-sin-value">0.00</span></p>
+          </div>
+          <p>鉛直下向きに+なところだけ注意。</p>
+          <p>atan()は分数に直すから符号が打ち消される。</p>
+          <table>
+            <tr>
+              <td>sign</td>
+              <td>-x</td>
+              <td>+x</td>
+            </tr>
+            <tr>
+              <td>-y</td>
+              <td>+</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>+y</td>
+              <td>-</td>
+              <td>+</td>
+            </tr>
+          </table>
+          <p>当たり前といえば当たり前。</p>
+          <h2>手順</h2>
+          <p>1. 交差しているかの判定</p>
+          <canvas id="cross"></canvas>
+          <div id="cross-container">
+            <p>selector = <span id="selector"></span></p>
+            <p>crossFlag = <span id="cross-flag"></span></p>
+          </div>
+          <p>点が重なると優先度の関係で持ってる点が移るけどしったこっちゃねえ。</p>
+          <p>内積はわかってるでしょって感じだけど、ここがとても丁寧に解説してくれている。</p><a href="https://hakuhin.jp/as/collision.html#COLLISION_00">Flashゲーム講座 &amp; アクションスクリプトサンプル集 | レイと線分とで当たり判定を取る</a><br>
+          <p>2. 原点からの線分に直して、-PI, PIを考慮して角度を出す</p>
+          <canvas id="degree"></canvas>
+          <div id="degree-container">
+            <p>atan2(aby, abx) = <span id="degree1"></span></p>
+            <p>atan2(cdy, cdx) = <span id="degree2"></span></p>
+            <p>cdD - abD = <span id="degreeD"></span></p>
+            <p>fixDegree = <span id="degreeF"></span></p>
+            <p>degree / PI = <span id="degreePI"></span></p>
+          </div>
+          <p>線分cdの角度から線分abをの角度を引けば、</p>
+          <p>線分abと線分cdの相対的な角度が求まる。</p>
+          <p>-PIを超えるときは+2PI</p>
+          <p>PIを超えるときは-2PIの補正をかける。</p><br>
+          <p>これをプラットフォームの判定に持ち込む。</p>
+          <p>尻切れトンボになるけど早く作りたいからこれで終わり。</p>
+          <h2>あとがき</h2>
+          <p>手順2の2つめのcanvasは動かせるようにしたいなあ。いや、だるい。</p>
+          <p>出回っている情報が少ないというより、</p>
+          <p>こんな瑣末なことに引っかかっているようじゃ、</p>
+          <p>アクションゲーム作りなんて遠い夢なんだろうか。</p>
+          <p>あるいは、その辺に転がっているお手軽なライブラリを使っているか。</p>
+          <p>弘法だって筆は選びたいじゃん。</p>
+        </section>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>
