@@ -905,8 +905,9 @@ const judgement = () => {
               y * mapObject[mapData.name].layers[collisionIndex].width + x] -
             mapObject[mapData.name].tilesets[mapObject[
               mapData.name].tilesetsIndex.collision.index].firstgid + 1
-          if (id === 0) continue
+          if (id <= 0) continue
           terrainObject[id].forEach((ro, i) => { // relative origin
+            if (terrainObject[id].length === 2 && i === 1) return
             const rp = terrainObject[id].slice(i - 1)[0]
             const rn = terrainObject[id].length - 1 === i ? // relative next
               terrainObject[id][0] : terrainObject[id].slice(i + 1)[0]
@@ -1016,7 +1017,7 @@ const judgement = () => {
             const d = -(nax * nx + nay * ny)
             const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
             let detectFlag = false
-            if (0 < t && t <= 1) {
+            if (0 <= t && t <= 1) {
               const cx = ox + dx * t
               const cy = oy + dy * t
               const acx = cx - nax
@@ -1024,17 +1025,23 @@ const judgement = () => {
               const bcx = cx - nbx
               const bcy = cy - nby
               const doc = acx * bcx + acy * bcy
-              if (doc < 0) {
+              if (doc <= 0) {
                 detectFlag = true
+                if (terrainObject[id].length === 2) {
+                  const compareTilt = Math.atan2(dy, dx) / Math.PI
+                  const diffTilt = compareTilt - tilt
+                  const relativeTilt = diffTilt < -1 ? diffTilt + 2 :
+                  1 < diffTilt ? diffTilt - 2 : diffTilt
+                  if (relativeTilt <= 0) {
+                    console.log(tilt, diffTilt / Math.PI, relativeTilt / Math.PI)
+                    return
+                  }
+                }
                 tilt += tilt < .5 ? 1.5 : -.5
-                const innerProduct = 0
-                console.log('detect')
                 // if (1 < tilt) onetimeLandFlag = true
               }
             }
-            if (terrainObject[id].length === 2 && (i === 0)) return // temporary
-            // if (terrainObject[id].length === 2 && (dy < 0 && i === 1)) return // temporary
-            // if (terrainObject[id].length === 2) vertexFlag = true
+            if (terrainObject[id].length === 2) vertexFlag = true
             if (
               !detectFlag &&
               !vertexFlag &&
@@ -1815,7 +1822,6 @@ Promise.all(resourceList).then(() => {
   const a2 = -1
   const b1 = 3
   const b2 = 1
-  console.log((a1*b1+a2*b2)/((a1**2+a2**2)**.5*(b1**2+b2**2)**.5))
   main()
   draw()
 })
