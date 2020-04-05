@@ -1040,7 +1040,7 @@ const judgement = () => {
                   }
                 }
                 tilt += tilt < .5 ? 1.5 : -.5
-                // if (1 < tilt) onetimeLandFlag = true
+                if (1 < tilt) onetimeLandFlag = true
               }
             }
             if (terrainObject[id].length === 2) vertexFlag = true
@@ -1050,7 +1050,7 @@ const judgement = () => {
               (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= player.r ** 2
             ) {
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
-              // if (tilt < 0) onetimeLandFlag = true
+              if (tilt < 0) onetimeLandFlag = true
               detectFlag = true
             }
             if (detectFlag) {
