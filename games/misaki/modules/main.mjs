@@ -155,7 +155,6 @@ const slideConstant = 2
 const boostConstant = 6
 const brakeConstant = .75
 const slideBrakeConstant = .95
-// const jumpConstant = 5
 let jump = {flag: false, double: false, step: false, time: 0, speed: 0}
 let slide = {flag: false}
 let cooltime = {
@@ -706,6 +705,48 @@ const proposal = () => {
       }
     }
   }
+  { // wall grab
+    if (
+      player.wallFlag &&
+      !player.landFlag &&
+      0 < player.dy &&
+      isKey(keyMap.up)
+    ) {
+      if (
+        (player.wallFlag === 'left' && player.direction === 'right') ||
+        (player.wallFlag === 'right' && player.direction === 'left')
+      ) {
+        const decayRatio = .5
+        player.dy *= decayRatio
+        player.dx = player.direction === 'left' ? -dashConstant : dashConstant
+        player.grabFlag = true
+      }
+    }
+    if (
+      !(player.wallFlag &&
+      !player.landFlag &&
+      0 < player.dy &&
+      isKey(keyMap.up))
+    ) player.grabFlag = false
+  }
+  if (player.grabFlag) { // wall kick
+    const jumpRatio = 1
+    if (keyFirstFlagObject.jump && player.grabFlag) {
+      if (player.direction === 'right') {
+        player.dx = -jumpRatio
+        player.direction = 'left'
+      } else if (player.direction === 'left') {
+        player.dx = jumpRatio
+        player.direction = 'right'
+      }
+      player.dy = -jumpConstant
+      player.wallFlag = false
+      player.grabFlag = false
+      jump.flag = true
+      player.state = 'jump'
+    }
+  }
+
   { // for debug
     if (keyFirstFlagObject.reset) {
       maxLog.dx = 0
@@ -735,56 +776,6 @@ const proposal = () => {
     }
   }
   const inGameInputProcess = () => {
-    { // wall grab
-      if (
-        player.wallFlag &&
-        !player.landFlag &&
-        0 < player.dy &&
-        keyMap.up.some(v => key[v].flag)) {
-        if (
-          (player.wallFlag === 'left' && player.direction === 'right') ||
-          (player.wallFlag === 'right' && player.direction === 'left')
-        ) {
-          player.dy *= .5
-          player.dx = player.direction === 'left' ? -dashConstant : dashConstant
-          player.grabFlag = true
-        }
-      }
-      if (!(
-        player.wallFlag &&
-        !player.landFlag &&
-        0 < player.dy &&
-        keyMap.up.some(v => key[v].flag))) {
-        player.grabFlag = false
-      }
-    }
-    if (player.grabFlag) { // wall kick
-      let flag = false
-      if (
-        keyFirstFlagObject.jump &&
-        player.grabFlag &&
-        player.direction === 'right'
-      ) {
-        player.dx = -4
-        player.direction = 'left'
-        flag = true
-      } else if (
-        keyFirstFlagObject.jump &&
-        player.grabFlag &&
-        player.direction === 'left'
-      ) {
-        player.dx = 4
-        player.direction = 'right'
-        flag = true
-      }
-      if (flag) {
-        player.dy = -jumpConstant
-        player.wallFlag = false
-        player.grabFlag = false
-        jump.flag = true
-        player.state = 'jump'
-      }
-    }
     { // attack
       const actionList = ['crouch', 'slide', 'punch', 'kick']
       if ( // punch
@@ -886,6 +877,9 @@ const judgement = () => {
     if (tilt <= 1) frictionalForce = wallFF
     player.dx *= 1 - frictionalForce
     player.dy *= 1 - frictionalForce
+    if (tilt === 0) player.wallFlag = 'right'
+    else if (tilt === 1) player.wallFlag = 'left'
+    else player.wallFlag = false
   }
   let count = 0
   let onetimeLandFlag = false
@@ -1549,9 +1543,7 @@ const draw = () => {
   mapObject[mapData.name].layersIndex.tileset.forEach(v => {
     let flag = false
     mapObject[mapData.name].layers[v].properties.forEach(vl => {
-      if (vl.name === 'foreground') {
-        flag = !vl.value
-      }
+      if (vl.name === 'foreground') flag = !vl.value
     })
     if (flag) return
     for (let x = 0; x < mapObject[mapData.name].layers[v].width; x++) {
@@ -1747,6 +1739,7 @@ const draw = () => {
       `jump flag: ${jump.flag}`,
       `double jump: ${!jump.double}`,
       `player state: ${player.state}`,
+      `wallFlag: ${player.wallFlag}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
     const fontsize = 10
@@ -1822,10 +1815,6 @@ Promise.all(resourceList).then(() => {
   volumeController()
   setMapProcess(mapData.name)
   console.log(mapObject)
-  const a1 = 2
-  const a2 = -1
-  const b1 = 3
-  const b2 = 1
   main()
   draw()
 })
