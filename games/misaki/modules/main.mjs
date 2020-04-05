@@ -899,6 +899,8 @@ const judgement = () => {
     repeatFlag = false
     const collisionFn = collisionIndex => {
       for (let x = 0; x < mapObject[mapData.name].layers[collisionIndex].width; x++) {
+        if (x * size + size * 2 < player.x) continue
+        if (player.x < x * size - size) break
         for (let y = 0; y < mapObject[mapData.name].layers[collisionIndex].height; y++) {
           const id =
             mapObject[mapData.name].layers[collisionIndex].data[
