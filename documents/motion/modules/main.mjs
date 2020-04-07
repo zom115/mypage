@@ -12,6 +12,7 @@ const frameCounter = list => {
 const canvas = document.getElementById`canvas`
 canvas.width = 128
 canvas.height = 128
+canvas.style.display = 'inline-block'
 const ctx = canvas.getContext`2d`
 const PI = Math.PI
 // const inseam = 17

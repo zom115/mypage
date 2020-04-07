@@ -6,6 +6,9 @@
     <link rel="shortcut icon" type="image/x-icon" href="../../images/favicon.ico">
     <link rel="stylesheet" href="../../styles/main.css">
     <script src="../../scripts/main.js" defer></script>
+    <script src="modules/onePointGravity.mjs" type="module"></script>
+    <script src="modules/twoPoints.mjs" type="module"></script>
+    <script src="modules/twoPointsGravity.mjs" type="module"></script>
     <script src="modules/main.mjs" type="module"></script>
   </head>
   <body>
@@ -31,12 +34,17 @@
           <p>ジョイメカファイトのお肉マシマシみたいにできないかな。</p>
           <h2>2D版ボーン</h2>
           <p>後に敵流用できるだろうから根本的なところからやる。</p>
-          <h3>関節1点</h3>
-          <p>それはたんぽぽの綿毛やらアルマジロやダンゴムシみたいなやつだろうから作らん。</p>
+          <h3>関節1点無重力</h3>
+          <p>考えるのをやめた。</p>
+          <h3>関節1点重力</h3>
+          <p>それはたんぽぽの綿毛やらアルマジロやダンゴムシみたいなやつ。</p>
+          <canvas id="onePointGravity"></canvas>
           <h3>無重力2点1ボーン</h3>
-          <canvas id="canvas"></canvas>
+          <canvas id="twoPoints"></canvas>
+          <canvas id="twoPointsGravity"></canvas>
           <p>見下ろしで使えるから無重力でも作る。</p>
           <p>関節の接続先が、接続元に対して時計回り、反時計回りに動く。</p>
+          <canvas id="canvas"></canvas>
         </section>
       </article>
     </main>
