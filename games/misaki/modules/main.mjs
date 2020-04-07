@@ -976,7 +976,7 @@ const judgement = () => {
               const d = -(ax * nx + ay * ny)
               const tm = -(nx * (ox - landCondition.w / 2) + ny * (oy + landCondition.y) + d) / (
                 nx * dx + ny * (dy + landCondition.h))
-              const permisstionValue = -.1
+              const permissionValue = -.1
               if (0 < tm && tm <= 1) {
                 const cx = (ox - landCondition.w / 2) + dx * tm
                 const cy = (oy + landCondition.y) + (dy + landCondition.h) * tm
@@ -987,7 +987,7 @@ const judgement = () => {
                 const doc = acx * bcx + acy * bcy
                 if (
                   doc < 0 && (terrainObject[id].length !== 2 ||
-                  permisstionValue < player.dy)) onetimeLandFlag = true
+                  permissionValue < player.dy)) onetimeLandFlag = true
               }
               const tp = -(nx * (ox + landCondition.w / 2) + ny * (oy + landCondition.y) + d) / (
                 nx * dx + ny * (dy + landCondition.h))
@@ -1001,7 +1001,7 @@ const judgement = () => {
                 const doc = acx * bcx + acy * bcy
                 if (
                   doc < 0 && (terrainObject[id].length !== 2 ||
-                  permisstionValue < player.dy)) onetimeLandFlag = true
+                  permissionValue < player.dy)) onetimeLandFlag = true
               }
             }
             let nax = ax - nx * player.r
