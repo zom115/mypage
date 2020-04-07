@@ -66,18 +66,22 @@ const main = () => setInterval(() => {
   // collision detect
   wallVertex.forEach((vn, i) => {
     const vo = i === 0 ? wallVertex[wallVertex.length - 1] : wallVertex[i - 1]
-    const a = {x: vo[0], y: vo[1]}
-    const b = {x: vn[0], y: vn[1]}
+    const normalDrag = Math.atan2(vn[1] - vo[1], vn[0] - vo[0]) - PI / 2
+    const nX = Math.cos(normalDrag)
+    const nY = Math.sin(normalDrag)
+    const r = body.waist.r
+    const a = {x: vo[0] + nX * r, y: vo[1] + nY * r}
+    const b = {x: vn[0] + nX * r, y: vn[1] + nY * r}
     const c = {x: body.waist.x, y: body.waist.y}
     const d = {x: body.waist.x + body.waist.dx, y: body.waist.y + body.waist.dy}
-    const abx = b.x - a.x
-    const aby = b.y - a.y
     const cdx = d.x - c.x
     const cdy = d.y - c.y
     let length = (cdx ** 2 + cdy ** 2) ** .5
     if (0 < length) length = 1 / length
     const nx = -cdy * length
     const ny = cdx * length
+    const abx = b.x - a.x
+    const aby = b.y - a.y
     const de = -(c.x * nx + c.y * ny)
     const t = -(nx * a.x + ny * a.y + de) / (nx * abx + ny * aby)
     if (0 <= t && t <= 1) {
@@ -89,9 +93,6 @@ const main = () => setInterval(() => {
       const bcy = cy - d.y
       const doc = acx * bcx + acy * bcy
       if (doc <= 0) {
-        const normalDrag = Math.atan2(aby, abx) - PI / 2
-        const nX = Math.cos(normalDrag)
-        const nY = Math.sin(normalDrag)
         const totalForce = -(
           body.waist.dx * nX + body.waist.dy * nY) / (
           nX ** 2 + nY ** 2) * (.5 + elasticity / 2)
