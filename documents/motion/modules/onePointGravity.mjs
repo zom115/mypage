@@ -15,8 +15,6 @@ canvas.height = 128
 canvas.style.display = 'inline-block'
 const ctx = canvas.getContext`2d`
 const PI = Math.PI
-const table = document.getElementById`table-control`
-table.style.display = 'inline-block'
 
 let gravity = .001
 let elasticity = 1
@@ -136,8 +134,6 @@ const draw = () => {
     ctx.fillText(k, 10, 10 * (i + 1))
     ctx.fillText(v, 100, 10 * (i + 1))
   })
-  // ctx.fillText(`internal FPS: ${mainFrameList.length - 1}`, 10, 10)
-  // ctx.fillText(`screen FPS: ${animFrameList.length - 1}`, 10, 20)
 }
 {
   main()

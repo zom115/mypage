@@ -14,6 +14,10 @@ canvas.width = 128
 canvas.height = 128
 canvas.style.display = 'inline-block'
 const ctx = canvas.getContext`2d`
+const table = document.getElementsByTagName`table`
+Array.prototype.forEach.call(table, e => {
+  e.style.display = 'inline-block'
+})
 const PI = Math.PI
 // const inseam = 17
 const body = {

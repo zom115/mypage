@@ -15,28 +15,109 @@ canvas.height = 128
 canvas.style.display = 'inline-block'
 const ctx = canvas.getContext`2d`
 const PI = Math.PI
+
+let gravity = .001
+let elasticity = 1
+let frictionalForce = .5
+const moveConstant = .002
 const body = {
-  waist: {from: 'bottom', degree: 0, reach:  0, x: 64, y: 64, r: 5},
-  head:  {from:  'waist', degree: 0, reach: 20, x:  0, y:  0, r: 3},}
-Object.values(body).forEach((v) => {
-  if (v.from !== 'bottom') {
-    v.x = body[v.from].x + v.reach * Math.cos(v.degree)
-    v.y = body[v.from].y + v.reach * Math.sin(v.degree)
-  }
-})
+  waist: {from: 'bottom', degree: 0, reach: 0, x: 64, y: 64, r: 5, dx: 0, dy: 0,},
+  head:  {from:  'waist', degree: 0, reach: 20, x:  0, y:  0, r: 3, dx: 0, dy: 0,},
+}
+const reset = () => {
+  Object.values(body).forEach(v => {
+    if (v.from !== 'bottom') {
+      v.x = body[v.from].x + v.reach * Math.cos(v.degree)
+      v.y = body[v.from].y + v.reach * Math.sin(v.degree)
+      v.dx = 0
+      v.dy = 0
+    }
+  })
+}
+reset()
+const wallVertex = [
+  [0, 0],
+  [0, canvas.offsetHeight],
+  [canvas.offsetWidth, canvas.offsetHeight],
+  [canvas.offsetWidth, 0],
+]
 const main = () => setInterval(() => {
   frameCounter(mainFrameList)
-  const ratio = .01
+  // input
+  const deltaG = .001
+  const deltaE = .1
+  const deltaF = .1
+  if (key.r.isFirst()) {
+    gravity = .001
+    elasticity = 1
+    frictionalForce = .5
+    reset()
+  }
+  if (key.t.isFirst()) gravity -= deltaG
+  if (key.y.isFirst()) gravity += deltaG
+  if (key.g.isFirst()) elasticity -= deltaE
+  if (key.h.isFirst()) elasticity += deltaE
+  if (key.b.isFirst()) frictionalForce -= deltaF
+  if (key.n.isFirst()) frictionalForce += deltaF
+  const ratio = key.j.flag ? moveConstant * 2 : moveConstant
   if (key.q.flag) {
-    const degree = Math.atan2(body.head.y - body.waist.y, body.head.x - body.waist.x)
-    body.head.x = body.waist.x + Math.cos(degree - ratio * PI) * body.head.reach
-    body.head.y = body.waist.y + Math.sin(degree - ratio * PI) * body.head.reach
+    const degree = Math.atan2(body.head.y - body.waist.y, body.head.x - body.waist.x) - PI / 2
+    body.head.dx += Math.cos(degree) * body.head.reach * ratio
+    body.head.dy += Math.sin(degree) * body.head.reach * ratio
   }
   if (key.w.flag) {
-    const degree = Math.atan2(body.head.y - body.waist.y, body.head.x - body.waist.x)
-    body.head.x = body.waist.x + Math.cos(degree + ratio * PI) * body.head.reach
-    body.head.y = body.waist.y + Math.sin(degree + ratio * PI) * body.head.reach
+    const degree = Math.atan2(body.head.y - body.waist.y, body.head.x - body.waist.x) + PI / 2
+    body.head.dx += Math.cos(degree) * body.head.reach * ratio
+    body.head.dy += Math.sin(degree) * body.head.reach * ratio
   }
+  // collision detect
+  wallVertex.forEach((vn, i) => {
+    const vo = i === 0 ? wallVertex[wallVertex.length - 1] : wallVertex[i - 1]
+    const normalDrag = Math.atan2(vn[1] - vo[1], vn[0] - vo[0]) - PI / 2
+    const nX = Math.cos(normalDrag)
+    const nY = Math.sin(normalDrag)
+    Object.values(body).forEach(v => {
+      const r = v.r
+      const a = {x: vo[0] + nX * r, y: vo[1] + nY * r,}
+      const b = {x: vn[0] + nX * r, y: vn[1] + nY * r,}
+      const c = {x: v.x, y: v.y,}
+      const d = {x: v.x + v.dx, y: v.y + v.dy,}
+      const cdx = d.x - c.x
+      const cdy = d.y - c.y
+      let length = (cdx ** 2 + cdy ** 2) ** .5
+      if (0 < length) length = 1 / length
+      const nx = -cdy * length
+      const ny = cdx * length
+      const abx = b.x - a.x
+      const aby = b.y - a.y
+      const de = -(c.x * nx + c.y * ny)
+      const t = -(nx * a.x + ny * a.y + de) / (nx * abx + ny * aby)
+      if (0 <= t && t <= 1) {
+        const cx = a.x + abx * t
+        const cy = a.y + aby * t
+        const acx = cx - c.x
+        const acy = cy - c.y
+        const bcx = cx - d.x
+        const bcy = cy - d.y
+        const doc = acx * bcx + acy * bcy
+        if (doc <= 0) {
+          const totalForce = -(
+            v.dx * nX + v.dy * nY) / (
+            nX ** 2 + nY ** 2) * (.5 + elasticity / 2)
+          v.dx += 2 * totalForce * nX
+          v.dy += 2 * totalForce * nY
+          v.dx *= 1 - frictionalForce
+          v.dy *= 1 - frictionalForce
+        }
+      }
+    })
+  })
+  // state update
+  Object.values(body).forEach(v => {
+    v.y += v.dy
+    v.x += v.dx
+    v.dy += gravity
+  })
 }, 0)
 const draw = () => {
   window.requestAnimationFrame(draw)
@@ -55,8 +136,17 @@ const draw = () => {
     ctx.arc(v.x, v.y, v.r, 0, PI * 2)
     ctx.fill()
   })
-  ctx.fillText(`internal FPS: ${mainFrameList.length - 1}`, 10, 10)
-  ctx.fillText(`screen FPS: ${animFrameList.length - 1}`, 10, 20)
+  const dispObject = {
+    'internal FPS'    : mainFrameList.length - 1,
+    'screen FPS'      : animFrameList.length - 1,
+    'gravity'         : gravity,
+    'elasticity'      : elasticity,
+    'frictional force': frictionalForce,
+  }
+  Object.entries(dispObject).forEach(([k, v], i) => {
+    ctx.fillText(k, 10, 10 * (i + 1))
+    ctx.fillText(v, 100, 10 * (i + 1))
+  })
 }
 {
   main()
