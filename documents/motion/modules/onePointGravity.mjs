@@ -15,12 +15,15 @@ canvas.height = 128
 canvas.style.display = 'inline-block'
 const ctx = canvas.getContext`2d`
 const PI = Math.PI
+const table = document.getElementById`table-control`
+table.style.display = 'inline-block'
 
-const gravity = .001
-const elasticity = 1
-const frictionalForce = .5
+let gravity = .001
+let elasticity = 1
+let frictionalForce = .5
+const moveConstant = .02
 const body = {
-  waist: {from: 'bottom', degree: 0, reach:  0, x: 64, y: 64, r: 5, dx: 0, dy: 0},
+  waist: {from: 'bottom', degree: 0, reach: 0, x: 64, y: 64, r: 5, dx: 0, dy: 0},
 }
 Object.values(body).forEach((v) => {
   if (v.from !== 'bottom') {
@@ -37,11 +40,29 @@ const wallVertex = [
 const main = () => setInterval(() => {
   frameCounter(mainFrameList)
   // input
-  const moveConstant = .02
-  if (key.s.flag) body.waist.dx -= moveConstant
-  if (key.f.flag) body.waist.dx += moveConstant
-  if (key.e.flag) body.waist.dy -= moveConstant
-  if (key.d.flag) {}
+  const deltaG = .001
+  const deltaE = .1
+  const deltaF = .1
+  if (key.r.isFirst()) {
+    gravity = .001
+    elasticity = 1
+    frictionalForce = .5
+    body.waist.x = canvas.offsetWidth / 2
+    body.waist.y = canvas.offsetHeight / 2
+    body.waist.dx = 0
+    body.waist.dy = 0
+  }
+  if (key.t.isFirst()) gravity -= deltaG
+  if (key.y.isFirst()) gravity += deltaG
+  if (key.g.isFirst()) elasticity -= deltaE
+  if (key.h.isFirst()) elasticity += deltaE
+  if (key.b.isFirst()) frictionalForce -= deltaF
+  if (key.n.isFirst()) frictionalForce += deltaF
+  const moveAccelaration = key.j.flag ? moveConstant * 2 : moveConstant
+  if (key.s.flag) body.waist.dx -= moveAccelaration
+  if (key.f.flag) body.waist.dx += moveAccelaration
+  if (key.e.flag) body.waist.dy -= moveAccelaration
+  if (key.d.flag) body.waist.dy += moveAccelaration
   // collision detect
   wallVertex.forEach((vn, i) => {
     const vo = i === 0 ? wallVertex[wallVertex.length - 1] : wallVertex[i - 1]
@@ -59,7 +80,7 @@ const main = () => setInterval(() => {
     const ny = cdx * length
     const de = -(c.x * nx + c.y * ny)
     const t = -(nx * a.x + ny * a.y + de) / (nx * abx + ny * aby)
-    if (0 < t && t <= 1) {
+    if (0 <= t && t <= 1) {
       const cx = a.x + abx * t
       const cy = a.y + aby * t
       const acx = cx - c.x
@@ -67,7 +88,7 @@ const main = () => setInterval(() => {
       const bcx = cx - d.x
       const bcy = cy - d.y
       const doc = acx * bcx + acy * bcy
-      if (doc < 0) {
+      if (doc <= 0) {
         const normalDrag = Math.atan2(aby, abx) - PI / 2
         const nX = Math.cos(normalDrag)
         const nY = Math.sin(normalDrag)
@@ -103,8 +124,19 @@ const draw = () => {
     ctx.arc(v.x, v.y, v.r, 0, PI * 2)
     ctx.fill()
   })
-  ctx.fillText(`internal FPS: ${mainFrameList.length - 1}`, 10, 10)
-  ctx.fillText(`screen FPS: ${animFrameList.length - 1}`, 10, 20)
+  const dispObject = {
+    'internal FPS'    : mainFrameList.length - 1,
+    'screen FPS'      : animFrameList.length - 1,
+    'gravity'         : gravity,
+    'elasticity'      : elasticity,
+    'frictional force': frictionalForce,
+  }
+  Object.entries(dispObject).forEach(([k, v], i) => {
+    ctx.fillText(k, 10, 10 * (i + 1))
+    ctx.fillText(v, 100, 10 * (i + 1))
+  })
+  // ctx.fillText(`internal FPS: ${mainFrameList.length - 1}`, 10, 10)
+  // ctx.fillText(`screen FPS: ${animFrameList.length - 1}`, 10, 20)
 }
 {
   main()
