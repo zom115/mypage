@@ -16,7 +16,9 @@ canvas.style.display = 'inline-block'
 const ctx = canvas.getContext`2d`
 const PI = Math.PI
 
-const gravity = .01
+const gravity = .001
+const elasticity = 1
+const frictionalForce = .5
 const body = {
   waist: {from: 'bottom', degree: 0, reach:  0, x: 64, y: 64, r: 5, dx: 0, dy: 0},
 }
@@ -26,6 +28,12 @@ Object.values(body).forEach((v) => {
     v.y = body[v.from].y + v.reach * Math.sin(v.degree)
   }
 })
+const wallVertex = [
+  [0, 0],
+  [0, canvas.offsetHeight],
+  [canvas.offsetWidth, canvas.offsetHeight],
+  [canvas.offsetWidth, 0],
+]
 const main = () => setInterval(() => {
   frameCounter(mainFrameList)
   // input
@@ -35,20 +43,44 @@ const main = () => setInterval(() => {
   if (key.e.flag) body.waist.dy -= moveConstant
   if (key.d.flag) {}
   // collision detect
-  const frictionalForce = .01
-  if (
-    body.waist.x - body.waist.r + body.waist.dx <= 0 ||
-    canvas.offsetWidth <= body.waist.x + body.waist.r + body.waist.dx
-  ) {
-    // collision response
-    body.waist.dx = -body.waist.dx * (1 - frictionalForce)
-  }
-  if (canvas.offsetHeight <= body.waist.y + body.waist.r + body.waist.dy) {
-    // collision response
-    const elasticity = 0
-    body.waist.dx *= 1 - frictionalForce
-    body.waist.dy = -body.waist.dy * elasticity
-  }
+  wallVertex.forEach((vn, i) => {
+    const vo = i === 0 ? wallVertex[wallVertex.length - 1] : wallVertex[i - 1]
+    const a = {x: vo[0], y: vo[1]}
+    const b = {x: vn[0], y: vn[1]}
+    const c = {x: body.waist.x, y: body.waist.y}
+    const d = {x: body.waist.x + body.waist.dx, y: body.waist.y + body.waist.dy}
+    const abx = b.x - a.x
+    const aby = b.y - a.y
+    const cdx = d.x - c.x
+    const cdy = d.y - c.y
+    let length = (cdx ** 2 + cdy ** 2) ** .5
+    if (0 < length) length = 1 / length
+    const nx = -cdy * length
+    const ny = cdx * length
+    const de = -(c.x * nx + c.y * ny)
+    const t = -(nx * a.x + ny * a.y + de) / (nx * abx + ny * aby)
+    if (0 < t && t <= 1) {
+      const cx = a.x + abx * t
+      const cy = a.y + aby * t
+      const acx = cx - c.x
+      const acy = cy - c.y
+      const bcx = cx - d.x
+      const bcy = cy - d.y
+      const doc = acx * bcx + acy * bcy
+      if (doc < 0) {
+        const normalDrag = Math.atan2(aby, abx) - PI / 2
+        const nX = Math.cos(normalDrag)
+        const nY = Math.sin(normalDrag)
+        const totalForce = -(
+          body.waist.dx * nX + body.waist.dy * nY) / (
+          nX ** 2 + nY ** 2) * (.5 + elasticity / 2)
+        body.waist.dx += 2 * totalForce * nX
+        body.waist.dy += 2 * totalForce * nY
+        body.waist.dx *= 1 - frictionalForce
+        body.waist.dy *= 1 - frictionalForce
+      }
+    }
+  })
   // state update
   body.waist.y += body.waist.dy
   body.waist.x += body.waist.dx
