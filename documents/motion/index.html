@@ -8,6 +8,7 @@
     <script src="../../scripts/main.js" defer></script>
     <script src="modules/onePointGravity.mjs" type="module"></script>
     <script src="modules/twoPoints.mjs" type="module"></script>
+    <script src="modules/twoPointsNoGravity.mjs" type="module"></script>
     <script src="modules/twoPointsGravity.mjs" type="module"></script>
     <script src="modules/main.mjs" type="module"></script>
   </head>
@@ -63,6 +64,7 @@
           </table>
           <h3>関節2点1ボーン無重力</h3>
           <canvas id="twoPoints"></canvas>
+          <canvas id="twoPointsNoGravity"></canvas>
           <table>
             <tr>
               <td>control:</td>
@@ -71,6 +73,7 @@
           </table>
           <p>見下ろしで使えるから無重力でも作る。</p>
           <p>関節の接続先が、接続元に対して時計回り、反時計回りに動く。</p>
+          <p>x, yに直接ぶん投げるのとdx, dyにぶん投げるの2種。</p>
           <h3>関節2点1ボーン重力下</h3>
           <canvas id="twoPointsGravity"></canvas>
           <canvas id="canvas"></canvas>

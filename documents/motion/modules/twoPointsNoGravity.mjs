@@ -11,7 +11,7 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
-const canvas = document.getElementById`twoPointsGravity`
+const canvas = document.getElementById`twoPointsNoGravity`
 canvas.width = 128
 canvas.height = 128
 canvas.style.display = 'inline-block'
@@ -65,12 +65,8 @@ const main = () => setInterval(() => {
   if (key.b.isFirst()) frictionalForce -= deltaF
   if (key.n.isFirst()) frictionalForce += deltaF
   const ratio = key.j.flag ? moveConstant * 2 : moveConstant
-  if (key.q.flag) {
-    body.head.a -= ratio * PI
-  }
-  if (key.w.flag) {
-    body.head.a += ratio * PI
-  }
+  if (key.q.isFirst()) body.head.a -= ratio * PI
+  if (key.w.isFirst()) body.head.a += ratio * PI
   Object.values(body).forEach(v => {
     if (v.from === 'bottom') return
     else {
@@ -80,8 +76,6 @@ const main = () => setInterval(() => {
       if (PI < v.a) v.a -= PI * 2
       if (v.a < -PI) v.a += PI * 2
     }
-    // if (v.reach ** 2 < (v.x + v.dx - body[v.from].x) ** 2 + (v.y + v.dy - body[v.from].y) ** 2) {
-    // }
   })
   // collision detect
   wallVertex.forEach((vn, i) => {
