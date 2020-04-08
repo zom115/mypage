@@ -52,7 +52,7 @@ const main = () => setInterval(() => {
   const deltaG = .001
   const deltaE = .1
   const deltaF = .1
-  if (key.r.isFirst()) {
+  if (key.r.flag) {
     gravity = .001
     elasticity = 1
     frictionalForce = .5
