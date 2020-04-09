@@ -65,18 +65,16 @@ const main = () => setInterval(() => {
   if (key.b.isFirst()) frictionalForce -= deltaF
   if (key.n.isFirst()) frictionalForce += deltaF
   const ratio = key.j.flag ? moveConstant * 2 : moveConstant
-  if (key.q.flag) {
-    body.head.a -= ratio * PI
-  }
-  if (key.w.flag) {
-    body.head.a += ratio * PI
-  }
+  if (key.q.isFirst()) body.head.a -= ratio * PI
+  if (key.w.isFirst()) body.head.a += ratio * PI
   Object.values(body).forEach(v => {
     if (v.from === 'bottom') return
     else {
       const tilt = Math.atan2(v.y - body[v.from].y, v.x - body[v.from].x)
-      v.dx = v.reach * (Math.cos(tilt + v.a) - Math.cos(tilt))
-      v.dy = v.reach * (Math.sin(tilt + v.a) - Math.sin(tilt))
+      v.dx =
+      v.reach * (Math.sin(tilt + v.a) - Math.sin(tilt))
+      v.dy =
+      v.reach * (-Math.cos(tilt + v.a) + Math.cos(tilt))
       if (PI < v.a) v.a -= PI * 2
       if (v.a < -PI) v.a += PI * 2
     }
@@ -133,8 +131,8 @@ const main = () => setInterval(() => {
     } else {
       v.x += v.dx
       v.y += v.dy
+      v.dy += gravity
     }
-    // v.dy += gravity
   })
 }, 0)
 const draw = () => {
