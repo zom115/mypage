@@ -1,3 +1,17 @@
+article,
+footer,
+header {
+  background: #333;
+}
+h1,
+h2 {
+  color: #95bf40;
+}
+li,
+p,
+ul {
+  margin: 0;
+}
 a:hover {
   color: #999;
 }
@@ -9,6 +23,9 @@ a:link {
 }
 a:visited {
   color: #f0f;
+}
+article {
+  padding: 1rem;
 }
 b {
   color: #ff0;
@@ -27,40 +44,50 @@ blockquote:after {
   content: '"';
   float: right;
 }
+body {
+  background: #666;
+  color: #fff;
+  display: grid;
+  grid-template-rows: 4rem 1fr 4rem;
+  margin: 0;
+  min-height: 100vh;
+}
 canvas {
   background: #999;
   display: block;
   margin: 0 auto;
   touch-action: none;
   user-select: none;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
   -webkit-touch-callout: none;
 }
-h1,
-h2 {
-  color: #9c3;
+footer {
+  margin-top: 1rem;
+}
+header {
+  display: flex;
+  justify-content: center;
 }
 h1 {
-  font-size: 2rem;
-  margin: 0 0 1rem 0;
+  font-size: 1.75rem;
+  margin: 0;
   text-align: center;
 }
 h2 {
-  border-bottom: 1px solid #666;
+  border-bottom: 1px solid #4d4d4d;
 }
 h3 {
   margin: 0.5rem 0;
 }
-p,
-ul,
-li {
-  margin: 0;
+main {
+  justify-self: center;
+  max-width: 1370px;
+  width: 100%;
+}
+main nav {
+  padding: 0.5rem 1rem;
 }
 td {
   padding: 0 1px;
-}
-.prettyprint ul.limenums > li {
-  list-style-type: decimal;
 }
 .container {
   display: flex;
@@ -73,42 +100,33 @@ td {
   min-width: 2rem;
   text-align: right;
 }
-body {
-  background: #666;
-  color: #fff;
-  display: grid;
-  grid-template-rows: 4rem 1fr 4rem;
-  margin: 0;
-  min-height: 100vh;
+.head-container {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  max-width: 1370px;
+  width: 100%;
 }
-header,
-article,
-footer {
-  background: #333;
-}
-header {
-  padding: 1rem;
-}
-header a {
-  float: left;
+.head-container a {
   font-size: 2rem;
+  padding: 0 0.5rem;
 }
-header a:link,
-header a:visited {
+.head-container a:link,
+.head-container a:visited {
   color: #00d4ff;
 }
-header details {
-  float: right;
+.head-container details {
+  padding: 0 0.5rem;
 }
-header details a {
+.head-container details a {
   font-size: 1rem;
   float: right;
 }
-header details ul {
+.head-container details ul {
   list-style-type: none;
   padding: 0;
 }
-header details nav {
+.head-container details nav {
   background: #808080;
   position: absolute;
   right: 0;
@@ -116,23 +134,15 @@ header details nav {
   margin: 0 1rem;
   padding: 1rem;
 }
-header details summary {
+.head-container details summary {
   outline: none;
 }
-header details summary:hover {
+.head-container details summary:hover {
   cursor: pointer;
   opacity: 0.9;
 }
-main {
-  justify-self: center;
-  max-width: 1370px;
-  width: 100%;
-}
-main nav {
-  padding: 1rem;
-}
-article {
-  padding: 1rem;
+.prettyprint ul.limenums > li {
+  list-style-type: decimal;
 }
 .wrapper {
   display: grid;
@@ -149,7 +159,4 @@ article {
 }
 .wrapper div p {
   text-align: left;
-}
-footer {
-  margin-top: 1rem;
 }
