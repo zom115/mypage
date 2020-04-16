@@ -21,7 +21,8 @@ const keyMap = {
   status: ['t'],
   hitbox: ['h'],
   map: ['m'],
-  reset: ['r']
+  reset: ['r'],
+  skin: ['c'],
 }
 const keyFirstFlagObject = {}
 const isKeyFirst = list => {return list.some(v => key[v].isFirst())} // 今押したか
@@ -323,8 +324,16 @@ let image = {
       data: [],
       src: [
         'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
         'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
         'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
+        'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
         'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
       ],
     }, walk  : {
@@ -342,6 +351,10 @@ let image = {
       src: [
         'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
+      ],
+    }, down : {
+      data: [],
+      src: [
         'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
@@ -350,6 +363,10 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
+      ],
+    }, return: {
+      data: [],
+      src: [
         'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
@@ -358,6 +375,79 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
         'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
+      ],
+    }, run: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Run_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Run_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Run_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Run_4.png',
+        'images/Unitychan/BasicActions/Unitychan_Run_5.png',
+        'images/Unitychan/BasicActions/Unitychan_Run_6.png',
+        'images/Unitychan/BasicActions/Unitychan_Run_7.png',
+        'images/Unitychan/BasicActions/Unitychan_Run_8.png',
+      ],
+    }, turn: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Brake_12.png',
+        'images/Unitychan/BasicActions/Unitychan_Brake_13.png',
+      ],
+    }, crouch: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Crouch_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Crouch_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Crouch_4.png',
+        'images/Unitychan/BasicActions/Unitychan_Crouch_5.png',
+      ],
+    }, jump: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Jump_Up_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_Up_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_Up_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_MidAir_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_MidAir_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_MidAir_3.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_Fall_1.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_Fall_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Jump_Fall_1.png',
+      ],
+    }, sliding: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Brake_3.png',
+      ],
+    }, attack: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
+        'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
+      ],
+    }, push: {
+      data: [],
+      src: [
+        'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
+      ],
+    }, punch: {
+      data: [],
+      src: [
+        'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
+        'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
+        'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
+      ],
+    }, kick: {
+      data: [],
+      src: [
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
+        'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
       ],
     }, sword: {
       data: [],
@@ -778,6 +868,9 @@ const proposal = () => {
       if (isKey(keyMap.right)) player.dx += moveAcceleration * intervalDiffTime * num
       if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
       if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
+    }
+    if (keyFirstFlagObject.skin) {
+      player.skin = player.skin === 'misaki' ? 'kohaku' : 'misaki'
     }
   }
   const inGameInputProcess = () => {
