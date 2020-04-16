@@ -111,6 +111,7 @@ const mapObject = {}
 const imageObject = {}
 const audioObject = {}
 let directoryList = [
+  'map_battleField',
   'map_GothicVaniaTown',
   'map_MagicCliffsArtwork',
 ]
@@ -140,7 +141,7 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
-const normalConstant = .008 / 5 // 1 dot = 4 cm, 1 m = 25 dot
+const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .02 / 5
 let moveAcceleration = normalConstant
 const dashThreshold = 1 / 5
@@ -643,14 +644,11 @@ const proposal = () => {
     let speed = moveAcceleration * intervalDiffTime
     const attenuationRatio = .95
     speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
-    const aerialBrake = .2
+    const aerialBrake = .1
     speed *= ['crouch', 'punch', 'kick', 'damage'].some(v => v === player.state) ? 0 :
     player.state === 'jump' ? aerialBrake : 1
     if (isKey(keyMap.left)) player.dx -= speed
     if (isKey(keyMap.right)) player.dx += speed
-    const ristrict = isKey(keyMap.dash) ? 1 : .5
-    if (ristrict < player.dx) player.dx -= speed
-    if (player.dx < -ristrict) player.dx += speed
   }
   { // jump
     if (keyFirstFlagObject.jump && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
