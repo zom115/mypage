@@ -140,11 +140,11 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
-const normalConstant = .008 / 10 // 1 dot = 4 cm, 1 m = 25 dot
-const dashConstant = .02
+const normalConstant = .008 / 5 // 1 dot = 4 cm, 1 m = 25 dot
+const dashConstant = .02 / 5
 let moveAcceleration = normalConstant
-const dashThreshold = 1
-const jumpConstant = 1
+const dashThreshold = 1 / 5
+const jumpConstant = 1 / 5
 let gravityFlag = true // temporary
 const maxLog = {
   dx: 0,
@@ -1065,8 +1065,8 @@ const judgement = () => {
   } while(repeatFlag)
   player.x += player.dx * intervalDiffTime
   player.y += player.dy * intervalDiffTime
-  if (maxLog.dx < Math.abs(player.dx * intervalDiffTime)) maxLog.dx = Math.abs(player.dx * intervalDiffTime)
-  if (maxLog.dy < Math.abs(player.dy * intervalDiffTime)) maxLog.dy = Math.abs(player.dy * intervalDiffTime)
+  if (maxLog.dx < Math.abs(player.dx)) maxLog.dx = Math.abs(player.dx)
+  if (maxLog.dy < Math.abs(player.dy)) maxLog.dy = Math.abs(player.dy)
   player.landFlag = onetimeLandFlag
 }
 const update = () => {
@@ -1074,7 +1074,7 @@ const update = () => {
   frictionalForce = userFF
   const terminalVelocity = size
   if (terminalVelocity < player.dy) player.dy = terminalVelocity
-  const floorThreshold = .01
+  const floorThreshold = .001
   if (-floorThreshold < player.dx && player.dx < floorThreshold) player.dx = 0
   if (player.grabFlag) player.dx = 0
   if (player.dx !== 0) player.wallFlag = false
@@ -1144,18 +1144,18 @@ const update = () => {
     : keyMap.left.some(v => key[v].flag) ? 'left'
     : keyMap.right.some(v => key[v].flag) ? 'right'
     : player.direction
-    if (!turnProhibitionList.some(v => v === player.state)) {
-      if (
-        keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant
-      ) player.state = 'turn'
-      if (
-        keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx
-      ) player.state = 'turn'
-      if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-      if (
-        keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)
-      ) player.state = 'idle'
-    }
+    // if (!turnProhibitionList.some(v => v === player.state)) {
+    //   if (
+    //     keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant
+    //   ) player.state = 'turn'
+    //   if (
+    //     keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx
+    //   ) player.state = 'turn'
+    //   if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
+    //   if (
+    //     keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)
+    //   ) player.state = 'idle'
+    // }
   }
 
   const stateList = ['crouch', 'jump', 'turn', 'push', 'punch', 'kick', 'damage']
