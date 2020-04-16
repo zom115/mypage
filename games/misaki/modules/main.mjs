@@ -116,55 +116,6 @@ let directoryList = [
   'map_MagicCliffsArtwork',
 ]
 let mapColor = 'rgb(127, 127, 127)'
-const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
-let elasticModulus = 0 // 0 to 1
-const wallFF = 0
-let userFF = .1
-let frictionalForce = userFF // 0 to 1
-const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3, breathMax: 5e3}
-let player = {
-  x: 0, y: 0,
-  dx: 0, dy: 0,
-  r: size / 2 * .9,
-  state: 'idle', direction: 'right',
-  descentFlag: false,
-  landFlag: false, wallFlag: false, grabFlag: false,
-  hitbox: {x: 0, y: 0, w: 0, h: 0},
-  attackBox: {x: 0, y: 0, w: 0, h: 0},
-  invincibleTimer: 0,
-  blinkCount: 0,
-  blinkInterval: 0,
-  blinkTimestamp: globalTimestamp,
-  breathCount: 0,
-  breathInterval: playerData.breathMid,
-  breathTimestamp: globalTimestamp,
-}
-player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
-const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
-const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
-const dashConstant = .02 / 5
-let moveAcceleration = normalConstant
-const dashThreshold = 1 / 5
-const jumpConstant = 1 / 5
-let gravityFlag = true // temporary
-const maxLog = {
-  dx: 0,
-  dy: 0,
-}
-
-const slideConstant = 2
-const boostConstant = 6
-const brakeConstant = .75
-const slideBrakeConstant = .95
-let jump = {flag: false, double: false, step: false, time: 0, speed: 0}
-let slide = {flag: false}
-let cooltime = {
-  step: 0, stepLimit: 15, stepDeferment: 15,
-  aerialStep: 0, aerialStepLimit: 10,
-  slide: 2, slideLimit: 45
-}
-let floatMenuCursor = 0
-const floatMenuCursorMax = 3
 
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
@@ -507,29 +458,6 @@ Object.keys(settings.volume).forEach(v => {
     volumeController()
   })
 })
-let imageStat = {
-  idle  : {
-    blinkAnimationInterval: 15,
-    blinkInterval: 5e3,
-    blinkMax: 3,
-    blinkRotate: [0, 1, 2, 1],
-    breathCount: 0,
-    breathInterval: 30,
-    breathMax: 4,
-    breathTimestamp: globalTimestamp,
-    condition: 0,
-  },
-  walk  : {condition: 0, distance: 0, stride: 14}, // in rearistic, stride = 7
-  run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
-  turn  : {condition: 0, time: 0, frame: 5},
-  crouch: {condition: 0, time: 0, intervalTime: 50},
-  jump  : {condition: 0},
-  slide : {condition: 0},
-  push  : {condition: 0},
-  punch : {condition: 0, time: 0, frame: 3, audioTrigger: 1},
-  kick  : {condition: 0, time: 0, frame: 7, audioTrigger: 3},
-  damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
-}
 const unityChanStat = {
   idle  : {frame: 55},
   walk  : {frame: 10},
@@ -630,6 +558,81 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
+
+const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
+let elasticModulus = 0 // 0 to 1
+const wallFF = 0
+let userFF = .1
+let frictionalForce = userFF // 0 to 1
+const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3, breathMax: 5e3}
+let player = {
+  x: 0, y: 0,
+  dx: 0, dy: 0,
+  r: size / 2 * .9,
+  state: 'idle', direction: 'right',
+  descentFlag: false,
+  landFlag: false, wallFlag: false, grabFlag: false,
+  hitbox: {x: 0, y: 0, w: 0, h: 0},
+  attackBox: {x: 0, y: 0, w: 0, h: 0},
+  invincibleTimer: 0,
+  blinkCount: 0,
+  blinkInterval: 0,
+  blinkTimestamp: globalTimestamp,
+  breathCount: 0,
+  breathInterval: playerData.breathMid,
+  breathTimestamp: globalTimestamp,
+  skin: 'misaki',
+  imageStat: {
+    idle  : {
+      blinkAnimationInterval: 15,
+      blinkInterval: 5e3,
+      blinkMax: 3,
+      blinkRotate: [0, 1, 2, 1],
+      breathCount: 0,
+      breathInterval: 30,
+      breathMax: 4,
+      breathTimestamp: globalTimestamp,
+      condition: 0,
+    },
+    walk  : {condition: 0, distance: 0, stride: 14}, // in rearistic, stride = 7
+    run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
+    turn  : {condition: 0, time: 0, frame: 5},
+    crouch: {condition: 0, time: 0, intervalTime: 50},
+    jump  : {condition: 0},
+    slide : {condition: 0},
+    push  : {condition: 0},
+    punch : {condition: 0, time: 0, frame: 3, audioTrigger: 1},
+    kick  : {condition: 0, time: 0, frame: 7, audioTrigger: 3},
+    damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
+  },
+}
+player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
+const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
+const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
+const dashConstant = .02 / 5
+let moveAcceleration = normalConstant
+const dashThreshold = 1 / 5
+const jumpConstant = 1 / 5
+let gravityFlag = true // temporary
+const maxLog = {
+  dx: 0,
+  dy: 0,
+}
+
+const slideConstant = 2
+const boostConstant = 6
+const brakeConstant = .75
+const slideBrakeConstant = .95
+let jump = {flag: false, double: false, step: false, time: 0, speed: 0}
+let slide = {flag: false}
+let cooltime = {
+  step: 0, stepLimit: 15, stepDeferment: 15,
+  aerialStep: 0, aerialStepLimit: 10,
+  slide: 2, slideLimit: 45
+}
+let floatMenuCursor = 0
+const floatMenuCursorMax = 3
+
 const stateReset = () => {
   if (player.descentFlag) player.descentFlag = false
 }
@@ -644,7 +647,7 @@ const proposal = () => {
     let speed = moveAcceleration * intervalDiffTime
     const attenuationRatio = .95
     speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
-    const aerialBrake = .1
+    const aerialBrake = .2
     speed *= ['crouch', 'punch', 'kick', 'damage'].some(v => v === player.state) ? 0 :
     player.state === 'jump' ? aerialBrake : 1
     if (isKey(keyMap.left)) player.dx -= speed
@@ -788,7 +791,7 @@ const proposal = () => {
         !actionList.some(v => v === player.state)
       ) {
         player.state = 'punch'
-        imageStat.punch.time = 0
+        player.imageStat.punch.time = 0
       }
       const kickDeferment = 1000 / 60 * 6
       if ( // kick
@@ -799,7 +802,7 @@ const proposal = () => {
         keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
       ) {
         player.state = 'kick'
-        imageStat.kick.time = 0
+        player.imageStat.kick.time = 0
       }
       if (cooltime.slide === 0) {
         if ( // slide
@@ -1099,7 +1102,7 @@ const update = () => {
         }
       }
     }
-    if (player.state === 'punch' && imageStat.punch.frame < imageStat.punch.time) {
+    if (player.state === 'punch' && player.imageStat.punch.frame < player.imageStat.punch.time) {
       player.attackBox = player.direction === 'left' ? {
         x: player.x - size,
         y: player.y - size * 2,
@@ -1113,8 +1116,8 @@ const update = () => {
       }
     } else if (
       player.state === 'kick' &&
-      imageStat.kick.frame * 3 < imageStat.kick.time &&
-      imageStat.kick.time < imageStat.kick.frame * 5
+      player.imageStat.kick.frame * 3 < player.imageStat.kick.time &&
+      player.imageStat.kick.time < player.imageStat.kick.frame * 5
     ) {
       player.attackBox = player.direction === 'left' ? {
         x: player.x - size * 2,
@@ -1164,7 +1167,7 @@ const update = () => {
   }
   if (player.state === 'jump' || !player.landFlag) {
     const number = 3
-    imageStat.jump.condition =
+    player.imageStat.jump.condition =
      number * 2 ** -1 < player.dy ? 7 :
      number * 2 ** -2 < player.dy ? 6 :
      number * 2 ** -3 < player.dy ? 5 :
@@ -1175,7 +1178,7 @@ const update = () => {
     -number * 2 **  0 < player.dy ? 0 : 8
   }
   if (player.state === 'idle') {
-    const i = imageStat[player.state]
+    const i = player.imageStat[player.state]
     if ( // breath
       player.breathTimestamp + player.breathInterval / i.breathMax * (player.breathCount + 1) <=
       globalTimestamp
@@ -1211,7 +1214,7 @@ const update = () => {
       playAudio(list.value, list.startTime)
     }
   } else if (player.state === 'walk' || player.state === 'run') {
-    const i = imageStat[player.state]
+    const i = player.imageStat[player.state]
     i.distance += Math.abs(player.dx * intervalDiffTime)
     if (i.stride < i.distance) {
       i.distance -= i.stride
@@ -1223,7 +1226,7 @@ const update = () => {
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
   } else if (player.state === 'crouch') {
-    const i = imageStat[player.state]
+    const i = player.imageStat[player.state]
     const index = Math.floor(i.time / i.intervalTime)
     if (isKey(keyMap.down)) {
       if ((index < image.misaki.crouch.data.length - 1)) i.time += intervalDiffTime
@@ -1236,7 +1239,7 @@ const update = () => {
     }
     i.condition = index
   } else if (player.state === 'damage') {
-    const i = imageStat[player.state]
+    const i = player.imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === image.misaki[player.state].data.length) {
@@ -1245,7 +1248,7 @@ const update = () => {
       player.state = 'idle'
     }
   } else if (player.state === 'turn') {
-    const i = imageStat[player.state]
+    const i = player.imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
     if (i.condition === image.misaki[player.state].data.length) {
@@ -1258,7 +1261,7 @@ const update = () => {
       }
     }
   } else if (player.state === 'punch') {
-    const i = imageStat[player.state]
+    const i = player.imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
@@ -1270,8 +1273,8 @@ const update = () => {
       player.state = 'idle'
     }
   } else if (player.state === 'kick') {
-    if (0 < imageStat.punch.time) imageStat.punch.time = 0
-    const i = imageStat[player.state]
+    if (0 < player.imageStat.punch.time) player.imageStat.punch.time = 0
+    const i = player.imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
@@ -1283,8 +1286,8 @@ const update = () => {
       player.state = 'idle'
     }
   }
-  Object.keys(imageStat).forEach(v => {
-    if (player.state !== v && v !== 'idle') imageStat[v].condition = 0
+  Object.keys(player.imageStat).forEach(v => {
+    if (player.state !== v && v !== 'idle') player.imageStat[v].condition = 0
   })
   enemies.forEach(v => {
     if (v.type === 'enemy') {
@@ -1537,7 +1540,7 @@ const draw = () => {
     if (end < elapsedTime) timestamp.gate = 0
   }
   let x = player.x - imageOffset.x - stageOffset.x
-  const img = image.misaki[player.state].data[imageStat[player.state].condition]
+  const img = image[player.skin][player.state].data[player.imageStat[player.state].condition]
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
