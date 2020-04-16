@@ -24,8 +24,9 @@ const keyMap = {
   reset: ['r'],
   skin: ['c'],
 }
-const keyFirstFlagObject = {}
-const isKeyFirst = list => {return list.some(v => key[v].isFirst())} // 今押したか
+const isKeyFirst = list => {
+  return list.some(v => key[v].holdtime !== 0 && key[v].holdtime < intervalDiffTime)
+} // 今押したか
 const isKey = list => {return list.some(v => key[v].flag)} // 押しているか
 const keyHoldTime = list => { // どのくらい押しているか
   return list.reduce((acc, cur) => acc < key[cur].holdtime ? key[cur].holdtime : acc, 0)
@@ -766,7 +767,7 @@ const proposal = () => {
     if (isKey(keyMap.right)) player.dx += speed
   }
   { // jump
-    if (keyFirstFlagObject.jump && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
+    if (isKeyFirst(keyMap.jump) && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
       if (jump.flag) {
         if (!jump.double && jump.time === 0 && !player.grabFlag && !isKey(keyMap.up)) {
           player.dy = -jumpConstant
@@ -848,7 +849,7 @@ const proposal = () => {
   }
   if (player.grabFlag) { // wall kick
     const jumpRatio = 1
-    if (keyFirstFlagObject.jump && player.grabFlag) {
+    if (isKeyFirst(keyMap.jump) && player.grabFlag) {
       if (player.direction === 'right') {
         player.dx = -jumpRatio
         player.direction = 'left'
@@ -865,23 +866,23 @@ const proposal = () => {
   }
 
   { // for debug
-    if (keyFirstFlagObject.reset) {
+    if (isKeyFirst(keyMap.reset)) {
       maxLog.dx = 0
       maxLog.dy = 0
     }
-    if (keyFirstFlagObject.subElasticModulus && 0 < elasticModulus) {
+    if (isKeyFirst(keyMap.subElasticModulus) && 0 < elasticModulus) {
       elasticModulus = orgRound(elasticModulus - .1, 10)
     }
-    if (keyFirstFlagObject.addElasticModulus && elasticModulus < 1) {
+    if (isKeyFirst(keyMap.addElasticModulus) && elasticModulus < 1) {
       elasticModulus = orgRound(elasticModulus + .1, 10)
     }
-    if (keyFirstFlagObject.subFrictionalForce && 0 < userFF) {
+    if (isKeyFirst(keyMap.subFrictionalForce) && 0 < userFF) {
       userFF = orgRound(userFF - .1, 10)
     }
-    if (keyFirstFlagObject.addFrictionalForce && userFF < 1) {
+    if (isKeyFirst(keyMap.addFrictionalForce) && userFF < 1) {
       userFF = orgRound(userFF + .1, 10)
     }
-    if (keyFirstFlagObject.gravity) gravityFlag = !gravityFlag
+    if (isKeyFirst(keyMap.gravity)) gravityFlag = !gravityFlag
     if (!gravityFlag) {
       player.dx = 0
       player.dy = 0
@@ -891,7 +892,7 @@ const proposal = () => {
       if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
       if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
     }
-    if (keyFirstFlagObject.skin) {
+    if (isKeyFirst(keyMap.skin)) {
       player.skin = player.skin === 'misaki' ? 'kohaku' : 'misaki'
     }
   }
@@ -899,7 +900,7 @@ const proposal = () => {
     { // attack
       const actionList = ['crouch', 'slide', 'punch', 'kick']
       if ( // punch
-        keyFirstFlagObject.attack &&
+        isKeyFirst(keyMap.attack) &&
         !keyMap.left.some(v => key[v].flag) &&
         !keyMap.right.some(v => key[v].flag) &&
         player.landFlag &&
@@ -910,7 +911,7 @@ const proposal = () => {
       }
       const kickDeferment = 1000 / 60 * 6
       if ( // kick
-        keyFirstFlagObject.attack &&
+        isKeyFirst(keyMap.attack) &&
         player.landFlag &&
         !actionList.some(v => v === player.state) && (
         keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
@@ -960,7 +961,7 @@ const proposal = () => {
   if (!menuFlag) inGameInputProcess()
   if (player.state === 'slide') console.log('hello')
   Object.keys(settings.type).forEach(v => {
-    if (keyFirstFlagObject[v]) {
+    if (isKeyFirst(keyMap[v])) {
       settings.type[v] = setStorage(v, !settings.type[v])
       inputDOM[v].checked = !inputDOM[v].checked
     }
@@ -973,7 +974,7 @@ const proposal = () => {
       v.y < player.y && player.y < v.y + v.height
     ) {
       v.properties.forEach(vl => {
-        if (vl.name === 'address' && keyFirstFlagObject.up) {
+        if (vl.name === 'address' && isKeyFirst(keyMap.up)) {
           setMapProcess(vl.value)
         }
       })
@@ -1459,7 +1460,6 @@ const update = () => {
   })
 }
 const main = () => setInterval(() => {
-  Object.entries(keyMap).forEach(([k, v]) => keyFirstFlagObject[k] = isKeyFirst(v))
   frameCounter(internalFrameList)
   intervalDiffTime = globalTimestamp - currentTime
   if (100 < intervalDiffTime) intervalDiffTime = 0
@@ -1471,7 +1471,7 @@ const main = () => setInterval(() => {
   update()
 
   const titleProcess = () => {
-    if (keyFirstFlagObject.attack) screenState = screenList[1]
+    if (isKeyFirst(keyMap.attack)) screenState = screenList[1]
   }
   const title = () => {
     if (!menuFlag) titleProcess()
@@ -1479,7 +1479,7 @@ const main = () => setInterval(() => {
   // if (screenState === screenList[0]) title()
   // else if (screenState === screenList[1]) inGame()
   const floatMenu = () => {
-    if (keyFirstFlagObject.option) {
+    if (isKeyFirst(keyMap.option)) {
       menuFlag = !menuFlag
       if (menuOpenTimestamp) {
         menuOpenTimestamp = 0
@@ -1499,17 +1499,17 @@ const main = () => setInterval(() => {
     ) menuGauge -= 1
     menuWidth = menuWidthMax * (menuGauge / menuGaugeMax)
     const config = () => {
-      if (keyFirstFlagObject.down) {
+      if (isKeyFirst(keyMap.down)) {
         floatMenuCursor = floatMenuCursor === floatMenuCursorMax ? 0 : floatMenuCursor + 1
       }
-      if (keyFirstFlagObject.up) {
+      if (isKeyFirst(keyMap.up)) {
         floatMenuCursor = floatMenuCursor === 0 ? floatMenuCursorMax : floatMenuCursor - 1
       }
       const k = Object.keys(settings.type)[floatMenuCursor]
       if ((
-        keyFirstFlagObject.attack) || (
-        keyFirstFlagObject.left) && settings.type[k] || (
-        keyFirstFlagObject.right) && !settings.type[k]
+        isKeyFirst(keyMap.attack)) || (
+        isKeyFirst(keyMap.left)) && settings.type[k] || (
+        isKeyFirst(keyMap.right)) && !settings.type[k]
       ) {
         settings.type[k] = setStorage(k, !settings.type[k])
         inputDOM[k].checked = !inputDOM[k].checked
