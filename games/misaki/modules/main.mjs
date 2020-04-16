@@ -1189,7 +1189,7 @@ const update = () => {
   }
   { // dx
     const floorThreshold = .001
-    if (-floorThreshold < player.dx && player.dx < floorThreshold) player.dx = 0
+    if (Math.abs(player.dx) < floorThreshold) player.dx = 0
     if (player.grabFlag) player.dx = 0
     if (player.dx !== 0) player.wallFlag = false
   }
