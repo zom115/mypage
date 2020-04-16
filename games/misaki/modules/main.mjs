@@ -415,7 +415,7 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Jump_Fall_2.png',
         'images/Unitychan/BasicActions/Unitychan_Jump_Fall_1.png',
       ],
-    }, sliding: {
+    }, slide: {
       data: [],
       src: [
         'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
@@ -668,14 +668,20 @@ let elasticModulus = 0 // 0 to 1
 const wallFF = 0
 let userFF = .1
 let frictionalForce = userFF // 0 to 1
+const slideFF = .02
 const playerData = {breathMin: 1e3, breathFatigue: 2e3, breathMid: 3e3, breathMax: 5e3}
 let player = {
-  x: 0, y: 0,
-  dx: 0, dy: 0,
+  x: 0,
+  y: 0,
+  dx: 0,
+  dy: 0,
   r: size / 2 * .9,
-  state: 'idle', direction: 'right',
+  state: 'idle',
+  direction: 'right',
   descentFlag: false,
-  landFlag: false, wallFlag: false, grabFlag: false,
+  landFlag: false,
+  grabFlag: false,
+  wallFlag: false,
   hitbox: {x: 0, y: 0, w: 0, h: 0},
   attackBox: {x: 0, y: 0, w: 0, h: 0},
   invincibleTimer: 0,
@@ -711,6 +717,18 @@ let player = {
   },
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
+
+let jump = {flag: false, double: false, step: false, time: 0, speed: 0}
+let cooltime = {
+  step: 0,
+  stepLimit: 15 * 1000 / 60,
+  stepDeferment: 15 * 1000 / 60,
+  aerialStep: 0,
+  aerialStepLimit: 10 * 1000 / 60,
+  slide: 2,
+  slideLimit: 45 * 1000 / 60,
+}
+
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
 const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .02 / 5
@@ -723,17 +741,7 @@ const maxLog = {
   dy: 0,
 }
 
-const slideConstant = 2
-const boostConstant = 6
 const brakeConstant = .75
-const slideBrakeConstant = .95
-let jump = {flag: false, double: false, step: false, time: 0, speed: 0}
-let slide = {flag: false}
-let cooltime = {
-  step: 0, stepLimit: 15, stepDeferment: 15,
-  aerialStep: 0, aerialStepLimit: 10,
-  slide: 2, slideLimit: 45
-}
 let floatMenuCursor = 0
 const floatMenuCursorMax = 3
 
@@ -913,30 +921,24 @@ const proposal = () => {
       }
       if (cooltime.slide === 0) {
         if ( // slide
-          keyFirstFlagObject.attack && (
-          keyMap.left.some(v => key[v].flag) ||
-          keyMap.right.some(v => key[v].flag)) &&
+          isKey(keyMap.attack) &&
           !actionList.some(v => v === player.state) &&
           player.landFlag &&
-          !player.wallFlag &&
-          !slide.flag
+          !player.wallFlag
         ) {
-          const slideSpeed = slideConstant < player.dx ? boostConstant :
-          player.dx < -slideConstant ? -boostConstant : 0
+          const slideThreshold = .1
+          const boostConstant = .4
+          const slideSpeed = Math.abs(player.dx) < slideThreshold ? 0 :
+          isKey(keyMap.left) ? -boostConstant :
+          isKey(keyMap.right) ? boostConstant : 0
           if (slideSpeed !== 0) {
             player.dx += slideSpeed
             player.state = 'slide'
             cooltime.slide = cooltime.slideLimit
             if (10 < player.breathInterval) player.breathInterval -= 1
           }
-          slide.flag = true
         }
       }
-      if (player.state !== 'slide' && cooltime.slide !== 0) {
-        if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2
-        else cooltime.slide -= 1
-      }
-      if (!keyMap.dash.some(v => key[v].flag)) slide.flag = false
       // if ( // accel
       //   player.action !== 'crouch' && !jump.step
       // ) {
@@ -955,7 +957,8 @@ const proposal = () => {
       // }
     }
   }
-  if (false && !menuFlag) inGameInputProcess()
+  if (!menuFlag) inGameInputProcess()
+  if (player.state === 'slide') console.log('hello')
   Object.keys(settings.type).forEach(v => {
     if (keyFirstFlagObject[v]) {
       settings.type[v] = setStorage(v, !settings.type[v])
@@ -987,7 +990,7 @@ const judgement = () => {
     player.dx += 2 * t * nX
     player.dy += 2 * t * nY
     if (tilt <= 1) frictionalForce = wallFF
-    player.dx *= 1 - frictionalForce
+    player.dx *= player.state === 'slide' ? 1 - slideFF : 1 - frictionalForce
     player.dy *= 1 - frictionalForce
     if (tilt === 0) player.wallFlag = 'right'
     else if (tilt === 1) player.wallFlag = 'left'
@@ -1004,7 +1007,7 @@ const judgement = () => {
       player.dy = 0
       break
     }
-    const collisionFn = collisionIndex => {
+    const collisionDetect = collisionIndex => {
       for (let x = 0; x < mapObject[mapData.name].layers[collisionIndex].width; x++) {
         if (x * size + size * 2 < player.x) continue
         if (player.x < x * size - size) break
@@ -1169,7 +1172,7 @@ const judgement = () => {
         }
       }
     }
-    mapObject[mapData.name].layersIndex.collision.forEach(v => collisionFn(v))
+    mapObject[mapData.name].layersIndex.collision.forEach(v => collisionDetect(v))
   } while(repeatFlag)
   player.x += player.dx * intervalDiffTime
   player.y += player.dy * intervalDiffTime
@@ -1178,22 +1181,28 @@ const judgement = () => {
   player.landFlag = onetimeLandFlag
 }
 const update = () => {
-  player.dy += gravitationalAcceleration * intervalDiffTime
-  frictionalForce = userFF
-  const terminalVelocity = size
-  if (terminalVelocity < player.dy) player.dy = terminalVelocity
-  const floorThreshold = .001
-  if (-floorThreshold < player.dx && player.dx < floorThreshold) player.dx = 0
-  if (player.grabFlag) player.dx = 0
-  if (player.dx !== 0) player.wallFlag = false
+  { // dy
+    player.dy += gravitationalAcceleration * intervalDiffTime
+    frictionalForce = userFF
+    const terminalVelocity = size
+    if (terminalVelocity < player.dy) player.dy = terminalVelocity
+  }
+  { // dx
+    const floorThreshold = .001
+    if (-floorThreshold < player.dx && player.dx < floorThreshold) player.dx = 0
+    if (player.grabFlag) player.dx = 0
+    if (player.dx !== 0) player.wallFlag = false
+  }
+  if (player.state !== 'slide' && cooltime.slide !== 0) { // slide
+    if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2 ** intervalDiffTime
+    else cooltime.slide -= intervalDiffTime
+    if ((cooltime.slide < 0 && !isKey(keyMap.attack)) || !player.landFlag) cooltime.slide = 0
+  }
 
   {
     if (player.landFlag) {
       if (player.state === 'jump') player.state = 'idle' // landing
       {
-        if (player.state === 'slide') {
-          player.dx *= slideBrakeConstant
-        }
         jump.flag = false
         jump.double = false
       }
@@ -1268,7 +1277,8 @@ const update = () => {
 
   const stateList = ['crouch', 'jump', 'turn', 'push', 'punch', 'kick', 'damage']
   if (!stateList.some(v => v === player.state)) {
-    player.state = player.state === 'slide' && (player.dx < -3.5 || 3.5 < player.dx) ? 'slide' :
+    const runThreshold = .3
+    player.state = player.state === 'slide' && runThreshold < Math.abs(player.dx) ? 'slide' :
     player.dx === 0 ? 'idle' :
     isKey(keyMap.dash) ? 'run' : 'walk'
   }
@@ -1842,20 +1852,20 @@ const draw = () => {
         player.y) * .04)}`,
       `dx: ${maxLog.dx.toFixed(2)} ${player.dx.toFixed(2)}`,
       `dy: ${maxLog.dy.toFixed(2)} ${player.dy.toFixed(2)}`,
-      `landFlag: ${player.landFlag}`,
+      `player state: ${player.state}`,
+      `land flag: ${player.landFlag}`,
+      `jump flag: ${jump.flag}`,
+      `double jump: ${!jump.double}`,
+      `wall flag: ${player.wallFlag}`,
+      `descent flag: ${player.descentFlag}`,
+      `slide cooltime: ${cooltime.slide}`,
+      `stamina: ${player.breathInterval}`,
       `[${keyMap.gravity}]gravity: ${gravityFlag}`,
       `[${keyMap.subElasticModulus}: -, ${keyMap.addElasticModulus}: +]` +
       `elasticModulus: ${elasticModulus}`,
       `[${keyMap.subFrictionalForce}: -, ${
         keyMap.addFrictionalForce}: +]` +
       `frictionalForce: ${userFF}`,
-      `stamina: ${player.breathInterval}`,
-      `slide cooltime: ${cooltime.slide}`,
-      `jump flag: ${jump.flag}`,
-      `double jump: ${!jump.double}`,
-      `player state: ${player.state}`,
-      `wallFlag: ${player.wallFlag}`,
-      `descentFlag: ${player.descentFlag}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
     const fontsize = 10
