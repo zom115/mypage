@@ -26,7 +26,7 @@ const keyMap = {
 const keyFirstFlagObject = {}
 const isKeyFirst = list => {return list.some(v => key[v].isFirst())} // 今押したか
 const isKey = list => {return list.some(v => key[v].flag)} // 押しているか
-const howLongKey = list => { // どのくらい押しているか
+const keyHoldTime = list => { // どのくらい押しているか
   return list.reduce((acc, cur) => acc < key[cur].holdtime ? key[cur].holdtime : acc, 0)
 }
 
@@ -1208,9 +1208,9 @@ const update = () => {
       player.breathInterval < playerData.breathFatigue
     ) {
       const num = Math.random()
-      const list = num < .9 ? {value: audio.misaki.punch.data, startTime: .3}
-      : num < .95 ? {value: audio.misaki.jump.data, startTime: .3}
-      : {value: audio.misaki.doubleJump.data, startTime: .33}
+      const list = num < .9 ? {value: audio[player.skin].punch.data, startTime: .3}
+      : num < .95 ? {value: audio[player.skin].jump.data, startTime: .3}
+      : {value: audio[player.skin].doubleJump.data, startTime: .33}
       playAudio(list.value, list.startTime)
     }
   } else if (player.state === 'walk' || player.state === 'run') {
@@ -1220,8 +1220,8 @@ const update = () => {
       i.distance -= i.stride
       i.condition++
     }
-    if (image.misaki[player.state].data.length <= i.condition) {
-      i.condition -= image.misaki[player.state].data.length
+    if (image[player.skin][player.state].data.length <= i.condition) {
+      i.condition -= image[player.skin][player.state].data.length
       if (player.midBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
@@ -1229,7 +1229,7 @@ const update = () => {
     const i = player.imageStat[player.state]
     const index = Math.floor(i.time / i.intervalTime)
     if (isKey(keyMap.down)) {
-      if ((index < image.misaki.crouch.data.length - 1)) i.time += intervalDiffTime
+      if ((index < image[player.skin].crouch.data.length - 1)) i.time += intervalDiffTime
     } else {
       i.time -= intervalDiffTime
       if (i.time <= 0) {
@@ -1242,8 +1242,8 @@ const update = () => {
     const i = player.imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === image.misaki[player.state].data.length) {
-      i.condition -= image.misaki[player.state].data.length
+    if (i.condition === image[player.skin][player.state].data.length) {
+      i.condition -= image[player.skin][player.state].data.length
       i.time = 0
       player.state = 'idle'
     }
@@ -1251,8 +1251,8 @@ const update = () => {
     const i = player.imageStat[player.state]
     i.time += 1
     if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === image.misaki[player.state].data.length) {
-      i.condition -= image.misaki[player.state].data.length
+    if (i.condition === image[player.skin][player.state].data.length) {
+      i.condition -= image[player.skin][player.state].data.length
       i.time = 0
       if (!menuFlag) {
         if (
@@ -1265,11 +1265,11 @@ const update = () => {
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.audioTrigger) playAudio(audio.misaki[player.state].data)
+      if (i.condition === i.audioTrigger) playAudio(audio[player.skin][player.state].data)
     }
-    if (i.condition === image.misaki[player.state].data.length) {
+    if (i.condition === image[player.skin][player.state].data.length) {
       i.time = 0
-      i.condition -= image.misaki[player.state].data.length
+      i.condition -= image[player.skin][player.state].data.length
       player.state = 'idle'
     }
   } else if (player.state === 'kick') {
@@ -1278,11 +1278,11 @@ const update = () => {
     i.time += 1
     if (i.time % i.frame === 0) {
       i.condition += 1
-      if (i.condition === i.audioTrigger) playAudio(audio.misaki[player.state].data)
+      if (i.condition === i.audioTrigger) playAudio(audio[player.skin][player.state].data)
     }
-    if (i.condition === image.misaki[player.state].data.length) {
+    if (i.condition === image[player.skin][player.state].data.length) {
       i.time = 0
-      i.condition -= image.misaki[player.state].data.length
+      i.condition -= image[player.skin][player.state].data.length
       player.state = 'idle'
     }
   }
