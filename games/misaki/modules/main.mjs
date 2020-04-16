@@ -1273,7 +1273,7 @@ const update = () => {
     isKey(keyMap.dash) ? 'run' : 'walk'
   }
   if (player.state === 'jump' || !player.landFlag) {
-    const number = 3
+    const number = .5
     player.imageStat.jump.condition =
      number * 2 ** -1 < player.dy ? 7 :
      number * 2 ** -2 < player.dy ? 6 :
