@@ -173,7 +173,7 @@
                  "value":false
                 }],
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":64,
          "x":0,
          "y":0
@@ -185,7 +185,7 @@
          "name":"collision1",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":64,
          "x":0,
          "y":0
@@ -220,6 +220,10 @@
         {
          "firstgid":945,
          "source":"tileset_MagicCliffsArtwork_cave.json"
+        }, 
+        {
+         "firstgid":1169,
+         "source":"tileset_GothicVania-town_houses.json"
         }],
  "tilewidth":16,
  "type":"map",

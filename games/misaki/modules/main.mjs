@@ -116,7 +116,6 @@ let directoryList = [
 ]
 let mapColor = 'rgb(127, 127, 127)'
 const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
-let coefficient = 5
 let elasticModulus = 0 // 0 to 1
 const wallFF = 0
 let userFF = .1
@@ -141,7 +140,7 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
-const normalConstant = .008 // 1 dot = 4 cm, 1 m = 25 dot
+const normalConstant = .008 / 10 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .02
 let moveAcceleration = normalConstant
 const dashThreshold = 1
@@ -814,8 +813,8 @@ const proposal = () => {
           !player.wallFlag &&
           !slide.flag
         ) {
-          const slideSpeed = slideConstant < player.dx ? boostConstant
-          : player.dx < -slideConstant ? -boostConstant : 0
+          const slideSpeed = slideConstant < player.dx ? boostConstant :
+          player.dx < -slideConstant ? -boostConstant : 0
           if (slideSpeed !== 0) {
             player.dx += slideSpeed
             player.state = 'slide'
@@ -963,8 +962,8 @@ const judgement = () => {
             if (returnFlag) return
             const ox = player.x
             const oy = player.y
-            const dx = player.dx
-            const dy = player.dy
+            const dx = player.dx * intervalDiffTime
+            const dy = player.dy * intervalDiffTime
             const ax = x * size + ro[0] * size
             const ay = y * size + ro[1] * size
             const bx = x * size + rn[0] * size
@@ -1064,14 +1063,14 @@ const judgement = () => {
     }
     mapObject[mapData.name].layersIndex.collision.forEach(v => collisionFn(v))
   } while(repeatFlag)
-  player.x += player.dx
-  player.y += player.dy
-  if (maxLog.dx < Math.abs(player.dx)) maxLog.dx = Math.abs(player.dx)
-  if (maxLog.dy < Math.abs(player.dy)) maxLog.dy = Math.abs(player.dy)
+  player.x += player.dx * intervalDiffTime
+  player.y += player.dy * intervalDiffTime
+  if (maxLog.dx < Math.abs(player.dx * intervalDiffTime)) maxLog.dx = Math.abs(player.dx * intervalDiffTime)
+  if (maxLog.dy < Math.abs(player.dy * intervalDiffTime)) maxLog.dy = Math.abs(player.dy * intervalDiffTime)
   player.landFlag = onetimeLandFlag
 }
 const update = () => {
-  player.dy += gravitationalAcceleration * coefficient * intervalDiffTime
+  player.dy += gravitationalAcceleration * intervalDiffTime
   frictionalForce = userFF
   const terminalVelocity = size
   if (terminalVelocity < player.dy) player.dy = terminalVelocity
@@ -1215,7 +1214,7 @@ const update = () => {
     }
   } else if (player.state === 'walk' || player.state === 'run') {
     const i = imageStat[player.state]
-    i.distance += Math.abs(player.dx)
+    i.distance += Math.abs(player.dx * intervalDiffTime)
     if (i.stride < i.distance) {
       i.distance -= i.stride
       i.condition++
@@ -1345,6 +1344,7 @@ const main = () => setInterval(() => {
   Object.entries(keyMap).forEach(([k, v]) => keyFirstFlagObject[k] = isKeyFirst(v))
   frameCounter(internalFrameList)
   intervalDiffTime = globalTimestamp - currentTime
+  if (100 < intervalDiffTime) intervalDiffTime = 0
   currentTime = globalTimestamp
 
   stateReset()

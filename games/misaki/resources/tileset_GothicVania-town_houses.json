@@ -1,0 +1,15 @@
+{ "columns":43,
+ "image":"GothicVania-town-files\/PNG\/environment\/props\/houses.png",
+ "imageheight":272,
+ "imagewidth":688,
+ "margin":0,
+ "name":"GothicVania-town_houses",
+ "spacing":0,
+ "tilecount":731,
+ "tiledversion":"2020.03.18",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#003039",
+ "type":"tileset",
+ "version":1.2
+}
