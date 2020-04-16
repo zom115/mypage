@@ -127,6 +127,7 @@ let player = {
   dx: 0, dy: 0,
   r: size / 2 * .9,
   state: 'idle', direction: 'right',
+  descentFlag: false,
   landFlag: false, wallFlag: false, grabFlag: false,
   hitbox: {x: 0, y: 0, w: 0, h: 0},
   attackBox: {x: 0, y: 0, w: 0, h: 0},
@@ -629,6 +630,9 @@ const frameCounter = list => {
     else flag = false
   } while (flag)
 }
+const stateReset = () => {
+  if (player.descentFlag) player.descentFlag = false
+}
 const proposal = () => {
   // rule: value control only [
   // dx, dy, state]
@@ -688,8 +692,8 @@ const proposal = () => {
       }
     }
   }
-  { // crouch, down force
-    if (isKey(keyMap.down) && !player.grabFlag) {
+  {
+    if (isKey(keyMap.down) && !player.grabFlag) { // crouch
       if (player.landFlag) {
         const crouchPermissionList = ['idle', 'walk']
         if (crouchPermissionList.some(v => v === player.state)) {
@@ -697,13 +701,14 @@ const proposal = () => {
         }
       }
     }
-    if (player.state === 'jump') {
+    if (player.state === 'jump') { // down force
       if (isKey(keyMap.down)) {
         const downForce = .05
         const restrictValue = 2
         player.dy += player.dy < restrictValue ? downForce : 0
       }
     }
+    if (isKey(keyMap.down) && isKey(keyMap.jump)) player.descentFlag = true // descent
   }
   { // wall grab
     if (
@@ -1049,7 +1054,7 @@ const judgement = () => {
               tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
               if (tilt < 0) onetimeLandFlag = true
             }
-            if (detectFlag) {
+            if (detectFlag && (!player.descentFlag || terrainObject[id].length !== 2)) {
               collisionResponse(tilt)
               repeatFlag = true
             }
@@ -1342,6 +1347,7 @@ const main = () => setInterval(() => {
   intervalDiffTime = globalTimestamp - currentTime
   currentTime = globalTimestamp
 
+  stateReset()
   proposal()
   judgement()
   update()
@@ -1741,6 +1747,7 @@ const draw = () => {
       `double jump: ${!jump.double}`,
       `player state: ${player.state}`,
       `wallFlag: ${player.wallFlag}`,
+      `descentFlag: ${player.descentFlag}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
     const fontsize = 10
