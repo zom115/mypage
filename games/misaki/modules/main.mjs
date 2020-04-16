@@ -25,7 +25,7 @@ const keyMap = {
   skin: ['c'],
 }
 const isKeyFirst = list => {
-  return list.some(v => key[v].holdtime !== 0 && key[v].holdtime < intervalDiffTime)
+  return list.some(v => key[v].holdtime !== 0 && key[v].holdtime <= intervalDiffTime)
 } // 今押したか
 const isKey = list => {return list.some(v => key[v].flag)} // 押しているか
 const keyHoldTime = list => { // どのくらい押しているか
@@ -901,15 +901,15 @@ const proposal = () => {
       const actionList = ['crouch', 'slide', 'punch', 'kick']
       if ( // punch
         isKeyFirst(keyMap.attack) &&
-        !keyMap.left.some(v => key[v].flag) &&
-        !keyMap.right.some(v => key[v].flag) &&
+        !isKey(keyMap.left) &&
+        !isKey(keyMap.right) &&
         player.landFlag &&
         !actionList.some(v => v === player.state)
       ) {
         player.state = 'punch'
         player.imageStat.punch.time = 0
       }
-      const kickDeferment = 1000 / 60 * 6
+      const kickDeferment = 6 * 1000 / 60
       if ( // kick
         isKeyFirst(keyMap.attack) &&
         player.landFlag &&
@@ -920,24 +920,23 @@ const proposal = () => {
         player.state = 'kick'
         player.imageStat.kick.time = 0
       }
-      if (cooltime.slide === 0) {
-        if ( // slide
-          isKey(keyMap.attack) &&
-          !actionList.some(v => v === player.state) &&
-          player.landFlag &&
-          !player.wallFlag
-        ) {
-          const slideThreshold = .1
-          const boostConstant = .4
-          const slideSpeed = Math.abs(player.dx) < slideThreshold ? 0 :
-          isKey(keyMap.left) ? -boostConstant :
-          isKey(keyMap.right) ? boostConstant : 0
-          if (slideSpeed !== 0) {
-            player.dx += slideSpeed
-            player.state = 'slide'
-            cooltime.slide = cooltime.slideLimit
-            if (10 < player.breathInterval) player.breathInterval -= 1
-          }
+      if ( // slide
+        cooltime.slide === 0 &&
+        isKey(keyMap.attack) &&
+        !actionList.some(v => v === player.state) &&
+        player.landFlag &&
+        !player.wallFlag
+      ) {
+        const slideThreshold = .1
+        const boostConstant = .4
+        const slideSpeed = Math.abs(player.dx) < slideThreshold ? 0 :
+        isKey(keyMap.left) ? -boostConstant :
+        isKey(keyMap.right) ? boostConstant : 0
+        if (slideSpeed !== 0) {
+          player.dx += slideSpeed
+          player.state = 'slide'
+          cooltime.slide = cooltime.slideLimit
+          if (10 < player.breathInterval) player.breathInterval -= 1
         }
       }
       // if ( // accel
@@ -959,7 +958,6 @@ const proposal = () => {
     }
   }
   if (!menuFlag) inGameInputProcess()
-  if (player.state === 'slide') console.log('hello')
   Object.keys(settings.type).forEach(v => {
     if (isKeyFirst(keyMap[v])) {
       settings.type[v] = setStorage(v, !settings.type[v])
