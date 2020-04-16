@@ -499,6 +499,23 @@ const audio = {
       data: '',
       src: 'audio/Misaki/V2024.wav',
     },
+  }, kohaku: {
+      jump : {
+        data: '',
+        src: 'audio/Kohaku/V0001.wav',
+      }, doubleJump: {
+        data: '',
+        src: 'audio/Kohaku/V0002.wav',
+      }, punch : {
+        data: '',
+        src: 'audio/Kohaku/V0005.wav',
+      }, kick : {
+        data: '',
+        src: 'audio/Kohaku/V0006.wav',
+      }, win : {
+        data: '',
+        src: 'audio/Kohaku/V0024.wav',
+      },
   }, music: {
     'テレフォン・ダンス': {
       data: '',
@@ -531,11 +548,8 @@ const musicVolumeHandler = music => {
 const volumeController = () => {
   Object.keys(audio).forEach(v => {
     Object.keys(audio[v]).forEach(vl => {
-      if (v === 'misaki') {
-        voiceVolumeHandler(audio[v][vl].data)
-      } else if (v === 'music') {
-        musicVolumeHandler(audio[v][vl].data)
-      }
+      if (v === 'music') musicVolumeHandler(audio[v][vl].data)
+      else voiceVolumeHandler(audio[v][vl].data)
     })
   })
 }
@@ -751,7 +765,7 @@ const proposal = () => {
           player.state = 'jump' // temporary
           jump.double = true
           cooltime.aerialStep = 0 // temporary
-          playAudio(audio.misaki.doubleJump.data) // temporary
+          playAudio(audio[player.skin].doubleJump.data) // temporary
           if (5 < player.breathInterval) player.breathInterval -= 1 // temporary
           jump.time = 0 // temporary
         }
@@ -763,10 +777,10 @@ const proposal = () => {
         if (!player.landFlag && !player.grabFlag && !isKey(keyMap.up)) {
           jump.double = true
           cooltime.aerialStep = 0 // temporary
-          playAudio(audio.misaki.doubleJump.data) // temporary
+          playAudio(audio[player.skin].doubleJump.data) // temporary
         } else {
           player.dx /= Math.SQRT2
-          playAudio(audio.misaki.jump.data) // temporary
+          playAudio(audio[player.skin].jump.data) // temporary
         }
         if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
       }
