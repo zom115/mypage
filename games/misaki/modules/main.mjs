@@ -311,17 +311,24 @@ let image = {
         ]
       },
     }, kick : {
-      // src: [
-      //   'images/Misaki/Misaki_Kick_1.png',
-      //   'images/Misaki/Misaki_Kick_2.png',
-      //   'images/Misaki/Misaki_Kick_3.png',
-      //   'images/Misaki/Misaki_Kick_4.png',
-      //   'images/Misaki/Misaki_Kick_5.png',
-      //   'images/Misaki/Misaki_Kick_6.png',
-      // ],
       startup: {
         src: [
-          'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
+          'images/Misaki/Misaki_Kick_1.png',
+          'images/Misaki/Misaki_Kick_2.png',
+          'images/Misaki/Misaki_Kick_3.png',
+        ]
+      },
+      active: {
+        src: [
+          'images/Misaki/Misaki_Kick_4.png',
+        ]
+      },
+      recovery: {
+        src: [
+          'images/Misaki/Misaki_Kick_5.png',
+          'images/Misaki/Misaki_Kick_6.png',
+          'images/Misaki/Misaki_Kick_2.png',
+          'images/Misaki/Misaki_Kick_1.png',
         ]
       },
     }, damage: {
@@ -480,17 +487,24 @@ let image = {
         ]
       },
     }, kick: {
-      // src: [
-      //   'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
-      //   'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
-      //   'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
-      //   'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
-      //   'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
-      //   'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
-      // ],
       startup: {
         src: [
-          'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
+        ]
+      },
+      active: {
+        src: [
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
+        ]
+      },
+      recovery: {
+        src: [
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
+          'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
         ]
       },
     }, sword: {
@@ -750,7 +764,7 @@ let player = {
   breathCount: 0,
   breathInterval: playerData.breathMid,
   breathTimestamp: globalTimestamp,
-  skin: 'misaki',
+  skin: 'kohaku',
   imageStat: {
     idle  : {
       blinkAnimationInterval: 15,
@@ -771,17 +785,22 @@ let player = {
     slide : {condition: 0},
     push  : {condition: 0},
     punch : {
-      startupTime: 30 * 1000 / 60,
+      startupTime: 16 * 1000 / 60,
       activeTime: 0,
-      recoveryTime: 10 * 1000 / 60,
+      recoveryTime: 16 * 1000 / 60,
       nextState: 'handgun2',
     },
     handgun2 : {
       startupTime: 0,
       activeTime: 0,
-      recoveryTime: 60 * 1000 / 60,
+      recoveryTime: 38 * 1000 / 60,
     },
-    kick  : {condition: 0, time: 0, frame: 7, audioTrigger: 3},
+    kick : {
+      startupTime: 7 * 1000 / 60,
+      activeTime: 5 * 1000 / 60,
+      recoveryTime: 21 * 1000 / 60,
+      condition: 0, time: 0, frame: 7, audioTrigger: 3
+    },
     damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
   },
 }
