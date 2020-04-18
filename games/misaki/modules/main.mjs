@@ -429,15 +429,15 @@ let image = {
       ],
     }, jump: {
       src: [
-        'images/Unitychan/BasicActions/Unitychan_Jump_Up_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_Up_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_Up_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_MidAir_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_MidAir_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_MidAir_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_Fall_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_Fall_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Jump_Fall_1.png',
+        'images/Unitychan/Jump_Up_1.png',
+        'images/Unitychan/Jump_Up_2.png',
+        'images/Unitychan/Jump_Up_1.png',
+        'images/Unitychan/Jump_MidAir_1.png',
+        'images/Unitychan/Jump_MidAir_2.png',
+        'images/Unitychan/Jump_MidAir_3.png',
+        'images/Unitychan/Jump_Fall_1.png',
+        'images/Unitychan/Jump_Fall_2.png',
+        'images/Unitychan/Jump_Fall_1.png',
       ],
     }, slide: {
       src: [
