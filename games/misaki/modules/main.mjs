@@ -799,7 +799,6 @@ let player = {
       startupTime: 7 * 1000 / 60,
       activeTime: 5 * 1000 / 60,
       recoveryTime: 21 * 1000 / 60,
-      condition: 0, time: 0, frame: 7, audioTrigger: 3
     },
     damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
   },
@@ -903,8 +902,8 @@ const proposal = () => {
     }
     if (player.state === 'jump') { // down force
       if (isKey(keyMap.down)) {
-        const downForce = .05
-        const restrictValue = 2
+        const downForce = .01
+        const restrictValue = .5
         player.dy += player.dy < restrictValue ? downForce : 0
       }
     }
