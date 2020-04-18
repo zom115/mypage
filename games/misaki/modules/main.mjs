@@ -454,6 +454,31 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
         ]
       },
+    }, doubleJump: {
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
+        ]
+      }, active: {
+        src: [
+          'images/Unitychan/Jump_Up_1.png',
+          'images/Unitychan/Jump_Up_2.png',
+          'images/Unitychan/Jump_MidAir_1.png',
+          'images/Unitychan/Jump_MidAir_2.png',
+          'images/Unitychan/Jump_MidAir_3.png',
+          'images/Unitychan/Jump_Fall_1.png',
+          'images/Unitychan/Jump_Fall_2.png',
+        ]
+      }, fall: {
+        src: [
+          'images/Unitychan/Jump_Fall_1.png',
+          'images/Unitychan/Jump_Fall_2.png',
+        ],
+      }, recovery: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
+        ]
+      },
     }, slide: {
       src: [
         'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
@@ -532,7 +557,7 @@ let image = {
     },
   },
 }
-const motionList = ['jump', 'punch', 'kick', 'handgun2']
+const motionList = ['jump', 'doubleJump', 'punch', 'kick', 'handgun2']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -767,6 +792,7 @@ let player = {
   descentFlag: false,
   landFlag: false,
   fallFlag: false,
+  doubleJumpFlag: false,
   grabFlag: false,
   wallFlag: false,
   fallTime: 0,
@@ -796,7 +822,12 @@ let player = {
     run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
     turn  : {condition: 0, time: 0, frame: 5},
     crouch: {condition: 0, time: 0, intervalTime: 50},
-    jump  : {
+    jump : {
+      startupTime: 0,
+      activeTime: 36 * 1000 / 60,
+      recoveryTime: 4 * 1000 / 60,
+    },
+    doubleJump : {
       startupTime: 0,
       activeTime: 36 * 1000 / 60,
       recoveryTime: 4 * 1000 / 60,
@@ -871,48 +902,11 @@ const proposal = () => {
     if (isKey(keyMap.left)) player.dx -= speed
     if (isKey(keyMap.right)) player.dx += speed
   }
-  { // new jump
-    if (isKeyFirst(keyMap.jump)) {
+  if (isKeyFirst(keyMap.jump)) { // jump
+    if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
+      if (player.state === 'jump') player.doubleJumpFlag = true
       player.state = 'jump'
-    }
-  }
-  if (false) { // jump
-    if (isKeyFirst(keyMap.jump) && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
-      if (jump.flag) {
-        if (!jump.double && jump.time === 0 && !player.grabFlag && !isKey(keyMap.up)) {
-          player.dy = jumpConstant
-          player.state = 'jump' // temporary
-          jump.double = true
-          cooltime.aerialStep = 0 // temporary
-          // playAudio(audio[player.skin].doubleJump.data) // temporary
-          if (5 < player.breathInterval) player.breathInterval -= 1 // temporary
-          jump.time = 0 // temporary
-        }
-      } else if (jump.time === 0) {
-        const jumpCoefficient = 5
-        player.dy = jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5
-        player.state = 'jump' // temporary
-        jump.flag = true
-        if (!player.landFlag && !player.grabFlag && !isKey(keyMap.up)) {
-          jump.double = true
-          cooltime.aerialStep = 0 // temporary
-          // playAudio(audio[player.skin].doubleJump.data) // temporary
-        } else {
-          player.dx /= Math.SQRT2
-          // playAudio(audio[player.skin].jump.data) // temporary
-        }
-        if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
-      }
-      jump.time += 1 // temporary
-    }
-    if(!isKey(keyMap.jump)) { // temporary
-      if (settings.type.DECO) jump.time = 0
-      else {
-        if (5 < jump.time) { // temporary
-          if (player.dy < 0) player.dy = 0
-          jump.time = 0
-        } else if (jump.time !== 0) jump.time += 1
-      }
+      player.motionFirstFlag = false
     }
   }
   {
@@ -1308,20 +1302,22 @@ const update = () => {
     else cooltime.slide -= intervalDiffTime
     if ((cooltime.slide < 0 && !isKey(keyMap.attack)) || !player.landFlag) cooltime.slide = 0
   }
-
-  {
-    if (!player.landFlag) { // temporary
+  if (!player.landFlag) {
+    if (!player.doubleJumpFlag) {
       player.state = 'jump'
       player.attackState = 'active'
       player.motionFirstFlag = true
     }
-    { // out of map
-      const gameoverThreshold = size * 10
-      if (mapData.h + gameoverThreshold < player.y) {
-        player.x = mapData.checkPoint.x
-        player.y = mapData.checkPoint.y
-      }
+  }
+  { // out of map
+    const gameoverThreshold = size * 10
+    if (mapData.h + gameoverThreshold < player.y) {
+      player.x = mapData.checkPoint.x
+      player.y = mapData.checkPoint.y
     }
+  }
+
+  {
     if (player.state === 'punch' && player.attackState === 'active') {
       player.attackBox = player.direction === 'left' ? {
         x: player.x - size,
@@ -1414,7 +1410,7 @@ const update = () => {
       }
     }
     i.condition = player.breathCount * i.blinkMax + i.blinkRotate[player.blinkCount]
-    if (
+    if ( // temporary
       false &&
       2 < i.condition && i.condition < 6 &&
       player.breathInterval < playerData.breathFatigue
@@ -1483,12 +1479,16 @@ const update = () => {
       // TODO: unique hitbox
       if (player.state === 'jump') {
         player.attackElapsedTime = 0
-        if (!player.motionFirstFlag) {
-          // motion
-          player.dy = jumpConstant
-
-          playAudio(audio[player.skin][player.state].data)
+        if (!player.motionFirstFlag) { // motion
+          const jumpCoefficient = 5
+          player.dy = jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5 // temporary
+          player.dx /= Math.SQRT2
+          if (player.doubleJumpFlag) playAudio(audio[player.skin].doubleJump.data)
+          else playAudio(audio[player.skin][player.state].data)
           player.motionFirstFlag = true
+
+          cooltime.aerialStep = 0 // temporary
+          if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
         }
         // cancel
         if (!settings.type.DECO && !isKey(keyMap.jump) && !player.fallFlag && player.dy < 0) {
@@ -1500,7 +1500,7 @@ const update = () => {
           player.fallFlag = false
           player.attackState = 'recovery'
           player.attackElapsedTime = intervalDiffTime
-          jump.double = false
+          player.doubleJumpFlag = false
         }
       } else {
         if (!player.motionFirstFlag) {
@@ -1542,7 +1542,6 @@ const update = () => {
               const interval = 7 * 1000 / 60
               const dl = image[player.skin].jump.fall.data.length
               player.attackIndex = l - dl + ((player.fallTime / (interval * dl) % dl)|0)
-              console.log(player.attackIndex)
             }
           }
         }
@@ -2002,9 +2001,9 @@ const draw = () => {
       `dx: ${maxLog.dx.toFixed(2)} ${player.dx.toFixed(2)}`,
       `dy: ${maxLog.dy.toFixed(2)} ${player.dy.toFixed(2)}`,
       `player state: ${player.state}`,
+      `double jump: ${player.doubleJumpFlag}`,
       `attack state: ${player.attackState}`,
       `land flag: ${player.landFlag}`,
-      `double jump: ${!jump.double}`,
       `wall flag: ${player.wallFlag}`,
       `descent flag: ${player.descentFlag}`,
       `slide cooltime: ${cooltime.slide}`,
