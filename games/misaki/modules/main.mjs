@@ -288,6 +288,20 @@ let image = {
         src: [
           'images/Unitychan/Attack/Unitychan_Hundgun2_5.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_6.png',
+        ]
+      },
+    }, handgun2: {
+      startup: {
+        src: [
+          'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
+        ]
+      },
+      // active: {
+      //   src: [
+      //   ]
+      // },
+      recovery: {
+        src: [
           'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_8.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_9.png',
@@ -443,6 +457,20 @@ let image = {
         src: [
           'images/Unitychan/Attack/Unitychan_Hundgun2_5.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_6.png',
+        ]
+      },
+    }, handgun2: {
+      startup: {
+        src: [
+          'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
+        ]
+      },
+      // active: {
+      //   src: [
+      //   ]
+      // },
+      recovery: {
+        src: [
           'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_8.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_9.png',
@@ -477,7 +505,7 @@ let image = {
     },
   },
 }
-const attackList = ['punch', 'kick']
+const attackList = ['punch', 'kick', 'handgun2']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -513,6 +541,9 @@ const audio = {
     }, punch : {
       data: '',
       src: 'audio/Misaki/V2005.wav',
+    }, handgun2 : {
+      data: '',
+      src: 'audio/Misaki/V2005.wav',
     }, kick : {
       data: '',
       src: 'audio/Misaki/V2006.wav',
@@ -528,6 +559,9 @@ const audio = {
         data: '',
         src: 'audio/Kohaku/V0002.wav',
       }, punch : {
+        data: '',
+        src: 'audio/Kohaku/V0005.wav',
+      }, handgun2 : {
         data: '',
         src: 'audio/Kohaku/V0005.wav',
       }, kick : {
@@ -737,8 +771,13 @@ let player = {
     slide : {condition: 0},
     push  : {condition: 0},
     punch : {
-      state: 'startup',
       startupTime: 30 * 1000 / 60,
+      activeTime: 0,
+      recoveryTime: 10 * 1000 / 60,
+      nextState: 'handgun2',
+    },
+    handgun2 : {
+      startupTime: 0,
       activeTime: 0,
       recoveryTime: 60 * 1000 / 60,
     },
@@ -790,7 +829,7 @@ const proposal = () => {
     const attenuationRatio = .95
     speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
     const aerialBrake = .2
-    speed *= ['crouch', 'punch', 'kick', 'damage'].some(v => v === player.state) ? 0 :
+    speed *= ['crouch', 'damage'].includes(player.state) || attackList.includes(player.state) ? 0 :
     player.state === 'jump' ? aerialBrake : 1
     if (isKey(keyMap.left)) player.dx -= speed
     if (isKey(keyMap.right)) player.dx += speed
@@ -927,7 +966,8 @@ const proposal = () => {
   }
   const inGameInputProcess = () => {
     { // attack
-      const actionList = ['crouch', 'slide', 'punch', 'kick']
+      let actionList = ['crouch', 'slide']
+      attackList.forEach(v => actionList.push(v))
       if ( // punch
         isKeyFirst(keyMap.attack) &&
         !isKey(keyMap.left) &&
@@ -1279,7 +1319,8 @@ const update = () => {
   }
 
   if (!menuFlag) {
-    const turnProhibitionList = ['jump', 'crouch', 'punch', 'kick', 'damage']
+    let turnProhibitionList = ['jump', 'crouch', 'damage']
+    attackList.forEach(v => turnProhibitionList.push(v))
     player.direction = ((
       keyMap.left.some(v => key[v].flag) &&
       keyMap.right.some(v => key[v].flag)) ||
@@ -1303,7 +1344,8 @@ const update = () => {
     // }
   }
 
-  const stateList = ['crouch', 'jump', 'turn', 'push', 'punch', 'kick', 'damage']
+  let stateList = ['crouch', 'jump', 'turn', 'push', 'damage']
+  attackList.forEach(v => stateList.push(v))
   if (!stateList.some(v => v === player.state)) {
     const runThreshold = .3
     player.state = player.state === 'slide' && runThreshold < Math.abs(player.dx) ? 'slide' :
@@ -1405,7 +1447,7 @@ const update = () => {
           keyMap.right.some(v => key[v].flag))) player.state = 'walk'
       }
     }
-  } else if (player.state === 'punch') {
+  } else if (attackList.includes(player.state)) {
     const i = player.imageStat[player.state]
     player.attackElapsedTime += intervalDiffTime
     if (player.attackState === 'startup' && i.startupTime <= player.attackElapsedTime) {
@@ -1422,27 +1464,21 @@ const update = () => {
         player.attackElapsedTime -= i.activeTime
       }
     }
-    const l = image[player.skin][player.state][player.attackState].data.length
-    player.attackIndex = Math.floor(player.attackElapsedTime / i[player.attackState + 'Time'] * l)
     if (player.attackState === 'recovery' && i.recoveryTime <= player.attackElapsedTime) {
-      player.attackElapsedTime = 0
-      player.attackIndex = 0
-      player.state = 'idle'
+      if (i.nextState !== undefined) {
+        player.attackElapsedTime -= i.recoveryTime
+        player.state = i.nextState
+      } else {
+        player.attackElapsedTime = 0
+        player.state = 'idle'
+      }
       player.attackState = 'startup'
       player.attackAudioFlag = false
+      console.log(player.state)
     }
-  } else if (player.state === 'kick') {
-    // if (0 < player.imageStat.punch.elapsedTime) player.imageStat.punch.elapsedTime = 0
-    const i = player.imageStat[player.state]
-    i.time += 1
-    if (i.time % i.frame === 0) {
-      i.condition += 1
-      if (i.condition === i.audioTrigger) playAudio(audio[player.skin][player.state].data)
-    }
-    if (i.condition === image[player.skin][player.state].data.length) {
-      i.time = 0
-      i.condition -= image[player.skin][player.state].data.length
-      player.state = 'idle'
+    if (player.state !== 'idle') {
+      const l = image[player.skin][player.state][player.attackState].data.length
+      player.attackIndex = Math.floor(player.attackElapsedTime / i[player.attackState + 'Time'] * l)
     }
   }
   Object.keys(player.imageStat).forEach(v => {
