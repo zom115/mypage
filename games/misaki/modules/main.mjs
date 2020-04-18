@@ -855,7 +855,6 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 
-let jump = {flag: false, double: false, step: false, time: 0, speed: 0}
 let cooltime = {
   step: 0,
   stepLimit: 15 * 1000 / 60,
@@ -909,8 +908,8 @@ const proposal = () => {
       player.motionFirstFlag = false
     }
   }
-  {
-    if (isKey(keyMap.down) && !player.grabFlag) { // crouch
+  if (isKey(keyMap.down)) {
+    if (!player.grabFlag) { // crouch
       if (player.landFlag) {
         const crouchPermissionList = ['idle', 'walk']
         if (crouchPermissionList.some(v => v === player.state)) {
@@ -919,13 +918,11 @@ const proposal = () => {
       }
     }
     if (player.state === 'jump') { // down force
-      if (isKey(keyMap.down)) {
-        const downForce = .01
-        const restrictValue = .5
-        player.dy += player.dy < restrictValue ? downForce : 0
-      }
+      const downForce = .01
+      const restrictValue = .5
+      player.dy += player.dy < restrictValue ? downForce : 0
     }
-    if (isKey(keyMap.down) && isKey(keyMap.jump)) player.descentFlag = true // descent
+    if (isKey(keyMap.jump)) player.descentFlag = true // descent
   }
   { // wall grab
     if (
@@ -1023,7 +1020,7 @@ const proposal = () => {
         keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
       ) {
         player.state = 'kick'
-        player.imageStat.kick.time = 0
+        player.attackElapsedTime = 0
       }
       if ( // slide
         cooltime.slide === 0 &&
