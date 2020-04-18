@@ -519,7 +519,7 @@ let image = {
     },
   },
 }
-const attackList = ['punch', 'kick', 'handgun2']
+const motionList = ['punch', 'kick', 'handgun2']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -537,7 +537,7 @@ const imageListLoader = obj => {
 }
 Object.keys(image).forEach(v => {
   Object.keys(image[v]).forEach(vl => {
-    if (attackList.includes(vl)) {
+    if (motionList.includes(vl)) {
       Object.keys(image[v][vl]).forEach(val => {
         resourceList.push(imageListLoader(image[v][vl][val]))
       })
@@ -755,6 +755,7 @@ let player = {
   landFlag: false,
   grabFlag: false,
   wallFlag: false,
+  fallTime: 0,
   hitbox: {x: 0, y: 0, w: 0, h: 0},
   attackBox: {x: 0, y: 0, w: 0, h: 0},
   invincibleTimer: 0,
@@ -847,7 +848,7 @@ const proposal = () => {
     const attenuationRatio = .95
     speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
     const aerialBrake = .2
-    speed *= ['crouch', 'damage'].includes(player.state) || attackList.includes(player.state) ? 0 :
+    speed *= ['crouch', 'damage'].includes(player.state) || motionList.includes(player.state) ? 0 :
     player.state === 'jump' ? aerialBrake : 1
     if (isKey(keyMap.left)) player.dx -= speed
     if (isKey(keyMap.right)) player.dx += speed
@@ -985,7 +986,7 @@ const proposal = () => {
   const inGameInputProcess = () => {
     { // attack
       let actionList = ['crouch', 'slide']
-      attackList.forEach(v => actionList.push(v))
+      motionList.forEach(v => actionList.push(v))
       if ( // punch
         isKeyFirst(keyMap.attack) &&
         !isKey(keyMap.left) &&
@@ -1338,7 +1339,7 @@ const update = () => {
 
   if (!menuFlag) {
     let turnProhibitionList = ['jump', 'crouch', 'damage']
-    attackList.forEach(v => turnProhibitionList.push(v))
+    motionList.forEach(v => turnProhibitionList.push(v))
     player.direction = ((
       keyMap.left.some(v => key[v].flag) &&
       keyMap.right.some(v => key[v].flag)) ||
@@ -1363,7 +1364,7 @@ const update = () => {
   }
 
   let stateList = ['crouch', 'jump', 'turn', 'push', 'damage']
-  attackList.forEach(v => stateList.push(v))
+  motionList.forEach(v => stateList.push(v))
   if (!stateList.some(v => v === player.state)) {
     const runThreshold = .3
     player.state = player.state === 'slide' && runThreshold < Math.abs(player.dx) ? 'slide' :
@@ -1465,7 +1466,7 @@ const update = () => {
           keyMap.right.some(v => key[v].flag))) player.state = 'walk'
       }
     }
-  } else if (attackList.includes(player.state)) {
+  } else if (motionList.includes(player.state)) {
     const i = player.imageStat[player.state]
     player.attackElapsedTime += intervalDiffTime
     if (player.attackState === 'startup' && i.startupTime <= player.attackElapsedTime) {
@@ -1752,7 +1753,7 @@ const draw = () => {
     if (end < elapsedTime) timestamp.gate = 0
   }
   let x = player.x - imageOffset.x - stageOffset.x
-  const img = attackList.includes(player.state) ?
+  const img = motionList.includes(player.state) ?
   image[player.skin][player.state][player.attackState].data[player.attackIndex] :
   image[player.skin][player.state].data[player.imageStat[player.state].condition]
   context.save()
