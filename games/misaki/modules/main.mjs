@@ -209,6 +209,7 @@ const getMapData = directory => {
 }
 directoryList.forEach(v => {resourceList.push(getMapData(v))})
 let image = {
+  /*
   misaki: {
     idle: {
       src: [
@@ -352,7 +353,8 @@ let image = {
         'images/Misaki/Misaki_Damage_return_3.png',
       ],
     },
-  }, kohaku: {
+  }, */
+  kohaku: {
     idle: {
       src: [
         'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
@@ -428,17 +430,30 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Crouch_5.png',
       ],
     }, jump: {
-      src: [
-        'images/Unitychan/Jump_Up_1.png',
-        'images/Unitychan/Jump_Up_2.png',
-        'images/Unitychan/Jump_Up_1.png',
-        'images/Unitychan/Jump_MidAir_1.png',
-        'images/Unitychan/Jump_MidAir_2.png',
-        'images/Unitychan/Jump_MidAir_3.png',
-        'images/Unitychan/Jump_Fall_1.png',
-        'images/Unitychan/Jump_Fall_2.png',
-        'images/Unitychan/Jump_Fall_1.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
+        ]
+      }, active: {
+        src: [
+          'images/Unitychan/Jump_Up_1.png',
+          'images/Unitychan/Jump_Up_2.png',
+          'images/Unitychan/Jump_MidAir_1.png',
+          'images/Unitychan/Jump_MidAir_2.png',
+          'images/Unitychan/Jump_MidAir_3.png',
+          'images/Unitychan/Jump_Fall_1.png',
+          'images/Unitychan/Jump_Fall_2.png',
+        ]
+      }, fall: {
+        src: [
+          'images/Unitychan/Jump_Fall_1.png',
+          'images/Unitychan/Jump_Fall_2.png',
+        ],
+      }, recovery: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
+        ]
+      },
     }, slide: {
       src: [
         'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
@@ -493,13 +508,11 @@ let image = {
           'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
           'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
         ]
-      },
-      active: {
+      }, active: {
         src: [
           'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
         ]
-      },
-      recovery: {
+      }, recovery: {
         src: [
           'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
           'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
@@ -519,7 +532,7 @@ let image = {
     },
   },
 }
-const motionList = ['punch', 'kick', 'handgun2']
+const motionList = ['jump', 'punch', 'kick', 'handgun2']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -747,12 +760,13 @@ let player = {
   r: size / 2 * .9,
   state: 'idle',
   attackState: 'startup',
-  attackAudioFlag: false,
+  motionFirstFlag: false,
   attackElapsedTime: 0,
   attackIndex: 0,
   direction: 'right',
   descentFlag: false,
   landFlag: false,
+  fallFlag: false,
   grabFlag: false,
   wallFlag: false,
   fallTime: 0,
@@ -782,7 +796,11 @@ let player = {
     run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
     turn  : {condition: 0, time: 0, frame: 5},
     crouch: {condition: 0, time: 0, intervalTime: 50},
-    jump  : {condition: 0},
+    jump  : {
+      startupTime: 0,
+      activeTime: 36 * 1000 / 60,
+      recoveryTime: 4 * 1000 / 60,
+    },
     slide : {condition: 0},
     push  : {condition: 0},
     punch : {
@@ -822,7 +840,7 @@ const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .02 / 5
 let moveAcceleration = normalConstant
 const dashThreshold = 1 / 5
-const jumpConstant = 1 / 5
+const jumpConstant = -.2
 let gravityFlag = true // temporary
 const maxLog = {
   dx: 0,
@@ -848,35 +866,40 @@ const proposal = () => {
     const attenuationRatio = .95
     speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
     const aerialBrake = .2
-    speed *= ['crouch', 'damage'].includes(player.state) || motionList.includes(player.state) ? 0 :
-    player.state === 'jump' ? aerialBrake : 1
+    speed *= player.state === 'jump' ? aerialBrake :
+    ['crouch', 'damage'].includes(player.state) || motionList.includes(player.state) ? 0 : 1
     if (isKey(keyMap.left)) player.dx -= speed
     if (isKey(keyMap.right)) player.dx += speed
   }
-  { // jump
+  { // new jump
+    if (isKeyFirst(keyMap.jump)) {
+      player.state = 'jump'
+    }
+  }
+  if (false) { // jump
     if (isKeyFirst(keyMap.jump) && player.state !== 'damage' && !isKey(keyMap.down)) { // temporary
       if (jump.flag) {
         if (!jump.double && jump.time === 0 && !player.grabFlag && !isKey(keyMap.up)) {
-          player.dy = -jumpConstant
+          player.dy = jumpConstant
           player.state = 'jump' // temporary
           jump.double = true
           cooltime.aerialStep = 0 // temporary
-          playAudio(audio[player.skin].doubleJump.data) // temporary
+          // playAudio(audio[player.skin].doubleJump.data) // temporary
           if (5 < player.breathInterval) player.breathInterval -= 1 // temporary
           jump.time = 0 // temporary
         }
       } else if (jump.time === 0) {
         const jumpCoefficient = 5
-        player.dy = -jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5
+        player.dy = jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5
         player.state = 'jump' // temporary
         jump.flag = true
         if (!player.landFlag && !player.grabFlag && !isKey(keyMap.up)) {
           jump.double = true
           cooltime.aerialStep = 0 // temporary
-          playAudio(audio[player.skin].doubleJump.data) // temporary
+          // playAudio(audio[player.skin].doubleJump.data) // temporary
         } else {
           player.dx /= Math.SQRT2
-          playAudio(audio[player.skin].jump.data) // temporary
+          // playAudio(audio[player.skin].jump.data) // temporary
         }
         if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
       }
@@ -944,11 +967,11 @@ const proposal = () => {
         player.dx = jumpRatio
         player.direction = 'right'
       }
-      player.dy = -jumpConstant
+      player.dy = jumpConstant
       player.wallFlag = false
       player.grabFlag = false
-      jump.flag = true
       player.state = 'jump'
+      player.attackState = 'active'
     }
   }
 
@@ -1287,22 +1310,16 @@ const update = () => {
   }
 
   {
-    if (player.landFlag) {
-      if (player.state === 'jump') player.state = 'idle' // landing
-      {
-        jump.flag = false
-        jump.double = false
-      }
-    } else {
-      if (0 < player.dy) player.state = 'jump'
-      {
-        jump.flag = true
-        if (player.state !== 'slide') player.state = 'jump'
-        const gameoverThreshold = size * 10
-        if (mapData.h + gameoverThreshold < player.y) {
-          player.x = mapData.checkPoint.x
-          player.y = mapData.checkPoint.y
-        }
+    if (!player.landFlag) { // temporary
+      player.state = 'jump'
+      player.attackState = 'active'
+      player.motionFirstFlag = true
+    }
+    { // out of map
+      const gameoverThreshold = size * 10
+      if (mapData.h + gameoverThreshold < player.y) {
+        player.x = mapData.checkPoint.x
+        player.y = mapData.checkPoint.y
       }
     }
     if (player.state === 'punch' && player.attackState === 'active') {
@@ -1338,7 +1355,7 @@ const update = () => {
   }
 
   if (!menuFlag) {
-    let turnProhibitionList = ['jump', 'crouch', 'damage']
+    let turnProhibitionList = ['crouch', 'damage']
     motionList.forEach(v => turnProhibitionList.push(v))
     player.direction = ((
       keyMap.left.some(v => key[v].flag) &&
@@ -1363,25 +1380,13 @@ const update = () => {
     // }
   }
 
-  let stateList = ['crouch', 'jump', 'turn', 'push', 'damage']
+  let stateList = ['crouch', 'turn', 'push', 'damage']
   motionList.forEach(v => stateList.push(v))
   if (!stateList.some(v => v === player.state)) {
     const runThreshold = .3
     player.state = player.state === 'slide' && runThreshold < Math.abs(player.dx) ? 'slide' :
     player.dx === 0 ? 'idle' :
     isKey(keyMap.dash) ? 'run' : 'walk'
-  }
-  if (player.state === 'jump' || !player.landFlag) {
-    const number = .5
-    player.imageStat.jump.condition =
-     number * 2 ** -1 < player.dy ? 7 :
-     number * 2 ** -2 < player.dy ? 6 :
-     number * 2 ** -3 < player.dy ? 5 :
-                    0 < player.dy ? 4 :
-    -number * 2 ** -3 < player.dy ? 3 :
-    -number * 2 ** -2 < player.dy ? 2 :
-    -number * 2 ** -1 < player.dy ? 1 :
-    -number * 2 **  0 < player.dy ? 0 : 8
   }
   if (player.state === 'idle') {
     const i = player.imageStat[player.state]
@@ -1410,6 +1415,7 @@ const update = () => {
     }
     i.condition = player.breathCount * i.blinkMax + i.blinkRotate[player.blinkCount]
     if (
+      false &&
       2 < i.condition && i.condition < 6 &&
       player.breathInterval < playerData.breathFatigue
     ) {
@@ -1474,9 +1480,33 @@ const update = () => {
       player.attackElapsedTime -= i.startupTime
     }
     if (player.attackState === 'active') {
-      if (!player.attackAudioFlag) {
-        playAudio(audio[player.skin][player.state].data)
-        player.attackAudioFlag = true
+      // TODO: unique hitbox
+      if (player.state === 'jump') {
+        player.attackElapsedTime = 0
+        if (!player.motionFirstFlag) {
+          // motion
+          player.dy = jumpConstant
+
+          playAudio(audio[player.skin][player.state].data)
+          player.motionFirstFlag = true
+        }
+        // cancel
+        if (!settings.type.DECO && !isKey(keyMap.jump) && !player.fallFlag && player.dy < 0) {
+          player.fallFlag = true
+          player.dy /= 2
+        }
+
+        if (player.landFlag && 0 < player.dy) {
+          player.fallFlag = false
+          player.attackState = 'recovery'
+          player.attackElapsedTime = intervalDiffTime
+          jump.double = false
+        }
+      } else {
+        if (!player.motionFirstFlag) {
+          playAudio(audio[player.skin][player.state].data)
+          player.motionFirstFlag = true
+        }
       }
       if (i.activeTime <= player.attackElapsedTime) {
         player.attackState = 'recovery'
@@ -1484,6 +1514,10 @@ const update = () => {
       }
     }
     if (player.attackState === 'recovery' && i.recoveryTime <= player.attackElapsedTime) {
+      if (player.state === 'jump') {
+        player.fallFlag = false
+        player.fallTime = 0
+      }
       if (i.nextState !== undefined) {
         player.attackElapsedTime -= i.recoveryTime
         player.state = i.nextState
@@ -1492,12 +1526,29 @@ const update = () => {
         player.state = 'idle'
       }
       player.attackState = 'startup'
-      player.attackAudioFlag = false
-      console.log(player.state)
+      player.motionFirstFlag = false
     }
     if (player.state !== 'idle') {
       const l = image[player.skin][player.state][player.attackState].data.length
-      player.attackIndex = Math.floor(player.attackElapsedTime / i[player.attackState + 'Time'] * l)
+      if (player.state === 'jump' && player.attackState === 'active') {
+        for (let i = Math.floor(l / 2); 0 <= i; i--) {
+          if (Math.abs(player.dy) < -jumpConstant / (2 ** i * .75)) {
+            if (player.dy < 0) player.attackIndex = i
+            else player.attackIndex = l - i - 1
+            break
+          } else if (i === 0) {
+            if (0 < player.dy) {
+              player.fallTime += intervalDiffTime
+              const interval = 7 * 1000 / 60
+              const dl = image[player.skin].jump.fall.data.length
+              player.attackIndex = l - dl + ((player.fallTime / (interval * dl) % dl)|0)
+              console.log(player.attackIndex)
+            }
+          }
+        }
+      } else {
+        player.attackIndex = Math.floor(player.attackElapsedTime / i[player.attackState + 'Time'] * l)
+      }
     }
   }
   Object.keys(player.imageStat).forEach(v => {
@@ -1953,7 +2004,6 @@ const draw = () => {
       `player state: ${player.state}`,
       `attack state: ${player.attackState}`,
       `land flag: ${player.landFlag}`,
-      `jump flag: ${jump.flag}`,
       `double jump: ${!jump.double}`,
       `wall flag: ${player.wallFlag}`,
       `descent flag: ${player.descentFlag}`,
