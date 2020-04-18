@@ -736,7 +736,7 @@ const getMusic = arg => {
     if (index !== -1) {
       let path = arg.layers[v].objects[index].properties[0].value
       path = setDirectory(path)
-      if (Object.keys(audioObject).some(v => v === mapData.name)) {
+      if (Object.keys(audioObject).includes(mapData.name)) {
         audioObject[mapData.name].currentTime = 0
         audioObject[mapData.name].play()
       } else {
@@ -912,7 +912,7 @@ const proposal = () => {
     if (!player.grabFlag) { // crouch
       if (player.landFlag) {
         const crouchPermissionList = ['idle', 'walk']
-        if (crouchPermissionList.some(v => v === player.state)) {
+        if (crouchPermissionList.includes(player.state)) {
           player.state = 'crouch'
         }
       }
@@ -966,6 +966,86 @@ const proposal = () => {
     }
   }
 
+  if (!menuFlag) { // attack
+    let actionList = ['crouch', 'slide']
+    motionList.forEach(v => actionList.push(v))
+    if ( // punch
+      isKeyFirst(keyMap.attack) &&
+      !isKey(keyMap.left) &&
+      !isKey(keyMap.right) &&
+      player.landFlag &&
+      !actionList.includes(player.state)
+    ) {
+      player.state = 'punch'
+      player.attackElapsedTime = 0
+    }
+    const kickDeferment = 6 * 1000 / 60
+    if ( // kick
+      isKeyFirst(keyMap.attack) &&
+      player.landFlag &&
+      !actionList.includes(player.state) && (
+      keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
+      keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
+    ) {
+      player.state = 'kick'
+      player.attackElapsedTime = 0
+    }
+    if ( // slide
+      cooltime.slide === 0 &&
+      isKey(keyMap.attack) &&
+      !actionList.includes(player.state) &&
+      player.landFlag &&
+      !player.wallFlag
+    ) {
+      const slideThreshold = .1
+      const boostConstant = .4
+      const slideSpeed = Math.abs(player.dx) < slideThreshold ? 0 :
+      isKey(keyMap.left) ? -boostConstant :
+      isKey(keyMap.right) ? boostConstant : 0
+      if (slideSpeed !== 0) {
+        player.dx += slideSpeed
+        player.state = 'slide'
+        cooltime.slide = cooltime.slideLimit
+        if (10 < player.breathInterval) player.breathInterval -= 1
+      }
+    }
+    // if ( // accel
+    //   player.action !== 'crouch' && !jump.step
+    // ) {
+    //   const stepSpeed = key[action.left] && key[action.accel] ? -stepConstant
+    //   : key[action.right] && key[action.accel] ? stepConstant : 0
+    //   if (stepSpeed !== 0) {
+    //     player.dx += stepSpeed
+    //     jump.step = true
+    //     cooltime.aerialStep = cooltime.aerialStepLimit
+    //   }
+    // }
+    // if (player.action !== 'jump' && jump.step) jump.step = false
+    // if (0 < cooltime.aerialStep) {
+    //   player.dy = 0
+    //   cooltime.aerialStep -= 1
+    // }
+  }
+  mapObject[mapData.name].layers[mapObject[
+  mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
+    if (
+      v.name === 'gate' &&
+      v.x < player.x && player.x < v.x + v.width &&
+      v.y < player.y && player.y < v.y + v.height
+    ) {
+      v.properties.forEach(vl => {
+        if (vl.name === 'address' && isKeyFirst(keyMap.up)) {
+          setMapProcess(vl.value)
+        }
+      })
+    }
+  })
+  Object.keys(settings.type).forEach(v => {
+    if (isKeyFirst(keyMap[v])) {
+      settings.type[v] = setStorage(v, !settings.type[v])
+      inputDOM[v].checked = !inputDOM[v].checked
+    }
+  })
   { // for debug
     if (isKeyFirst(keyMap.reset)) {
       maxLog.dx = 0
@@ -997,89 +1077,6 @@ const proposal = () => {
       player.skin = player.skin === 'misaki' ? 'kohaku' : 'misaki'
     }
   }
-  const inGameInputProcess = () => {
-    { // attack
-      let actionList = ['crouch', 'slide']
-      motionList.forEach(v => actionList.push(v))
-      if ( // punch
-        isKeyFirst(keyMap.attack) &&
-        !isKey(keyMap.left) &&
-        !isKey(keyMap.right) &&
-        player.landFlag &&
-        !actionList.some(v => v === player.state)
-      ) {
-        player.state = 'punch'
-        player.attackElapsedTime = 0
-      }
-      const kickDeferment = 6 * 1000 / 60
-      if ( // kick
-        isKeyFirst(keyMap.attack) &&
-        player.landFlag &&
-        !actionList.some(v => v === player.state) && (
-        keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
-        keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
-      ) {
-        player.state = 'kick'
-        player.attackElapsedTime = 0
-      }
-      if ( // slide
-        cooltime.slide === 0 &&
-        isKey(keyMap.attack) &&
-        !actionList.some(v => v === player.state) &&
-        player.landFlag &&
-        !player.wallFlag
-      ) {
-        const slideThreshold = .1
-        const boostConstant = .4
-        const slideSpeed = Math.abs(player.dx) < slideThreshold ? 0 :
-        isKey(keyMap.left) ? -boostConstant :
-        isKey(keyMap.right) ? boostConstant : 0
-        if (slideSpeed !== 0) {
-          player.dx += slideSpeed
-          player.state = 'slide'
-          cooltime.slide = cooltime.slideLimit
-          if (10 < player.breathInterval) player.breathInterval -= 1
-        }
-      }
-      // if ( // accel
-      //   player.action !== 'crouch' && !jump.step
-      // ) {
-      //   const stepSpeed = key[action.left] && key[action.accel] ? -stepConstant
-      //   : key[action.right] && key[action.accel] ? stepConstant : 0
-      //   if (stepSpeed !== 0) {
-      //     player.dx += stepSpeed
-      //     jump.step = true
-      //     cooltime.aerialStep = cooltime.aerialStepLimit
-      //   }
-      // }
-      // if (player.action !== 'jump' && jump.step) jump.step = false
-      // if (0 < cooltime.aerialStep) {
-      //   player.dy = 0
-      //   cooltime.aerialStep -= 1
-      // }
-    }
-  }
-  if (!menuFlag) inGameInputProcess()
-  Object.keys(settings.type).forEach(v => {
-    if (isKeyFirst(keyMap[v])) {
-      settings.type[v] = setStorage(v, !settings.type[v])
-      inputDOM[v].checked = !inputDOM[v].checked
-    }
-  })
-  mapObject[mapData.name].layers[mapObject[
-  mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
-    if (
-      v.name === 'gate' &&
-      v.x < player.x && player.x < v.x + v.width &&
-      v.y < player.y && player.y < v.y + v.height
-    ) {
-      v.properties.forEach(vl => {
-        if (vl.name === 'address' && isKeyFirst(keyMap.up)) {
-          setMapProcess(vl.value)
-        }
-      })
-    }
-  })
 }
 const judgement = () => {
   const collisionResponse = tilt => {
@@ -1354,12 +1351,12 @@ const update = () => {
       keyMap.left.some(v => key[v].flag) &&
       keyMap.right.some(v => key[v].flag)) ||
       !player.landFlag ||
-      turnProhibitionList.some(v => v === player.state)
+      turnProhibitionList.includes(player.state)
       ) ? player.direction
     : keyMap.left.some(v => key[v].flag) ? 'left'
     : keyMap.right.some(v => key[v].flag) ? 'right'
     : player.direction
-    // if (!turnProhibitionList.some(v => v === player.state)) {
+    // if (!turnProhibitionList.includes(player.state)) {
     //   if (
     //     keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant
     //   ) player.state = 'turn'
@@ -1375,7 +1372,7 @@ const update = () => {
 
   let stateList = ['crouch', 'turn', 'push', 'damage']
   motionList.forEach(v => stateList.push(v))
-  if (!stateList.some(v => v === player.state)) {
+  if (!stateList.includes(player.state)) {
     const runThreshold = .3
     player.state = player.state === 'slide' && runThreshold < Math.abs(player.dx) ? 'slide' :
     player.dx === 0 ? 'idle' :
