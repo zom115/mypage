@@ -417,11 +417,6 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Run_7.png',
         'images/Unitychan/BasicActions/Unitychan_Run_8.png',
       ],
-    }, turn: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Brake_12.png',
-        'images/Unitychan/BasicActions/Unitychan_Brake_13.png',
-      ],
     }, crouch: {
       src: [
         'images/Unitychan/BasicActions/Unitychan_Crouch_2.png',
@@ -429,6 +424,29 @@ let image = {
         'images/Unitychan/BasicActions/Unitychan_Crouch_4.png',
         'images/Unitychan/BasicActions/Unitychan_Crouch_5.png',
       ],
+    }, turn: {
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Brake_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Brake_8.png',
+          'images/Unitychan/BasicActions/Unitychan_Brake_9.png',
+          'images/Unitychan/BasicActions/Unitychan_Brake_10.png',
+          'images/Unitychan/BasicActions/Unitychan_Brake_11.png',
+          'images/Unitychan/BasicActions/Unitychan_Brake_12.png',
+        ]
+      },
+      active: {
+        src: [
+          'images/Unitychan/Brake_13_reverse.png',
+          'images/Unitychan/Brake_14_reverse.png',
+          'images/Unitychan/Brake_15_reverse.png',
+        ]
+      },
+      // recovery: {
+      //   src: [
+      //   ]
+      // },
     }, jump: {
       startup: {
         src: [
@@ -569,7 +587,7 @@ let image = {
     },
   },
 }
-const motionList = ['jump', 'doubleJump', 'punch', 'kick', 'handgun2', 'slide']
+const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'punch', 'kick', 'handgun2']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -832,8 +850,14 @@ let player = {
     },
     walk  : {condition: 0, distance: 0, stride: 14}, // in rearistic, stride = 7
     run   : {condition: 0, distance: 0, stride: 20}, // in rearistic, stride = 10
-    turn  : {condition: 0, time: 0, frame: 5},
     crouch: {condition: 0, time: 0, intervalTime: 50},
+    push  : {condition: 0},
+    damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
+    turn  : {
+      startupTime: 30 * 1000 / 60,
+      activeTime: 10 * 1000 / 60,
+      recoveryTime: 0,
+    },
     jump : {
       startupTime: 0,
       activeTime: 36 * 1000 / 60,
@@ -849,7 +873,6 @@ let player = {
       activeTime: 36 * 1000 / 60,
       recoveryTime: 0,
     },
-    push  : {condition: 0},
     punch : {
       startupTime: 16 * 1000 / 60,
       activeTime: 0,
@@ -866,10 +889,38 @@ let player = {
       activeTime: 5 * 1000 / 60,
       recoveryTime: 21 * 1000 / 60,
     },
-    damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
   },
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
+
+const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
+const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
+const dashConstant = .02 / 5
+let moveAcceleration = normalConstant
+const floorThreshold = .001
+const walkThreshold = .1
+const runThreshold = .3
+const dashThreshold = 1 / 5
+const jumpConstant = -.2
+let gravityFlag = true // temporary
+const maxLog = {
+  dx: 0,
+  dy: 0,
+}
+
+let cooltime = {
+  step: 0,
+  stepLimit: 15 * 1000 / 60,
+  stepDeferment: 15 * 1000 / 60,
+  aerialStep: 0,
+  aerialStepLimit: 10 * 1000 / 60,
+  slide: 2,
+  slideLimit: 45 * 1000 / 60,
+}
+
+const brakeConstant = .75
+let floatMenuCursor = 0
+const floatMenuCursorMax = 3
 
 const actionInitObject = {
   jump: () => {
@@ -885,6 +936,16 @@ const actionInitObject = {
     const slideSpeed = player.dx < 0 ? -boostConstant : boostConstant
     player.dx += slideSpeed
     cooltime.slide = cooltime.slideLimit
+  },
+  turn: () => {
+    if (
+      // isKey(keyMap.left) !== isKey(keyMap.right)
+      (player.direction === 'left' && floorThreshold < player.dx) ||
+      (player.direction === 'right' && player.dx < -floorThreshold)
+    ) {
+      player.direction = player.direction === 'left' ? 'right' : 'left'
+      player.attackState = 'active'
+    } else player.attackState = 'recovery'
   },
 }
 const uniqueActionObject = {
@@ -912,41 +973,14 @@ const commonCondition = i => {
   }
 }
 const recoveryCondition = {
-  punch   : i => {commonCondition(i)},
+  turn    : i  => {commonCondition(i)},
+  punch   : i  => {commonCondition(i)},
   handgun2: i  => {commonCondition(i)},
   kick    : i  => {commonCondition(i)},
   slide   : () => {
     if (Math.abs(player.dx) < walkThreshold) player.attackState = 'recovery'
   },
 }
-
-let cooltime = {
-  step: 0,
-  stepLimit: 15 * 1000 / 60,
-  stepDeferment: 15 * 1000 / 60,
-  aerialStep: 0,
-  aerialStepLimit: 10 * 1000 / 60,
-  slide: 2,
-  slideLimit: 45 * 1000 / 60,
-}
-
-const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
-const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
-const dashConstant = .02 / 5
-let moveAcceleration = normalConstant
-const walkThreshold = .1
-const runThreshold = .3
-const dashThreshold = 1 / 5
-const jumpConstant = -.2
-let gravityFlag = true // temporary
-const maxLog = {
-  dx: 0,
-  dy: 0,
-}
-
-const brakeConstant = .75
-let floatMenuCursor = 0
-const floatMenuCursorMax = 3
 
 const stateReset = () => {
   if (player.descentFlag) player.descentFlag = false
@@ -963,17 +997,13 @@ const proposal = () => {
     const attenuationRatio = .95
     speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
     const aerialBrake = .2
+    const registValue = .1
     speed *= player.state === 'jump' ? aerialBrake :
+    player.state === 'turn' && player.attackState === 'startup' ? registValue :
+    player.state === 'turn' && player.attackState === 'active' ? 1 :
     ['crouch', 'damage'].includes(player.state) || motionList.includes(player.state) ? 0 : 1
     if (isKey(keyMap.left)) player.dx -= speed
     if (isKey(keyMap.right)) player.dx += speed
-  }
-  if (isKeyFirst(keyMap.jump)) { // jump
-    if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
-      if (player.state === 'jump') player.doubleJumpFlag = true
-      player.state = 'jump'
-      player.motionFirstFlag = false
-    }
   }
   if (isKey(keyMap.down)) {
     if (!player.grabFlag) { // crouch
@@ -991,7 +1021,7 @@ const proposal = () => {
     }
     if (isKey(keyMap.jump)) player.descentFlag = true // descent
   }
-  { // wall grab
+  if (false) { // wall grab
     if (
       player.wallFlag &&
       !player.landFlag &&
@@ -1015,7 +1045,7 @@ const proposal = () => {
       isKey(keyMap.up))
     ) player.grabFlag = false
   }
-  if (player.grabFlag) { // wall kick
+  if (false && player.grabFlag) { // wall kick
     const jumpRatio = 1
     if (isKeyFirst(keyMap.jump) && player.grabFlag) {
       if (player.direction === 'right') {
@@ -1033,11 +1063,23 @@ const proposal = () => {
     }
   }
 
+  if (isKeyFirst(keyMap.jump)) { // jump
+    if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
+      if (player.state === 'jump') player.doubleJumpFlag = true
+      player.state = 'jump'
+      player.motionFirstFlag = false
+    }
+  }
   let actionList = ['crouch']
   motionList.forEach(v => actionList.push(v))
-  if (!menuFlag && !actionList.includes(player.state)) { // attack
+  if (!menuFlag && !actionList.includes(player.state)) {
     const kickDeferment = 6 * 1000 / 60
     const conditionObject = {
+      turn:
+        isKey(keyMap.left) !== isKey(keyMap.right) &&
+        walkThreshold < Math.abs(player.dx) &&
+        ((player.direction === 'left' && isKey(keyMap.right)) ||
+        (player.direction === 'right' && isKey(keyMap.left))),
       punch:
         isKeyFirst(keyMap.attack) &&
         !isKey(keyMap.left) &&
@@ -1062,23 +1104,6 @@ const proposal = () => {
         player.attackElapsedTime = 0
       }
     })
-
-    // if ( // accel
-    //   player.action !== 'crouch' && !jump.step
-    // ) {
-    //   const stepSpeed = key[action.left] && key[action.accel] ? -stepConstant
-    //   : key[action.right] && key[action.accel] ? stepConstant : 0
-    //   if (stepSpeed !== 0) {
-    //     player.dx += stepSpeed
-    //     jump.step = true
-    //     cooltime.aerialStep = cooltime.aerialStepLimit
-    //   }
-    // }
-    // if (player.action !== 'jump' && jump.step) jump.step = false
-    // if (0 < cooltime.aerialStep) {
-    //   player.dy = 0
-    //   cooltime.aerialStep -= 1
-    // }
   }
   mapObject[mapData.name].layers[mapObject[
   mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
@@ -1340,22 +1365,8 @@ const update = () => {
     if (terminalVelocity < player.dy) player.dy = terminalVelocity
   }
   { // dx
-    const floorThreshold = .001
-    if (Math.abs(player.dx) < floorThreshold) player.dx = 0
     if (player.grabFlag) player.dx = 0
     if (player.dx !== 0) player.wallFlag = false
-  }
-  if (player.state !== 'slide' && cooltime.slide !== 0) { // slide
-    if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2 ** intervalDiffTime
-    else cooltime.slide -= intervalDiffTime
-    if ((cooltime.slide < 0 && !isKey(keyMap.attack)) || !player.landFlag) cooltime.slide = 0
-  }
-  if (!player.landFlag) {
-    if (!player.doubleJumpFlag) {
-      player.state = 'jump'
-      player.attackState = 'active'
-      player.motionFirstFlag = true
-    }
   }
   { // out of map
     const gameoverThreshold = size * 10
@@ -1365,7 +1376,13 @@ const update = () => {
     }
   }
 
-  {
+  if (player.state !== 'slide' && cooltime.slide !== 0) { // slide cooltime
+    if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2 ** intervalDiffTime
+    else cooltime.slide -= intervalDiffTime
+    if ((cooltime.slide < 0 && !isKey(keyMap.attack)) || !player.landFlag) cooltime.slide = 0
+  }
+
+  if (false) {
     if (player.state === 'punch' && player.attackState === 'active') {
       player.attackBox = player.direction === 'left' ? {
         x: player.x - size,
@@ -1398,38 +1415,31 @@ const update = () => {
     if (0 < player.invincibleTimer) player.invincibleTimer -= 1
   }
 
-  if (!menuFlag) {
-    let turnProhibitionList = ['crouch', 'damage']
-    motionList.forEach(v => turnProhibitionList.push(v))
-    player.direction = ((
-      keyMap.left.some(v => key[v].flag) &&
-      keyMap.right.some(v => key[v].flag)) ||
-      !player.landFlag ||
-      turnProhibitionList.includes(player.state)
-      ) ? player.direction
-    : keyMap.left.some(v => key[v].flag) ? 'left'
-    : keyMap.right.some(v => key[v].flag) ? 'right'
-    : player.direction
-    // if (!turnProhibitionList.includes(player.state)) {
-    //   if (
-    //     keyMap.right.some(v => key[v].flag) && player.dx < dashConstant * brakeConstant
-    //   ) player.state = 'turn'
-    //   if (
-    //     keyMap.left.some(v => key[v].flag) && -dashConstant * brakeConstant < player.dx
-    //   ) player.state = 'turn'
-    //   if (player.wallFlag && player.landFlag && player.state !== 'slide') player.state = 'push'
-    //   if (
-    //     keyMap.left.some(v => key[v].flag) && keyMap.right.some(v => key[v].flag)
-    //   ) player.state = 'idle'
-    // }
+  if (player.landFlag) {
+    if (!['crouch', 'push', 'damage'].includes(player.state) && !motionList.includes(player.state)) {
+      const stateHistory = player.state
+      player.state = player.wallFlag && player.state !== 'slide' ? 'push' :
+      walkThreshold < Math.abs(player.dx) ? 'run' :
+      floorThreshold < Math.abs(player.dx) ? 'walk' : 'idle'
+      if (player.dx < -floorThreshold) player.direction = 'left'
+      if (floorThreshold < player.dx) player.direction = 'right'
+      if (
+        stateHistory === 'run' &&
+        stateHistory !== player.state &&
+        isKey(keyMap.left) === isKey(keyMap.right)
+      ) {
+        player.state = 'turn'
+        player.attackElapsedTime = 0
+      }
+    }
+  } else {
+    if (!player.doubleJumpFlag) { // fall
+      player.state = 'jump'
+      player.attackState = 'active'
+      player.motionFirstFlag = true
+    }
   }
-  let stateList = ['crouch', 'turn', 'push', 'damage']
-  motionList.forEach(v => stateList.push(v))
-  if (!stateList.includes(player.state)) {
-    player.state = player.dx === 0 ? 'idle' :
-    runThreshold < Math.abs(player.dx) ? 'slide' :
-    walkThreshold < Math.abs(player.dx) ? 'run' : 'walk'
-  }
+
   if (player.state === 'idle') {
     const i = player.imageStat[player.state]
     if ( // breath
@@ -1501,19 +1511,6 @@ const update = () => {
       i.time = 0
       player.state = 'idle'
     }
-  } else if (player.state === 'turn') {
-    const i = player.imageStat[player.state]
-    i.time += 1
-    if (i.time % i.frame === 0) i.condition += 1
-    if (i.condition === image[player.skin][player.state].data.length) {
-      i.condition -= image[player.skin][player.state].data.length
-      i.time = 0
-      if (!menuFlag) {
-        if (
-          !(player.wallFlag && keyMap.left.some(v => key[v].flag) &&
-          keyMap.right.some(v => key[v].flag))) player.state = 'walk'
-      }
-    }
   } else if (motionList.includes(player.state)) {
     const i = player.imageStat[player.state]
     player.attackElapsedTime += intervalDiffTime
@@ -1572,10 +1569,8 @@ const update = () => {
       }
     }
   }
-  Object.keys(player.imageStat).forEach(v => {
-    if (player.state !== v && v !== 'idle') player.imageStat[v].condition = 0
-  })
-  enemies.forEach(v => {
+  console.log(player.state)
+  if (false) enemies.forEach(v => {
     if (v.type === 'enemy') {
       v.imageTimer += 1
       if (v.state === 'walk') {
@@ -2023,6 +2018,7 @@ const draw = () => {
       `dx: ${maxLog.dx.toFixed(2)} ${player.dx.toFixed(2)}`,
       `dy: ${maxLog.dy.toFixed(2)} ${player.dy.toFixed(2)}`,
       `player state: ${player.state}`,
+      `direction: ${player.direction}`,
       `double jump: ${player.doubleJumpFlag}`,
       `attack state: ${player.attackState}`,
       `land flag: ${player.landFlag}`,
