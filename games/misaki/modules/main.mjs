@@ -273,7 +273,7 @@ let image = {
       src: ['images/Misaki/Misaki_Slide_1.png'],
     }, push : {
       src: ['images/Misaki/Misaki_Push_1.png'],
-    }, punch: {
+    }, handgun: {
       startup: {
         src: [
           'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
@@ -501,7 +501,7 @@ let image = {
       src: [
         'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
       ],
-    }, punch: {
+    }, handgun: {
       startup: {
         src: [
           'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
@@ -587,7 +587,7 @@ let image = {
     },
   },
 }
-const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'punch', 'kick', 'handgun2']
+const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'kick', 'handgun', 'handgun2']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -620,7 +620,7 @@ const audio = {
     }, doubleJump: {
       data: '',
       src: 'audio/Misaki/V2002.wav',
-    }, punch : {
+    }, handgun : {
       data: '',
       src: 'audio/Misaki/V2005.wav',
     }, handgun2 : {
@@ -640,7 +640,7 @@ const audio = {
       }, doubleJump: {
         data: '',
         src: 'audio/Kohaku/V0002.wav',
-      }, punch : {
+      }, handgun : {
         data: '',
         src: 'audio/Kohaku/V0005.wav',
       }, handgun2 : {
@@ -873,7 +873,7 @@ let player = {
       activeTime: 36 * 1000 / 60,
       recoveryTime: 0,
     },
-    punch : {
+    handgun : {
       startupTime: 16 * 1000 / 60,
       activeTime: 0,
       recoveryTime: 16 * 1000 / 60,
@@ -972,7 +972,7 @@ const commonCondition = i => {
 }
 const recoveryCondition = {
   turn    : i  => {commonCondition(i)},
-  punch   : i  => {commonCondition(i)},
+  handgun : i  => {commonCondition(i)},
   handgun2: i  => {commonCondition(i)},
   kick    : i  => {commonCondition(i)},
   slide   : () => {
@@ -1037,7 +1037,7 @@ const proposal = () => {
         walkThreshold < Math.abs(player.dx) &&
         ((player.direction === 'left' && isKey(keyMap.right)) ||
         (player.direction === 'right' && isKey(keyMap.left))),
-      punch:
+      handgun:
         isKeyFirst(keyMap.attack) &&
         !isKey(keyMap.left) &&
         !isKey(keyMap.right) &&
@@ -1381,7 +1381,7 @@ const update = () => {
   }
 
   if (false) {
-    if (player.state === 'punch' && player.attackState === 'active') {
+    if (player.state === 'handgun' && player.attackState === 'active') {
       player.attackBox = player.direction === 'left' ? {
         x: player.x - size,
         y: player.y - size * 2,
@@ -1470,7 +1470,7 @@ const update = () => {
       player.breathInterval < playerData.breathFatigue
     ) {
       const num = Math.random()
-      const list = num < .9 ? {value: audio[player.skin].punch.data, startTime: .3}
+      const list = num < .9 ? {value: audio[player.skin].handgun.data, startTime: .3}
       : num < .95 ? {value: audio[player.skin].jump.data, startTime: .3}
       : {value: audio[player.skin].doubleJump.data, startTime: .33}
       playAudio(list.value, list.startTime)
