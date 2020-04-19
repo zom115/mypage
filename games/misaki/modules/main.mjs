@@ -8,6 +8,7 @@ const keyMap = {
   right: ['d'],
   down: ['s'],
   left: ['a'],
+  crouch: ['c'],
   jump: ['i', 'l', ' '],
   attack: ['k'],
   dash: ['j'],
@@ -1030,7 +1031,7 @@ const proposal = () => {
     if (isKey(keyMap.left)) player.dx -= speed
     if (isKey(keyMap.right)) player.dx += speed
   }
-  if (isKey(keyMap.down)) {
+  if (isKey(keyMap.crouch)) {
     if (!player.grabFlag) { // crouch
       if (player.landFlag) {
         const crouchPermissionList = ['idle', 'walk']
@@ -1496,7 +1497,7 @@ const update = () => {
   } else if (player.state === 'crouch') {
     const i = player.imageStat[player.state]
     const index = Math.floor(i.time / i.intervalTime)
-    if (isKey(keyMap.down)) {
+    if (isKey(keyMap.crouch)) {
       if ((index < image[player.skin].crouch.data.length - 1)) i.time += intervalDiffTime
     } else {
       i.time -= intervalDiffTime
