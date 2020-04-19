@@ -479,11 +479,6 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
         ]
       },
-    }, slide: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Brake_3.png',
-      ],
     }, push: {
       src: [
         'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
@@ -545,6 +540,23 @@ let image = {
           'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
         ]
       },
+    }, slide: {
+      // startup: {
+      //   src: [
+      //   ]
+      // },
+      active: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Brake_3.png',
+        ]
+      },
+      // recovery: {
+      //   src: [
+      //     'images/Unitychan/BasicActions/Unitychan_Brake_11.png',
+      //     'images/Unitychan/BasicActions/Unitychan_Brake_12.png',
+      //   ]
+      // },
     }, sword: {
       src: [
         'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
@@ -557,7 +569,7 @@ let image = {
     },
   },
 }
-const motionList = ['jump', 'doubleJump', 'punch', 'kick', 'handgun2']
+const motionList = ['jump', 'doubleJump', 'punch', 'kick', 'handgun2', 'slide']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -832,7 +844,11 @@ let player = {
       activeTime: 36 * 1000 / 60,
       recoveryTime: 4 * 1000 / 60,
     },
-    slide : {condition: 0},
+    slide : {
+      startupTime: 0,
+      activeTime: 36 * 1000 / 60,
+      recoveryTime: 0,
+    },
     push  : {condition: 0},
     punch : {
       startupTime: 16 * 1000 / 60,
@@ -855,6 +871,55 @@ let player = {
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 
+const actionInitObject = {
+  jump: () => {
+    const jumpCoefficient = 5
+    player.dy = jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5 // temporary
+    player.dx /= Math.SQRT2
+    if (player.doubleJumpFlag) playAudio(audio[player.skin].doubleJump.data)
+    else playAudio(audio[player.skin][player.state].data)
+
+    cooltime.aerialStep = 0 // temporary
+  }, slide: () => {
+    const boostConstant = .4
+    const slideSpeed = player.dx < 0 ? -boostConstant : boostConstant
+    player.dx += slideSpeed
+    cooltime.slide = cooltime.slideLimit
+  },
+}
+const uniqueActionObject = {
+  jump: () => {
+    player.attackElapsedTime = 0
+    // cancel
+    if (!settings.type.DECO && !isKey(keyMap.jump) && !player.fallFlag && player.dy < 0) {
+      player.fallFlag = true
+      player.dy /= 2
+    }
+
+    if (player.landFlag && 0 < player.dy) {
+      player.fallFlag = false
+      player.attackState = 'recovery'
+      player.attackElapsedTime = intervalDiffTime
+      player.doubleJumpFlag = false
+    }
+  },
+  slide: () => {player.attackElapsedTime = 0},
+}
+const commonCondition = i => {
+  if (i.activeTime <= player.attackElapsedTime) {
+    player.attackState = 'recovery'
+    player.attackElapsedTime -= i.activeTime
+  }
+}
+const recoveryCondition = {
+  // punch   : i => {commonCondition(i)},
+  handgun2: i  => {commonCondition(i)},
+  kick    : i  => {commonCondition(i)},
+  slide   : () => {
+    if (Math.abs(player.dx) < walkThreshold) player.attackState = 'recovery'
+  },
+}
+
 let cooltime = {
   step: 0,
   stepLimit: 15 * 1000 / 60,
@@ -869,6 +934,8 @@ const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
 const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .02 / 5
 let moveAcceleration = normalConstant
+const walkThreshold = .1
+const runThreshold = .3
 const dashThreshold = 1 / 5
 const jumpConstant = -.2
 let gravityFlag = true // temporary
@@ -967,47 +1034,40 @@ const proposal = () => {
   }
 
   if (!menuFlag) { // attack
-    let actionList = ['crouch', 'slide']
+    let actionList = ['crouch']
     motionList.forEach(v => actionList.push(v))
     if ( // punch
+      !actionList.includes(player.state) &&
       isKeyFirst(keyMap.attack) &&
       !isKey(keyMap.left) &&
       !isKey(keyMap.right) &&
-      player.landFlag &&
-      !actionList.includes(player.state)
+      player.landFlag
     ) {
       player.state = 'punch'
       player.attackElapsedTime = 0
     }
     const kickDeferment = 6 * 1000 / 60
     if ( // kick
+      !actionList.includes(player.state) &&
       isKeyFirst(keyMap.attack) &&
       player.landFlag &&
-      !actionList.includes(player.state) && (
-      keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
+      (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
       keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
     ) {
       player.state = 'kick'
       player.attackElapsedTime = 0
     }
+    const walkThreshold = .1
     if ( // slide
-      cooltime.slide === 0 &&
-      isKey(keyMap.attack) &&
       !actionList.includes(player.state) &&
+      isKey(keyMap.attack) &&
+      (isKey(keyMap.left) || isKey(keyMap.right)) &&
+      walkThreshold <= Math.abs(player.dx) &&
+      cooltime.slide === 0 &&
       player.landFlag &&
       !player.wallFlag
     ) {
-      const slideThreshold = .1
-      const boostConstant = .4
-      const slideSpeed = Math.abs(player.dx) < slideThreshold ? 0 :
-      isKey(keyMap.left) ? -boostConstant :
-      isKey(keyMap.right) ? boostConstant : 0
-      if (slideSpeed !== 0) {
-        player.dx += slideSpeed
-        player.state = 'slide'
-        cooltime.slide = cooltime.slideLimit
-        if (10 < player.breathInterval) player.breathInterval -= 1
-      }
+      player.state = 'slide'
     }
     // if ( // accel
     //   player.action !== 'crouch' && !jump.step
@@ -1369,14 +1429,12 @@ const update = () => {
     //   ) player.state = 'idle'
     // }
   }
-
   let stateList = ['crouch', 'turn', 'push', 'damage']
   motionList.forEach(v => stateList.push(v))
   if (!stateList.includes(player.state)) {
-    const runThreshold = .3
-    player.state = player.state === 'slide' && runThreshold < Math.abs(player.dx) ? 'slide' :
-    player.dx === 0 ? 'idle' :
-    isKey(keyMap.dash) ? 'run' : 'walk'
+    player.state = player.dx === 0 ? 'idle' :
+    runThreshold < Math.abs(player.dx) ? 'slide' :
+    walkThreshold < Math.abs(player.dx) ? 'run' : 'walk'
   }
   if (player.state === 'idle') {
     const i = player.imageStat[player.state]
@@ -1470,42 +1528,18 @@ const update = () => {
       player.attackElapsedTime -= i.startupTime
     }
     if (player.attackState === 'active') {
+      if (!player.motionFirstFlag) { // motion
+        player.motionFirstFlag = true
+        if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
+        if (
+          audio[player.skin][player.state] !== undefined &&
+          player.state !== 'jump'
+        ) playAudio(audio[player.skin][player.state].data)
+        if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
+      }
+      if (uniqueActionObject[player.state] !== undefined) uniqueActionObject[player.state]()
       // TODO: unique hitbox
-      if (player.state === 'jump') {
-        player.attackElapsedTime = 0
-        if (!player.motionFirstFlag) { // motion
-          const jumpCoefficient = 5
-          player.dy = jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5 // temporary
-          player.dx /= Math.SQRT2
-          if (player.doubleJumpFlag) playAudio(audio[player.skin].doubleJump.data)
-          else playAudio(audio[player.skin][player.state].data)
-          player.motionFirstFlag = true
-
-          cooltime.aerialStep = 0 // temporary
-          if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
-        }
-        // cancel
-        if (!settings.type.DECO && !isKey(keyMap.jump) && !player.fallFlag && player.dy < 0) {
-          player.fallFlag = true
-          player.dy /= 2
-        }
-
-        if (player.landFlag && 0 < player.dy) {
-          player.fallFlag = false
-          player.attackState = 'recovery'
-          player.attackElapsedTime = intervalDiffTime
-          player.doubleJumpFlag = false
-        }
-      } else {
-        if (!player.motionFirstFlag) {
-          playAudio(audio[player.skin][player.state].data)
-          player.motionFirstFlag = true
-        }
-      }
-      if (i.activeTime <= player.attackElapsedTime) {
-        player.attackState = 'recovery'
-        player.attackElapsedTime -= i.activeTime
-      }
+      if (recoveryCondition[player.state] !== undefined) recoveryCondition[player.state](i)
     }
     if (player.attackState === 'recovery' && i.recoveryTime <= player.attackElapsedTime) {
       if (player.state === 'jump') {
