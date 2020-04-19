@@ -22,7 +22,7 @@ const keyMap = {
   hitbox: ['h'],
   map: ['m'],
   reset: ['r'],
-  skin: ['c'],
+  skin: ['q'],
 }
 const isKeyFirst = list => {
   return list.some(v => key[v].holdtime !== 0 && key[v].holdtime <= intervalDiffTime)
@@ -827,7 +827,7 @@ let player = {
   wallFlag: false,
   fallTime: 0,
   hitbox: {x: 0, y: 0, w: 0, h: 0},
-  attackBox: {x: 0, y: 0, w: 0, h: 0},
+  attackBoxList: [],
   invincibleTimer: 0,
   blinkCount: 0,
   blinkInterval: 0,
@@ -854,7 +854,7 @@ let player = {
     push  : {condition: 0},
     damage: {condition: 0, time: 0, frame: 7, audioTrigger: 0},
     turn  : {
-      startupTime: 30 * 1000 / 60,
+      startupTime: 20 * 1000 / 60,
       activeTime: 10 * 1000 / 60,
       recoveryTime: 0,
     },
@@ -979,6 +979,33 @@ const recoveryCondition = {
     if (Math.abs(player.dx) < walkThreshold) player.attackState = 'recovery'
   },
 }
+const attackBoxObject = {
+  handgun: {
+    x: size,
+    y: -size * 2,
+    w: size / 2,
+    h: size / 2,
+    dx: size / 8,
+    dy: 0,
+    lifetime: 1000,
+  }, handgun2: {
+    x: size,
+    y: -size * 1.75,
+    w: size / 2,
+    h: size / 2,
+    dx: size / 8,
+    dy: 0,
+    lifetime: 1000,
+  }, kick: {
+    x: 0,
+    y: -size * 1.25,
+    w: size * 2,
+    h: size,
+    dx: 0,
+    dy: 0,
+    lifetime: 300,
+  },
+}
 
 const stateReset = () => {
   if (player.descentFlag) player.descentFlag = false
@@ -1012,6 +1039,8 @@ const proposal = () => {
         }
       }
     }
+  }
+  if (isKey(keyMap.down)) {
     if (player.state === 'jump') { // down force
       const downForce = .01
       const restrictValue = .5
@@ -1039,8 +1068,8 @@ const proposal = () => {
         (player.direction === 'right' && isKey(keyMap.left))),
       handgun:
         isKeyFirst(keyMap.attack) &&
-        !isKey(keyMap.left) &&
-        !isKey(keyMap.right) &&
+        // !isKey(keyMap.left) &&
+        // !isKey(keyMap.right) &&
         player.landFlag,
       kick:
         isKeyFirst(keyMap.attack) &&
@@ -1048,7 +1077,7 @@ const proposal = () => {
         (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
         keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment)),
       slide:
-        isKey(keyMap.attack) &&
+        isKey(keyMap.down) &&
         (isKey(keyMap.left) || isKey(keyMap.right)) &&
         walkThreshold <= Math.abs(player.dx) &&
         cooltime.slide === 0 &&
@@ -1373,6 +1402,15 @@ const update = () => {
       player.y = mapData.checkPoint.y
     }
   }
+  player.attackBoxList.forEach((v, i) => {
+    v.lifetime -= intervalDiffTime
+    if (v.lifetime <= 0) player.attackBoxList.splice(i, 1)
+    else {
+      if (v.direction === 'right') v.x += v.dx
+      else v.x -= v.dx
+      v.y += v.dy
+    }
+  })
 
   if (player.state !== 'slide' && cooltime.slide !== 0) { // slide cooltime
     if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2 ** intervalDiffTime
@@ -1380,39 +1418,7 @@ const update = () => {
     if ((cooltime.slide < 0 && !isKey(keyMap.attack)) || !player.landFlag) cooltime.slide = 0
   }
 
-  if (false) {
-    if (player.state === 'handgun' && player.attackState === 'active') {
-      player.attackBox = player.direction === 'left' ? {
-        x: player.x - size,
-        y: player.y - size * 2,
-        w: size / 2,
-        h: size
-      } : {
-        x: player.x + size / 2,
-        y: player.y - size * 2,
-        w: size / 2,
-        h: size
-      }
-    } else if (
-      player.state === 'kick' &&
-      player.imageStat.kick.frame * 3 < player.imageStat.kick.time &&
-      player.imageStat.kick.time < player.imageStat.kick.frame * 5
-    ) {
-      player.attackBox = player.direction === 'left' ? {
-        x: player.x - size * 2,
-        y: player.y - size * 2,
-        w: size * 1.5,
-        h: size
-      } : {
-        x: player.x + size / 2,
-        y: player.y - size * 2,
-        w: size * 1.5,
-        h: size
-      }
-    } else player.attackBox = {x: 0, y: 0, w: 0, h: 0}
-    if (0 < player.invincibleTimer) player.invincibleTimer -= 1
-  }
-
+  // if (0 < player.invincibleTimer) player.invincibleTimer -= intervalDiffTime
   if (player.landFlag) {
     if (!['crouch', 'push', 'damage'].includes(player.state) && !motionList.includes(player.state)) {
       const stateHistory = player.state
@@ -1520,6 +1526,14 @@ const update = () => {
       if (!player.motionFirstFlag) { // motion
         player.motionFirstFlag = true
         if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
+        if (attackBoxObject[player.state] !== undefined) {
+          const object = JSON.parse(JSON.stringify(attackBoxObject[player.state]))
+          if (player.direction === 'right') object.x = player.x + object.x
+          else object.x = player.x - (object.x + object.w)
+          object.y = player.y + object.y
+          object.direction = player.direction
+          player.attackBoxList.push(object)
+        }
         if (
           audio[player.skin][player.state] !== undefined &&
           player.state !== 'jump'
@@ -1527,7 +1541,6 @@ const update = () => {
         if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
       }
       if (uniqueActionObject[player.state] !== undefined) uniqueActionObject[player.state]()
-      // TODO: unique hitbox
       if (recoveryCondition[player.state] !== undefined) recoveryCondition[player.state](i)
     }
     if (player.attackState === 'recovery' && i.recoveryTime <= player.attackElapsedTime) {
@@ -1926,10 +1939,9 @@ const draw = () => {
       player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
       player.hitbox.w|0, player.hitbox.h|0
     )
-    context.fillRect(
-      player.attackBox.x - stageOffset.x, player.attackBox.y - stageOffset.y,
-      player.attackBox.w, player.attackBox.h
-    )
+    player.attackBoxList.forEach(v => {
+      context.fillRect(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.w, v.h)
+    })
     enemies.forEach(v => {
       if (v.type === 'enemy') {
         if (v.invincibleTimer === 0) {
@@ -1940,10 +1952,9 @@ const draw = () => {
           )
         }
         context.fillStyle = 'hsla(0, 100%, 50%, .5)'
-        context.fillRect(
-          v.attackBox.x - stageOffset.x|0, v.attackBox.y - stageOffset.y|0,
-          v.attackBox.w, v.attackBox.h
-        )
+        v.attackBoxList.forEach(vl => {
+          context.fillRect(vl.x - stageOffset.x|0, vl.y - stageOffset.y|0, vl.w, vl.h)
+        })
       }
     })
   }
@@ -2005,13 +2016,11 @@ const draw = () => {
     const list = [
       `internalFPS: ${internalFrameList.length - 1}`,
       `FPS: ${animationFrameList.length - 1}`,
-      // `x: ${ownCondition.x}`,
-      `x(m): ${Math.floor(player.x * .04)}`,
-      // `y: ${ownCondition.y}`,
-      `y(m): ${Math.floor((((
+      `x(m, row): ${Math.floor(player.x * .04)} ${player.x.toFixed(2)}`,
+      `y(m, row): ${Math.floor(((
         mapObject[mapData.name].layers[mapObject[
-        mapData.name].layersIndex.tileset[0]].height - 2) * size) -
-        player.y) * .04)}`,
+        mapData.name].layersIndex.tileset[0]].height * size) -
+        player.y) * .04)} ${player.y.toFixed(2)}`,
       `dx: ${maxLog.dx.toFixed(2)} ${player.dx.toFixed(2)}`,
       `dy: ${maxLog.dy.toFixed(2)} ${player.dy.toFixed(2)}`,
       `player state: ${player.state}`,
