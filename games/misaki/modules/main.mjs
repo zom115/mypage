@@ -919,7 +919,6 @@ let cooltime = {
   slideLimit: 45 * 1000 / 60,
 }
 
-const brakeConstant = .75
 let floatMenuCursor = 0
 const floatMenuCursorMax = 3
 
@@ -1040,6 +1039,7 @@ const proposal = () => {
         }
       }
     }
+    if (isKey(keyMap.jump)) player.descentFlag = true // descent
   }
   if (isKey(keyMap.down)) {
     if (player.state === 'jump') { // down force
@@ -1050,7 +1050,7 @@ const proposal = () => {
     if (isKey(keyMap.jump)) player.descentFlag = true // descent
   }
 
-  if (isKeyFirst(keyMap.jump)) { // jump
+  if (isKeyFirst(keyMap.jump) && !isKey(keyMap.crouch)) { // jump
     if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
       if (player.state === 'jump') player.doubleJumpFlag = true
       player.state = 'jump'
