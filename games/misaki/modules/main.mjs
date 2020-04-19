@@ -912,7 +912,7 @@ const commonCondition = i => {
   }
 }
 const recoveryCondition = {
-  // punch   : i => {commonCondition(i)},
+  punch   : i => {commonCondition(i)},
   handgun2: i  => {commonCondition(i)},
   kick    : i  => {commonCondition(i)},
   slide   : () => {
@@ -1033,42 +1033,36 @@ const proposal = () => {
     }
   }
 
-  if (!menuFlag) { // attack
-    let actionList = ['crouch']
-    motionList.forEach(v => actionList.push(v))
-    if ( // punch
-      !actionList.includes(player.state) &&
-      isKeyFirst(keyMap.attack) &&
-      !isKey(keyMap.left) &&
-      !isKey(keyMap.right) &&
-      player.landFlag
-    ) {
-      player.state = 'punch'
-      player.attackElapsedTime = 0
-    }
+  let actionList = ['crouch']
+  motionList.forEach(v => actionList.push(v))
+  if (!menuFlag && !actionList.includes(player.state)) { // attack
     const kickDeferment = 6 * 1000 / 60
-    if ( // kick
-      !actionList.includes(player.state) &&
-      isKeyFirst(keyMap.attack) &&
-      player.landFlag &&
-      (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
-      keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment))
-    ) {
-      player.state = 'kick'
-      player.attackElapsedTime = 0
+    const conditionObject = {
+      punch:
+        isKeyFirst(keyMap.attack) &&
+        !isKey(keyMap.left) &&
+        !isKey(keyMap.right) &&
+        player.landFlag,
+      kick:
+        isKeyFirst(keyMap.attack) &&
+        player.landFlag &&
+        (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
+        keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment)),
+      slide:
+        isKey(keyMap.attack) &&
+        (isKey(keyMap.left) || isKey(keyMap.right)) &&
+        walkThreshold <= Math.abs(player.dx) &&
+        cooltime.slide === 0 &&
+        player.landFlag &&
+        !player.wallFlag,
     }
-    const walkThreshold = .1
-    if ( // slide
-      !actionList.includes(player.state) &&
-      isKey(keyMap.attack) &&
-      (isKey(keyMap.left) || isKey(keyMap.right)) &&
-      walkThreshold <= Math.abs(player.dx) &&
-      cooltime.slide === 0 &&
-      player.landFlag &&
-      !player.wallFlag
-    ) {
-      player.state = 'slide'
-    }
+    Object.keys(conditionObject).some(v => {
+      if (conditionObject[v]) {
+        player.state = v
+        player.attackElapsedTime = 0
+      }
+    })
+
     // if ( // accel
     //   player.action !== 'crouch' && !jump.step
     // ) {
