@@ -939,12 +939,10 @@ const actionInitObject = {
   },
   turn: () => {
     if (
-      // isKey(keyMap.left) !== isKey(keyMap.right)
       (player.direction === 'left' && floorThreshold < player.dx) ||
       (player.direction === 'right' && player.dx < -floorThreshold)
     ) {
       player.direction = player.direction === 'left' ? 'right' : 'left'
-      player.attackState = 'active'
     } else player.attackState = 'recovery'
   },
 }
@@ -1021,47 +1019,6 @@ const proposal = () => {
     }
     if (isKey(keyMap.jump)) player.descentFlag = true // descent
   }
-  if (false) { // wall grab
-    if (
-      player.wallFlag &&
-      !player.landFlag &&
-      0 < player.dy &&
-      isKey(keyMap.up)
-    ) {
-      if (
-        (player.wallFlag === 'left' && player.direction === 'right') ||
-        (player.wallFlag === 'right' && player.direction === 'left')
-      ) {
-        const decayRatio = .5
-        player.dy *= decayRatio
-        player.dx = player.direction === 'left' ? -dashConstant : dashConstant
-        player.grabFlag = true
-      }
-    }
-    if (
-      !(player.wallFlag &&
-      !player.landFlag &&
-      0 < player.dy &&
-      isKey(keyMap.up))
-    ) player.grabFlag = false
-  }
-  if (false && player.grabFlag) { // wall kick
-    const jumpRatio = 1
-    if (isKeyFirst(keyMap.jump) && player.grabFlag) {
-      if (player.direction === 'right') {
-        player.dx = -jumpRatio
-        player.direction = 'left'
-      } else if (player.direction === 'left') {
-        player.dx = jumpRatio
-        player.direction = 'right'
-      }
-      player.dy = jumpConstant
-      player.wallFlag = false
-      player.grabFlag = false
-      player.state = 'jump'
-      player.attackState = 'active'
-    }
-  }
 
   if (isKeyFirst(keyMap.jump)) { // jump
     if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
@@ -1104,6 +1061,47 @@ const proposal = () => {
         player.attackElapsedTime = 0
       }
     })
+  }
+  if (false) { // wall grab
+    if (
+      player.wallFlag &&
+      !player.landFlag &&
+      0 < player.dy &&
+      isKey(keyMap.up)
+    ) {
+      if (
+        (player.wallFlag === 'left' && player.direction === 'right') ||
+        (player.wallFlag === 'right' && player.direction === 'left')
+      ) {
+        const decayRatio = .5
+        player.dy *= decayRatio
+        player.dx = player.direction === 'left' ? -dashConstant : dashConstant
+        player.grabFlag = true
+      }
+    }
+    if (
+      !(player.wallFlag &&
+      !player.landFlag &&
+      0 < player.dy &&
+      isKey(keyMap.up))
+    ) player.grabFlag = false
+  }
+  if (false && player.grabFlag) { // wall kick
+    const jumpRatio = 1
+    if (isKeyFirst(keyMap.jump) && player.grabFlag) {
+      if (player.direction === 'right') {
+        player.dx = -jumpRatio
+        player.direction = 'left'
+      } else if (player.direction === 'left') {
+        player.dx = jumpRatio
+        player.direction = 'right'
+      }
+      player.dy = jumpConstant
+      player.wallFlag = false
+      player.grabFlag = false
+      player.state = 'jump'
+      player.attackState = 'active'
+    }
   }
   mapObject[mapData.name].layers[mapObject[
   mapData.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
@@ -1152,7 +1150,7 @@ const proposal = () => {
       if (isKey(keyMap.up)) player.dy -= moveAcceleration * intervalDiffTime * num
       if (isKey(keyMap.down)) player.dy += moveAcceleration * intervalDiffTime * num
     }
-    if (isKeyFirst(keyMap.skin)) {
+    if (false && isKeyFirst(keyMap.skin)) {
       player.skin = player.skin === 'misaki' ? 'kohaku' : 'misaki'
     }
   }
@@ -1569,7 +1567,6 @@ const update = () => {
       }
     }
   }
-  console.log(player.state)
   if (false) enemies.forEach(v => {
     if (v.type === 'enemy') {
       v.imageTimer += 1
