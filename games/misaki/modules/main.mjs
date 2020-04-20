@@ -542,7 +542,7 @@ let image = {
           'images/Unitychan/Attack/Unitychan_Hundgun1_2.png',
         ]
       },
-    }, kick: {
+    }, sword: {
       startup: {
         src: [
           'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
@@ -578,19 +578,10 @@ let image = {
       //     'images/Unitychan/BasicActions/Unitychan_Brake_12.png',
       //   ]
       // },
-    }, sword: {
-      src: [
-        'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
-        'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
-        'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
-        'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
-        'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
-        'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
-      ],
     },
   },
 }
-const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'kick', 'handgun', 'handgun2']
+const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
 const imageListLoader = obj => {
   return new Promise(resolve => {
     let resource = []
@@ -649,7 +640,7 @@ const audio = {
       }, handgun2 : {
         data: '',
         src: 'audio/se/handgun-firing1.mp3',
-      }, kick : {
+      }, sword : {
         data: '',
         src: 'audio/Kohaku/V0006.wav',
       }, win : {
@@ -887,7 +878,7 @@ let player = {
       activeTime: 0,
       recoveryTime: 38 * 1000 / 60,
     },
-    kick : {
+    sword : {
       startupTime: 7 * 1000 / 60,
       activeTime: 5 * 1000 / 60,
       recoveryTime: 21 * 1000 / 60,
@@ -976,7 +967,7 @@ const recoveryCondition = {
   turn    : i  => {commonCondition(i)},
   handgun : i  => {commonCondition(i)},
   handgun2: i  => {commonCondition(i)},
-  kick    : i  => {commonCondition(i)},
+  sword   : i  => {commonCondition(i)},
   slide   : () => {
     if (Math.abs(player.dx) < walkThreshold) player.attackState = 'recovery'
   },
@@ -996,7 +987,7 @@ const attackBoxObject = {
     a: 0,
     d: .075,
     lifetime: 1000,
-  }, kick: {
+  }, sword: {
     x: size * 1.25,
     y: -size * .75,
     r: size * .75,
@@ -1059,7 +1050,7 @@ const proposal = () => {
   let actionList = ['crouch']
   motionList.forEach(v => actionList.push(v))
   if (!menuFlag && !actionList.includes(player.state)) {
-    const kickDeferment = 6 * 1000 / 60
+    const swordDeferment = 6 * 1000 / 60
     const conditionObject = {
       turn:
         isKey(keyMap.left) !== isKey(keyMap.right) &&
@@ -1071,11 +1062,11 @@ const proposal = () => {
         // !isKey(keyMap.left) &&
         // !isKey(keyMap.right) &&
         player.landFlag,
-      kick:
+      sword:
         isKeyFirst(keyMap.attack) &&
         player.landFlag &&
-        (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= kickDeferment) ||
-        keyMap.right.some(v => globalTimestamp - key[v].timestamp <= kickDeferment)),
+        (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= swordDeferment) ||
+        keyMap.right.some(v => globalTimestamp - key[v].timestamp <= swordDeferment)),
       slide:
         isKey(keyMap.down) &&
         (isKey(keyMap.left) || isKey(keyMap.right)) &&
