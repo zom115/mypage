@@ -3,6 +3,8 @@ import {mapLoader} from '../../../modules/mapLoader.mjs'
 import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
 
+const PI = Math.PI
+
 const keyMap = {
   up: ['w'],
   right: ['d'],
@@ -75,8 +77,8 @@ const orgRound = (value, base) => {return Math.round(value * base) / base}
       v[0] -= .5
       v[1] -= .5
       ;[v[0], v[1]] = [
-        orgRound(v[0] * Math.cos(Math.PI / 2) - v[1] * Math.sin(Math.PI / 2), 10),
-        orgRound(v[0] * Math.sin(Math.PI / 2) + v[1] * Math.cos(Math.PI / 2), 10),]
+        orgRound(v[0] * Math.cos(PI / 2) - v[1] * Math.sin(PI / 2), 10),
+        orgRound(v[0] * Math.sin(PI / 2) + v[1] * Math.cos(PI / 2), 10),]
       v[0] += .5
       v[1] += .5
     })
@@ -643,10 +645,10 @@ const audio = {
         src: 'audio/Kohaku/V0002.wav',
       }, handgun : {
         data: '',
-        src: 'audio/Kohaku/V0005.wav',
+        src: 'audio/se/handgun-firing1.mp3',
       }, handgun2 : {
         data: '',
-        src: 'audio/Kohaku/V0005.wav',
+        src: 'audio/se/handgun-firing1.mp3',
       }, kick : {
         data: '',
         src: 'audio/Kohaku/V0006.wav',
@@ -877,7 +879,7 @@ let player = {
     handgun : {
       startupTime: 16 * 1000 / 60,
       activeTime: 0,
-      recoveryTime: 16 * 1000 / 60,
+      recoveryTime: 100,
       nextState: 'handgun2',
     },
     handgun2 : {
@@ -981,28 +983,25 @@ const recoveryCondition = {
 }
 const attackBoxObject = {
   handgun: {
-    x: size,
-    y: -size * 2,
-    w: size / 2,
-    h: size / 2,
-    dx: size / 8,
-    dy: 0,
+    x: size * 1.5,
+    y: -size * 1.75,
+    r: size * .25,
+    a: 0,
+    d: .075, // 7.5 = 300 m / s
     lifetime: 1000,
   }, handgun2: {
-    x: size,
-    y: -size * 1.75,
-    w: size / 2,
-    h: size / 2,
-    dx: size / 8,
-    dy: 0,
+    x: size * 1.5,
+    y: -size * 1.5,
+    r: size * .25,
+    a: 0,
+    d: .075,
     lifetime: 1000,
   }, kick: {
-    x: 0,
-    y: -size * 1.25,
-    w: size * 2,
-    h: size,
-    dx: 0,
-    dy: 0,
+    x: size * 1.25,
+    y: -size * .75,
+    r: size * .75,
+    a: PI,
+    d: .05,
     lifetime: 300,
   },
 }
@@ -1187,8 +1186,8 @@ const proposal = () => {
 }
 const judgement = () => {
   const collisionResponse = tilt => {
-    const nX = Math.cos(tilt * Math.PI)
-    const nY = Math.sin(tilt * Math.PI)
+    const nX = Math.cos(tilt * PI)
+    const nY = Math.sin(tilt * PI)
     const t = -(
       player.dx * nX + player.dy * nY) / (
       nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
@@ -1227,8 +1226,8 @@ const judgement = () => {
             const rp = terrainObject[id].slice(i - 1)[0]
             const rn = terrainObject[id].length - 1 === i ? // relative next
               terrainObject[id][0] : terrainObject[id].slice(i + 1)[0]
-            let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / Math.PI // 判定する線分の傾き
-            const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / Math.PI
+            let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0]) / PI // 判定する線分の傾き
+            const previousTilt = Math.atan2(ro[1] - rp[1], ro[0] - rp[0]) / PI
             const findVertexList = [
               [0, 0, [-1, 0], [-1, -1]],
               [0, 1, [1, 0], [1, 1]],
@@ -1264,10 +1263,10 @@ const judgement = () => {
                   ) returnFlag = true
                   const cPreviousTilt = Math.atan2(
                     target[index][1] - target[previousIndex][1],
-                    target[index][0] - target[previousIndex][0]) / Math.PI
+                    target[index][0] - target[previousIndex][0]) / PI
                   const cNextTilt = Math.atan2(
                     target[nextIndex][1] - target[index][1],
-                    target[nextIndex][0] - target[index][0]) / Math.PI
+                    target[nextIndex][0] - target[index][0]) / PI
                   if (
                     tilt === cPreviousTilt || previousTilt === cPreviousTilt ||
                     tilt === cNextTilt || previousTilt === cNextTilt
@@ -1342,7 +1341,7 @@ const judgement = () => {
               if (doc < 0 && (2 < terrainObject[id].length || i !== 1)) {
                 detectFlag = true
                 if (terrainObject[id].length === 2) {
-                  const compareTilt = Math.atan2(dy, dx) / Math.PI
+                  const compareTilt = Math.atan2(dy, dx) / PI
                   let diffTilt = compareTilt - tilt
                   diffTilt = diffTilt < -1 ? diffTilt + 2 :
                   1 < diffTilt ? diffTilt - 2 : diffTilt
@@ -1359,14 +1358,14 @@ const judgement = () => {
             ) {
               if (terrainObject[id].length === 2) {
                 if ((ax - ox) ** 2 + (ay - oy) ** 2 <= player.r ** 2) return
-                const compareTilt = Math.atan2(dy, dx) / Math.PI
+                const compareTilt = Math.atan2(dy, dx) / PI
                 let diffTilt = i === 0 ? compareTilt - tilt : tilt - compareTilt
                 diffTilt = diffTilt < -1 ? diffTilt + 2 :
                 1 < diffTilt ? diffTilt - 2 : diffTilt
                 if (diffTilt < 0) return
               }
               detectFlag = true
-              tilt = Math.atan2(oy - ay, ox - ax) / Math.PI
+              tilt = Math.atan2(oy - ay, ox - ax) / PI
               if (tilt < 0) onetimeLandFlag = true
             }
             if (detectFlag && (!player.descentFlag || terrainObject[id].length !== 2)) {
@@ -1407,9 +1406,14 @@ const update = () => {
     v.lifetime -= intervalDiffTime
     if (v.lifetime <= 0) player.attackBoxList.splice(i, 1)
     else {
-      if (v.direction === 'right') v.x += v.dx
-      else v.x -= v.dx
-      v.y += v.dy
+      if (v.direction === 'right') {
+        v.x += v.d * Math.cos(v.a) * intervalDiffTime
+        v.y += v.d * Math.sin(v.a) * intervalDiffTime
+      } else {
+        const a = 0 < v.a ? PI / 2 - (v.a - PI / 2) : -PI / 2 - (v.a + PI / 2)
+        v.x += v.d * Math.cos(a) * intervalDiffTime
+        v.y += v.d * Math.sin(a) * intervalDiffTime
+      }
     }
   })
 
@@ -1530,7 +1534,7 @@ const update = () => {
         if (attackBoxObject[player.state] !== undefined) {
           const object = JSON.parse(JSON.stringify(attackBoxObject[player.state]))
           if (player.direction === 'right') object.x = player.x + object.x
-          else object.x = player.x - (object.x + object.w)
+          else object.x = player.x - (object.x + object.r)
           object.y = player.y + object.y
           object.direction = player.direction
           player.attackBoxList.push(object)
@@ -1785,7 +1789,7 @@ const draw = () => {
   mapData.name].layersIndex.objectgroup].objects.forEach(v => {
     if (v.name !== 'gate') return
     const oneRound = 5e3
-    const ratio = (Math.sin(Math.PI * 2 * (globalTimestamp % oneRound / oneRound)) + 1) / 2
+    const ratio = (Math.sin(PI * 2 * (globalTimestamp % oneRound / oneRound)) + 1) / 2
     context.fillStyle = `hsla(0, 0%, 50%, ${ratio / 4})`
     context.fillRect(
       v.x - stageOffset.x + player.r,
@@ -1920,7 +1924,7 @@ const draw = () => {
     {
       context.strokeStyle = 'hsl(0, 100%, 50%)'
       context.beginPath()
-      context.arc(player.x - stageOffset.x, player.y - stageOffset.y, player.r, 0 , Math.PI * 2)
+      context.arc(player.x - stageOffset.x, player.y - stageOffset.y, player.r, 0 , PI * 2)
       context.closePath()
       context.stroke()
       context.beginPath()
@@ -1941,7 +1945,9 @@ const draw = () => {
       player.hitbox.w|0, player.hitbox.h|0
     )
     player.attackBoxList.forEach(v => {
-      context.fillRect(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.w, v.h)
+      context.beginPath()
+      context.arc(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.r, 0, PI * 2)
+      context.fill()
     })
     enemies.forEach(v => {
       if (v.type === 'enemy') {
@@ -1954,7 +1960,9 @@ const draw = () => {
         }
         context.fillStyle = 'hsla(0, 100%, 50%, .5)'
         v.attackBoxList.forEach(vl => {
-          context.fillRect(vl.x - stageOffset.x|0, vl.y - stageOffset.y|0, vl.w, vl.h)
+          context.beginPath()
+          context.arc(vl.x - stageOffset.x|0, vl.y - stageOffset.y|0, vl.r, 0, PI * 2)
+          context.fill()
         })
       }
     })
@@ -2100,9 +2108,9 @@ const loadingScreen = () => {
   context.beginPath()
   for (let i = 0; i < polygon; i++) {
     const x =
-    offset.x + Math.cos(Math.PI * globalTimestamp / divide + Math.PI * i / polygon * 2) * a
+    offset.x + Math.cos(PI * globalTimestamp / divide + PI * i / polygon * 2) * a
     const y =
-    offset.y + Math.sin(Math.PI * globalTimestamp / divide + Math.PI * i / polygon * 2) * a
+    offset.y + Math.sin(PI * globalTimestamp / divide + PI * i / polygon * 2) * a
     i === 0 ? context.moveTo(x, y) : context.lineTo(x, y)
   }
   context.closePath()
