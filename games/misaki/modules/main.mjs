@@ -135,8 +135,9 @@ const setStorage = (key, value, firstFlag = false) => {
 let settings = { // initial value
   volume: {
     master: setStorage('master', .5, true),
-    voice : setStorage('voice', .1, true),
-    music : setStorage('music', .02, true),
+    music : setStorage('music' ,.02, true),
+    se    : setStorage('se'    , .1, true),
+    voice : setStorage('voice' , .1, true),
   }, type: {
     DECO  : setStorage('DECO', false, true),
     status: setStorage('status', false, true),
@@ -609,51 +610,37 @@ Object.keys(image).forEach(v => {
 const audio = {
   misaki: {
     jump : {
-      data: '',
       src: 'audio/Misaki/V2001.wav',
     }, doubleJump: {
-      data: '',
       src: 'audio/Misaki/V2002.wav',
     }, handgun : {
-      data: '',
       src: 'audio/Misaki/V2005.wav',
     }, handgun2 : {
-      data: '',
       src: 'audio/Misaki/V2005.wav',
     }, kick : {
-      data: '',
       src: 'audio/Misaki/V2006.wav',
     }, win : {
-      data: '',
       src: 'audio/Misaki/V2024.wav',
     },
   }, kohaku: {
-      jump : {
-        data: '',
-        src: 'audio/Kohaku/V0001.wav',
-      }, doubleJump: {
-        data: '',
-        src: 'audio/Kohaku/V0002.wav',
-      }, handgun : {
-        data: '',
-        src: 'audio/se/handgun-firing1.mp3',
-      }, handgun2 : {
-        data: '',
-        src: 'audio/se/handgun-firing1.mp3',
-      }, sword : {
-        data: '',
-        src: 'audio/Kohaku/V0006.wav',
-      }, win : {
-        data: '',
-        src: 'audio/Kohaku/V0024.wav',
-      },
+    jump : {
+      src: 'audio/Kohaku/V0001.wav',
+    }, doubleJump: {
+      src: 'audio/Kohaku/V0002.wav',
+    }, sword : {
+      src: 'audio/Kohaku/V0006.wav',
+    }, win : {
+      src: 'audio/Kohaku/V0024.wav',
+    },
   }, music: {
     'テレフォン・ダンス': {
-      data: '',
       src: 'audio/music/nc109026.wav',
     }, 'アオイセカイ': {
-      data: '',
       src: 'audio/music/nc110060.mp3',
+    },
+  }, se: {
+    shot: {
+      src: 'audio/se/handgun-firing1.mp3',
     },
   },
 }
@@ -670,27 +657,49 @@ Object.keys(audio).forEach(v => {
     resourceList.push(audioObjectLoader(audio[v][vl]))
   })
 })
-const voiceVolumeHandler = voice => {
+const voiceVolumeHandle = voice => {
   voice.volume = settings.volume.master * settings.volume.voice
 }
-const musicVolumeHandler = music => {
+const musicVolumeHandle = music => {
   music.volume = settings.volume.master * settings.volume.music
 }
-const volumeController = () => {
+const seVolumeHandle = music => {
+  music.volume = settings.volume.master * settings.volume.se
+}
+const volumeControll = () => {
   Object.keys(audio).forEach(v => {
     Object.keys(audio[v]).forEach(vl => {
-      if (v === 'music') musicVolumeHandler(audio[v][vl].data)
-      else voiceVolumeHandler(audio[v][vl].data)
+      if (v === 'music') musicVolumeHandle(audio[v][vl].data)
+      else if (v === 'se') seVolumeHandle(audio[v][vl].data)
+      else voiceVolumeHandle(audio[v][vl].data)
     })
   })
 }
+const audioTableElement = document.getElementById`audio`
 Object.keys(settings.volume).forEach(v => {
-  document.getElementById(`${v}Input`).value = settings.volume[v]
-  document.getElementById(`${v}Output`).value = settings.volume[v] * 100|0
-  document.getElementById(`${v}Input`).addEventListener('input', e => {
-    document.getElementById(`${v}Output`).value = e.target.value * 100|0
+  const tr = document.createElement`tr`
+  audioTableElement.appendChild(tr)
+  const labelTd = document.createElement`td`
+  tr.appendChild(labelTd)
+  labelTd.textContent = v
+  const inputTd = document.createElement`td`
+  tr.appendChild(inputTd)
+  const input = document.createElement`input`
+  inputTd.appendChild(input)
+  input.id = `${v}Input`
+  input.type = 'range'
+  input.min = 0
+  input.max = 1
+  input.step = .01
+  input.value = settings.volume[v]
+  const output = document.createElement`td`
+  output.style.minWidth = '2rem'
+  tr.appendChild(output)
+  output.textContent = settings.volume[v] * 100|0
+  input.addEventListener('input', e => {
+    output.textContent = e.target.value * 100|0
     settings.volume[v] = setStorage(v, e.target.value, false)
-    volumeController()
+    volumeControll()
   })
 })
 const unityChanStat = {
@@ -765,7 +774,7 @@ const getMusic = arg => {
         audioObject[mapData.name].play()
       } else {
         audioLoader(mapData.name, path).then(result => {
-          musicVolumeHandler(Object.values(result)[0])
+          musicVolumeHandle(Object.values(result)[0])
           Object.values(result)[0].loop = true
           Object.values(result)[0].play()
           Object.assign(audioObject, result)
@@ -915,6 +924,13 @@ let cooltime = {
 let floatMenuCursor = 0
 const floatMenuCursorMax = 3
 
+const soundEfffectObject = {
+  kohaku: {
+    handgun   : audio.se.shot,
+    handgun2  : audio.se.shot,
+    sword     : audio.kohaku.sword,
+  },
+}
 const actionInitObject = {
   jump: () => {
     const jumpCoefficient = 5
@@ -1530,10 +1546,9 @@ const update = () => {
           object.direction = player.direction
           player.attackBoxList.push(object)
         }
-        if (
-          audio[player.skin][player.state] !== undefined &&
-          player.state !== 'jump'
-        ) playAudio(audio[player.skin][player.state].data)
+        if (soundEfffectObject[player.skin][player.state] !== undefined) {
+          playAudio(soundEfffectObject[player.skin][player.state].data)
+        }
         if (playerData.breathMin < player.breathInterval) player.breathInterval -= 1 // temporary
       }
       if (uniqueActionObject[player.state] !== undefined) uniqueActionObject[player.state]()
@@ -2110,7 +2125,7 @@ const loadingScreen = () => {
 loadingScreen()
 Promise.all(resourceList).then(() => {
   loadedFlag = true
-  volumeController()
+  volumeControll()
   setMapProcess(mapData.name)
   console.log(mapObject)
   main()
