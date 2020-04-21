@@ -589,6 +589,13 @@ let image = {
         'images/monster/slimeA_idle2.png',
         'images/monster/slimeA_idle1.png',
       ],
+    }, damage: {
+      src: [
+        'images/monster/slimeA_damage1.png',
+        'images/monster/slimeA_damage0.png',
+        'images/monster/slimeA_damage1.png',
+        'images/monster/slimeA_damage2.png',
+      ],
     }, attack: {
       src: [
         'images/monster/slimeA_attack0.png',
@@ -1505,6 +1512,7 @@ const judgement = () => {
     index.reverse().forEach(v => {
       effectList.push(setEffect(target.x + target.hitCircleList[v[1]].x,
         target.y + target.hitCircleList[v[1]].y, own.attackCircleList[v[0]].damage))
+      target.state = 'damage'
     })
   }
   enemies.forEach((e, i) => {
