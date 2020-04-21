@@ -1061,7 +1061,7 @@ const attackCircleObject = {
     y: -size * 1.75,
     r: size * .25,
     a: 0,
-    d: .075, // 7.5 = 300 m / s
+    d: 7.5, // 7.5 = 300 m / s
     lifetime: 1000,
     damage: 1,
   }, handgun2: {
@@ -1069,7 +1069,7 @@ const attackCircleObject = {
     y: -size * 1.5,
     r: size * .25,
     a: 0,
-    d: .075,
+    d: 7.5,
     lifetime: 1000,
     damage: 1,
   }, sword: {
@@ -1542,8 +1542,12 @@ const update = () => {
       player.state = player.wallFlag && player.state !== 'slide' ? 'push' :
       walkThreshold < Math.abs(player.dx) ? 'run' :
       floorThreshold < Math.abs(player.dx) ? 'walk' : 'idle'
-      if (player.dx < -floorThreshold) player.direction = 'left'
-      if (floorThreshold < player.dx) player.direction = 'right'
+      if (player.dx < -floorThreshold && isKey(keyMap.left) !== isKey(keyMap.right)) {
+        player.direction = 'left'
+      }
+      if (floorThreshold < player.dx && isKey(keyMap.left) !== isKey(keyMap.right)) {
+        player.direction = 'right'
+      }
       if (
         stateHistory === 'run' &&
         stateHistory !== player.state &&
