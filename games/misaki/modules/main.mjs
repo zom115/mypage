@@ -583,35 +583,55 @@ let image = {
     },
   }, slimeA: {
     idle: {
-      src: [
-        'images/monster/slimeA_idle0.png',
-        'images/monster/slimeA_idle1.png',
-        'images/monster/slimeA_idle2.png',
-        'images/monster/slimeA_idle1.png',
-      ],
+      startup: {
+        src: [
+          'images/monster/slimeA_idle0.png',
+          'images/monster/slimeA_idle1.png',
+          'images/monster/slimeA_idle2.png',
+          'images/monster/slimeA_idle1.png',
+        ],
+      },
     }, damage: {
-      src: [
-        'images/monster/slimeA_damage1.png',
-        'images/monster/slimeA_damage0.png',
-        'images/monster/slimeA_damage1.png',
-        'images/monster/slimeA_damage2.png',
-      ],
+      startup: {
+        src: [
+          'images/monster/slimeA_damage1.png',
+          'images/monster/slimeA_damage0.png',
+          'images/monster/slimeA_damage1.png',
+        ],
+      },
+      recovery: {
+        src: [
+          'images/monster/slimeA_damage2.png',
+        ],
+      },
     }, attack: {
-      src: [
-        'images/monster/slimeA_attack0.png',
-        'images/monster/slimeA_attack1.png',
-        'images/monster/slimeA_attack2.png',
-        'images/monster/slimeA_attack3.png',
-        'images/monster/slimeA_attack4.png',
-      ],
+      startup: {
+        src: [
+          'images/monster/slimeA_attack0.png',
+          'images/monster/slimeA_attack1.png',
+        ],
+      },
+      active: {
+        src: [
+          'images/monster/slimeA_attack2.png',
+        ],
+      },
+      recovery: {
+        src: [
+          'images/monster/slimeA_attack3.png',
+          'images/monster/slimeA_attack4.png',
+        ],
+      },
     }, move: {
-      src: [
-        'images/monster/slimeA_move0.png',
-        'images/monster/slimeA_move1.png',
-        'images/monster/slimeA_move2.png',
-        'images/monster/slimeA_move3.png',
-      ],
-    }
+      startup: {
+        src: [
+          'images/monster/slimeA_move0.png',
+          'images/monster/slimeA_move1.png',
+          'images/monster/slimeA_move2.png',
+          'images/monster/slimeA_move3.png',
+        ],
+      },
+    },
   },
 }
 const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
@@ -632,7 +652,7 @@ const imageListLoader = obj => {
 }
 Object.keys(image).forEach(v => {
   Object.keys(image[v]).forEach(vl => {
-    if (motionList.includes(vl)) {
+    if (motionList.includes(vl) || v === 'slimeA') {
       Object.keys(image[v][vl]).forEach(val => {
         resourceList.push(imageListLoader(image[v][vl][val]))
       })
@@ -947,7 +967,23 @@ const maxLog = {
 const enemies = []
 const enemyData = {
   slimeA: {
-    breathInterval: 3e3,
+    idle: {
+      startup : 3e3,
+      active  : 0,
+      recovery: 0,
+    }, damage: {
+      startup : 200,
+      active  : 0,
+      recovery: 500,
+    }, attack: {
+      startup : 0,
+      active  : 0,
+      recovery: 0,
+    }, move: {
+      startup : 0,
+      active  : 0,
+      recovery: 0,
+    },
   },
 }
 const setEnemy = () => {
@@ -962,12 +998,15 @@ const setEnemy = () => {
     wallFlag: false,
     skin: 'slimeA',
     state: 'idle',
+    beforeState: 'idle',
+    attackState: 'startup',
     direction: 'right',
     imageIndex: 0,
     imageOffset: {x: 24, y: 28},
     invincibleTimer: 0,
     hitCircleList: [{x: 0, y: 0, r: size,},],
     attackCircleList: [],
+    elapsedTime: 0,
     breathTime: 0,
   }
 }
@@ -1089,7 +1128,7 @@ const attackCircleObject = {
     d: .05,
     gravity: false,
     lifetime: 300,
-    damage: 1,
+    damage: 10,
   },
 }
 Object.values(attackCircleObject).forEach(v => v.flag = false)
@@ -1736,12 +1775,24 @@ const update = () => {
     }
   }
   enemies.forEach(v => {
-    v.breathTime += intervalDiffTime
-    if (enemyData[v.skin].breathInterval < v.breathTime) {
-      v.breathTime -= enemyData[v.skin].breathInterval
+    if (v.beforeState !== v.state) v.elapsedTime = 0
+    v.beforeState = v.state
+    v.elapsedTime += intervalDiffTime
+    if (v.attackState === 'startup' && enemyData[v.skin][v.state].startup <= v.elapsedTime) {
+      v.elapsedTime -= enemyData[v.skin][v.state].startup
+      v.attackState = 'active'
+    }
+    if (v.attackState === 'active' && enemyData[v.skin][v.state].active <= v.elapsedTime) {
+      v.elapsedTime -= enemyData[v.skin][v.state].active
+      v.attackState = 'recovery'
+    }
+    if (v.attackState === 'recovery' && enemyData[v.skin][v.state].recovery < v.elapsedTime) {
+      v.elapsedTime -= enemyData[v.skin][v.state].recovery
+      v.attackState = 'startup'
+      if (v.state !== 'idle') v.state = 'idle'
     }
     v.imageIndex = Math.floor(
-      v.breathTime / enemyData[v.skin].breathInterval * image[v.skin].idle.data.length)
+      v.elapsedTime / enemyData[v.skin][v.state][v.attackState] * image[v.skin][v.state][v.attackState].data.length)
   })
   effectList.forEach((v, i) => {
     v.lifetime -= intervalDiffTime
@@ -1915,7 +1966,7 @@ const draw = () => {
   enemies.forEach(v => {
     let ex = v.x - v.imageOffset.x - stageOffset.x|0
     const ey = v.y - v.imageOffset.y - stageOffset.y|0
-    const img = image[v.skin][v.state].data[v.imageIndex]
+    const img = image[v.skin][v.state][v.attackState].data[v.imageIndex]
     context.save()
     if (v.direction === 'left') {
       context.scale(-1, 1)
