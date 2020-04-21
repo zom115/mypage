@@ -2027,7 +2027,6 @@ const draw = () => {
   }
   {
     effectList.forEach(v => {
-      console.log(v)
       context.save()
       context.font = `bold ${size}px sans-serif`
       context.fillStyle = 'hsl(0, 0%, 100%)'
@@ -2053,13 +2052,13 @@ const draw = () => {
       multiple * playerSize.x|0, multiple * playerSize.y|0
     )
     context.fillStyle = 'hsla(240, 100%, 50%, .4)'
-    mapObject[mapData.name].layersIndex.tileset.forEach(v => {
+    mapObject[mapData.name].layersIndex.collision.forEach(v => {
       for (let x = 0; x < mapObject[mapData.name].layers[v].width; x++) {
         for (let y = 0; y < mapObject[mapData.name].layers[v].height; y++) {
           const X = multiple * (x * size - player.x) / size
           const Y = multiple * (y * size - player.y) / size
           if (
-            -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
+            -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 2 &&
             -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
           ) {
             let id = mapObject[mapData.name].layers[v
