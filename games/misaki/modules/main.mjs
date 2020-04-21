@@ -581,6 +581,29 @@ let image = {
       //   ]
       // },
     },
+  }, slimeA: {
+    idle: {
+      src: [
+        'images/monster/slimeA_idle0.png',
+        'images/monster/slimeA_idle1.png',
+        'images/monster/slimeA_idle2.png',
+      ],
+    }, attack: {
+      src: [
+        'images/monster/slimeA_attack0.png',
+        'images/monster/slimeA_attack1.png',
+        'images/monster/slimeA_attack2.png',
+        'images/monster/slimeA_attack3.png',
+        'images/monster/slimeA_attack4.png',
+      ],
+    }, move: {
+      src: [
+        'images/monster/slimeA_move0.png',
+        'images/monster/slimeA_move1.png',
+        'images/monster/slimeA_move2.png',
+        'images/monster/slimeA_move3.png',
+      ],
+    }
   },
 }
 const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
@@ -737,17 +760,23 @@ let mapData = {name: directoryList[0], w: 0, h: 0, checkPoint: {x: 0, y: 0}}
 const timestamp = {
   gate: 0,
 }
-const fieldObjects = []
+const enemies = []
 const setEnemy = () => {
   return {
+    x: size * 10,
+    y: size * 20,
+    r: size,
     type: 'enemy',
+    skin: 'slimeA',
+    state: 'idle',
+    direction: 'right',
+    imageIndex: 0,
+    imageOffset: {x: 24, y: 28},
     invincibleTimer: 0,
     hitbox: {
-      x: size * 10,
-      y: size * 10,
-      r: size / 2,
-      w: size, // temporary
-      h: size, // temporary
+      x: 0,
+      y: 0,
+      r: size,
     },
     attackBoxList: [],
   }
@@ -1176,7 +1205,7 @@ const proposal = () => {
     }
   })
   { // for debug
-    if (isKeyFirst(keyMap.pushEnemy)) fieldObjects.push(setEnemy())
+    if (isKeyFirst(keyMap.pushEnemy)) enemies.push(setEnemy())
     if (isKeyFirst(keyMap.reset)) {
       maxLog.dx = 0
       maxLog.dy = 0
@@ -1607,57 +1636,6 @@ const update = () => {
       }
     }
   }
-  if (false) fieldObjects.forEach(v => {
-    if (v.type === 'enemy') {
-      v.imageTimer += 1
-      if (v.state === 'walk') {
-        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
-          v.image += 1
-          if (v.image === image.kohaku[v.state].data.length) {
-            v.image -= image.kohaku[v.state].data.length
-          }
-          v.imageTimer = 0
-        }
-      } else if (v.state === 'damage') {
-        if (v.invincibleTimer === 30) v.image = 0
-        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
-          v.image += 1
-          if (v.image === image.kohaku[v.state].data.length) {
-            v.image -= image.kohaku[v.state].data.length
-            v.state = 'walk'
-          }
-          v.imageTimer = 0
-        }
-      } else if (v.state === 'sword') {
-        const u = unityChanStat[v.state]
-        if (
-          (
-            v.imageTimer <= u.startUp * u.startUpLength &&
-            v.imageTimer % u.startUp === 0) || (
-            v.imageTimer <= u.startUp * u.startUpLength + u.active * u.activeLength &&
-            v.imageTimer % u.active === 0) || (
-            v.imageTimer <= u.startUp * u.startUpLength + u.active * u.activeLength + u.recovery * u.recoveryLength &&
-            v.imageTimer % u.recovery === 0
-          )
-        ) {
-          v.image += 1
-          if (v.image === image.kohaku[v.state].data.length) {
-            v.image -= image.kohaku[v.state].data.length
-            v.state = 'idle'
-          }
-          v.imageTimer = 0
-        }
-      } else if (v.state === 'idle') {
-        if (v.imageTimer % unityChanStat[v.state].frame === 0) {
-          v.image += 1
-          if (v.image === image.kohaku[v.state].data.length) {
-            v.image -= image.kohaku[v.state].data.length
-          }
-          v.imageTimer = 0
-        }
-      }
-    }
-  })
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
@@ -1823,24 +1801,17 @@ const draw = () => {
 
   const imageOffset = {x: 64, y: 119}
   context.fillStyle = 'hsl(30, 100%, 50%)'
-  if (false) fieldObjects.forEach(v => {
-    if (v.type === 'object') {
-      context.fillRect(
-        v.x + evlt(v.dx) - stageOffset.x|0, v.y + evlt(v.dy) - stageOffset.y|0, v.w|0, v.h|0
-      )
+  enemies.forEach(v => {
+    let ex = v.x - v.imageOffset.x - stageOffset.x|0
+    const ey = v.y - v.imageOffset.y - stageOffset.y|0
+    const img = image[v.skin][v.state].data[v.imageIndex]
+    context.save()
+    if (v.direction === 'left') {
+      context.scale(-1, 1)
+      ex = -ex - img.width
     }
-    if (v.type === 'enemy') {
-      let ex = v.x - imageOffset.x - stageOffset.x
-      const ey = v.y - imageOffset.y - stageOffset.y
-      const img = image.kohaku[v.state].data[v.image]
-      context.save()
-      if (v.direction === 'left') {
-        context.scale(-1, 1)
-        ex = -ex - img.width
-      }
-      context.drawImage(img, ex|0, ey|0)
-      context.restore()
-    }
+    context.drawImage(img, ex, ey)
+    context.restore()
   })
   if (0 < timestamp.gate) {
     context.save()
@@ -1944,12 +1915,15 @@ const draw = () => {
       player.y - stageOffset.y + landCondition.y,
       landCondition.w,
       landCondition.h)
-    {
-      context.strokeStyle = 'hsl(0, 100%, 50%)'
+    const strokeCollisionCircle = obj => {
       context.beginPath()
-      context.arc(player.x - stageOffset.x, player.y - stageOffset.y, player.r, 0 , PI * 2)
+      context.arc(obj.x - stageOffset.x, obj.y - stageOffset.y, obj.r, 0, PI * 2)
       context.closePath()
       context.stroke()
+    }
+    context.strokeStyle = 'hsl(0, 100%, 50%)'
+    strokeCollisionCircle(player)
+    { // player's delta vector
       context.beginPath()
       context.moveTo(player.x - stageOffset.x, player.y - stageOffset.y)
       context.lineTo(
@@ -1967,24 +1941,18 @@ const draw = () => {
       player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
       player.hitbox.w|0, player.hitbox.h|0
     )
-    player.attackBoxList.forEach(v => {
+    const fillCircle = (x, y, r) => {
       context.beginPath()
-      context.arc(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.r, 0, PI * 2)
+      context.arc(x - stageOffset.x|0, y - stageOffset.y|0, r, 0, PI * 2)
       context.fill()
-    })
-    fieldObjects.filter(v => v.type === 'enemy').forEach(v => {
+    }
+    player.attackBoxList.forEach(v => fillCircle(v.x, v.y, v.r))
+    enemies.forEach(v => {
+      strokeCollisionCircle(v)
       context.fillStyle = 'hsla(30, 100%, 50%, .5)'
-      if (v.invincibleTimer === 0) {
-        context.beginPath()
-        context.arc(v.hitbox.x - stageOffset.x|0, v.hitbox.y - stageOffset.y|0, v.hitbox.r, 0, PI * 2)
-        context.fill()
-      }
+      if (v.invincibleTimer === 0) fillCircle(v.x + v.hitbox.x, v.y + v.hitbox.y, v.hitbox.r)
       context.fillStyle = 'hsla(0, 100%, 50%, .5)'
-      v.attackBoxList.forEach(vl => {
-        context.beginPath()
-        context.arc(vl.x - stageOffset.x|0, vl.y - stageOffset.y|0, vl.r, 0, PI * 2)
-        context.fill()
-      })
+      v.attackBoxList.forEach(vl => fillCircle(v.x + vl.x, v.y + vl.y, vl.r))
     })
   }
   if (settings.type.map) {
@@ -2067,7 +2035,7 @@ const draw = () => {
       `[${keyMap.subFrictionalForce}: -, ${
         keyMap.addFrictionalForce}: +]` +
       `frictionalForce: ${userFF}`,
-      `enemy: ${fieldObjects.length}`,
+      `enemy: ${enemies.length}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
     const fontsize = 10
