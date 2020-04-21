@@ -1062,6 +1062,7 @@ const attackCircleObject = {
     r: size * .25,
     a: 0,
     d: 7.5, // 7.5 = 300 m / s
+    gravity: true,
     lifetime: 1000,
     damage: 1,
   }, handgun2: {
@@ -1070,6 +1071,7 @@ const attackCircleObject = {
     r: size * .25,
     a: 0,
     d: 7.5,
+    gravity: true,
     lifetime: 1000,
     damage: 1,
   }, sword: {
@@ -1078,10 +1080,12 @@ const attackCircleObject = {
     r: size * .75,
     a: PI,
     d: .05,
+    gravity: false,
     lifetime: 300,
     damage: 1,
   },
 }
+Object.values(attackCircleObject).forEach(v => v.flag = false)
 
 const stateReset = () => {
   if (player.descentFlag) player.descentFlag = false
@@ -1468,17 +1472,39 @@ const judgement = () => {
     let index = []
     own.attackCircleList.forEach((o, io) => {
       target.hitCircleList.forEach((t, it) => {
-        if ((target.x + t.x - o.x) ** 2 + (target.y + t.y - o.y) ** 2 <= (
-          o.r + t.r) ** 2
+        const harf = {
+          x: o.d * Math.cos(o.a) * intervalDiffTime / 2,
+          y: o.d * Math.sin(o.a) * intervalDiffTime / 2,
+        }
+        const tP = {x: target.x + t.x, y: target.y + t.y}
+        const relativePosition = {
+          x: tP.x - (o.x + harf.x),
+          y: tP.y - (o.y + harf.y),
+        }
+        const transformPosition = {
+          x: relativePosition.x * Math.cos(-o.a) + relativePosition.y * Math.sin(-o.a),
+          y: -relativePosition.y * Math.sin(-o.a) + relativePosition.y * Math.cos(-o.a),
+        }
+        const r = (o.r + t.r) ** 2
+        if (
+          (- harf.x - o.r - t.r <= transformPosition.x && transformPosition.x <= harf.x + o.r + t.r &&
+          - harf.y - o.r - t.r <= transformPosition.y && transformPosition.y <= harf.y + o.r + t.r) ||
+          (o.x - tP.x) ** 2 + (o.y - tP.y) ** 2 <= r ||
+          (o.x + o.d * Math.cos(o.a) * intervalDiffTime - tP.x) ** 2 + (o.y - tP.y) ** 2 <= r ||
+          (o.x - tP.x) ** 2 + (o.y + o.d * Math.sin(o.a) * intervalDiffTime - tP.y) ** 2 <= r ||
+          (o.x + o.d * Math.cos(o.a) * intervalDiffTime - tP.x) ** 2 +
+          (o.y + o.d * Math.sin(o.a) * intervalDiffTime - tP.y) ** 2 <= r
         ) {
-          if (index[0] !== undefined || !index.some(v => v[0] === io || v[1] === it)) index.push([io, it])
+          if (!o.flag && (index[0] !== undefined || !index.some(v => v[0] === io || v[1] === it))) {
+            o.flag = true
+            index.push([io, it])
+          }
         }
       })
     })
     index.reverse().forEach(v => {
       effectList.push(setEffect(target.x + target.hitCircleList[v[1]].x,
         target.y + target.hitCircleList[v[1]].y, own.attackCircleList[v[0]].damage))
-      own.attackCircleList.splice(v[0], 1)
     })
   }
   enemies.forEach((e, i) => {
@@ -1502,6 +1528,22 @@ const update = () => {
     frictionalForce = userFF
     const terminalVelocity = size
     if (terminalVelocity < player.dy) player.dy = terminalVelocity
+
+    player.attackCircleList.forEach((v, i) => {
+      v.lifetime -= intervalDiffTime
+      if (v.lifetime <= 0) player.attackCircleList.splice(i, 1)
+      else {
+        if (v.direction === 'right') {
+          v.x += v.d * Math.cos(v.a) * intervalDiffTime
+          v.y += v.d * Math.sin(v.a) * intervalDiffTime
+        } else {
+          const a = 0 < v.a ? PI / 2 - (v.a - PI / 2) : -PI / 2 - (v.a + PI / 2)
+          v.x += v.d * Math.cos(a) * intervalDiffTime
+          v.y += v.d * Math.sin(a) * intervalDiffTime
+        }
+      }
+      if (v.gravity) v.y += gravity
+    })
   }
   { // dx
     if (player.grabFlag) player.dx = 0
@@ -1514,20 +1556,6 @@ const update = () => {
       player.y = mapData.checkPoint.y
     }
   }
-  player.attackCircleList.forEach((v, i) => {
-    v.lifetime -= intervalDiffTime
-    if (v.lifetime <= 0) player.attackCircleList.splice(i, 1)
-    else {
-      if (v.direction === 'right') {
-        v.x += v.d * Math.cos(v.a) * intervalDiffTime
-        v.y += v.d * Math.sin(v.a) * intervalDiffTime
-      } else {
-        const a = 0 < v.a ? PI / 2 - (v.a - PI / 2) : -PI / 2 - (v.a + PI / 2)
-        v.x += v.d * Math.cos(a) * intervalDiffTime
-        v.y += v.d * Math.sin(a) * intervalDiffTime
-      }
-    }
-  })
 
   if (player.state !== 'slide' && cooltime.slide !== 0) { // slide cooltime
     if (!player.landFlag && 1 < cooltime.slide) cooltime.slide -= 2 ** intervalDiffTime
@@ -2018,7 +2046,25 @@ const draw = () => {
     }
     context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     player.hitCircleList.forEach(v => fillCircle(player.x + v.x, player.y + v.y, v.r))
-    player.attackCircleList.forEach(v => fillCircle(v.x, v.y, v.r))
+    player.attackCircleList.forEach(v => {
+      let a
+      if (v.direction === 'right') a = v.a
+      else a = 0 < v.a ? PI / 2 - (v.a - PI / 2) : -PI / 2 - (v.a + PI / 2)
+      fillCircle(
+        v.x + v.d * Math.cos(a) * intervalDiffTime,
+        v.y + v.d * Math.sin(a) * intervalDiffTime,
+        v.r)
+      context.save()
+      context.lineWidth = v.r * 2
+      context.beginPath()
+      context.moveTo(v.x - stageOffset.x|0, v.y - stageOffset.y|0)
+      context.lineTo(
+        v.x + v.d * Math.cos(a) * intervalDiffTime - stageOffset.x|0,
+        v.y + v.d * Math.sin(a) * intervalDiffTime - stageOffset.y|0)
+      context.closePath()
+      context.stroke()
+      context.restore()
+    })
     enemies.forEach(v => {
       strokeCollisionCircle(v)
       context.fillStyle = 'hsla(30, 100%, 50%, .5)'
