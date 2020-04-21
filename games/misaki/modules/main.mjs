@@ -966,6 +966,18 @@ const setEnemy = () => {
 }
 enemies.push(setEnemy())
 
+const effectData = {lifetime: 500}
+const effectList = []
+const setEffect = (x, y, text) => {
+  return {
+    x: x + size * (Math.random() * .5 - .25),
+    y: y + size * (Math.random() * .5 - .5),
+    text: text,
+    lifetime: effectData.lifetime,
+    d: -(Math.random() * .5 + .25) * PI,
+  }
+}
+
 let cooltime = {
   step: 0,
   stepLimit: 15 * 1000 / 60,
@@ -1051,6 +1063,7 @@ const attackCircleObject = {
     a: 0,
     d: .075, // 7.5 = 300 m / s
     lifetime: 1000,
+    damage: 1,
   }, handgun2: {
     x: size * 1.5,
     y: -size * 1.5,
@@ -1058,13 +1071,15 @@ const attackCircleObject = {
     a: 0,
     d: .075,
     lifetime: 1000,
+    damage: 1,
   }, sword: {
-    x: size * 1.25,
+    x: size,
     y: -size * .75,
     r: size * .75,
     a: PI,
     d: .05,
     lifetime: 300,
+    damage: 1,
   },
 }
 
@@ -1450,19 +1465,28 @@ const judgement = () => {
   enemies.forEach(v => {collisionDetect(v)})
 
   const hitDetect = (own, target) => {
-    own.attackCircleList.forEach(o => {
-      target.hitCircleList.forEach(t => {
+    let index = []
+    own.attackCircleList.forEach((o, io) => {
+      target.hitCircleList.forEach((t, it) => {
         if ((target.x + t.x - o.x) ** 2 + (target.y + t.y - o.y) ** 2 <= (
           o.r + t.r) ** 2
         ) {
-          console.log('hit')
+          if (index[0] !== undefined || !index.some(v => v[0] === io || v[1] === it)) index.push([io, it])
         }
       })
     })
+    index.reverse().forEach(v => {
+      effectList.push(setEffect(target.x + target.hitCircleList[v[1]].x,
+        target.y + target.hitCircleList[v[1]].y, own.attackCircleList[v[0]].damage))
+      own.attackCircleList.splice(v[0], 1)
+    })
   }
-  enemies.forEach(e => {
+  enemies.forEach((e, i) => {
     hitDetect(player, e)
     hitDetect(e, player)
+    enemies.forEach((en, ix) => {
+      if (i !== ix) hitDetect(e, en)
+    })
   })
 }
 const update = () => {
@@ -1678,6 +1702,10 @@ const update = () => {
     }
     v.imageIndex = Math.floor(
       v.breathTime / enemyData[v.skin].breathInterval * image[v.skin].idle.data.length)
+  })
+  effectList.forEach((v, i) => {
+    v.lifetime -= intervalDiffTime
+    if (v.lifetime <= 0) effectList.splice(i, 1)
   })
 }
 const main = () => setInterval(() => {
@@ -1995,6 +2023,21 @@ const draw = () => {
       }
       context.fillStyle = 'hsla(0, 100%, 50%, .5)'
       v.attackCircleList.forEach(vl => fillCircle(v.x + vl.x, v.y + vl.y, vl.r))
+    })
+  }
+  {
+    effectList.forEach(v => {
+      console.log(v)
+      context.save()
+      context.font = `bold ${size}px sans-serif`
+      context.fillStyle = 'hsl(0, 0%, 100%)'
+      context.textAlign = 'center'
+      const n = (effectData.lifetime - v.lifetime) * .02
+      const offsetY = -size * 2
+      context.fillText(v.text, v.x + Math.cos(v.d) * n, v.y + offsetY + Math.sin(v.d) * n)
+      context.strokeStyle = 'hsl(0, 0%, 25%)'
+      context.strokeText(v.text, v.x + Math.cos(v.d) * n, v.y + offsetY + Math.sin(v.d) * n)
+      context.restore()
     })
   }
   if (settings.type.map) {
