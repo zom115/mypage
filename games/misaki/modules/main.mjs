@@ -2037,9 +2037,15 @@ const draw = () => {
       context.textAlign = 'center'
       const n = (effectData.lifetime - v.lifetime) * .02
       const offsetY = -size * 2
-      context.fillText(v.text, v.x + Math.cos(v.d) * n, v.y + offsetY + Math.sin(v.d) * n)
+      context.fillText(
+        v.text,
+        v.x + Math.cos(v.d) * n - stageOffset.x|0,
+        v.y + offsetY + Math.sin(v.d) * n - stageOffset.y|0)
       context.strokeStyle = 'hsl(0, 0%, 25%)'
-      context.strokeText(v.text, v.x + Math.cos(v.d) * n, v.y + offsetY + Math.sin(v.d) * n)
+      context.strokeText(
+        v.text,
+        v.x + Math.cos(v.d) * n - stageOffset.x|0,
+        v.y + offsetY + Math.sin(v.d) * n - stageOffset.y|0)
       context.restore()
     })
   }
