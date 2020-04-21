@@ -20,12 +20,13 @@ const keyMap = {
   subFrictionalForce: ['o'],
   addFrictionalForce: ['p'],
   gravity: ['g'],
-  DECO: ['e'],
+  DECO: ['e'], // temporary
   status: ['t'],
   hitbox: ['h'],
   map: ['m'],
   reset: ['r'],
   skin: ['q'],
+  pushEnemy: ['z'], // temporary
 }
 const isKeyFirst = list => {
   return list.some(v => key[v].holdtime !== 0 && key[v].holdtime <= intervalDiffTime)
@@ -737,7 +738,20 @@ const timestamp = {
   gate: 0,
 }
 const fieldObjects = []
-// let enemies = []
+const setEnemy = () => {
+  return {
+    type: 'enemy',
+    invincibleTimer: 0,
+    hitbox: {
+      x: size * 10,
+      y: size * 10,
+      r: size / 2,
+      w: size, // temporary
+      h: size, // temporary
+    },
+    attackBoxList: [],
+  }
+}
 
 const setStartPosition = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
@@ -865,7 +879,6 @@ const playerData = {
   },
 }
 let player = {
-  type: 'player',
   x: 0,
   y: 0,
   dx: 0,
@@ -898,7 +911,6 @@ let player = {
   crouchTime: 0,
 }
 player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
-// fieldObjects.push(player)
 
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
 const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
@@ -1164,6 +1176,7 @@ const proposal = () => {
     }
   })
   { // for debug
+    if (isKeyFirst(keyMap.pushEnemy)) fieldObjects.push(setEnemy())
     if (isKeyFirst(keyMap.reset)) {
       maxLog.dx = 0
       maxLog.dy = 0
@@ -1594,7 +1607,7 @@ const update = () => {
       }
     }
   }
-  if (false) enemies.forEach(v => {
+  if (false) fieldObjects.forEach(v => {
     if (v.type === 'enemy') {
       v.imageTimer += 1
       if (v.state === 'walk') {
@@ -1764,6 +1777,7 @@ const draw = () => {
   stageOffset.y = player.y < ratio.y ? 0 :
   mapData.h - ratio.y < player.y ? mapData.h - canvas.offsetHeight : ((
     player.y - ratio.y) / (mapData.h - ratio.y * 2)) * (mapData.h - canvas.offsetHeight)
+
   mapObject[mapData.name].layersIndex.tileset.forEach(v => {
     let flag = false
     mapObject[mapData.name].layers[v].properties.forEach(vl => {
@@ -1809,7 +1823,7 @@ const draw = () => {
 
   const imageOffset = {x: 64, y: 119}
   context.fillStyle = 'hsl(30, 100%, 50%)'
-  if (false) enemies.forEach(v => {
+  if (false) fieldObjects.forEach(v => {
     if (v.type === 'object') {
       context.fillRect(
         v.x + evlt(v.dx) - stageOffset.x|0, v.y + evlt(v.dy) - stageOffset.y|0, v.w|0, v.h|0
@@ -1958,22 +1972,19 @@ const draw = () => {
       context.arc(v.x - stageOffset.x|0, v.y - stageOffset.y|0, v.r, 0, PI * 2)
       context.fill()
     })
-    enemies.forEach(v => {
-      if (v.type === 'enemy') {
-        if (v.invincibleTimer === 0) {
-          context.fillStyle = 'hsla(30, 100%, 50%, .5)'
-          context.fillRect(
-            v.hitbox.x - stageOffset.x|0, v.hitbox.y - stageOffset.y|0,
-            v.hitbox.w, v.hitbox.h
-          )
-        }
-        context.fillStyle = 'hsla(0, 100%, 50%, .5)'
-        v.attackBoxList.forEach(vl => {
-          context.beginPath()
-          context.arc(vl.x - stageOffset.x|0, vl.y - stageOffset.y|0, vl.r, 0, PI * 2)
-          context.fill()
-        })
+    fieldObjects.filter(v => v.type === 'enemy').forEach(v => {
+      context.fillStyle = 'hsla(30, 100%, 50%, .5)'
+      if (v.invincibleTimer === 0) {
+        context.beginPath()
+        context.arc(v.hitbox.x - stageOffset.x|0, v.hitbox.y - stageOffset.y|0, v.hitbox.r, 0, PI * 2)
+        context.fill()
       }
+      context.fillStyle = 'hsla(0, 100%, 50%, .5)'
+      v.attackBoxList.forEach(vl => {
+        context.beginPath()
+        context.arc(vl.x - stageOffset.x|0, vl.y - stageOffset.y|0, vl.r, 0, PI * 2)
+        context.fill()
+      })
     })
   }
   if (settings.type.map) {
@@ -2056,6 +2067,7 @@ const draw = () => {
       `[${keyMap.subFrictionalForce}: -, ${
         keyMap.addFrictionalForce}: +]` +
       `frictionalForce: ${userFF}`,
+      `enemy: ${fieldObjects.length}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
     const fontsize = 10
