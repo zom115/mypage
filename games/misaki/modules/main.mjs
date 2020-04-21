@@ -587,6 +587,7 @@ let image = {
         'images/monster/slimeA_idle0.png',
         'images/monster/slimeA_idle1.png',
         'images/monster/slimeA_idle2.png',
+        'images/monster/slimeA_idle1.png',
       ],
     }, attack: {
       src: [
@@ -760,33 +761,6 @@ let mapData = {name: directoryList[0], w: 0, h: 0, checkPoint: {x: 0, y: 0}}
 const timestamp = {
   gate: 0,
 }
-const enemies = []
-const setEnemy = () => {
-  return {
-    x: size * 20.1,
-    y: size * 20,
-    r: size,
-    dx: 0,
-    dy: 0,
-    landFlag: false,
-    descentFlag: false,
-    wallFlag: false,
-    type: 'enemy',
-    skin: 'slimeA',
-    state: 'idle',
-    direction: 'right',
-    imageIndex: 0,
-    imageOffset: {x: 24, y: 28},
-    invincibleTimer: 0,
-    hitbox: {
-      x: 0,
-      y: 0,
-      r: size,
-    },
-    attackBoxList: [],
-  }
-}
-enemies.push(setEnemy())
 
 const setStartPosition = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
@@ -933,8 +907,11 @@ let player = {
   grabFlag: false,
   wallFlag: false,
   fallTime: 0,
-  hitbox: {x: 0, y: 0, w: 0, h: 0},
-  attackBoxList: [],
+  hitCircleList: [
+    {x: 0, y: -size * 1.5, r: size / 2,},
+    {x: 0, y: -size *  .5, r: size / 2,},
+  ],
+  attackCircleList: [],
   invincibleTimer: 0,
   blinkCount: 0,
   blinkInterval: 0,
@@ -945,7 +922,6 @@ let player = {
   movingDistance: 0,
   crouchTime: 0,
 }
-player.hitbox = {x: player.x - size / 2, y: player.y - size * 3, w: size, h: size * 3}
 
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
 const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
@@ -961,6 +937,34 @@ const maxLog = {
   dx: 0,
   dy: 0,
 }
+const enemies = []
+const enemyData = {
+  slimeA: {
+    breathInterval: 3e3,
+  },
+}
+const setEnemy = () => {
+  return {
+    x: size * 3,
+    y: size * 20,
+    r: size,
+    dx: 0,
+    dy: 0,
+    landFlag: false,
+    descentFlag: false,
+    wallFlag: false,
+    skin: 'slimeA',
+    state: 'idle',
+    direction: 'right',
+    imageIndex: 0,
+    imageOffset: {x: 24, y: 28},
+    invincibleTimer: 0,
+    hitCircleList: [{x: 0, y: 0, r: size,},],
+    attackCircleList: [],
+    breathTime: 0,
+  }
+}
+enemies.push(setEnemy())
 
 let cooltime = {
   step: 0,
@@ -1039,7 +1043,7 @@ const recoveryCondition = {
     if (Math.abs(player.dx) < walkThreshold) player.attackState = 'recovery'
   },
 }
-const attackBoxObject = {
+const attackCircleObject = {
   handgun: {
     x: size * 1.5,
     y: -size * 1.75,
@@ -1357,7 +1361,7 @@ const judgement = () => {
                 const bcy = cy - by
                 const doc = acx * bcx + acy * bcy
                 if (
-                  doc < 0 && (terrainObject[id].length !== 2 ||
+                  doc <= 0 && (terrainObject[id].length !== 2 ||
                   permissionValue < obj.dy)) onetimeLandFlag = true
               }
               const tp = -(nx * (ox + landCondition.w / 2) + ny * (oy + landCondition.y) + d) / (
@@ -1371,7 +1375,7 @@ const judgement = () => {
                 const bcy = cy - by
                 const doc = acx * bcx + acy * bcy
                 if (
-                  doc < 0 && (terrainObject[id].length !== 2 ||
+                  doc <= 0 && (terrainObject[id].length !== 2 ||
                   permissionValue < obj.dy)) onetimeLandFlag = true
               }
             }
@@ -1390,9 +1394,7 @@ const judgement = () => {
               const bcx = cx - nbx
               const bcy = cy - nby
               const doc = acx * bcx + acy * bcy
-              if (obj.type === 'enemy') console.log(doc < 0 ,(2 < terrainObject[id].length || i !== 1))
               if (doc <= 0 && (2 < terrainObject[id].length || i !== 1)) {
-                if (obj.type === 'enemy') console.log(obj)
                 detectFlag = true
                 if (terrainObject[id].length === 2) {
                   const compareTilt = Math.atan2(dy, dx) / PI
@@ -1446,6 +1448,22 @@ const judgement = () => {
   }
   collisionDetect(player)
   enemies.forEach(v => {collisionDetect(v)})
+
+  const hitDetect = (own, target) => {
+    own.attackCircleList.forEach(o => {
+      target.hitCircleList.forEach(t => {
+        if ((target.x + t.x - o.x) ** 2 + (target.y + t.y - o.y) ** 2 <= (
+          o.r + t.r) ** 2
+        ) {
+          console.log('hit')
+        }
+      })
+    })
+  }
+  enemies.forEach(e => {
+    hitDetect(player, e)
+    hitDetect(e, player)
+  })
 }
 const update = () => {
   {
@@ -1472,9 +1490,9 @@ const update = () => {
       player.y = mapData.checkPoint.y
     }
   }
-  player.attackBoxList.forEach((v, i) => {
+  player.attackCircleList.forEach((v, i) => {
     v.lifetime -= intervalDiffTime
-    if (v.lifetime <= 0) player.attackBoxList.splice(i, 1)
+    if (v.lifetime <= 0) player.attackCircleList.splice(i, 1)
     else {
       if (v.direction === 'right') {
         v.x += v.d * Math.cos(v.a) * intervalDiffTime
@@ -1600,13 +1618,13 @@ const update = () => {
       if (!player.motionFirstFlag) { // motion
         player.motionFirstFlag = true
         if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
-        if (attackBoxObject[player.state] !== undefined) {
-          const object = JSON.parse(JSON.stringify(attackBoxObject[player.state]))
+        if (attackCircleObject[player.state] !== undefined) {
+          const object = JSON.parse(JSON.stringify(attackCircleObject[player.state]))
           if (player.direction === 'right') object.x = player.x + object.x
           else object.x = player.x - (object.x + object.r)
           object.y = player.y + object.y
           object.direction = player.direction
-          player.attackBoxList.push(object)
+          player.attackCircleList.push(object)
         }
         if (soundEfffectObject[player.skin][player.state] !== undefined) {
           playAudio(soundEfffectObject[player.skin][player.state].data)
@@ -1653,6 +1671,14 @@ const update = () => {
       }
     }
   }
+  enemies.forEach(v => {
+    v.breathTime += intervalDiffTime
+    if (enemyData[v.skin].breathInterval < v.breathTime) {
+      v.breathTime -= enemyData[v.skin].breathInterval
+    }
+    v.imageIndex = Math.floor(
+      v.breathTime / enemyData[v.skin].breathInterval * image[v.skin].idle.data.length)
+  })
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
@@ -1953,23 +1979,22 @@ const draw = () => {
       context.restore()
     }
 
-    context.fillStyle = 'hsla(300, 100%, 50%, .5)'
-    context.fillRect(
-      player.hitbox.x - stageOffset.x|0, player.hitbox.y - stageOffset.y|0,
-      player.hitbox.w|0, player.hitbox.h|0
-    )
     const fillCircle = (x, y, r) => {
       context.beginPath()
       context.arc(x - stageOffset.x|0, y - stageOffset.y|0, r, 0, PI * 2)
       context.fill()
     }
-    player.attackBoxList.forEach(v => fillCircle(v.x, v.y, v.r))
+    context.fillStyle = 'hsla(300, 100%, 50%, .5)'
+    player.hitCircleList.forEach(v => fillCircle(player.x + v.x, player.y + v.y, v.r))
+    player.attackCircleList.forEach(v => fillCircle(v.x, v.y, v.r))
     enemies.forEach(v => {
       strokeCollisionCircle(v)
       context.fillStyle = 'hsla(30, 100%, 50%, .5)'
-      if (v.invincibleTimer === 0) fillCircle(v.x + v.hitbox.x, v.y + v.hitbox.y, v.hitbox.r)
+      if (v.invincibleTimer === 0) {
+        v.hitCircleList.forEach(vl => fillCircle(v.x + vl.x, v.y + vl.y, vl.r))
+      }
       context.fillStyle = 'hsla(0, 100%, 50%, .5)'
-      v.attackBoxList.forEach(vl => fillCircle(v.x + vl.x, v.y + vl.y, vl.r))
+      v.attackCircleList.forEach(vl => fillCircle(v.x + vl.x, v.y + vl.y, vl.r))
     })
   }
   if (settings.type.map) {
