@@ -763,9 +763,14 @@ const timestamp = {
 const enemies = []
 const setEnemy = () => {
   return {
-    x: size * 10,
+    x: size * 20.1,
     y: size * 20,
     r: size,
+    dx: 0,
+    dy: 0,
+    landFlag: false,
+    descentFlag: false,
+    wallFlag: false,
     type: 'enemy',
     skin: 'slimeA',
     state: 'idle',
@@ -781,6 +786,7 @@ const setEnemy = () => {
     attackBoxList: [],
   }
 }
+enemies.push(setEnemy())
 
 const setStartPosition = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
@@ -1238,36 +1244,29 @@ const proposal = () => {
   }
 }
 const judgement = () => {
-  const collisionResponse = tilt => {
-    const nX = Math.cos(tilt * PI)
-    const nY = Math.sin(tilt * PI)
-    const t = -(
-      player.dx * nX + player.dy * nY) / (
-      nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
-    player.dx += 2 * t * nX
-    player.dy += 2 * t * nY
-    if (tilt <= 1) frictionalForce = wallFF
-    player.dx *= player.state === 'slide' ? 1 - slideFF : 1 - frictionalForce
-    player.dy *= 1 - frictionalForce
-    if (tilt === 0) player.wallFlag = 'right'
-    else if (tilt === 1) player.wallFlag = 'left'
-    else player.wallFlag = false
-  }
-  let count = 0
-  let onetimeLandFlag = false
-  let repeatFlag
-  do {
-    repeatFlag = false
-    count++
-    if (3 < count) {
-      player.dx = 0
-      player.dy = 0
-      break
+  const collisionDetect = obj => {
+    const collisionResponse = tilt => {
+      const nX = Math.cos(tilt * PI)
+      const nY = Math.sin(tilt * PI)
+      const t = -(
+        obj.dx * nX + obj.dy * nY) / (
+        nX ** 2 + nY ** 2) * (.5 + elasticModulus / 2)
+      obj.dx += 2 * t * nX
+      obj.dy += 2 * t * nY
+      if (tilt <= 1) frictionalForce = wallFF
+      obj.dx *= obj.state === 'slide' ? 1 - slideFF : 1 - frictionalForce
+      obj.dy *= 1 - frictionalForce
+      if (tilt === 0) obj.wallFlag = 'right'
+      else if (tilt === 1) obj.wallFlag = 'left'
+      else obj.wallFlag = false
     }
-    const collisionDetect = collisionIndex => {
+    let count = 0
+    let onetimeLandFlag = false
+    let repeatFlag
+    const collisionCheck = collisionIndex => {
       for (let x = 0; x < mapObject[mapData.name].layers[collisionIndex].width; x++) {
-        if (x * size + size * 2 < player.x) continue
-        if (player.x < x * size - size) break
+        if (x * size + size * 2 < obj.x) continue
+        if (obj.x < x * size - size) break
         for (let y = 0; y < mapObject[mapData.name].layers[collisionIndex].height; y++) {
           const id =
             mapObject[mapData.name].layers[collisionIndex].data[
@@ -1328,10 +1327,10 @@ const judgement = () => {
               }
             })
             if (returnFlag) return
-            const ox = player.x
-            const oy = player.y
-            const dx = player.dx * intervalDiffTime
-            const dy = player.dy * intervalDiffTime
+            const ox = obj.x
+            const oy = obj.y
+            const dx = obj.dx * intervalDiffTime
+            const dy = obj.dy * intervalDiffTime
             const ax = x * size + ro[0] * size
             const ay = y * size + ro[1] * size
             const bx = x * size + rn[0] * size
@@ -1359,7 +1358,7 @@ const judgement = () => {
                 const doc = acx * bcx + acy * bcy
                 if (
                   doc < 0 && (terrainObject[id].length !== 2 ||
-                  permissionValue < player.dy)) onetimeLandFlag = true
+                  permissionValue < obj.dy)) onetimeLandFlag = true
               }
               const tp = -(nx * (ox + landCondition.w / 2) + ny * (oy + landCondition.y) + d) / (
                 nx * dx + ny * (dy + landCondition.h))
@@ -1373,13 +1372,13 @@ const judgement = () => {
                 const doc = acx * bcx + acy * bcy
                 if (
                   doc < 0 && (terrainObject[id].length !== 2 ||
-                  permissionValue < player.dy)) onetimeLandFlag = true
+                  permissionValue < obj.dy)) onetimeLandFlag = true
               }
             }
-            let nax = ax - nx * player.r
-            let nay = ay - ny * player.r
-            let nbx = bx - nx * player.r
-            let nby = by - ny * player.r
+            let nax = ax - nx * obj.r
+            let nay = ay - ny * obj.r
+            let nbx = bx - nx * obj.r
+            let nby = by - ny * obj.r
             const d = -(nax * nx + nay * ny)
             const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
             let detectFlag = false
@@ -1391,7 +1390,9 @@ const judgement = () => {
               const bcx = cx - nbx
               const bcy = cy - nby
               const doc = acx * bcx + acy * bcy
-              if (doc < 0 && (2 < terrainObject[id].length || i !== 1)) {
+              if (obj.type === 'enemy') console.log(doc < 0 ,(2 < terrainObject[id].length || i !== 1))
+              if (doc <= 0 && (2 < terrainObject[id].length || i !== 1)) {
+                if (obj.type === 'enemy') console.log(obj)
                 detectFlag = true
                 if (terrainObject[id].length === 2) {
                   const compareTilt = Math.atan2(dy, dx) / PI
@@ -1407,10 +1408,10 @@ const judgement = () => {
             if (
               !detectFlag &&
               !vertexFlag &&
-              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= player.r ** 2
+              (ax - (ox + dx)) ** 2 + (ay - (oy + dy)) ** 2 <= obj.r ** 2
             ) {
               if (terrainObject[id].length === 2) {
-                if ((ax - ox) ** 2 + (ay - oy) ** 2 <= player.r ** 2) return
+                if ((ax - ox) ** 2 + (ay - oy) ** 2 <= obj.r ** 2) return
                 const compareTilt = Math.atan2(dy, dx) / PI
                 let diffTilt = i === 0 ? compareTilt - tilt : tilt - compareTilt
                 diffTilt = diffTilt < -1 ? diffTilt + 2 :
@@ -1421,7 +1422,7 @@ const judgement = () => {
               tilt = Math.atan2(oy - ay, ox - ax) / PI
               if (tilt < 0) onetimeLandFlag = true
             }
-            if (detectFlag && (!player.descentFlag || terrainObject[id].length !== 2)) {
+            if (detectFlag && (!obj.descentFlag || terrainObject[id].length !== 2)) {
               collisionResponse(tilt)
               repeatFlag = true
             }
@@ -1429,17 +1430,33 @@ const judgement = () => {
         }
       }
     }
-    mapObject[mapData.name].layersIndex.collision.forEach(v => collisionDetect(v))
-  } while(repeatFlag)
-  player.x += player.dx * intervalDiffTime
-  player.y += player.dy * intervalDiffTime
-  if (maxLog.dx < Math.abs(player.dx)) maxLog.dx = Math.abs(player.dx)
-  if (maxLog.dy < Math.abs(player.dy)) maxLog.dy = Math.abs(player.dy)
-  player.landFlag = onetimeLandFlag
+    do {
+      repeatFlag = false
+      count++
+      if (3 < count) {
+        obj.dx = 0
+        obj.dy = 0
+        break
+      }
+      mapObject[mapData.name].layersIndex.collision.forEach(v => collisionCheck(v))
+    } while(repeatFlag)
+    obj.x += obj.dx * intervalDiffTime
+    obj.y += obj.dy * intervalDiffTime
+    obj.landFlag = onetimeLandFlag
+  }
+  collisionDetect(player)
+  enemies.forEach(v => {collisionDetect(v)})
 }
 const update = () => {
+  {
+    if (maxLog.dx < Math.abs(player.dx)) maxLog.dx = Math.abs(player.dx)
+    if (maxLog.dy < Math.abs(player.dy)) maxLog.dy = Math.abs(player.dy)
+  }
   { // dy
-    player.dy += gravitationalAcceleration * intervalDiffTime
+    // add gravity
+    const gravity = gravitationalAcceleration * intervalDiffTime
+    player.dy += gravity
+    enemies.forEach(v => v.dy += gravity)
     frictionalForce = userFF
     const terminalVelocity = size
     if (terminalVelocity < player.dy) player.dy = terminalVelocity
