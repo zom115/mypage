@@ -212,156 +212,157 @@ const getMapData = directory => {
   })
 }
 directoryList.forEach(v => {resourceList.push(getMapData(v))})
-let image = {
-  /*
-  misaki: {
-    idle: {
-      src: [
-        'images/Misaki/Misaki_Idle_1.png',
-        'images/Misaki/Misaki_Idle_1_Blink_1.png',
-        'images/Misaki/Misaki_Idle_1_Blink_2.png',
-        'images/Misaki/Misaki_Idle_2.png',
-        'images/Misaki/Misaki_Idle_2_Blink_1.png',
-        'images/Misaki/Misaki_Idle_2_Blink_2.png',
-        'images/Misaki/Misaki_Idle_3.png',
-        'images/Misaki/Misaki_Idle_3_Blink_1.png',
-        'images/Misaki/Misaki_Idle_3_Blink_2.png',
-        'images/Misaki/Misaki_Idle_4.png',
-        'images/Misaki/Misaki_Idle_4_Blink_1.png',
-        'images/Misaki/Misaki_Idle_4_Blink_2.png',
-      ],
-    }, walk : {
-      src: [
-        'images/Misaki/Misaki_Walk_1.png',
-        'images/Misaki/Misaki_Walk_2.png',
-        'images/Misaki/Misaki_Walk_3.png',
-        'images/Misaki/Misaki_Walk_4.png',
-        'images/Misaki/Misaki_Walk_5.png',
-        'images/Misaki/Misaki_Walk_6.png',
-      ],
-    }, turn : {
-      src: [
-        'images/Misaki/Misaki_Turn_3.png',
-        'images/Misaki/Misaki_Turn_2.png',
-      ],
-    }, run : {
-      src: [
-        'images/Misaki/Misaki_Run_1.png',
-        'images/Misaki/Misaki_Run_2.png',
-        'images/Misaki/Misaki_Run_3.png',
-        'images/Misaki/Misaki_Run_4.png',
-        'images/Misaki/Misaki_Run_5.png',
-        'images/Misaki/Misaki_Run_6.png',
-        'images/Misaki/Misaki_Run_7.png',
-        'images/Misaki/Misaki_Run_8.png',
-      ],
-    }, crouch: {
-      src: [
-        'images/Misaki/Misaki_Crouch_1.png',
-        'images/Misaki/Misaki_Crouch_2.png',
-        'images/Misaki/Misaki_Crouch_3.png',
-      ],
-    }, jump : {
-      src: [
-        'images/Misaki/Misaki_Jump_up_1.png',
-        'images/Misaki/Misaki_Jump_up_2.png',
-        'images/Misaki/Misaki_Jump_up_3.png',
-        'images/Misaki/Misaki_Jump_MidAir_1.png',
-        'images/Misaki/Misaki_Jump_MidAir_2.png',
-        'images/Misaki/Misaki_Jump_MidAir_3.png',
-        'images/Misaki/Misaki_Jump_Fall_1.png',
-        'images/Misaki/Misaki_Jump_Fall_2.png',
-        'images/Misaki/Misaki_Jump_Fall_3.png',
-      ],
-    }, slide : {
-      src: ['images/Misaki/Misaki_Slide_1.png'],
-    }, push : {
-      src: ['images/Misaki/Misaki_Push_1.png'],
-    }, handgun: {
-      startup: {
+const image = {}
+{
+  let imageSource = {
+    /*
+    misaki: {
+      idle: {
         src: [
-          'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
-          'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
-          'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
-        ]
+          'images/Misaki/Misaki_Idle_1.png',
+          'images/Misaki/Misaki_Idle_1_Blink_1.png',
+          'images/Misaki/Misaki_Idle_1_Blink_2.png',
+          'images/Misaki/Misaki_Idle_2.png',
+          'images/Misaki/Misaki_Idle_2_Blink_1.png',
+          'images/Misaki/Misaki_Idle_2_Blink_2.png',
+          'images/Misaki/Misaki_Idle_3.png',
+          'images/Misaki/Misaki_Idle_3_Blink_1.png',
+          'images/Misaki/Misaki_Idle_3_Blink_2.png',
+          'images/Misaki/Misaki_Idle_4.png',
+          'images/Misaki/Misaki_Idle_4_Blink_1.png',
+          'images/Misaki/Misaki_Idle_4_Blink_2.png',
+        ],
+      }, walk : {
+        src: [
+          'images/Misaki/Misaki_Walk_1.png',
+          'images/Misaki/Misaki_Walk_2.png',
+          'images/Misaki/Misaki_Walk_3.png',
+          'images/Misaki/Misaki_Walk_4.png',
+          'images/Misaki/Misaki_Walk_5.png',
+          'images/Misaki/Misaki_Walk_6.png',
+        ],
+      }, turn : {
+        src: [
+          'images/Misaki/Misaki_Turn_3.png',
+          'images/Misaki/Misaki_Turn_2.png',
+        ],
+      }, run : {
+        src: [
+          'images/Misaki/Misaki_Run_1.png',
+          'images/Misaki/Misaki_Run_2.png',
+          'images/Misaki/Misaki_Run_3.png',
+          'images/Misaki/Misaki_Run_4.png',
+          'images/Misaki/Misaki_Run_5.png',
+          'images/Misaki/Misaki_Run_6.png',
+          'images/Misaki/Misaki_Run_7.png',
+          'images/Misaki/Misaki_Run_8.png',
+        ],
+      }, crouch: {
+        src: [
+          'images/Misaki/Misaki_Crouch_1.png',
+          'images/Misaki/Misaki_Crouch_2.png',
+          'images/Misaki/Misaki_Crouch_3.png',
+        ],
+      }, jump : {
+        src: [
+          'images/Misaki/Misaki_Jump_up_1.png',
+          'images/Misaki/Misaki_Jump_up_2.png',
+          'images/Misaki/Misaki_Jump_up_3.png',
+          'images/Misaki/Misaki_Jump_MidAir_1.png',
+          'images/Misaki/Misaki_Jump_MidAir_2.png',
+          'images/Misaki/Misaki_Jump_MidAir_3.png',
+          'images/Misaki/Misaki_Jump_Fall_1.png',
+          'images/Misaki/Misaki_Jump_Fall_2.png',
+          'images/Misaki/Misaki_Jump_Fall_3.png',
+        ],
+      }, slide : {
+        src: ['images/Misaki/Misaki_Slide_1.png'],
+      }, push : {
+        src: ['images/Misaki/Misaki_Push_1.png'],
+      }, handgun: {
+        startup: {
+          src: [
+            'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
+            'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
+            'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
+          ]
+        },
+        // active: {
+        //   src: [
+        //   ]
+        // },
+        recovery: {
+          src: [
+            'images/Unitychan/Attack/Unitychan_Hundgun2_5.png',
+            'images/Unitychan/Attack/Unitychan_Hundgun2_6.png',
+          ]
+        },
+      }, handgun2: {
+        startup: {
+          src: [
+            'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
+          ]
+        },
+        // active: {
+        //   src: [
+        //   ]
+        // },
+        recovery: {
+          src: [
+            'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
+            'images/Unitychan/Attack/Unitychan_Hundgun2_8.png',
+            'images/Unitychan/Attack/Unitychan_Hundgun2_9.png',
+            'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
+            'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
+            'images/Unitychan/Attack/Unitychan_Hundgun1_2.png',
+          ]
+        },
+      }, kick : {
+        startup: {
+          src: [
+            'images/Misaki/Misaki_Kick_1.png',
+            'images/Misaki/Misaki_Kick_2.png',
+            'images/Misaki/Misaki_Kick_3.png',
+          ]
+        },
+        active: {
+          src: [
+            'images/Misaki/Misaki_Kick_4.png',
+          ]
+        },
+        recovery: {
+          src: [
+            'images/Misaki/Misaki_Kick_5.png',
+            'images/Misaki/Misaki_Kick_6.png',
+            'images/Misaki/Misaki_Kick_2.png',
+            'images/Misaki/Misaki_Kick_1.png',
+          ]
+        },
+      }, damage: {
+        src: [
+          'images/Misaki/Misaki_Damage_1.png',
+          'images/Misaki/Misaki_Damage_2.png',
+          'images/Misaki/Misaki_Damage_3.png',
+          'images/Misaki/Misaki_Damage_4.png',
+        ],
+      }, down : {
+        src: [
+          'images/Misaki/Misaki_Damage_down_1.png',
+          'images/Misaki/Misaki_Damage_down_2.png',
+          'images/Misaki/Misaki_Damage_down_3.png',
+          'images/Misaki/Misaki_Damage_down_4.png',
+        ],
+      }, return: {
+        src: [
+          'images/Misaki/Misaki_Damage_return_1.png',
+          'images/Misaki/Misaki_Damage_return_2.png',
+          'images/Misaki/Misaki_Damage_return_3.png',
+        ],
       },
-      // active: {
-      //   src: [
-      //   ]
-      // },
-      recovery: {
-        src: [
-          'images/Unitychan/Attack/Unitychan_Hundgun2_5.png',
-          'images/Unitychan/Attack/Unitychan_Hundgun2_6.png',
-        ]
-      },
-    }, handgun2: {
-      startup: {
-        src: [
-          'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
-        ]
-      },
-      // active: {
-      //   src: [
-      //   ]
-      // },
-      recovery: {
-        src: [
-          'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
-          'images/Unitychan/Attack/Unitychan_Hundgun2_8.png',
-          'images/Unitychan/Attack/Unitychan_Hundgun2_9.png',
-          'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
-          'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
-          'images/Unitychan/Attack/Unitychan_Hundgun1_2.png',
-        ]
-      },
-    }, kick : {
-      startup: {
-        src: [
-          'images/Misaki/Misaki_Kick_1.png',
-          'images/Misaki/Misaki_Kick_2.png',
-          'images/Misaki/Misaki_Kick_3.png',
-        ]
-      },
-      active: {
-        src: [
-          'images/Misaki/Misaki_Kick_4.png',
-        ]
-      },
-      recovery: {
-        src: [
-          'images/Misaki/Misaki_Kick_5.png',
-          'images/Misaki/Misaki_Kick_6.png',
-          'images/Misaki/Misaki_Kick_2.png',
-          'images/Misaki/Misaki_Kick_1.png',
-        ]
-      },
-    }, damage: {
-      src: [
-        'images/Misaki/Misaki_Damage_1.png',
-        'images/Misaki/Misaki_Damage_2.png',
-        'images/Misaki/Misaki_Damage_3.png',
-        'images/Misaki/Misaki_Damage_4.png',
-      ],
-    }, down : {
-      src: [
-        'images/Misaki/Misaki_Damage_down_1.png',
-        'images/Misaki/Misaki_Damage_down_2.png',
-        'images/Misaki/Misaki_Damage_down_3.png',
-        'images/Misaki/Misaki_Damage_down_4.png',
-      ],
-    }, return: {
-      src: [
-        'images/Misaki/Misaki_Damage_return_1.png',
-        'images/Misaki/Misaki_Damage_return_2.png',
-        'images/Misaki/Misaki_Damage_return_3.png',
-      ],
-    },
-  }, */
-  kohaku: {
-    idle: {
-      startup: {
-        src: [
+    }, */
+    kohaku: {
+      idle: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
           'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
           'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
@@ -375,10 +376,8 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
           'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
         ],
-      },
-    }, walk  : {
-      startup: {
-        src: [
+      }, walk  : {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Walk_1.png',
           'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
           'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
@@ -386,17 +385,13 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
           'images/Unitychan/BasicActions/Unitychan_Walk_6.png',
         ],
-      },
-    }, damage: {
-      startup: {
-        src: [
+      }, damage: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
           'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
         ],
-      },
-    }, down : {
-      startup: {
-        src: [
+      }, down : {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
           'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
           'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
@@ -406,10 +401,8 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
           'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
         ],
-      },
-    }, return: {
-      startup: {
-        src: [
+      }, return: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
           'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
           'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
@@ -419,10 +412,8 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
           'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
         ],
-      },
-    }, run: {
-      startup: {
-        src: [
+      }, run: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Run_1.png',
           'images/Unitychan/BasicActions/Unitychan_Run_2.png',
           'images/Unitychan/BasicActions/Unitychan_Run_3.png',
@@ -432,19 +423,15 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Run_7.png',
           'images/Unitychan/BasicActions/Unitychan_Run_8.png',
         ],
-      },
-    }, crouch: {
-      startup: {
-        src: [
+      }, crouch: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Crouch_2.png',
           'images/Unitychan/BasicActions/Unitychan_Crouch_3.png',
           'images/Unitychan/BasicActions/Unitychan_Crouch_4.png',
           'images/Unitychan/BasicActions/Unitychan_Crouch_5.png',
         ],
-      },
-    }, turn: {
-      startup: {
-        src: [
+      }, turn: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
           'images/Unitychan/BasicActions/Unitychan_Brake_3.png',
           'images/Unitychan/BasicActions/Unitychan_Brake_8.png',
@@ -452,22 +439,16 @@ let image = {
           'images/Unitychan/BasicActions/Unitychan_Brake_10.png',
           'images/Unitychan/BasicActions/Unitychan_Brake_11.png',
           'images/Unitychan/BasicActions/Unitychan_Brake_12.png',
-        ]
-      },
-      active: {
-        src: [
+        ],
+        active: [
           'images/Unitychan/Brake_13_reverse.png',
           'images/Unitychan/Brake_14_reverse.png',
           'images/Unitychan/Brake_15_reverse.png',
-        ]
-      },
-    }, jump: {
-      startup: {
-        src: [
+        ],
+      }, jump: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
-        ]
-      }, active: {
-        src: [
+        ], active: [
           'images/Unitychan/Jump_Up_1.png',
           'images/Unitychan/Jump_Up_2.png',
           'images/Unitychan/Jump_MidAir_1.png',
@@ -475,24 +456,16 @@ let image = {
           'images/Unitychan/Jump_MidAir_3.png',
           'images/Unitychan/Jump_Fall_1.png',
           'images/Unitychan/Jump_Fall_2.png',
-        ]
-      }, fall: {
-        src: [
+        ], fall: [
           'images/Unitychan/Jump_Fall_1.png',
           'images/Unitychan/Jump_Fall_2.png',
+        ], recovery: [
+          'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
         ],
-      }, recovery: {
-        src: [
+      }, doubleJump: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
-        ]
-      },
-    }, doubleJump: {
-      startup: {
-        src: [
-          'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
-        ]
-      }, active: {
-        src: [
+        ], active: [
           'images/Unitychan/Jump_Up_1.png',
           'images/Unitychan/Jump_Up_2.png',
           'images/Unitychan/Jump_MidAir_1.png',
@@ -500,142 +473,87 @@ let image = {
           'images/Unitychan/Jump_MidAir_3.png',
           'images/Unitychan/Jump_Fall_1.png',
           'images/Unitychan/Jump_Fall_2.png',
-        ]
-      }, fall: {
-        src: [
+        ], fall: [
           'images/Unitychan/Jump_Fall_1.png',
           'images/Unitychan/Jump_Fall_2.png',
-        ],
-      }, recovery: {
-        src: [
+        ], recovery: [
           'images/Unitychan/BasicActions/Unitychan_Jump_Landing.png',
-        ]
-      },
-    }, push: {
-      startup: {
-        src: [
+        ],
+      }, push: {
+        startup: [
           'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
         ],
-      },
-    }, handgun: {
-      startup: {
-        src: [
+      }, handgun: {
+        startup: [
           'images/Unitychan/Attack/Unitychan_Hundgun1_2.png', // hand
           'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
           'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
-        ]
-      },
-      // active: {
-      //   src: [
-      //   ]
-      // },
-      recovery: {
-        src: [
+        ],
+        recovery: [
           'images/Unitychan/Attack/Unitychan_Hundgun2_5.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_6.png',
-        ]
-      },
-    }, handgun2: {
-      startup: {
-        src: [
+        ],
+      }, handgun2: {
+        startup: [
           'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
-        ]
-      },
-      // active: {
-      //   src: [
-      //   ]
-      // },
-      recovery: {
-        src: [
+        ], recovery: [
           'images/Unitychan/Attack/Unitychan_Hundgun2_7.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_8.png',
           'images/Unitychan/Attack/Unitychan_Hundgun2_9.png',
           'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
           'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
           'images/Unitychan/Attack/Unitychan_Hundgun1_2.png',
-        ]
-      },
-    }, sword: {
-      startup: {
-        src: [
+        ],
+      }, sword: {
+        startup: [
           'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
           'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
           'images/Unitychan/Attack/Unitychan_Soard_Combo_4.png',
-        ]
-      }, active: {
-        src: [
+        ], active: [
           'images/Unitychan/Attack/Unitychan_Soard_Combo_5.png',
-        ]
-      }, recovery: {
-        src: [
+        ], recovery: [
           'images/Unitychan/Attack/Unitychan_Soard_Combo_6.png',
           'images/Unitychan/Attack/Unitychan_Soard_Combo_7.png',
           'images/Unitychan/Attack/Unitychan_Soard_Combo_3.png',
           'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
-        ]
-      },
-    }, slide: {
-      // startup: {
-      //   src: [
-      //   ]
-      // },
-      active: {
-        src: [
+        ],
+      }, slide: {
+        active: [
           'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
           'images/Unitychan/BasicActions/Unitychan_Brake_3.png',
-        ]
+        ],
       },
-      // recovery: {
-      //   src: [
-      //     'images/Unitychan/BasicActions/Unitychan_Brake_11.png',
-      //     'images/Unitychan/BasicActions/Unitychan_Brake_12.png',
-      //   ]
-      // },
-    },
-  }, slimeA: {
-    idle: {
-      startup: {
-        src: [
+    }, slimeA: {
+      idle: {
+        startup: [
           'images/monster/slimeA_idle0.png',
           'images/monster/slimeA_idle1.png',
           'images/monster/slimeA_idle2.png',
           'images/monster/slimeA_idle1.png',
         ],
-      },
-    }, damage: {
-      startup: {
-        src: [
+      }, damage: {
+        startup: [
           'images/monster/slimeA_damage1.png',
           'images/monster/slimeA_damage0.png',
           'images/monster/slimeA_damage1.png',
         ],
-      },
-      recovery: {
-        src: [
+        recovery: [
           'images/monster/slimeA_damage2.png',
         ],
-      },
-    }, attack: {
-      startup: {
-        src: [
+      }, attack: {
+        startup: [
           'images/monster/slimeA_attack0.png',
           'images/monster/slimeA_attack1.png',
         ],
-      },
-      active: {
-        src: [
+        active: [
           'images/monster/slimeA_attack2.png',
         ],
-      },
-      recovery: {
-        src: [
+        recovery: [
           'images/monster/slimeA_attack3.png',
           'images/monster/slimeA_attack4.png',
         ],
-      },
-    }, move: {
-      startup: {
-        src: [
+      }, move: {
+        startup: [
           'images/monster/slimeA_move0.png',
           'images/monster/slimeA_move1.png',
           'images/monster/slimeA_move2.png',
@@ -643,31 +561,33 @@ let image = {
         ],
       },
     },
-  },
-}
-const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
-const imageListLoader = obj => {
-  return new Promise(resolve => {
-    let resource = []
-    obj.src.forEach((v, i) => resource.push(imageLoader(i, v)))
-    Promise.all(resource).then(result => {
-      const object = {}
-      result.forEach(v => {object[Object.keys(v)[0]] = Object.values(v)[0]})
-      obj.data = []
-      for (let i = 0; i < result.length; i++) {
-        obj.data.push(object[i])
-        if (i === result.length - 1) resolve()
-      }
+  }
+  const imageListLoader = (obj, img) => {
+    return new Promise(resolve => {
+      let resource = []
+      obj.forEach((v, i) => resource.push(imageLoader(i, v)))
+      Promise.all(resource).then(result => {
+        const object = {}
+        result.forEach(v => {object[Object.keys(v)[0]] = Object.values(v)[0]})
+        for (let i = 0; i < result.length; i++) {
+          img.push(object[i])
+          if (i === result.length - 1) resolve()
+        }
+      })
+    })
+  }
+  Object.keys(imageSource).forEach(v => {
+    image[v] = {}
+    Object.keys(imageSource[v]).forEach(vl => {
+      image[v][vl] = {}
+      Object.keys(imageSource[v][vl]).forEach(val => {
+        image[v][vl][val] = []
+        resourceList.push(imageListLoader(imageSource[v][vl][val], image[v][vl][val]))
+      })
     })
   })
+  imageSource = null
 }
-Object.keys(image).forEach(v => {
-  Object.keys(image[v]).forEach(vl => {
-    Object.keys(image[v][vl]).forEach(val => {
-      resourceList.push(imageListLoader(image[v][vl][val]))
-    })
-  })
-})
 const audio = {
   misaki: {
     jump : {
@@ -1053,6 +973,7 @@ const soundEfffectObject = {
     sword     : audio.kohaku.sword,
   },
 }
+const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
 const actionInitObject = {
   jump: () => {
     const jumpCoefficient = 5
@@ -1692,8 +1613,8 @@ const update = () => {
       player.movingDistance -= playerData.stride[player.state]
       player.imageIndex++
     }
-    if (image[player.skin][player.state][player.attackState].data.length <= player.imageIndex) {
-      player.imageIndex -= image[player.skin][player.state][player.attackState].data.length
+    if (image[player.skin][player.state][player.attackState].length <= player.imageIndex) {
+      player.imageIndex -= image[player.skin][player.state][player.attackState].length
       if (player.midBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
@@ -1701,7 +1622,7 @@ const update = () => {
     const i = playerData.image[player.state]
     const index = Math.floor(player.crouchTime / i.intervalTime)
     if (isKey(keyMap.crouch)) {
-      if ((index < image[player.skin][player.state][player.attackState].data.length - 1)) {
+      if ((index < image[player.skin][player.state][player.attackState].length - 1)) {
         player.crouchTime += intervalDiffTime
       }
     } else {
@@ -1716,8 +1637,8 @@ const update = () => {
     const i = playerData.image[player.state]
     i.time += 1
     if (i.time % i.frame === 0) player.imageIndex += 1
-    if (player.imageIndex === image[player.skin][player.state][player.attackState].data.length) {
-      player.imageIndex -= image[player.skin][player.state][player.attackState].data.length
+    if (player.imageIndex === image[player.skin][player.state][player.attackState].length) {
+      player.imageIndex -= image[player.skin][player.state][player.attackState].length
       i.time = 0
       player.state = 'idle'
     }
@@ -1764,7 +1685,7 @@ const update = () => {
       player.motionFirstFlag = false
     }
     if (player.state !== 'idle') {
-      const l = image[player.skin][player.state][player.attackState].data.length
+      const l = image[player.skin][player.state][player.attackState].length
       if (player.state === 'jump' && player.attackState === 'active') {
         for (let i = Math.floor(l / 2); 0 <= i; i--) {
           if (Math.abs(player.dy) < -jumpConstant / (2 ** i * .75)) {
@@ -1775,7 +1696,7 @@ const update = () => {
             if (0 < player.dy) {
               player.fallTime += intervalDiffTime
               const interval = 7 * 1000 / 60
-              const dl = image[player.skin][player.state].fall.data.length
+              const dl = image[player.skin][player.state].fall.length
               player.imageIndex = l - dl + ((player.fallTime / (interval * dl) % dl)|0)
             }
           }
@@ -1804,7 +1725,7 @@ const update = () => {
     }
     v.imageIndex = Math.floor(
       v.elapsedTime / enemyData[v.skin][v.state][v.attackState] *
-      image[v.skin][v.state][v.attackState].data.length)
+      image[v.skin][v.state][v.attackState].length)
   })
   effectList.forEach((v, i) => {
     v.lifetime -= intervalDiffTime
@@ -1978,13 +1899,13 @@ const draw = () => {
   enemies.forEach(v => {
     let ex = v.x - v.imageOffset.x - stageOffset.x|0
     const ey = v.y - v.imageOffset.y - stageOffset.y|0
-    const img = image[v.skin][v.state][v.attackState].data[v.imageIndex]
+    const imag = image[v.skin][v.state][v.attackState][v.imageIndex]
     context.save()
     if (v.direction === 'left') {
       context.scale(-1, 1)
-      ex = -ex - img.width
+      ex = -ex - imag.width
     }
-    context.drawImage(img, ex, ey)
+    context.drawImage(imag, ex, ey)
     context.restore()
   })
   if (0 < timestamp.gate) {
@@ -2003,13 +1924,13 @@ const draw = () => {
     if (end < elapsedTime) timestamp.gate = 0
   }
   let x = player.x - imageOffset.x - stageOffset.x
-  const img = image[player.skin][player.state][player.attackState].data[player.imageIndex]
+  const imag = image[player.skin][player.state][player.attackState][player.imageIndex]
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
-    x = -x - img.width
+    x = -x - imag.width
   }
-  context.drawImage(img, x|0, player.y - imageOffset.y - stageOffset.y|0)
+  context.drawImage(imag, x|0, player.y - imageOffset.y - stageOffset.y|0)
   context.restore()
   mapData[field.name].layersIndex.tileset.forEach(v => {
     let flag = false
