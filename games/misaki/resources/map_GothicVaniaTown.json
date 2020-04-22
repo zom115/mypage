@@ -233,9 +233,9 @@
                  "name":"audio",
                  "properties":[
                         {
-                         "name":"path",
+                         "name":"rpg_village02",
                          "type":"file",
-                         "value":"..\/..\/platformer\/resources\/GothicVania-town-files\/Music\/rpg_village02__loop.ogg"
+                         "value":"..\/audio\/music\/rpg_village02_loop.mp3"
                         }],
                  "rotation":0,
                  "type":"",

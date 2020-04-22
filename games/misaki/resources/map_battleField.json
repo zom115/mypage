@@ -58,6 +58,23 @@
                  "width":0,
                  "x":10,
                  "y":9
+                }, 
+                {
+                 "height":0,
+                 "id":7,
+                 "name":"audio",
+                 "properties":[
+                        {
+                         "name":"\u30c6\u30ec\u30d5\u30a9\u30f3\u30fb\u30c0\u30f3\u30b9",
+                         "type":"file",
+                         "value":"..\/audio\/music\/nc110060.mp3"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":64,
+                 "y":0
                 }],
          "opacity":1,
          "properties":[
@@ -215,7 +232,7 @@
          "y":0
         }],
  "nextlayerid":22,
- "nextobjectid":7,
+ "nextobjectid":8,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"2020.03.18",
