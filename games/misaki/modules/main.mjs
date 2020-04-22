@@ -114,14 +114,13 @@ const orgRound = (value, base) => {return Math.round(value * base) / base}
   })
 }
 const mapData = {}
-const imageObject = {}
-const audioObject = {}
+const mapImage = {}
+const mapMusic = {}
 let directoryList = [
   'map_battleField',
   'map_GothicVaniaTown',
   'map_MagicCliffsArtwork',
 ]
-let mapColor = 'rgb(127, 127, 127)'
 
 document.getElementsByTagName`audio`[0].volume = .1
 const canvas = document.getElementById`canvas`
@@ -205,7 +204,7 @@ const getMapData = directory => {
       })
     })
     await Promise.all(resource).then(result => {
-      result.forEach(v => imageObject[Object.keys(v)[0]] = Object.values(v)[0])
+      result.forEach(v => mapImage[Object.keys(v)[0]] = Object.values(v)[0])
       mapData[directory] = mapInfoObject
       resolve()
     })
@@ -713,7 +712,13 @@ let menuOpenTimestamp = 0
 let menuCloseTimestamp = 0
 const screenList = ['title', 'main']
 let screenState = screenList[1]
-let field = {name: directoryList[0], w: 0, h: 0, checkPoint: {x: 0, y: 0}}
+let field = {
+  name: directoryList[0],
+  w: 0,
+  h: 0,
+  checkPoint: {x: 0, y: 0},
+  color: 'rgb(127, 127, 127)',
+}
 const timestamp = {
   gate: 0,
 }
@@ -735,7 +740,7 @@ const getColor = arg => {
     const index = arg.layers[v].objects.findIndex(vl => vl.name === 'color')
     if (index !== 0) {
       let color = arg.layers[v].objects[index].properties[0].value
-      mapColor = `rgba(${
+      field.color = `rgba(${
         parseInt(color.slice(3, 5), 16)}, ${
         parseInt(color.slice(5, 7), 16)}, ${
         parseInt(color.slice(7, 9), 16)}, ${
@@ -749,15 +754,15 @@ const getMusic = arg => {
     if (index !== -1) {
       let path = arg.layers[v].objects[index].properties[0].value
       path = setDirectory(path)
-      if (Object.keys(audioObject).includes(field.name)) {
-        audioObject[field.name].currentTime = 0
-        audioObject[field.name].play()
+      if (Object.keys(mapMusic).includes(field.name)) {
+        mapMusic[field.name].currentTime = 0
+        mapMusic[field.name].play()
       } else {
         audioLoader(field.name, path).then(result => {
           musicVolumeHandle(Object.values(result)[0])
           Object.values(result)[0].loop = true
           Object.values(result)[0].play()
-          Object.assign(audioObject, result)
+          Object.assign(mapMusic, result)
         })
       }
     }
@@ -1819,7 +1824,7 @@ const main = () => setInterval(() => {
 const draw = () => {
   window.requestAnimationFrame(draw)
   frameCounter(animationFrameList)
-  context.fillStyle = mapColor
+  context.fillStyle = field.color
   context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   mapData[field.name].layersIndex.background.forEach(v => { // draw background
     const properties = mapData[field.name].layers[v].properties
@@ -1829,7 +1834,7 @@ const draw = () => {
     const offsetY = properties[properties.findIndex(vl => vl.name === 'offsetY')].value
     const scrollTimePerSize =
       properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
-    const image = imageObject[mapData[field.name].layers[v].name]
+    const image = mapImage[mapData[field.name].layers[v].name]
     const resetWidthTime = scrollTimePerSize * image.width / size
     let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
     if (direction === 'left') ratio = -ratio
@@ -1869,7 +1874,7 @@ const draw = () => {
             if (vl.tilecount < id) id -= vl.tilecount
             else {
               context.drawImage(
-                imageObject[k],
+                mapImage[k],
                 (id % mapData[field.name].tilesetsIndex[k].columns) * size,
                 (id - id % mapData[field.name].tilesetsIndex[k].columns) /
                   mapData[field.name].tilesetsIndex[k].columns * size,
@@ -1948,7 +1953,7 @@ const draw = () => {
             if (vl.tilecount < id) id -= vl.tilecount
             else {
               context.drawImage(
-                imageObject[k],
+                mapImage[k],
                 (id % mapData[field.name].tilesetsIndex[k].columns) * size,
                 (id - id % mapData[field.name].tilesetsIndex[k].columns) /
                   mapData[field.name].tilesetsIndex[k].columns * size,
