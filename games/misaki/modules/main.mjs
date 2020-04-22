@@ -587,56 +587,44 @@ const image = {}
   })
   imageSource = null
 }
-const audio = {
-  misaki: {
-    jump : {
-      src: 'audio/Misaki/V2001.wav',
-    }, doubleJump: {
-      src: 'audio/Misaki/V2002.wav',
-    }, handgun : {
-      src: 'audio/Misaki/V2005.wav',
-    }, handgun2 : {
-      src: 'audio/Misaki/V2005.wav',
-    }, kick : {
-      src: 'audio/Misaki/V2006.wav',
-    }, win : {
-      src: 'audio/Misaki/V2024.wav',
+const aud = {}
+{
+  const audioSource = {
+    misaki: {
+      jump : 'audio/Misaki/V2001.wav',
+      doubleJump: 'audio/Misaki/V2002.wav',
+      handgun : 'audio/Misaki/V2005.wav',
+      handgun2 : 'audio/Misaki/V2005.wav',
+      kick : 'audio/Misaki/V2006.wav',
+      win : 'audio/Misaki/V2024.wav',
+    }, kohaku: {
+      jump : 'audio/Kohaku/V0001.wav',
+      doubleJump: 'audio/Kohaku/V0002.wav',
+      sword : 'audio/Kohaku/V0006.wav',
+      win : 'audio/Kohaku/V0024.wav',
+    }, music: {
+      'テレフォン・ダンス': 'audio/music/nc109026.wav',
+      'アオイセカイ': 'audio/music/nc110060.mp3',
+    }, se: {
+      shot: 'audio/se/handgun-firing1.mp3',
     },
-  }, kohaku: {
-    jump : {
-      src: 'audio/Kohaku/V0001.wav',
-    }, doubleJump: {
-      src: 'audio/Kohaku/V0002.wav',
-    }, sword : {
-      src: 'audio/Kohaku/V0006.wav',
-    }, win : {
-      src: 'audio/Kohaku/V0024.wav',
-    },
-  }, music: {
-    'テレフォン・ダンス': {
-      src: 'audio/music/nc109026.wav',
-    }, 'アオイセカイ': {
-      src: 'audio/music/nc110060.mp3',
-    },
-  }, se: {
-    shot: {
-      src: 'audio/se/handgun-firing1.mp3',
-    },
-  },
-}
-const audioObjectLoader = obj => {
-  return new Promise(resolve => {
-    audioLoader('data', obj.src).then(result => {
-      obj.data = Object.values(result)[0]
-      resolve()
+  }
+  const audioObjectLoader = (obj, aobj, v) => {
+    return new Promise(resolve => {
+      audioLoader('data', obj).then(result => {
+        aobj[v] = Object.values(result)[0]
+        resolve()
+      })
+    })
+  }
+  Object.keys(audioSource).forEach(v => {
+    aud[v] = {}
+    Object.keys(audioSource[v]).forEach(vl => {
+      aud[v][vl] = {}
+      resourceList.push(audioObjectLoader(audioSource[v][vl], aud[v], vl))
     })
   })
 }
-Object.keys(audio).forEach(v => {
-  Object.keys(audio[v]).forEach(vl => {
-    resourceList.push(audioObjectLoader(audio[v][vl]))
-  })
-})
 const voiceVolumeHandle = voice => {
   voice.volume = settings.volume.master * settings.volume.voice
 }
@@ -647,11 +635,11 @@ const seVolumeHandle = music => {
   music.volume = settings.volume.master * settings.volume.se
 }
 const volumeControll = () => {
-  Object.keys(audio).forEach(v => {
-    Object.keys(audio[v]).forEach(vl => {
-      if (v === 'music') musicVolumeHandle(audio[v][vl].data)
-      else if (v === 'se') seVolumeHandle(audio[v][vl].data)
-      else voiceVolumeHandle(audio[v][vl].data)
+  Object.keys(aud).forEach(v => {
+    Object.keys(aud[v]).forEach(vl => {
+      if (v === 'music') musicVolumeHandle(aud[v][vl])
+      else if (v === 'se') seVolumeHandle(aud[v][vl])
+      else voiceVolumeHandle(aud[v][vl])
     })
   })
 }
@@ -973,9 +961,9 @@ const floatMenuCursorMax = 3
 
 const soundEfffectObject = {
   kohaku: {
-    handgun   : audio.se.shot,
-    handgun2  : audio.se.shot,
-    sword     : audio.kohaku.sword,
+    handgun   : aud.se.shot,
+    handgun2  : aud.se.shot,
+    sword     : aud.kohaku.sword,
   },
 }
 const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
@@ -984,8 +972,8 @@ const actionInitObject = {
     const jumpCoefficient = 5
     player.dy = jumpConstant * (1 + Math.abs(player.dx) / jumpCoefficient) ** .5 // temporary
     player.dx /= Math.SQRT2
-    if (player.doubleJumpFlag) playAudio(audio[player.skin].doubleJump.data)
-    else playAudio(audio[player.skin][player.state].data)
+    if (player.doubleJumpFlag) playAudio(aud[player.skin].doubleJump)
+    else playAudio(aud[player.skin][player.state])
 
     cooltime.aerialStep = 0 // temporary
   }, slide: () => {
@@ -1607,9 +1595,9 @@ const update = () => {
       player.breathInterval < playerData.breath.fatigue
     ) {
       const num = Math.random()
-      const list = num < .9 ? {value: audio[player.skin].handgun.data, startTime: .3}
-      : num < .95 ? {value: audio[player.skin].jump.data, startTime: .3}
-      : {value: audio[player.skin].doubleJump.data, startTime: .33}
+      const list = num < .9 ? {value: aud[player.skin].handgun, startTime: .3}
+      : num < .95 ? {value: aud[player.skin].jump, startTime: .3}
+      : {value: aud[player.skin].doubleJump, startTime: .33}
       playAudio(list.value, list.startTime)
     }
   } else if (player.state === 'walk' || player.state === 'run') {
@@ -1804,20 +1792,20 @@ const main = () => setInterval(() => {
       currentPlay !== setMusic() ||
       !playFlag && Object.values(key).some(v => v.flag)
     ) {
-      Object.keys(audio.music).forEach(v => audio.music[v].data.pause())
+      Object.keys(aud.music).forEach(v => aud.music[v].pause())
       if (!playFlag) playFlag = true
       currentPlay = setMusic()
-      audio.music[currentPlay].data.currentTime = 0
-      audio.music[currentPlay].data.play()
+      aud.music[currentPlay].currentTime = 0
+      aud.music[currentPlay].play()
     }
     if (
       currentPlay === 'テレフォン・ダンス' &&
-      32.74 < audio.music[currentPlay].data.currentTime
-    ) audio.music[currentPlay].data.currentTime = 7.14 + 4 / 60 // 4 frame delay?
+      32.74 < aud.music[currentPlay].currentTime
+    ) aud.music[currentPlay].currentTime = 7.14 + 4 / 60 // 4 frame delay?
     else if (
       currentPlay === 'アオイセカイ' &&
-      60 + 13 < audio.music[currentPlay].data.currentTime
-    ) audio.music[currentPlay].data.currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
+      60 + 13 < aud.music[currentPlay].currentTime
+    ) aud.music[currentPlay].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
   }
   // musicProcess()
 }, 0)
