@@ -360,74 +360,88 @@ let image = {
   }, */
   kohaku: {
     idle: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
-        'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_1.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
+          'images/Unitychan/BasicActions/Unitychan_Idle_4.png',
+        ],
+      },
     }, walk  : {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Walk_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
-        'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
-        'images/Unitychan/BasicActions/Unitychan_Walk_6.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Walk_1.png',
+          'images/Unitychan/BasicActions/Unitychan_Walk_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Walk_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Walk_4.png',
+          'images/Unitychan/BasicActions/Unitychan_Walk_5.png',
+          'images/Unitychan/BasicActions/Unitychan_Walk_6.png',
+        ],
+      },
     }, damage: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
+        ],
+      },
     }, down : {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
+        ],
+      },
     }, return: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_15.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
-        'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Damage_12.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_13.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_14.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_15.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_16.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_17.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_18.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
+        ],
+      },
     }, run: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Run_1.png',
-        'images/Unitychan/BasicActions/Unitychan_Run_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Run_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Run_4.png',
-        'images/Unitychan/BasicActions/Unitychan_Run_5.png',
-        'images/Unitychan/BasicActions/Unitychan_Run_6.png',
-        'images/Unitychan/BasicActions/Unitychan_Run_7.png',
-        'images/Unitychan/BasicActions/Unitychan_Run_8.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Run_1.png',
+          'images/Unitychan/BasicActions/Unitychan_Run_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Run_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Run_4.png',
+          'images/Unitychan/BasicActions/Unitychan_Run_5.png',
+          'images/Unitychan/BasicActions/Unitychan_Run_6.png',
+          'images/Unitychan/BasicActions/Unitychan_Run_7.png',
+          'images/Unitychan/BasicActions/Unitychan_Run_8.png',
+        ],
+      },
     }, crouch: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Crouch_2.png',
-        'images/Unitychan/BasicActions/Unitychan_Crouch_3.png',
-        'images/Unitychan/BasicActions/Unitychan_Crouch_4.png',
-        'images/Unitychan/BasicActions/Unitychan_Crouch_5.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Crouch_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Crouch_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Crouch_4.png',
+          'images/Unitychan/BasicActions/Unitychan_Crouch_5.png',
+        ],
+      },
     }, turn: {
       startup: {
         src: [
@@ -447,10 +461,6 @@ let image = {
           'images/Unitychan/Brake_15_reverse.png',
         ]
       },
-      // recovery: {
-      //   src: [
-      //   ]
-      // },
     }, jump: {
       startup: {
         src: [
@@ -502,9 +512,11 @@ let image = {
         ]
       },
     }, push: {
-      src: [
-        'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
-      ],
+      startup: {
+        src: [
+          'images/Unitychan/BasicActions/Unitychan_Damage_19.png',
+        ],
+      },
     }, handgun: {
       startup: {
         src: [
@@ -651,11 +663,9 @@ const imageListLoader = obj => {
 }
 Object.keys(image).forEach(v => {
   Object.keys(image[v]).forEach(vl => {
-    if (motionList.includes(vl) || v === 'slimeA') {
-      Object.keys(image[v][vl]).forEach(val => {
-        resourceList.push(imageListLoader(image[v][vl][val]))
-      })
-    } else resourceList.push(imageListLoader(image[v][vl]))
+    Object.keys(image[v][vl]).forEach(val => {
+      resourceList.push(imageListLoader(image[v][vl][val]))
+    })
   })
 })
 const audio = {
@@ -1682,8 +1692,8 @@ const update = () => {
       player.movingDistance -= playerData.stride[player.state]
       player.imageIndex++
     }
-    if (image[player.skin][player.state].data.length <= player.imageIndex) {
-      player.imageIndex -= image[player.skin][player.state].data.length
+    if (image[player.skin][player.state][player.attackState].data.length <= player.imageIndex) {
+      player.imageIndex -= image[player.skin][player.state][player.attackState].data.length
       if (player.midBreath < player.breathInterval) player.breathInterval -= 1
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
@@ -1691,7 +1701,9 @@ const update = () => {
     const i = playerData.image[player.state]
     const index = Math.floor(player.crouchTime / i.intervalTime)
     if (isKey(keyMap.crouch)) {
-      if ((index < image[player.skin].crouch.data.length - 1)) player.crouchTime += intervalDiffTime
+      if ((index < image[player.skin][player.state][player.attackState].data.length - 1)) {
+        player.crouchTime += intervalDiffTime
+      }
     } else {
       player.crouchTime -= intervalDiffTime
       if (player.crouchTime <= 0) {
@@ -1704,8 +1716,8 @@ const update = () => {
     const i = playerData.image[player.state]
     i.time += 1
     if (i.time % i.frame === 0) player.imageIndex += 1
-    if (player.imageIndex === image[player.skin][player.state].data.length) {
-      player.imageIndex -= image[player.skin][player.state].data.length
+    if (player.imageIndex === image[player.skin][player.state][player.attackState].data.length) {
+      player.imageIndex -= image[player.skin][player.state][player.attackState].data.length
       i.time = 0
       player.state = 'idle'
     }
@@ -1763,7 +1775,7 @@ const update = () => {
             if (0 < player.dy) {
               player.fallTime += intervalDiffTime
               const interval = 7 * 1000 / 60
-              const dl = image[player.skin].jump.fall.data.length
+              const dl = image[player.skin][player.state].fall.data.length
               player.imageIndex = l - dl + ((player.fallTime / (interval * dl) % dl)|0)
             }
           }
@@ -1791,7 +1803,8 @@ const update = () => {
       if (v.state !== 'idle') v.state = 'idle'
     }
     v.imageIndex = Math.floor(
-      v.elapsedTime / enemyData[v.skin][v.state][v.attackState] * image[v.skin][v.state][v.attackState].data.length)
+      v.elapsedTime / enemyData[v.skin][v.state][v.attackState] *
+      image[v.skin][v.state][v.attackState].data.length)
   })
   effectList.forEach((v, i) => {
     v.lifetime -= intervalDiffTime
@@ -1990,9 +2003,7 @@ const draw = () => {
     if (end < elapsedTime) timestamp.gate = 0
   }
   let x = player.x - imageOffset.x - stageOffset.x
-  const img = motionList.includes(player.state) ?
-  image[player.skin][player.state][player.attackState].data[player.imageIndex] :
-  image[player.skin][player.state].data[player.imageIndex]
+  const img = image[player.skin][player.state][player.attackState].data[player.imageIndex]
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
@@ -2308,7 +2319,7 @@ Promise.all(resourceList).then(() => {
   loadedFlag = true
   volumeControll()
   setMapProcess(field.name)
-  console.log(mapData, field)
+  // console.log(mapData, field)
   main()
   draw()
 })
