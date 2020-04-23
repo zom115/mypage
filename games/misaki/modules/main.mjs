@@ -531,6 +531,21 @@ const image = {}
           'images/Unitychan/BasicActions/Unitychan_Brake_2.png',
           'images/Unitychan/BasicActions/Unitychan_Brake_3.png',
         ],
+      }, eliminate: {
+        startup: [
+          'images/Unitychan/BasicActions/Unitychan_Damage_2.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_3.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_4.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_5.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_6.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_7.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_8.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_9.png',
+          'images/Unitychan/BasicActions/Unitychan_Damage_10.png',
+        ], active: [
+          'images/Unitychan/BasicActions/Unitychan_Damage_11.png',
+        // ], recovery: [
+        ],
       },
     }, slimeA: {
       idle: {
@@ -815,6 +830,10 @@ const playerData = {
     startup : 7 * 1000 / 60,
     active  : 5 * 1000 / 60,
     recovery: 21 * 1000 / 60,
+  }, eliminate : {
+    startup : 60 * 1000 / 60,
+    active  : 1e3,
+    recovery: 0,
   },
 }
 let player = {
@@ -850,7 +869,7 @@ let player = {
   breathTimestamp: globalTimestamp,
   movingDistance: 0,
   crouchTime: 0,
-  hitPoint: 10,
+  hitPoint: 1,
 }
 
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
@@ -955,7 +974,8 @@ const soundEfffectObject = {
     sword   : () => playAudio(aud.kohaku.sword),
   },
 }
-const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2', 'damage',]
+const motionList = [
+  'turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2', 'damage', 'eliminate']
 const actionInitObject = {
   jump: () => {
     const jumpCoefficient = 5
@@ -996,6 +1016,7 @@ const uniqueActionObject = {
     }
   },
   slide: () => {player.attackElapsedTime = 0},
+  eliminate: () => {player.attackElapsedTime = 0},
 }
 const recoveryCondition = {
   slide : () => {
@@ -1500,6 +1521,7 @@ const judgement = () => {
       target.hitPoint -= damage
       if (target.hitPoint <= 0) target.state = 'eliminate'
       else target.state = 'damage'
+      console.log(player.state)
     })
   }
   enemies.forEach((e, i) => {
