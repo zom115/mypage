@@ -568,6 +568,10 @@ const image = {}
           'images/monster/slimeA_move2.png',
           'images/monster/slimeA_move3.png',
         ],
+      }, eliminate: {
+        startup: [
+          'images/monster/slimeA_damage0.png',
+        ],
       },
     },
   }
@@ -846,6 +850,7 @@ let player = {
   breathTimestamp: globalTimestamp,
   movingDistance: 0,
   crouchTime: 0,
+  hitPoint: 0,
 }
 
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
@@ -881,7 +886,11 @@ const enemyData = {
       startup : 0,
       active  : 0,
       recovery: 0,
-    },
+    }, eliminate: {
+      startup : 1e3,
+      active  : 0,
+      recovery: 0,
+    }
   },
 }
 const setEnemy = () => {
@@ -901,11 +910,12 @@ const setEnemy = () => {
     direction: 'right',
     imageIndex: 0,
     imageOffset: {x: 24, y: 28},
-    invincibleTimer: 0,
     hitCircleList: [{x: 0, y: 0, r: size,},],
     attackCircleList: [],
     elapsedTime: 0,
     breathTime: 0,
+    hitPoint: 10,
+    eliminateTime: 0,
   }
 }
 enemies.push(setEnemy())
@@ -1447,9 +1457,12 @@ const judgement = () => {
       })
     })
     index.reverse().forEach(v => {
+      const damage = own.attackCircleList[v[0]].damage
       effectList.push(setEffect(target.x + target.hitCircleList[v[1]].x,
-        target.y + target.hitCircleList[v[1]].y, own.attackCircleList[v[0]].damage))
-      target.state = 'damage'
+        target.y + target.hitCircleList[v[1]].y, damage))
+      target.hitPoint -= damage
+      if (target.hitPoint <= 0) target.state = 'eliminate'
+      else target.state = 'damage'
     })
   }
   enemies.forEach((e, i) => {
@@ -1675,7 +1688,8 @@ const update = () => {
       }
     }
   }
-  enemies.forEach(v => {
+  let eliminateList = []
+  enemies.forEach((v, i) => {
     if (v.beforeState !== v.state) v.elapsedTime = 0
     v.beforeState = v.state
     v.elapsedTime += intervalDiffTime
@@ -1690,12 +1704,14 @@ const update = () => {
     if (v.attackState === 'recovery' && enemyData[v.skin][v.state].recovery < v.elapsedTime) {
       v.elapsedTime -= enemyData[v.skin][v.state].recovery
       v.attackState = 'startup'
+      if (v.state === 'eliminate') eliminateList.push(i)
       if (v.state !== 'idle') v.state = 'idle'
     }
     v.imageIndex = Math.floor(
       v.elapsedTime / enemyData[v.skin][v.state][v.attackState] *
       image[v.skin][v.state][v.attackState].length)
   })
+  eliminateList.reverse().forEach(v => enemies.splice(v, 1))
   effectList.forEach((v, i) => {
     v.lifetime -= intervalDiffTime
     if (v.lifetime <= 0) effectList.splice(i, 1)
