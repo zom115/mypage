@@ -556,12 +556,12 @@ const image = {}
         ],
         active: [
           'images/monster/slimeA_attack2.png',
+          'images/monster/slimeA_attack3.png',
         ],
         recovery: [
-          'images/monster/slimeA_attack3.png',
           'images/monster/slimeA_attack4.png',
         ],
-      }, move: {
+      }, walk: {
         startup: [
           'images/monster/slimeA_move0.png',
           'images/monster/slimeA_move1.png',
@@ -879,11 +879,11 @@ const enemyData = {
       active  : 0,
       recovery: 500,
     }, attack: {
-      startup : 0,
-      active  : 0,
-      recovery: 0,
-    }, move: {
-      startup : 0,
+      startup : 1e3,
+      active  : 500,
+      recovery: 500,
+    }, walk: {
+      startup : 1e3,
       active  : 0,
       recovery: 0,
     }, eliminate: {
@@ -916,6 +916,8 @@ const setEnemy = () => {
     breathTime: 0,
     hitPoint: 10,
     eliminateTime: 0,
+    think: 'move',
+    thinkTime: 0,
   }
 }
 enemies.push(setEnemy())
@@ -1219,6 +1221,30 @@ const proposal = () => {
       player.skin = player.skin === 'misaki' ? 'kohaku' : 'misaki'
     }
   }
+
+  enemies.filter(v => ['idle', 'walk'].includes(v.state) && v.attackState !== 'recovery')
+  .forEach(v => {
+    v.direction = v.x < player.x ? 'right' : 'left'
+    const attackThreshold = size * 2
+    const think = {
+      move: () => {
+        v.state = 'walk'
+        v.dx += v.direction === 'left' ? -.001 : .001
+        if (Math.abs(player.x - v.x) < attackThreshold) v.think = 'think'
+        else v.think = 'move'
+      }, think: () => {
+        v.thinkTime += intervalDiffTime
+        const thinkingTime = 1e3
+        if (thinkingTime <= v.thinkTime) {
+          v.thinkTime = 0
+          if (Math.abs(player.x - v.x) < attackThreshold) v.state = 'attack'
+          else v.state = 'idle'
+          v.think = 'move'
+        } else return
+      },
+    }
+    think[v.think]()
+  })
 }
 const judgement = () => {
   const collisionDetect = obj => {
