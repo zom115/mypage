@@ -783,7 +783,11 @@ const playerData = {
       breathTimestamp       : globalTimestamp,
     }, crouch: {intervalTime: 50},
     push  : {},
-    damage: {time: 0, frame: 7, audioTrigger: 0},
+    damage: {
+      startup : 200,
+      active  : 0,
+      recovery: 0,
+    },
     turn  : {
       startupTime : 20 * 1000 / 60,
       activeTime  : 10 * 1000 / 60,
@@ -850,7 +854,7 @@ let player = {
   breathTimestamp: globalTimestamp,
   movingDistance: 0,
   crouchTime: 0,
-  hitPoint: 0,
+  hitPoint: 10,
 }
 
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
@@ -955,7 +959,7 @@ const soundEfffectObject = {
     sword   : () => playAudio(aud.kohaku.sword),
   },
 }
-const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
+const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2', 'damage',]
 const actionInitObject = {
   jump: () => {
     const jumpCoefficient = 5
@@ -1051,7 +1055,7 @@ const attackCircleObject = {
       d: .05,
       gravity: false,
       lifetime: 300,
-      damage: 10,
+      damage: 1,
     }
   }
 }
@@ -1490,9 +1494,10 @@ const judgement = () => {
           (o.x + o.d * Math.cos(o.a) * intervalDiffTime - tP.x) ** 2 +
           (o.y + o.d * Math.sin(o.a) * intervalDiffTime - tP.y) ** 2 <= r
         ) {
-          if (!o.flag && (index[0] === undefined
-            //  || !index.some(v => v[0] === io && v[1] === it)
-             )) {
+          if (
+            !o.flag && (index[0] === undefined
+            // || !index.some(v => v[0] === io && v[1] === it)
+          )) {
             if (own.type === 'enemy') {
               eIndex.push([i, io])
               o.flag = true
@@ -1510,6 +1515,7 @@ const judgement = () => {
       target.hitPoint -= damage
       if (target.hitPoint <= 0) target.state = 'eliminate'
       else target.state = 'damage'
+      console.log(target.hitPoint)
     })
   }
   enemies.forEach((e, i) => {
@@ -1519,10 +1525,7 @@ const judgement = () => {
       if (i !== ix) hitDetect(e, en, i)
     })
   })
-  pIndex.forEach(v => {
-    console.log(player.attackCircleList[v], v)
-    player.attackCircleList[v].flag = true
-  })
+  pIndex.forEach(v => player.attackCircleList[v].flag = true)
   eIndex.forEach(v => enemies[v[0]].attackCircleList[v[1]].flag = true)
 }
 const update = () => {
@@ -1673,12 +1676,42 @@ const update = () => {
     player.imageIndex = index
   } else if (player.state === 'damage') {
     const i = playerData.image[player.state]
-    i.time += 1
-    if (i.time % i.frame === 0) player.imageIndex += 1
-    if (player.imageIndex === image[player.skin][player.state][player.attackState].length) {
-      player.imageIndex -= image[player.skin][player.state][player.attackState].length
-      i.time = 0
+    player.attackElapsedTime += intervalDiffTime
+    if (player.attackState === 'startup' && i.startup <= player.attackElapsedTime) {
+      player.attackState = 'active'
+      player.attackElapsedTime -= i.startup
+      // active first motion
+    }
+    if (player.attackState === 'active' && i.active <= player.attackElapsedTime) {
+      player.attackState = 'recovery'
+      player.attackElapsedTime -= i.active
+    }
+    if (player.attackState === 'recovery' && i.recovery <= player.attackElapsedTime) {
+      player.attackState = 'startup'
+      player.attackElapsedTime -= i.recovery
       player.state = 'idle'
+      player.motionFirstFlag = false
+    }
+    if (player.state !== 'idle') {
+      const l = image[player.skin][player.state][player.attackState].length
+      if (player.state === 'jump' && player.attackState === 'active') {
+        for (let i = Math.floor(l / 2); 0 <= i; i--) {
+          if (Math.abs(player.dy) < -jumpConstant / (2 ** i * .75)) {
+            if (player.dy < 0) player.imageIndex = i
+            else player.imageIndex = l - i - 1
+            break
+          } else if (i === 0) {
+            if (0 < player.dy) {
+              player.fallTime += intervalDiffTime
+              const interval = 7 * 1000 / 60
+              const dl = image[player.skin][player.state].fall.length
+              player.imageIndex = l - dl + ((player.fallTime / (interval * dl) % dl)|0)
+            }
+          }
+        }
+      } else {
+        player.imageIndex = Math.floor(player.attackElapsedTime / i[player.attackState] * l)
+      }
     }
   } else if (player.state === 'push') player.imageIndex = 0
   else if (motionList.includes(player.state)) {
@@ -1980,6 +2013,8 @@ const draw = () => {
   }
   let x = player.x - imageOffset.x - stageOffset.x
   const img = image[player.skin][player.state][player.attackState][player.imageIndex]
+  if (img === undefined) console.log(image[player.skin][player.state][player.attackState][player.imageIndex],
+    player.skin,player.state,player.attackState,player.imageIndex)
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
