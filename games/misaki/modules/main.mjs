@@ -168,6 +168,7 @@ const getMapData = directory => {
         background: [],
       }, tilesetsIndex: {},
     }
+    let src = 'audio/music/nc109026.wav'
     let resource = []
     await mapLoader('main', setDirectory(directory + '.json')).then(result => {
       Object.assign(mapInfoObject, result.main)
@@ -177,6 +178,10 @@ const getMapData = directory => {
           else mapInfoObject.layersIndex.tileset.push(i)
         } else if (v.type === 'objectgroup') {
           mapInfoObject.layersIndex.objectgroup.push(i)
+          const audio = Object.values(v.objects).filter(v => v.name === 'audio')[0]
+          if (audio !== undefined) {
+            src = audio.properties[0].value.substring(audio.properties[0].value.indexOf('/') + 1)
+          }
         }
       })
       mapInfoObject.tilesets.forEach((v, i) => {
@@ -185,6 +190,11 @@ const getMapData = directory => {
         mapInfoObject.tilesetsIndex[str].index = i
         resource.push(mapLoader(str, setDirectory(v.source)))
       })
+    })
+    await audioLoader(directory, src).then(result => {
+      musicVolumeHandle(Object.values(result)[0])
+      Object.values(result)[0].loop = true
+      Object.assign(mapMusic, result)
     })
     await Promise.all(resource).then(result => {
       resource = []
@@ -642,6 +652,7 @@ const volumeControll = () => {
       else voiceVolumeHandle(aud[v][vl])
     })
   })
+  Object.keys(mapMusic).forEach(v => musicVolumeHandle(mapMusic[v]))
 }
 const audioTableElement = document.getElementById`audio`
 Object.keys(settings.volume).forEach(v => {
@@ -670,22 +681,8 @@ Object.keys(settings.volume).forEach(v => {
     volumeControll()
   })
 })
-const unityChanStat = {
-  idle  : {frame: 55},
-  walk  : {frame: 10},
-  damage: {frame: 5},
-  sword : {
-    frame: 7,
-    startUp: 7,
-    startUpLength: 3,
-    active: 7,
-    activeLength: 1,
-    recovery: 5,
-    recoveryLength: 2,
-  },
-}
 let playFlag = false
-let currentPlay = 'アオイセカイ'
+let currentPlay
 const playAudio = (element, startTime = 0) => {
   element.currentTime = startTime
   element.play()
@@ -736,26 +733,6 @@ const getColor = arg => {
     }
   })
 }
-const getMusic = arg => {
-  arg.layersIndex.objectgroup.forEach(v => {
-    const index = arg.layers[v].objects.findIndex(vl => vl.name === 'audio')
-    if (index !== -1) {
-      let path = arg.layers[v].objects[index].properties[0].value
-      path = setDirectory(path)
-      if (Object.keys(mapMusic).includes(field.name)) {
-        mapMusic[field.name].currentTime = 0
-        mapMusic[field.name].play()
-      } else {
-        audioLoader(field.name, path).then(result => {
-          musicVolumeHandle(Object.values(result)[0])
-          Object.values(result)[0].loop = true
-          Object.values(result)[0].play()
-          Object.assign(mapMusic, result)
-        })
-      }
-    }
-  })
-}
 const setMapProcess = arg => {
   timestamp.gate = globalTimestamp
   field.name = arg
@@ -763,7 +740,6 @@ const setMapProcess = arg => {
   field.h = mapData[arg].tileheight * mapData[arg].height
   setStartPosition(mapData[arg])
   getColor(mapData[arg])
-  // getMusic(mapObject[arg])
 }
 
 const frameCounter = list => {
@@ -1785,29 +1761,28 @@ const main = () => setInterval(() => {
   }
   // floatMenu()
   const musicProcess = () => {
-    const setMusic = () => {
-      return field.name === 'AthleticCourse' ? 'テレフォン・ダンス' : 'アオイセカイ'
+    if (currentPlay !== field.name) {
+      mapMusic[currentPlay].pause()
+      currentPlay = field.name
+      mapMusic[currentPlay].currentTime = 0
+      mapMusic[currentPlay].play()
     }
-    if (
-      currentPlay !== setMusic() ||
-      !playFlag && Object.values(key).some(v => v.flag)
-    ) {
-      Object.keys(aud.music).forEach(v => aud.music[v].pause())
-      if (!playFlag) playFlag = true
-      currentPlay = setMusic()
-      aud.music[currentPlay].currentTime = 0
-      aud.music[currentPlay].play()
-    }
-    if (
-      currentPlay === 'テレフォン・ダンス' &&
-      32.74 < aud.music[currentPlay].currentTime
-    ) aud.music[currentPlay].currentTime = 7.14 + 4 / 60 // 4 frame delay?
-    else if (
-      currentPlay === 'アオイセカイ' &&
-      60 + 13 < aud.music[currentPlay].currentTime
-    ) aud.music[currentPlay].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
+
+    // if (
+    //   currentPlay === 'テレフォン・ダンス' &&
+    //   32.74 < aud.music[currentPlay].currentTime
+    // ) aud.music[currentPlay].currentTime = 7.14 + 4 / 60 // 4 frame delay?
+    // else if (
+    //   currentPlay === 'アオイセカイ' &&
+    //   60 + 13 < aud.music[currentPlay].currentTime
+    // ) aud.music[currentPlay].currentTime = 73 - 112 * (2 / 3.3) + 4 / 60
   }
-  // musicProcess()
+  if (playFlag) musicProcess()
+  else if (Object.values(keyMap).some(v => isKey(v))) {
+    playFlag = true
+    currentPlay = field.name
+    mapMusic[currentPlay].play()
+  }
 }, 0)
 const draw = () => {
   window.requestAnimationFrame(draw)
@@ -2233,7 +2208,7 @@ Promise.all(resourceList).then(() => {
   loadedFlag = true
   volumeControll()
   setMapProcess(field.name)
-  // console.log(mapData, field)
+  console.log(mapData)
   main()
   draw()
 })
