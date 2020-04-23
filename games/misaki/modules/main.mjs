@@ -895,6 +895,7 @@ const enemyData = {
 }
 const setEnemy = () => {
   return {
+    type: 'enemy',
     x: size * 3,
     y: size * 20,
     r: size,
@@ -1012,36 +1013,49 @@ const recoveryCondition = {
   },
 }
 const attackCircleObject = {
-  handgun: {
-    x: size * 1.5,
-    y: -size * 1.75,
-    r: size * .25,
-    a: 0,
-    d: 7.5, // 7.5 = 300 m / s
-    gravity: true,
-    lifetime: 1000,
-    damage: 1,
-  }, handgun2: {
-    x: size * 1.5,
-    y: -size * 1.5,
-    r: size * .25,
-    a: 0,
-    d: 7.5,
-    gravity: true,
-    lifetime: 1000,
-    damage: 1,
-  }, sword: {
-    x: size,
-    y: -size * .75,
-    r: size * .75,
-    a: PI,
-    d: .05,
-    gravity: false,
-    lifetime: 300,
-    damage: 10,
-  },
+  kohaku: {
+    handgun: {
+      x: size * 1.5,
+      y: -size * 1.75,
+      r: size * .25,
+      a: 0,
+      d: 7.5, // 7.5 = 300 m / s
+      gravity: true,
+      lifetime: 1000,
+      damage: 1,
+    }, handgun2: {
+      x: size * 1.5,
+      y: -size * 1.5,
+      r: size * .25,
+      a: 0,
+      d: 7.5,
+      gravity: true,
+      lifetime: 1000,
+      damage: 1,
+    }, sword: {
+      x: size,
+      y: -size * .75,
+      r: size * .75,
+      a: PI,
+      d: .05,
+      gravity: false,
+      lifetime: 300,
+      damage: 10,
+    },
+  }, slimeA: {
+    attack: {
+      x: size,
+      y: -size * .75,
+      r: size * .75,
+      a: PI,
+      d: .05,
+      gravity: false,
+      lifetime: 300,
+      damage: 10,
+    }
+  }
 }
-Object.values(attackCircleObject).forEach(v => v.flag = false)
+Object.values(attackCircleObject).flat().forEach(v => v.flag = false)
 
 const stateReset = () => {
   if (player.descentFlag) player.descentFlag = false
@@ -1476,8 +1490,13 @@ const judgement = () => {
           (o.x + o.d * Math.cos(o.a) * intervalDiffTime - tP.x) ** 2 +
           (o.y + o.d * Math.sin(o.a) * intervalDiffTime - tP.y) ** 2 <= r
         ) {
-          if (!o.flag && (index[0] !== undefined || !index.some(v => v[0] === io || v[1] === it))) {
-            if (own.type === 'enemy') eIndex.push([i, io])
+          if (!o.flag && (index[0] === undefined
+            //  || !index.some(v => v[0] === io && v[1] === it)
+             )) {
+            if (own.type === 'enemy') {
+              eIndex.push([i, io])
+              o.flag = true
+            }
             else pIndex.push(io)
             index.push([io, it])
           }
@@ -1497,10 +1516,13 @@ const judgement = () => {
     hitDetect(player, e)
     hitDetect(e, player, i)
     enemies.forEach((en, ix) => {
-      if (i !== ix) hitDetect(e, en)
+      if (i !== ix) hitDetect(e, en, i)
     })
   })
-  pIndex.forEach(v => player.attackCircleList[v].flag = true)
+  pIndex.forEach(v => {
+    console.log(player.attackCircleList[v], v)
+    player.attackCircleList[v].flag = true
+  })
   eIndex.forEach(v => enemies[v[0]].attackCircleList[v[1]].flag = true)
 }
 const update = () => {
@@ -1516,22 +1538,27 @@ const update = () => {
     frictionalForce = userFF
     const terminalVelocity = size
     if (terminalVelocity < player.dy) player.dy = terminalVelocity
-
-    player.attackCircleList.forEach((v, i) => {
-      v.lifetime -= intervalDiffTime
-      if (v.lifetime <= 0) player.attackCircleList.splice(i, 1)
-      else {
-        if (v.direction === 'right') {
-          v.x += v.d * Math.cos(v.a) * intervalDiffTime
-          v.y += v.d * Math.sin(v.a) * intervalDiffTime
-        } else {
-          const a = 0 < v.a ? PI / 2 - (v.a - PI / 2) : -PI / 2 - (v.a + PI / 2)
-          v.x += v.d * Math.cos(a) * intervalDiffTime
-          v.y += v.d * Math.sin(a) * intervalDiffTime
+    const attackCircleUpdate = list => {
+      let indexList = []
+      list.forEach((v, i) => {
+        v.lifetime -= intervalDiffTime
+        if (v.lifetime <= 0) indexList.push(i)
+        else {
+          if (v.direction === 'right') {
+            v.x += v.d * Math.cos(v.a) * intervalDiffTime
+            v.y += v.d * Math.sin(v.a) * intervalDiffTime
+          } else {
+            const a = 0 < v.a ? PI / 2 - (v.a - PI / 2) : -PI / 2 - (v.a + PI / 2)
+            v.x += v.d * Math.cos(a) * intervalDiffTime
+            v.y += v.d * Math.sin(a) * intervalDiffTime
+          }
         }
-      }
-      if (v.gravity) v.y += gravity
-    })
+        if (v.gravity) v.y += gravity
+      })
+      indexList.reverse().forEach(v => list.splice(v, 1))
+    }
+    attackCircleUpdate(player.attackCircleList)
+    enemies.forEach(v => attackCircleUpdate(v.attackCircleList))
   }
   { // dx
     if (player.grabFlag) player.dx = 0
@@ -1665,8 +1692,8 @@ const update = () => {
       if (!player.motionFirstFlag) { // motion
         player.motionFirstFlag = true
         if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
-        if (attackCircleObject[player.state] !== undefined) {
-          const object = JSON.parse(JSON.stringify(attackCircleObject[player.state]))
+        if (attackCircleObject[player.skin][player.state] !== undefined) {
+          const object = JSON.parse(JSON.stringify(attackCircleObject[player.skin][player.state]))
           if (player.direction === 'right') object.x = player.x + object.x
           else object.x = player.x - (object.x + object.r)
           object.y = player.y + object.y
@@ -1726,16 +1753,27 @@ const update = () => {
     if (v.attackState === 'startup' && enemyData[v.skin][v.state].startup <= v.elapsedTime) {
       v.elapsedTime -= enemyData[v.skin][v.state].startup
       v.attackState = 'active'
+      if (attackCircleObject[v.skin][v.state] !== undefined) {
+        const object = JSON.parse(JSON.stringify(attackCircleObject[v.skin][v.state]))
+        if (v.direction === 'right') object.x = v.x + object.x
+        else object.x = v.x - (object.x + object.r)
+        object.y = v.y + object.y
+        object.direction = v.direction
+        v.attackCircleList.push(object)
+      }
     }
     if (v.attackState === 'active' && enemyData[v.skin][v.state].active <= v.elapsedTime) {
       v.elapsedTime -= enemyData[v.skin][v.state].active
       v.attackState = 'recovery'
     }
-    if (v.attackState === 'recovery' && enemyData[v.skin][v.state].recovery < v.elapsedTime) {
+    if (v.attackState === 'recovery' && enemyData[v.skin][v.state].recovery <= v.elapsedTime) {
       v.elapsedTime -= enemyData[v.skin][v.state].recovery
       v.attackState = 'startup'
       if (v.state === 'eliminate') eliminateList.push(i)
       if (v.state !== 'idle') v.state = 'idle'
+    }
+    if (image[v.skin][v.state][v.attackState] === undefined) {
+      console.log(v.skin, v.state, v.attackState)
     }
     v.imageIndex = Math.floor(
       v.elapsedTime / enemyData[v.skin][v.state][v.attackState] *
@@ -2053,7 +2091,7 @@ const draw = () => {
     }
     context.fillStyle = 'hsla(300, 100%, 50%, .5)'
     player.hitCircleList.forEach(v => fillCircle(player.x + v.x, player.y + v.y, v.r))
-    player.attackCircleList.forEach(v => {
+    const drawAttackCircle = v => {
       let a
       if (v.direction === 'right') a = v.a
       else a = 0 < v.a ? PI / 2 - (v.a - PI / 2) : -PI / 2 - (v.a + PI / 2)
@@ -2071,7 +2109,8 @@ const draw = () => {
       context.closePath()
       context.stroke()
       context.restore()
-    })
+    }
+    player.attackCircleList.forEach(v => drawAttackCircle(v))
     enemies.forEach(v => {
       strokeCollisionCircle(v)
       context.fillStyle = 'hsla(30, 100%, 50%, .5)'
@@ -2079,7 +2118,7 @@ const draw = () => {
         v.hitCircleList.forEach(vl => fillCircle(v.x + vl.x, v.y + vl.y, vl.r))
       }
       context.fillStyle = 'hsla(0, 100%, 50%, .5)'
-      v.attackCircleList.forEach(vl => fillCircle(v.x + vl.x, v.y + vl.y, vl.r))
+      v.attackCircleList.forEach(vl => drawAttackCircle(vl))
     })
   }
   {
