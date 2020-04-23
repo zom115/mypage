@@ -1421,8 +1421,9 @@ const judgement = () => {
   }
   collisionDetect(player)
   enemies.forEach(v => {collisionDetect(v)})
-
-  const hitDetect = (own, target) => {
+  const pIndex = []
+  const eIndex = []
+  const hitDetect = (own, target, i) => {
     let index = []
     own.attackCircleList.forEach((o, io) => {
       target.hitCircleList.forEach((t, it) => {
@@ -1450,7 +1451,8 @@ const judgement = () => {
           (o.y + o.d * Math.sin(o.a) * intervalDiffTime - tP.y) ** 2 <= r
         ) {
           if (!o.flag && (index[0] !== undefined || !index.some(v => v[0] === io || v[1] === it))) {
-            o.flag = true
+            if (own.type === 'enemy') eIndex.push([i, io])
+            else pIndex.push(io)
             index.push([io, it])
           }
         }
@@ -1467,11 +1469,13 @@ const judgement = () => {
   }
   enemies.forEach((e, i) => {
     hitDetect(player, e)
-    hitDetect(e, player)
+    hitDetect(e, player, i)
     enemies.forEach((en, ix) => {
       if (i !== ix) hitDetect(e, en)
     })
   })
+  pIndex.forEach(v => player.attackCircleList[v].flag = true)
+  eIndex.forEach(v => enemies[v[0]].attackCircleList[v[1]].flag = true)
 }
 const update = () => {
   {
