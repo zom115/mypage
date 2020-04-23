@@ -1883,13 +1883,16 @@ const draw = () => {
   enemies.forEach(v => {
     let ex = v.x - v.imageOffset.x - stageOffset.x|0
     const ey = v.y - v.imageOffset.y - stageOffset.y|0
-    const imag = image[v.skin][v.state][v.attackState][v.imageIndex]
+    const img = image[v.skin][v.state][v.attackState][v.imageIndex]
     context.save()
+    if (v.state === 'eliminate') {
+      context.globalAlpha = (Math.sin(v.elapsedTime) + 1) / 4 + .25 // .25 to .75
+    }
     if (v.direction === 'left') {
       context.scale(-1, 1)
-      ex = -ex - imag.width
+      ex = -ex - img.width
     }
-    context.drawImage(imag, ex, ey)
+    context.drawImage(img, ex, ey)
     context.restore()
   })
   if (0 < timestamp.gate) {
@@ -1909,7 +1912,6 @@ const draw = () => {
   }
   let x = player.x - imageOffset.x - stageOffset.x
   const img = image[player.skin][player.state][player.attackState][player.imageIndex]
-  if (img === undefined)console.log(player.skin, player.state, player.attackState, player.imageIndex)
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
