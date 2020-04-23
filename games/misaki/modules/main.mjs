@@ -771,53 +771,50 @@ const playerData = {
   }, stride: {
     walk: 14, // in rearistic, stride = 7
     run : 20, // in rearistic, stride = 10
-  }, image: {
-    idle  : {
-      blinkAnimationInterval: 15,
-      blinkInterval         : 5e3,
-      blinkMax              : 3,
-      blinkRotate           : [0, 1, 2, 1],
-      breathCount           : 0,
-      breathInterval        : 30,
-      breathMax             : 4,
-      breathTimestamp       : globalTimestamp,
-    }, crouch: {intervalTime: 50},
-    push  : {},
-    damage: {
-      startup : 200,
-      active  : 0,
-      recovery: 0,
-    },
-    turn  : {
-      startupTime : 20 * 1000 / 60,
-      activeTime  : 10 * 1000 / 60,
-      recoveryTime: 0,
-    }, jump : {
-      startupTime : 0,
-      activeTime  : 36 * 1000 / 60,
-      recoveryTime: 4 * 1000 / 60,
-    }, doubleJump : {
-      startupTime : 0,
-      activeTime  : 36 * 1000 / 60,
-      recoveryTime: 4 * 1000 / 60,
-    }, slide : {
-      startupTime : 0,
-      activeTime  : 36 * 1000 / 60,
-      recoveryTime: 0,
-    }, handgun : {
-      startupTime : 16 * 1000 / 60,
-      activeTime  : 0,
-      recoveryTime: 100,
-      nextState: 'handgun2',
-    }, handgun2 : {
-      startupTime : 0,
-      activeTime  : 0,
-      recoveryTime: 38 * 1000 / 60,
-    }, sword : {
-      startupTime : 7 * 1000 / 60,
-      activeTime  : 5 * 1000 / 60,
-      recoveryTime: 21 * 1000 / 60,
-    },
+  }, idle : {
+    blinkAnimationInterval: 15,
+    blinkInterval         : 5e3,
+    blinkMax              : 3,
+    blinkRotate           : [0, 1, 2, 1],
+    breathCount           : 0,
+    breathInterval        : 30,
+    breathMax             : 4,
+    breathTimestamp       : globalTimestamp,
+  }, crouch: {intervalTime: 50},
+  push : {},
+  damage: {
+    startup : 200,
+    active  : 0,
+    recovery: 0,
+  }, turn  : {
+    startup : 20 * 1000 / 60,
+    active  : 10 * 1000 / 60,
+    recovery: 0,
+  }, jump : {
+    startup : 0,
+    active  : 36 * 1000 / 60,
+    recovery: 4 * 1000 / 60,
+  }, doubleJump : {
+    startup : 0,
+    active  : 36 * 1000 / 60,
+    recovery: 4 * 1000 / 60,
+  }, slide : {
+    startup : 0,
+    active  : 36 * 1000 / 60,
+    recovery: 0,
+  }, handgun : {
+    startup : 16 * 1000 / 60,
+    active  : 0,
+    recovery: 100,
+    nextState: 'handgun2',
+  }, handgun2 : {
+    startup : 0,
+    active  : 0,
+    recovery: 38 * 1000 / 60,
+  }, sword : {
+    startup : 7 * 1000 / 60,
+    active  : 5 * 1000 / 60,
+    recovery: 21 * 1000 / 60,
   },
 }
 let player = {
@@ -829,7 +826,6 @@ let player = {
   skin: 'kohaku',
   state: 'idle',
   attackState: 'startup',
-  motionFirstFlag: false,
   attackElapsedTime: 0,
   imageIndex: 0,
   direction: 'right',
@@ -1001,18 +997,8 @@ const uniqueActionObject = {
   },
   slide: () => {player.attackElapsedTime = 0},
 }
-const commonCondition = i => {
-  if (i.activeTime <= player.attackElapsedTime) {
-    player.attackState = 'recovery'
-    player.attackElapsedTime -= i.activeTime
-  }
-}
 const recoveryCondition = {
-  turn    : i  => {commonCondition(i)},
-  handgun : i  => {commonCondition(i)},
-  handgun2: i  => {commonCondition(i)},
-  sword   : i  => {commonCondition(i)},
-  slide   : () => {
+  slide : () => {
     if (Math.abs(player.dx) < walkThreshold) player.attackState = 'recovery'
   },
 }
@@ -1108,7 +1094,6 @@ const proposal = () => {
     if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
       if (player.state === 'jump') player.doubleJumpFlag = true
       player.state = 'jump'
-      player.motionFirstFlag = false
     }
   }
   let actionList = ['crouch']
@@ -1515,7 +1500,6 @@ const judgement = () => {
       target.hitPoint -= damage
       if (target.hitPoint <= 0) target.state = 'eliminate'
       else target.state = 'damage'
-      console.log(target.hitPoint)
     })
   }
   enemies.forEach((e, i) => {
@@ -1607,12 +1591,11 @@ const update = () => {
     if (!player.doubleJumpFlag) { // fall
       player.state = 'jump'
       player.attackState = 'active'
-      player.motionFirstFlag = true
     }
   }
 
   if (player.state === 'idle') {
-    const i = playerData.image[player.state]
+    const i = playerData[player.state]
     if ( // breath
       player.breathTimestamp + player.breathInterval / i.breathMax * (player.breathCount + 1) <=
       globalTimestamp
@@ -1660,7 +1643,7 @@ const update = () => {
       else if (player.breathInterval < player.midBreath) player.breathInterval += 1
     }
   } else if (player.state === 'crouch') {
-    const i = playerData.image[player.state]
+    const i = playerData[player.state]
     const index = Math.floor(player.crouchTime / i.intervalTime)
     if (isKey(keyMap.crouch)) {
       if ((index < image[player.skin][player.state][player.attackState].length - 1)) {
@@ -1674,23 +1657,43 @@ const update = () => {
       }
     }
     player.imageIndex = index
-  } else if (player.state === 'damage') {
-    const i = playerData.image[player.state]
+  } else if (player.state === 'push') player.imageIndex = 0
+  else if (motionList.includes(player.state)) {
+    const i = playerData[player.state]
     player.attackElapsedTime += intervalDiffTime
     if (player.attackState === 'startup' && i.startup <= player.attackElapsedTime) {
       player.attackState = 'active'
       player.attackElapsedTime -= i.startup
-      // active first motion
+      if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
+      if (attackCircleObject[player.skin][player.state] !== undefined) {
+        const object = JSON.parse(JSON.stringify(attackCircleObject[player.skin][player.state]))
+        if (player.direction === 'right') object.x = player.x + object.x
+        else object.x = player.x - (object.x + object.r)
+        object.y = player.y + object.y
+        object.direction = player.direction
+        player.attackCircleList.push(object)
+      }
+      if (soundEfffectObject[player.skin][player.state] !== undefined) {
+        soundEfffectObject[player.skin][player.state]()
+      }
+      if (playerData.breath.min < player.breathInterval) player.breathInterval -= 1 // temporary
     }
-    if (player.attackState === 'active' && i.active <= player.attackElapsedTime) {
-      player.attackState = 'recovery'
-      player.attackElapsedTime -= i.active
+    if (player.attackState === 'active') {
+      if (recoveryCondition[player.state] !== undefined) recoveryCondition[player.state](i)
+      else if (i.active <= player.attackElapsedTime) {
+        player.attackState = 'recovery'
+        player.attackElapsedTime -= i.active
+      }
+      if (uniqueActionObject[player.state] !== undefined) uniqueActionObject[player.state]()
     }
     if (player.attackState === 'recovery' && i.recovery <= player.attackElapsedTime) {
       player.attackState = 'startup'
       player.attackElapsedTime -= i.recovery
-      player.state = 'idle'
-      player.motionFirstFlag = false
+      if (player.state === 'jump') {
+        player.fallFlag = false
+        player.fallTime = 0
+      }
+      player.state = i.nextState !== undefined ? i.nextState : 'idle'
     }
     if (player.state !== 'idle') {
       const l = image[player.skin][player.state][player.attackState].length
@@ -1711,70 +1714,6 @@ const update = () => {
         }
       } else {
         player.imageIndex = Math.floor(player.attackElapsedTime / i[player.attackState] * l)
-      }
-    }
-  } else if (player.state === 'push') player.imageIndex = 0
-  else if (motionList.includes(player.state)) {
-    const i = playerData.image[player.state]
-    player.attackElapsedTime += intervalDiffTime
-    if (player.attackState === 'startup' && i.startupTime <= player.attackElapsedTime) {
-      player.attackState = 'active'
-      player.attackElapsedTime -= i.startupTime
-    }
-    if (player.attackState === 'active') {
-      if (!player.motionFirstFlag) { // motion
-        player.motionFirstFlag = true
-        if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
-        if (attackCircleObject[player.skin][player.state] !== undefined) {
-          const object = JSON.parse(JSON.stringify(attackCircleObject[player.skin][player.state]))
-          if (player.direction === 'right') object.x = player.x + object.x
-          else object.x = player.x - (object.x + object.r)
-          object.y = player.y + object.y
-          object.direction = player.direction
-          player.attackCircleList.push(object)
-        }
-        if (soundEfffectObject[player.skin][player.state] !== undefined) {
-          soundEfffectObject[player.skin][player.state]()
-        }
-        if (playerData.breath.min < player.breathInterval) player.breathInterval -= 1 // temporary
-      }
-      if (uniqueActionObject[player.state] !== undefined) uniqueActionObject[player.state]()
-      if (recoveryCondition[player.state] !== undefined) recoveryCondition[player.state](i)
-    }
-    if (player.attackState === 'recovery' && i.recoveryTime <= player.attackElapsedTime) {
-      if (player.state === 'jump') {
-        player.fallFlag = false
-        player.fallTime = 0
-      }
-      if (i.nextState !== undefined) {
-        player.attackElapsedTime -= i.recoveryTime
-        player.state = i.nextState
-      } else {
-        player.attackElapsedTime = 0
-        player.state = 'idle'
-      }
-      player.attackState = 'startup'
-      player.motionFirstFlag = false
-    }
-    if (player.state !== 'idle') {
-      const l = image[player.skin][player.state][player.attackState].length
-      if (player.state === 'jump' && player.attackState === 'active') {
-        for (let i = Math.floor(l / 2); 0 <= i; i--) {
-          if (Math.abs(player.dy) < -jumpConstant / (2 ** i * .75)) {
-            if (player.dy < 0) player.imageIndex = i
-            else player.imageIndex = l - i - 1
-            break
-          } else if (i === 0) {
-            if (0 < player.dy) {
-              player.fallTime += intervalDiffTime
-              const interval = 7 * 1000 / 60
-              const dl = image[player.skin][player.state].fall.length
-              player.imageIndex = l - dl + ((player.fallTime / (interval * dl) % dl)|0)
-            }
-          }
-        }
-      } else {
-        player.imageIndex = Math.floor(player.attackElapsedTime / i[player.attackState + 'Time'] * l)
       }
     }
   }
