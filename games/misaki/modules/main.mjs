@@ -869,7 +869,8 @@ let player = {
   breathTimestamp: globalTimestamp,
   movingDistance: 0,
   crouchTime: 0,
-  hitPoint: 1,
+  hitPoint: 10,
+  hitPoint_max: 10,
 }
 
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
@@ -2191,7 +2192,6 @@ const draw = () => {
   }
   if (settings.type.status) {
     context.save()
-    const offsetY = size * 8
     const list = [
       `internalFPS: ${internalFrameList.length - 1}`,
       `FPS: ${animationFrameList.length - 1}`,
@@ -2220,6 +2220,7 @@ const draw = () => {
       `enemy: ${enemies.length}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
+    const offsetY = size * 8
     const fontsize = 10
     context.fillRect(
       canvas.offsetWidth * .8 - size / 2, offsetY, size * 10, fontsize * (list.length + 1))
@@ -2227,6 +2228,48 @@ const draw = () => {
     list.forEach((v, i) => {
       context.fillText(v, canvas.offsetWidth * .8, offsetY + fontsize * (1 + i))
     })
+    { // HP bar
+      let labelFlag = true
+      const offset = {x: size / 2, y: size / 2,}
+      let borderMethod = 1 // 1: ,2: ,4:
+      const borderSize1 = 1
+      const borderSize2 = 1
+      const borderSize3 = 1
+      const borderSize4 = 1
+      const border =
+      borderMethod === 1 ? {t: borderSize1, r: borderSize1, b: borderSize1, l: borderSize1,} :
+      borderMethod === 2 ? {t: borderSize1, r: borderSize2, b: borderSize1, l: borderSize2,} :
+      {t: borderSize1, r: borderSize2, b: borderSize3, l: borderSize4,}
+      const labelWidth = size
+      const WIDTH_MAX = size * 5
+      const borderWidth = labelFlag ? WIDTH_MAX + labelWidth : WIDTH_MAX
+      const height = size / 2
+      const borderColor = 'hsla(0, 0%, 0%, 1)'
+      const borderOffset = {x: offset.x, y: offset.y}
+      if (labelFlag) {
+        context.fillStyle = borderColor
+        context.fillRect(
+          offset.x, offset.y, border.l + labelWidth, border.t + height + border.b)
+        context.strokeStyle = borderColor
+        borderOffset.x += labelWidth
+      }
+      context.strokeRect(borderOffset.x + .5, borderOffset.y + .5, WIDTH_MAX + border.r, border.t + height)
+      const textColor = 'hsla(0, 0%, 100%, 1)'
+      context.fillStyle = textColor
+      context.textAlign = 'left'
+      const frameOffset = {x: offset.x + border.l, y: offset.y + border.t,}
+      if (labelFlag) {
+        context.fillText('HP', offset.x + border.l, border.t + offset.y + size / 2)
+        frameOffset.x += size
+      }
+      const BG_COLOR = 'hsla(0, 0%, 0%, 1)'
+      context.fillStyle = BG_COLOR
+      context.fillRect(frameOffset.x, frameOffset.y, WIDTH_MAX, height)
+      const WIDTH = player.hitPoint / player.hitPoint_max * WIDTH_MAX
+      const HIT_POINT_COLOR = 'hsla(180, 100%, 50%, 1)'
+      context.fillStyle = HIT_POINT_COLOR
+      context.fillRect(frameOffset.x, frameOffset.y, WIDTH, height)
+    }
     context.restore()
   }
   const drawTitle = () => {
