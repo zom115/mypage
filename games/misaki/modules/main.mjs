@@ -1116,6 +1116,7 @@ const proposal = () => {
     if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
       if (player.state === 'jump') player.doubleJumpFlag = true
       player.state = 'jump'
+      player.attackState = 'startup'
     }
   }
   let actionList = ['crouch']
