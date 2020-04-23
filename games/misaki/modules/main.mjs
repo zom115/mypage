@@ -937,9 +937,9 @@ const floatMenuCursorMax = 3
 
 const soundEfffectObject = {
   kohaku: {
-    handgun   : aud.se.shot,
-    handgun2  : aud.se.shot,
-    sword     : aud.kohaku.sword,
+    handgun : () => playAudio(aud.se.shot),
+    handgun2: () => playAudio(aud.se.shot),
+    sword   : () => playAudio(aud.kohaku.sword),
   },
 }
 const motionList = ['turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2']
@@ -957,8 +957,7 @@ const actionInitObject = {
     const slideSpeed = player.dx < 0 ? -boostConstant : boostConstant
     player.dx += slideSpeed
     cooltime.slide = cooltime.slideLimit
-  },
-  turn: () => {
+  }, turn: () => {
     if (
       (player.direction === 'left' && floorThreshold < player.dx) ||
       (player.direction === 'right' && player.dx < -floorThreshold)
@@ -1611,7 +1610,8 @@ const update = () => {
       i.time = 0
       player.state = 'idle'
     }
-  } else if (motionList.includes(player.state)) {
+  } else if (player.state === 'push') player.imageIndex = 0
+  else if (motionList.includes(player.state)) {
     const i = playerData.image[player.state]
     player.attackElapsedTime += intervalDiffTime
     if (player.attackState === 'startup' && i.startupTime <= player.attackElapsedTime) {
@@ -1631,7 +1631,7 @@ const update = () => {
           player.attackCircleList.push(object)
         }
         if (soundEfffectObject[player.skin][player.state] !== undefined) {
-          playAudio(soundEfffectObject[player.skin][player.state].data)
+          soundEfffectObject[player.skin][player.state]()
         }
         if (playerData.breath.min < player.breathInterval) player.breathInterval -= 1 // temporary
       }
@@ -1892,13 +1892,14 @@ const draw = () => {
     if (end < elapsedTime) timestamp.gate = 0
   }
   let x = player.x - imageOffset.x - stageOffset.x
-  const imag = image[player.skin][player.state][player.attackState][player.imageIndex]
+  const img = image[player.skin][player.state][player.attackState][player.imageIndex]
+  if (img === undefined)console.log(player.skin, player.state, player.attackState, player.imageIndex)
   context.save()
   if (player.direction === 'left') {
     context.scale(-1, 1)
-    x = -x - imag.width
+    x = -x - img.width
   }
-  context.drawImage(imag, x|0, player.y - imageOffset.y - stageOffset.y|0)
+  context.drawImage(img, x|0, player.y - imageOffset.y - stageOffset.y|0)
   context.restore()
   mapData[field.name].layersIndex.tileset.forEach(v => {
     let flag = false
