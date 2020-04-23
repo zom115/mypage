@@ -2271,6 +2271,16 @@ const draw = () => {
       context.fillStyle = HIT_POINT_COLOR
       context.fillRect(frameOffset.x, frameOffset.y, WIDTH, height)
     }
+    enemies.forEach(v => {
+      const offset = {x:v.x - stageOffset.x - size, y: v.y - size * 2 - stageOffset.y}
+      if (0 <= v.hitPoint) {
+        context.fillStyle = 'hsl(0, 0%, 0%)'
+        context.textAlign = 'right'
+        context.fillText(v.hitPoint, offset.x + size * 2|0, offset.y|0)
+      }
+      context.fillStyle = 'hsl(0, 100%, 50%)'
+      context.fillRect(offset.x|0, offset.y|0, size * 2, size / 4)
+    })
     context.restore()
   }
   const drawTitle = () => {
