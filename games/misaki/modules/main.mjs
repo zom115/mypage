@@ -870,7 +870,7 @@ let player = {
   movingDistance: 0,
   crouchTime: 0,
   hitPoint: 10,
-  hitPoint_max: 10,
+  hitPointMax: 10,
 }
 
 const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
@@ -890,6 +890,7 @@ const maxLog = {
 const enemies = []
 const enemyData = {
   slimeA: {
+    hitPointMax: 10,
     idle: {
       startup : 3e3,
       active  : 0,
@@ -913,8 +914,8 @@ const enemyData = {
     }
   },
 }
-const setEnemy = () => {
-  return {
+const setEnemy = skin => {
+  const object = {
     type: 'enemy',
     x: size * 3,
     y: size * 20,
@@ -924,7 +925,7 @@ const setEnemy = () => {
     landFlag: false,
     descentFlag: false,
     wallFlag: false,
-    skin: 'slimeA',
+    skin: skin,
     state: 'idle',
     beforeState: 'idle',
     attackState: 'startup',
@@ -935,13 +936,15 @@ const setEnemy = () => {
     attackCircleList: [],
     elapsedTime: 0,
     breathTime: 0,
-    hitPoint: 10,
+    hitPoint: enemyData[skin].hitPointMax,
     eliminateTime: 0,
     think: 'move',
     thinkTime: 0,
   }
+  object.hitPoint = enemyData[skin].hitPointMax
+  return object
 }
-enemies.push(setEnemy())
+enemies.push(setEnemy('slimeA'))
 
 const effectData = {lifetime: 500}
 const effectList = []
@@ -1216,7 +1219,7 @@ const proposal = () => {
     }
   })
   { // for debug
-    if (isKeyFirst(keyMap.pushEnemy)) enemies.push(setEnemy())
+    if (isKeyFirst(keyMap.pushEnemy)) enemies.push(setEnemy('slimeA'))
     if (isKeyFirst(keyMap.reset)) {
       maxLog.dx = 0
       maxLog.dy = 0
@@ -1523,7 +1526,6 @@ const judgement = () => {
       target.hitPoint -= damage
       if (target.hitPoint <= 0) target.state = 'eliminate'
       else target.state = 'damage'
-      console.log(player.state)
     })
   }
   enemies.forEach((e, i) => {
@@ -2266,20 +2268,38 @@ const draw = () => {
       const BG_COLOR = 'hsla(0, 0%, 0%, 1)'
       context.fillStyle = BG_COLOR
       context.fillRect(frameOffset.x, frameOffset.y, WIDTH_MAX, height)
-      const WIDTH = player.hitPoint / player.hitPoint_max * WIDTH_MAX
+      const WIDTH = player.hitPoint / player.hitPointMax * WIDTH_MAX
       const HIT_POINT_COLOR = 'hsla(180, 100%, 50%, 1)'
       context.fillStyle = HIT_POINT_COLOR
       context.fillRect(frameOffset.x, frameOffset.y, WIDTH, height)
+      context.font = `bold ${size * .75}px sans-serif`
+      context.fillStyle = 'hsl(0, 0%, 100%)'
+      context.textAlign = 'right'
+      let denominatorFlag = true
+      const fraction = denominatorFlag ? `${player.hitPoint} / ${player.hitPointMax}` : player.hitPoint
+      const fractionOffset = {
+        x: offset.x + WIDTH_MAX, y: offset.y + border.t + height + border.b + size * .75}
+      if (labelFlag) fractionOffset.x += labelWidth
+      context.fillText(fraction, fractionOffset.x, fractionOffset.y)
+      context.strokeStyle = 'hsl(0, 0%, 25%)'
+      context.strokeText(fraction, fractionOffset.x, fractionOffset.y)
     }
     enemies.forEach(v => {
       const offset = {x:v.x - stageOffset.x - size, y: v.y - size * 2 - stageOffset.y}
-      if (0 <= v.hitPoint) {
-        context.fillStyle = 'hsl(0, 0%, 0%)'
+      if (0 < v.hitPoint) {
         context.textAlign = 'right'
-        context.fillText(v.hitPoint, offset.x + size * 2|0, offset.y|0)
+        context.font = `bold ${size * .75}px sans-serif`
+        context.fillStyle = 'hsl(0, 0%, 100%)'
+        let denominatorFlag = false
+        const fraction = denominatorFlag ? `${v.hitPoint} / ${enemyData[v.skin].hitPointMax}` : v.hitPoint
+        const fractionOffset = {x: offset.x + size * 2, y: offset.y - size / 8}
+        context.fillText(fraction, fractionOffset.x, fractionOffset.y)
+        context.strokeStyle = 'hsl(0, 0%, 25%)'
+        context.strokeText(fraction, fractionOffset.x, fractionOffset.y)
+        context.fillStyle = 'hsl(0, 100%, 50%)'
+        const barWidth = v.hitPoint / enemyData[v.skin].hitPointMax * size * 2
+        context.fillRect(offset.x|0, offset.y|0, barWidth, size / 4)
       }
-      context.fillStyle = 'hsl(0, 100%, 50%)'
-      context.fillRect(offset.x|0, offset.y|0, size * 2, size / 4)
     })
     context.restore()
   }
