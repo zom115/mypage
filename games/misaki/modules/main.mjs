@@ -855,6 +855,8 @@ let player = {
   grabFlag: false,
   wallFlag: false,
   fallTime: 0,
+  startupFlag: false,
+  directionDirection: 'left',
   hitCircleList: [
     {x: 0, y: -size * 1.5, r: size / 2,},
     {x: 0, y: -size *  .5, r: size / 2,},
@@ -1712,22 +1714,35 @@ const update = () => {
   else if (motionList.includes(player.state)) {
     const i = playerData[player.state]
     player.attackElapsedTime += intervalDiffTime
-    if (player.attackState === 'startup' && i.startup <= player.attackElapsedTime) {
-      player.attackState = 'active'
-      player.attackElapsedTime -= i.startup
-      if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
-      if (attackCircleObject[player.skin][player.state] !== undefined) {
-        const object = JSON.parse(JSON.stringify(attackCircleObject[player.skin][player.state]))
-        if (player.direction === 'right') object.x = player.x + object.x
-        else object.x = player.x - (object.x + object.r)
-        object.y = player.y + object.y
-        object.direction = player.direction
-        player.attackCircleList.push(object)
+    if (player.attackState === 'startup') {
+      if (!player.startupFlag) {
+        const direction = isKey(keyMap.left) ? 'left' : 'right'
+        if (isKeyFirst(keyMap.left) !== isKeyFirst(keyMap.right)) {
+          player.directionDirection = direction
+          player.startupFlag = true
+        }
       }
-      if (soundEfffectObject[player.skin][player.state] !== undefined) {
-        soundEfffectObject[player.skin][player.state]()
+      if (i.startup <= player.attackElapsedTime) {
+        if (player.startupFlag) {
+          player.direction = player.directionDirection
+          player.startupFlag = false
+        }
+        player.attackState = 'active'
+        player.attackElapsedTime -= i.startup
+        if (actionInitObject[player.state] !== undefined) actionInitObject[player.state]()
+        if (attackCircleObject[player.skin][player.state] !== undefined) {
+          const object = JSON.parse(JSON.stringify(attackCircleObject[player.skin][player.state]))
+          if (player.direction === 'right') object.x = player.x + object.x
+          else object.x = player.x - (object.x + object.r)
+          object.y = player.y + object.y
+          object.direction = player.direction
+          player.attackCircleList.push(object)
+        }
+        if (soundEfffectObject[player.skin][player.state] !== undefined) {
+          soundEfffectObject[player.skin][player.state]()
+        }
+        if (playerData.breath.min < player.breathInterval) player.breathInterval -= 1 // temporary
       }
-      if (playerData.breath.min < player.breathInterval) player.breathInterval -= 1 // temporary
     }
     if (player.attackState === 'active') {
       if (recoveryCondition[player.state] !== undefined) recoveryCondition[player.state](i)
