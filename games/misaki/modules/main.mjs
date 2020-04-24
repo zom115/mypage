@@ -1212,7 +1212,7 @@ const proposal = () => {
     speed *= dashThreshold < Math.abs(player.dx) ? 1 - attenuationRatio : 1
     const aerialBrake = .2
     const registValue = .1
-    speed *= player.state === 'jump' ? aerialBrake :
+    speed *= !player.landFlag ? aerialBrake :
     player.state === 'turn' && player.attackState === 'startup' ? registValue :
     player.state === 'turn' && player.attackState === 'active' ? 1 :
     ['crouch', 'damage'].includes(player.state) || motionList.includes(player.state) ? 0 : 1
