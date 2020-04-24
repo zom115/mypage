@@ -915,7 +915,7 @@ const enemyData = {
   },
 }
 const setEnemy = skin => {
-  const object = {
+  return {
     type: 'enemy',
     x: size * 3,
     y: size * 20,
@@ -941,20 +941,29 @@ const setEnemy = skin => {
     think: 'move',
     thinkTime: 0,
   }
-  object.hitPoint = enemyData[skin].hitPointMax
-  return object
 }
 enemies.push(setEnemy('slimeA'))
 
-const effectData = {lifetime: 500}
+const effectData = {lifetime: 200}
 const effectList = []
-const setEffect = (x, y, text) => {
+const setEffect = (x, y) => {
+  return {
+    x: x + size * (Math.random() * .5 - .25),
+    y: y + size * (Math.random() * .5 - .5),
+    lifetime: effectData.lifetime,
+    d: -(Math.random() * .5 + .25) * PI,
+  }
+}
+const textEffectData = {lifetime: 500}
+const textEffectList = []
+const setTextEffect = (x, y, text, color) => {
   return {
     x: x + size * (Math.random() * .5 - .25),
     y: y + size * (Math.random() * .5 - .5),
     text: text,
-    lifetime: effectData.lifetime,
+    lifetime: textEffectData.lifetime,
     d: -(Math.random() * .5 + .25) * PI,
+    c: color,
   }
 }
 
@@ -1521,8 +1530,12 @@ const judgement = () => {
     })
     index.reverse().forEach(v => {
       const damage = own.attackCircleList[v[0]].damage
-      effectList.push(setEffect(target.x + target.hitCircleList[v[1]].x,
-        target.y + target.hitCircleList[v[1]].y, damage))
+      const x = (own.attackCircleList[v[0]].x + target.x + target.hitCircleList[v[1]].x) / 2
+      const y = (own.attackCircleList[v[0]].y + target.y + target.hitCircleList[v[1]].y) / 2
+      if (target.type === 'enemy') effectList.push(setEffect(x, y))
+      const c = own.type === 'enemy' ? 'hsl(0, 100%, 50%)' : 'hsl(0, 0%, 100%)'
+      textEffectList.push(setTextEffect(target.x + target.hitCircleList[v[1]].x,
+        target.y + target.hitCircleList[v[1]].y, damage, c))
       target.hitPoint -= damage
       if (target.hitPoint <= 0) target.state = 'eliminate'
       else target.state = 'damage'
@@ -1568,7 +1581,7 @@ const update = () => {
         }
         if (v.gravity) v.y += gravity
       })
-      indexList.reverse().forEach(v => list.splice(v, 1))
+      indexList.reverse().forEach(v => list.reverse().splice(v, 1))
     }
     attackCircleUpdate(player.attackCircleList)
     enemies.forEach(v => attackCircleUpdate(v.attackCircleList))
@@ -1777,10 +1790,14 @@ const update = () => {
       v.elapsedTime / enemyData[v.skin][v.state][v.attackState] *
       image[v.skin][v.state][v.attackState].length)
   })
-  eliminateList.reverse().forEach(v => enemies.splice(v, 1))
-  effectList.forEach((v, i) => {
+  eliminateList.reverse().forEach(v => enemies.reverse().splice(v, 1))
+  effectList.reverse().forEach((v, i) => {
     v.lifetime -= intervalDiffTime
-    if (v.lifetime <= 0) effectList.splice(i, 1)
+    if (v.lifetime <= 0) effectList.reverse().splice(i, 1)
+  })
+  textEffectList.reverse().forEach((v, i) => {
+    v.lifetime -= intervalDiffTime
+    if (v.lifetime <= 0) textEffectList.reverse().splice(i, 1)
   })
 }
 const main = () => setInterval(() => {
@@ -2124,10 +2141,22 @@ const draw = () => {
   {
     effectList.forEach(v => {
       context.save()
-      context.font = `bold ${size}px sans-serif`
+      const w = size
+      const h = size
       context.fillStyle = 'hsl(0, 0%, 100%)'
+      context.fillRect(
+        v.x - stageOffset.x - w / 2,
+        v.y - stageOffset.y - h / 2, w, h
+      )
+      context.restore()
+    })
+    textEffectList.forEach(v => {
+      context.save()
+      context.font = `bold ${size}px sans-serif`
+      context.fillStyle = v.c
+      console.log(v.c)
       context.textAlign = 'center'
-      const n = (effectData.lifetime - v.lifetime) * .02
+      const n = (textEffectData.lifetime - v.lifetime) * .02
       const offsetY = -size * 2
       context.fillText(
         v.text,
