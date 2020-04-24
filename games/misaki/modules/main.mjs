@@ -1127,6 +1127,7 @@ const proposal = () => {
   if (isKeyFirst(keyMap.jump) && !isKey(keyMap.crouch)) { // jump
     if (player.attackState !== 'recovery' && !player.doubleJumpFlag) {
       if (player.state === 'jump') player.doubleJumpFlag = true
+      player.fallFlag = false
       player.state = 'jump'
       player.attackState = 'startup'
     }
@@ -1581,7 +1582,7 @@ const update = () => {
         }
         if (v.gravity) v.y += gravity
       })
-      indexList.reverse().forEach(v => list.reverse().splice(v, 1))
+      indexList.reverse().forEach(v => list.splice(v, 1))
     }
     attackCircleUpdate(player.attackCircleList)
     enemies.forEach(v => attackCircleUpdate(v.attackCircleList))
@@ -1790,14 +1791,14 @@ const update = () => {
       v.elapsedTime / enemyData[v.skin][v.state][v.attackState] *
       image[v.skin][v.state][v.attackState].length)
   })
-  eliminateList.reverse().forEach(v => enemies.reverse().splice(v, 1))
+  eliminateList.reverse().forEach(v => enemies.splice(v, 1))
   effectList.reverse().forEach((v, i) => {
     v.lifetime -= intervalDiffTime
-    if (v.lifetime <= 0) effectList.reverse().splice(i, 1)
+    if (v.lifetime <= 0) effectList.splice(i, 1)
   })
   textEffectList.reverse().forEach((v, i) => {
     v.lifetime -= intervalDiffTime
-    if (v.lifetime <= 0) textEffectList.reverse().splice(i, 1)
+    if (v.lifetime <= 0) textEffectList.splice(i, 1)
   })
 }
 const main = () => setInterval(() => {
