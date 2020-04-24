@@ -1116,7 +1116,7 @@ const proposal = () => {
     if (isKey(keyMap.jump)) player.descentFlag = true // descent
   }
   if (isKey(keyMap.down)) {
-    if (player.state === 'jump') { // down force
+    if (player.state === 'jump' && 0 <= player.dy) { // down force
       const downForce = .01
       const restrictValue = .5
       player.dy += player.dy < restrictValue ? downForce : 0
