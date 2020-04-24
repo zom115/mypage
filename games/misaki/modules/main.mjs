@@ -1134,40 +1134,48 @@ const proposal = () => {
   }
   let actionList = ['crouch']
   motionList.forEach(v => actionList.push(v))
-  if (!menuFlag && !actionList.includes(player.state)) {
-    const swordDeferment = 6 * 1000 / 60
-    const conditionObject = {
-      turn:
-        isKey(keyMap.left) !== isKey(keyMap.right) &&
-        walkThreshold < Math.abs(player.dx) &&
-        ((player.direction === 'left' && isKey(keyMap.right)) ||
-        (player.direction === 'right' && isKey(keyMap.left))),
-      handgun:
-        isKeyFirst(keyMap.attack) &&
-        // !isKey(keyMap.left) &&
-        // !isKey(keyMap.right) &&
-        player.landFlag,
-      sword:
-        isKeyFirst(keyMap.attack) &&
-        player.landFlag &&
-        (isKey(keyMap.left) && keyHoldTime(keyMap.left) <= swordDeferment ||
-        isKey(keyMap.right) && keyHoldTime(keyMap.right) <= swordDeferment),
-        // (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= swordDeferment) ||
-        // keyMap.right.some(v => globalTimestamp - key[v].timestamp <= swordDeferment)),
-      slide:
-        isKey(keyMap.down) &&
-        (isKey(keyMap.left) || isKey(keyMap.right)) &&
-        walkThreshold <= Math.abs(player.dx) &&
-        cooltime.slide === 0 &&
-        player.landFlag &&
-        !player.wallFlag,
-    }
+  const swordDeferment = 6 * 1000 / 60
+  const conditionObject = {
+    turn:
+      isKey(keyMap.left) !== isKey(keyMap.right) &&
+      walkThreshold < Math.abs(player.dx) &&
+      ((player.direction === 'left' && isKey(keyMap.right)) ||
+      (player.direction === 'right' && isKey(keyMap.left))),
+    handgun:
+      isKeyFirst(keyMap.attack),
+      //  &&
+      // !isKey(keyMap.left) &&
+      // !isKey(keyMap.right) &&
+      // player.landFlag,
+    sword:
+      isKeyFirst(keyMap.attack) &&
+      player.landFlag &&
+      (isKey(keyMap.left) && keyHoldTime(keyMap.left) <= swordDeferment ||
+      isKey(keyMap.right) && keyHoldTime(keyMap.right) <= swordDeferment),
+      // (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= swordDeferment) ||
+      // keyMap.right.some(v => globalTimestamp - key[v].timestamp <= swordDeferment)),
+    slide:
+      isKey(keyMap.down) &&
+      (isKey(keyMap.left) || isKey(keyMap.right)) &&
+      walkThreshold <= Math.abs(player.dx) &&
+      cooltime.slide === 0 &&
+      player.landFlag &&
+      !player.wallFlag,
+  }
+  if (!menuFlag && !actionList.includes(player.state) && player.attackState === 'startup') {
     Object.keys(conditionObject).some(v => {
       if (conditionObject[v]) {
         player.state = v
         player.attackElapsedTime = 0
       }
     })
+  }
+  if (player.state === 'jump') {
+    if (conditionObject.handgun) {
+      player.state = 'handgun'
+      player.attackElapsedTime = 0
+      player.attackState = 'startup'
+    }
   }
   if (false) { // wall grab
     if (
@@ -1609,6 +1617,7 @@ const update = () => {
 
   // if (0 < player.invincibleTimer) player.invincibleTimer -= intervalDiffTime
   if (player.landFlag) {
+    player.doubleJumpFlag = false
     if (!['crouch', 'push', 'damage'].includes(player.state) && !motionList.includes(player.state)) {
       const stateHistory = player.state
       player.state = player.wallFlag && player.state !== 'slide' ? 'push' :
@@ -1630,7 +1639,7 @@ const update = () => {
       }
     }
   } else {
-    if (!player.doubleJumpFlag) { // fall
+    if (!player.doubleJumpFlag && !['handgun', 'handgun2'].includes(player.state)) { // fall
       player.state = 'jump'
       player.attackState = 'active'
     }
@@ -2157,7 +2166,6 @@ const draw = () => {
       context.save()
       context.font = `bold ${size}px sans-serif`
       context.fillStyle = v.c
-      console.log(v.c)
       context.textAlign = 'center'
       const n = (textEffectData.lifetime - v.lifetime) * .02
       const offsetY = -size * 2
