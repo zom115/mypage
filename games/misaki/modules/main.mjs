@@ -1123,7 +1123,7 @@ const attackCircleObject = {
       r: BULLET_SIZE,
       a: BULLET_DIRECTION.front,
       d: BULLET_SPEED,
-      gravityFlag: false,
+      gravityFlag: true,
       lifetime: 1000,
       damage: 1,
     }, handgun2: {
@@ -1132,7 +1132,7 @@ const attackCircleObject = {
       r: BULLET_SIZE,
       a: BULLET_DIRECTION.front,
       d: BULLET_SPEED,
-      gravityFlag: false,
+      gravityFlag: true,
       lifetime: 1000,
       damage: 1,
     }, handgunBelowSlant: {
@@ -1141,7 +1141,7 @@ const attackCircleObject = {
       r: BULLET_SIZE,
       a: BULLET_DIRECTION.belowSlant,
       d: BULLET_SPEED,
-      gravityFlag: false,
+      gravityFlag: true,
       lifetime: 1000,
       damage: 1,
     }, handgunBelowSlant2: {
@@ -1150,7 +1150,7 @@ const attackCircleObject = {
       r: BULLET_SIZE,
       a: BULLET_DIRECTION.belowSlant,
       d: BULLET_SPEED,
-      gravityFlag: false,
+      gravityFlag: true,
       lifetime: 1000,
       damage: 1,
     }, handgunAboveSlant: {
@@ -1159,7 +1159,7 @@ const attackCircleObject = {
       r: BULLET_SIZE,
       a: BULLET_DIRECTION.aboveSlant,
       d: BULLET_SPEED,
-      gravityFlag: false,
+      gravityFlag: true,
       lifetime: 1000,
       damage: 1,
     }, handgunAboveSlant2: {
@@ -1168,7 +1168,7 @@ const attackCircleObject = {
       r: BULLET_SIZE,
       a: BULLET_DIRECTION.aboveSlant,
       d: BULLET_SPEED,
-      gravityFlag: false,
+      gravityFlag: true,
       lifetime: 1000,
       damage: 1,
     }, sword: {
