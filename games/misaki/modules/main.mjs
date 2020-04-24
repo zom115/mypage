@@ -1150,8 +1150,10 @@ const proposal = () => {
       sword:
         isKeyFirst(keyMap.attack) &&
         player.landFlag &&
-        (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= swordDeferment) ||
-        keyMap.right.some(v => globalTimestamp - key[v].timestamp <= swordDeferment)),
+        (isKey(keyMap.left) && keyHoldTime(keyMap.left) <= swordDeferment ||
+        isKey(keyMap.right) && keyHoldTime(keyMap.right) <= swordDeferment),
+        // (keyMap.left.some(v => globalTimestamp - key[v].timestamp <= swordDeferment) ||
+        // keyMap.right.some(v => globalTimestamp - key[v].timestamp <= swordDeferment)),
       slide:
         isKey(keyMap.down) &&
         (isKey(keyMap.left) || isKey(keyMap.right)) &&
