@@ -4,6 +4,7 @@ import {imageLoader} from '../../../modules/imageLoader.mjs'
 import {audioLoader} from '../../../modules/audioLoader.mjs'
 
 const PI = Math.PI
+const SIZE = 16 // tileset width & height
 
 const keyMap = {
   up: ['w'],
@@ -40,7 +41,6 @@ const internalFrameList = []
 const animationFrameList = []
 let currentTime = globalTimestamp
 let intervalDiffTime = 1
-const size = 16
 const terrainObject = {'0': [[]],}
 const orgRound = (value, base) => {return Math.round(value * base) / base}
 {
@@ -513,6 +513,38 @@ const image = {}
           'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
           'images/Unitychan/Attack/Unitychan_Hundgun1_2.png',
         ],
+      }, handgunBelowSlant: {
+        recovery: [
+          'images/Unitychan/Attack/Unitychan_Hundgun1_5.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_6.png',
+        ],
+      }, handgunBelowSlant2: {
+        startup: [
+          'images/Unitychan/Attack/Unitychan_Hundgun1_7.png',
+        ], recovery: [
+          'images/Unitychan/Attack/Unitychan_Hundgun1_7.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_8.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_9.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_2.png',
+        ],
+      }, handgunAboveSlant: {
+        recovery: [
+          'images/Unitychan/Attack/Unitychan_Hundgun3_5.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun3_6.png',
+        ],
+      }, handgunAboveSlant2: {
+        startup: [
+          'images/Unitychan/Attack/Unitychan_Hundgun3_7.png',
+        ], recovery: [
+          'images/Unitychan/Attack/Unitychan_Hundgun3_7.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun3_8.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun3_9.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_4.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_3.png',
+          'images/Unitychan/Attack/Unitychan_Hundgun1_2.png',
+        ],
       }, sword: {
         startup: [
           'images/Unitychan/Attack/Unitychan_Soard_Combo_2.png',
@@ -622,8 +654,6 @@ const aud = {}
     misaki: {
       jump : 'audio/Misaki/V2001.wav',
       doubleJump: 'audio/Misaki/V2002.wav',
-      handgun : 'audio/Misaki/V2005.wav',
-      handgun2 : 'audio/Misaki/V2005.wav',
       kick : 'audio/Misaki/V2006.wav',
       win : 'audio/Misaki/V2024.wav',
     }, kohaku: {
@@ -826,6 +856,24 @@ const playerData = {
     startup : 0,
     active  : 0,
     recovery: 38 * 1000 / 60,
+  }, handgunBelowSlant : {
+    startup : 0,
+    active  : 0,
+    recovery: 100,
+    nextState: 'handgunBelowSlant2',
+  }, handgunBelowSlant2 : {
+    startup : 0,
+    active  : 0,
+    recovery: 38 * 1000 / 60,
+  }, handgunAboveSlant : {
+    startup : 0,
+    active  : 0,
+    recovery: 100,
+    nextState: 'handgunAboveSlant2',
+  }, handgunAboveSlant2 : {
+    startup : 0,
+    active  : 0,
+    recovery: 38 * 1000 / 60,
   }, sword : {
     startup : 7 * 1000 / 60,
     active  : 5 * 1000 / 60,
@@ -841,7 +889,7 @@ let player = {
   y: 0,
   dx: 0,
   dy: 0,
-  r: size / 2 * .9,
+  r: SIZE / 2 * .9,
   skin: 'kohaku',
   state: 'idle',
   attackState: 'startup',
@@ -858,8 +906,8 @@ let player = {
   startupFlag: false,
   directionDirection: 'left',
   hitCircleList: [
-    {x: 0, y: -size * 1.5, r: size / 2,},
-    {x: 0, y: -size *  .5, r: size / 2,},
+    {x: 0, y: -SIZE * 1.5, r: SIZE / 2,},
+    {x: 0, y: -SIZE *  .5, r: SIZE / 2,},
   ],
   attackCircleList: [],
   invincibleTimer: 0,
@@ -875,7 +923,7 @@ let player = {
   hitPointMax: 10,
 }
 
-const landCondition = {y: size / 4, w: size * .6, h: size / 3,}
+const landCondition = {y: SIZE / 4, w: SIZE * .6, h: SIZE / 3,}
 const normalConstant = .001 // 1 dot = 4 cm, 1 m = 25 dot
 const dashConstant = .004
 let moveAcceleration = normalConstant
@@ -919,9 +967,9 @@ const enemyData = {
 const setEnemy = skin => {
   return {
     type: 'enemy',
-    x: size * 3,
-    y: size * 20,
-    r: size,
+    x: SIZE * 3,
+    y: SIZE * 20,
+    r: SIZE,
     dx: 0,
     dy: 0,
     landFlag: false,
@@ -934,7 +982,7 @@ const setEnemy = skin => {
     direction: 'right',
     imageIndex: 0,
     imageOffset: {x: 24, y: 28},
-    hitCircleList: [{x: 0, y: 0, r: size,},],
+    hitCircleList: [{x: 0, y: 0, r: SIZE,},],
     attackCircleList: [],
     elapsedTime: 0,
     breathTime: 0,
@@ -944,14 +992,14 @@ const setEnemy = skin => {
     thinkTime: 0,
   }
 }
-enemies.push(setEnemy('slimeA'))
+// enemies.push(setEnemy('slimeA'))
 
 const effectData = {lifetime: 200}
 const effectList = []
 const setEffect = (x, y) => {
   return {
-    x: x + size * (Math.random() * .5 - .25),
-    y: y + size * (Math.random() * .5 - .5),
+    x: x + SIZE * (Math.random() * .5 - .25),
+    y: y + SIZE * (Math.random() * .5 - .5),
     lifetime: effectData.lifetime,
     d: -(Math.random() * .5 + .25) * PI,
   }
@@ -960,8 +1008,8 @@ const textEffectData = {lifetime: 500}
 const textEffectList = []
 const setTextEffect = (x, y, text, color) => {
   return {
-    x: x + size * (Math.random() * .5 - .25),
-    y: y + size * (Math.random() * .5 - .5),
+    x: x + SIZE * (Math.random() * .5 - .25),
+    y: y + SIZE * (Math.random() * .5 - .5),
     text: text,
     lifetime: textEffectData.lifetime,
     d: -(Math.random() * .5 + .25) * PI,
@@ -984,13 +1032,33 @@ const floatMenuCursorMax = 3
 
 const soundEfffectObject = {
   kohaku: {
-    handgun : () => playAudio(aud.se.shot),
-    handgun2: () => playAudio(aud.se.shot),
-    sword   : () => playAudio(aud.kohaku.sword),
+    handgun           : () => playAudio(aud.se.shot),
+    handgun2          : () => playAudio(aud.se.shot),
+    handgunBelowSlant : () => playAudio(aud.se.shot),
+    handgunBelowSlant2: () => playAudio(aud.se.shot),
+    handgunAboveSlant : () => playAudio(aud.se.shot),
+    handgunAboveSlant2: () => playAudio(aud.se.shot),
+    sword             : () => playAudio(aud.kohaku.sword),
   },
 }
 const motionList = [
-  'turn', 'slide', 'jump', 'doubleJump', 'sword', 'handgun', 'handgun2', 'damage', 'eliminate']
+  'turn',
+  'slide',
+  'jump',
+  'doubleJump',
+  'sword',
+  'damage',
+  'eliminate'
+]
+const attackList = [
+  'handgun',
+  'handgun2',
+  'handgunBelowSlant',
+  'handgunBelowSlant2',
+  'handgunAboveSlant',
+  'handgunAboveSlant2',
+]
+attackList.forEach(v => motionList.push(v))
 const actionInitObject = {
   jump: () => {
     const jumpCoefficient = 5
@@ -998,7 +1066,6 @@ const actionInitObject = {
     player.dx /= Math.SQRT2
     if (player.doubleJumpFlag) playAudio(aud[player.skin].doubleJump)
     else playAudio(aud[player.skin][player.state])
-
     cooltime.aerialStep = 0 // temporary
   }, slide: () => {
     const boostConstant = .4
@@ -1012,7 +1079,10 @@ const actionInitObject = {
     ) {
       player.direction = player.direction === 'left' ? 'right' : 'left'
     } else player.attackState = 'recovery'
-  },
+  }, handgun: () => {
+    const direction = isKey(keyMap.up) ? 'handgunAboveSlant' : 'handgunBelowSlant'
+    if (isKey(keyMap.down) !== isKey(keyMap.up)) player.state = direction
+  }
 }
 const uniqueActionObject = {
   jump: () => {
@@ -1038,44 +1108,87 @@ const recoveryCondition = {
     if (Math.abs(player.dx) < walkThreshold) player.attackState = 'recovery'
   },
 }
+const BULLET_SIZE = SIZE * .25
+const BULLET_DIRECTION = {
+  aboveSlant: -PI / 4,
+  front: 0,
+  belowSlant: PI / 4,
+}
+const BULLET_SPEED = 7.5 // 7.5 = 300 m / s
 const attackCircleObject = {
   kohaku: {
     handgun: {
-      x: size * 1.5,
-      y: -size * 1.75,
-      r: size * .25,
-      a: 0,
-      d: 7.5, // 7.5 = 300 m / s
-      gravity: true,
+      x: Math.cos(0) * SIZE * 1.25,
+      y: -SIZE * 1.8 + Math.sin(0) * SIZE * 1.25,
+      r: BULLET_SIZE,
+      a: BULLET_DIRECTION.front,
+      d: BULLET_SPEED,
+      gravityFlag: false,
       lifetime: 1000,
       damage: 1,
     }, handgun2: {
-      x: size * 1.5,
-      y: -size * 1.5,
-      r: size * .25,
-      a: 0,
-      d: 7.5,
-      gravity: true,
+      x: Math.cos(PI / 16) * SIZE * 1.25,
+      y: -SIZE * 1.8 + Math.sin(PI / 16) * SIZE * 1.25,
+      r: BULLET_SIZE,
+      a: BULLET_DIRECTION.front,
+      d: BULLET_SPEED,
+      gravityFlag: false,
+      lifetime: 1000,
+      damage: 1,
+    }, handgunBelowSlant: {
+      x: Math.cos(PI / 16 * 5) * SIZE * 1.25,
+      y: -SIZE * 1.8 + Math.sin(PI / 16 * 5) * SIZE * 1.25,
+      r: BULLET_SIZE,
+      a: BULLET_DIRECTION.belowSlant,
+      d: BULLET_SPEED,
+      gravityFlag: false,
+      lifetime: 1000,
+      damage: 1,
+    }, handgunBelowSlant2: {
+      x: Math.cos(PI / 16 * 6) * SIZE * 1.25,
+      y: -SIZE * 1.8 + Math.sin(PI / 16 * 6) * SIZE * 1.25,
+      r: BULLET_SIZE,
+      a: BULLET_DIRECTION.belowSlant,
+      d: BULLET_SPEED,
+      gravityFlag: false,
+      lifetime: 1000,
+      damage: 1,
+    }, handgunAboveSlant: {
+      x: Math.cos(-PI / 4) * SIZE * 1.25,
+      y: -SIZE * 1.8 + Math.sin(-PI / 4) * SIZE * 1.25,
+      r: BULLET_SIZE,
+      a: BULLET_DIRECTION.aboveSlant,
+      d: BULLET_SPEED,
+      gravityFlag: false,
+      lifetime: 1000,
+      damage: 1,
+    }, handgunAboveSlant2: {
+      x: Math.cos(-PI / 16 * 3) * SIZE * 1.25,
+      y: -SIZE * 1.8 + Math.sin(-PI / 16 * 3) * SIZE * 1.25,
+      r: BULLET_SIZE,
+      a: BULLET_DIRECTION.aboveSlant,
+      d: BULLET_SPEED,
+      gravityFlag: false,
       lifetime: 1000,
       damage: 1,
     }, sword: {
-      x: size,
-      y: -size * .75,
-      r: size * .75,
+      x: SIZE,
+      y: -SIZE * .75,
+      r: SIZE * .75,
       a: PI,
       d: .05,
-      gravity: false,
+      gravityFlag: false,
       lifetime: 300,
       damage: 10,
     },
   }, slimeA: {
     attack: {
-      x: size,
-      y: -size * .75,
-      r: size * .75,
+      x: SIZE,
+      y: -SIZE * .75,
+      r: SIZE * .75,
       a: PI,
       d: .05,
-      gravity: false,
+      gravityFlag: false,
       lifetime: 300,
       damage: 1,
     }
@@ -1276,7 +1389,7 @@ const proposal = () => {
   enemies.filter(v => ['idle', 'walk'].includes(v.state) && v.attackState !== 'recovery')
   .forEach(v => {
     v.direction = v.x < player.x ? 'right' : 'left'
-    const attackThreshold = size * 2
+    const attackThreshold = SIZE * 2
     const think = {
       move: () => {
         v.state = 'walk'
@@ -1319,8 +1432,8 @@ const judgement = () => {
     let repeatFlag
     const collisionCheck = collisionIndex => {
       for (let x = 0; x < mapData[field.name].layers[collisionIndex].width; x++) {
-        if (x * size + size * 2 < obj.x) continue
-        if (obj.x < x * size - size) break
+        if (x * SIZE + SIZE * 2 < obj.x) continue
+        if (obj.x < x * SIZE - SIZE) break
         for (let y = 0; y < mapData[field.name].layers[collisionIndex].height; y++) {
           const id =
             mapData[field.name].layers[collisionIndex].data[
@@ -1385,10 +1498,10 @@ const judgement = () => {
             const oy = obj.y
             const dx = obj.dx * intervalDiffTime
             const dy = obj.dy * intervalDiffTime
-            const ax = x * size + ro[0] * size
-            const ay = y * size + ro[1] * size
-            const bx = x * size + rn[0] * size
-            const by = y * size + rn[1] * size
+            const ax = x * SIZE + ro[0] * SIZE
+            const ay = y * SIZE + ro[1] * SIZE
+            const bx = x * SIZE + rn[0] * SIZE
+            const by = y * SIZE + rn[1] * SIZE
             const abx = bx - ax
             const aby = by - ay
             let nx = -aby
@@ -1575,7 +1688,7 @@ const update = () => {
     player.dy += gravity
     enemies.forEach(v => v.dy += gravity)
     frictionalForce = userFF
-    const terminalVelocity = size
+    const terminalVelocity = SIZE
     if (terminalVelocity < player.dy) player.dy = terminalVelocity
     const attackCircleUpdate = list => {
       let indexList = []
@@ -1592,7 +1705,10 @@ const update = () => {
             v.y += v.d * Math.sin(a) * intervalDiffTime
           }
         }
-        if (v.gravity) v.y += gravity
+        if (v.gravityFlag) {
+          v.dy += gravity
+          v.y += v.dy * intervalDiffTime
+        }
       })
       indexList.reverse().forEach(v => list.splice(v, 1))
     }
@@ -1604,7 +1720,7 @@ const update = () => {
     if (player.dx !== 0) player.wallFlag = false
   }
   { // out of map
-    const gameoverThreshold = size * 10
+    const gameoverThreshold = SIZE * 10
     if (field.h + gameoverThreshold < player.y) {
       player.x = field.checkPoint.x
       player.y = field.checkPoint.y
@@ -1641,7 +1757,7 @@ const update = () => {
       }
     }
   } else {
-    if (!player.doubleJumpFlag && !['handgun', 'handgun2'].includes(player.state)) { // fall
+    if (!player.doubleJumpFlag && !attackList.includes(player.state)) { // fall
       player.state = 'jump'
       player.attackState = 'active'
     }
@@ -1736,6 +1852,7 @@ const update = () => {
           else object.x = player.x - (object.x + object.r)
           object.y = player.y + object.y
           object.direction = player.direction
+          if (object.gravityFlag) object.dy = 0
           player.attackCircleList.push(object)
         }
         if (soundEfffectObject[player.skin][player.state] !== undefined) {
@@ -1779,7 +1896,7 @@ const update = () => {
           }
         }
       } else {
-        player.imageIndex = Math.floor(player.attackElapsedTime / i[player.attackState] * l)
+        player.imageIndex = l === 1 ? 0 : Math.floor(player.attackElapsedTime / i[player.attackState] * l)
       }
     }
   }
@@ -1905,6 +2022,7 @@ const main = () => setInterval(() => {
   }
   if (playFlag) musicProcess()
   else if (Object.values(keyMap).some(v => isKey(v))) {
+    volumeControll()
     playFlag = true
     currentPlay = field.name
     mapMusic[currentPlay].play()
@@ -1924,7 +2042,7 @@ const draw = () => {
     const scrollTimePerSize =
       properties[properties.findIndex(vl => vl.name === 'scrollTimePerSize')].value
     const image = mapImage[mapData[field.name].layers[v].name]
-    const resetWidthTime = scrollTimePerSize * image.width / size
+    const resetWidthTime = scrollTimePerSize * image.width / SIZE
     let ratio = scrollTimePerSize === 0 ? 1 : globalTimestamp % resetWidthTime / resetWidthTime
     if (direction === 'left') ratio = -ratio
     let offsety = mapData[field.name].layers[v].offsety
@@ -1964,10 +2082,10 @@ const draw = () => {
             else {
               context.drawImage(
                 mapImage[k],
-                (id % mapData[field.name].tilesetsIndex[k].columns) * size,
+                (id % mapData[field.name].tilesetsIndex[k].columns) * SIZE,
                 (id - id % mapData[field.name].tilesetsIndex[k].columns) /
-                  mapData[field.name].tilesetsIndex[k].columns * size,
-                size, size, (x * size - stageOffset.x)|0, (y * size - stageOffset.y)|0, size, size)
+                  mapData[field.name].tilesetsIndex[k].columns * SIZE,
+                SIZE, SIZE, (x * SIZE - stageOffset.x)|0, (y * SIZE - stageOffset.y)|0, SIZE, SIZE)
               flag = true
             }
           })
@@ -1988,7 +2106,7 @@ const draw = () => {
       v.height - player.r * 2)
   })
 
-  const imageOffset = {x: 64, y: 119}
+  const imageOffset = {x: 66, y: 119}
   context.fillStyle = 'hsl(30, 100%, 50%)'
   enemies.forEach(v => {
     let ex = v.x - v.imageOffset.x - stageOffset.x|0
@@ -2007,7 +2125,7 @@ const draw = () => {
   })
   if (0 < timestamp.gate) {
     context.save()
-    context.font = `italic ${size * 2}px sans-serif`
+    context.font = `italic ${SIZE * 2}px sans-serif`
     const start = 1e3
     const end = 5e3
     const elapsedTime = globalTimestamp - timestamp.gate
@@ -2048,10 +2166,10 @@ const draw = () => {
             else {
               context.drawImage(
                 mapImage[k],
-                (id % mapData[field.name].tilesetsIndex[k].columns) * size,
+                (id % mapData[field.name].tilesetsIndex[k].columns) * SIZE,
                 (id - id % mapData[field.name].tilesetsIndex[k].columns) /
-                  mapData[field.name].tilesetsIndex[k].columns * size,
-                size, size, (x * size - stageOffset.x)|0, (y * size - stageOffset.y)|0, size, size)
+                  mapData[field.name].tilesetsIndex[k].columns * SIZE,
+                SIZE, SIZE, (x * SIZE - stageOffset.x)|0, (y * SIZE - stageOffset.y)|0, SIZE, SIZE)
               flag = true
             }
           })
@@ -2073,10 +2191,10 @@ const draw = () => {
                 id -= mapData[field.name].tilesets[j].firstgid - 1
               } else break
             }
-            const relativeCooldinates = {x: x * size - stageOffset.x, y: y * size - stageOffset.y}
+            const relativeCooldinates = {x: x * SIZE - stageOffset.x, y: y * SIZE - stageOffset.y}
             if (
-              relativeCooldinates.x + size < 0 || canvas.offsetWidth < relativeCooldinates.x ||
-              relativeCooldinates.y + size < 0 || canvas.offsetHeight < relativeCooldinates.y
+              relativeCooldinates.x + SIZE < 0 || canvas.offsetWidth < relativeCooldinates.x ||
+              relativeCooldinates.y + SIZE < 0 || canvas.offsetHeight < relativeCooldinates.y
             ) continue
             context.beginPath()
             terrainObject[id].forEach((v, i) => {
@@ -2087,11 +2205,11 @@ const draw = () => {
               }
               i === 0 ?
               context.moveTo(
-                relativeCooldinates.x + v[0] * size + m.x|0,
-                relativeCooldinates.y + v[1] * size + m.y|0) :
+                relativeCooldinates.x + v[0] * SIZE + m.x|0,
+                relativeCooldinates.y + v[1] * SIZE + m.y|0) :
               context.lineTo(
-                relativeCooldinates.x + v[0] * size + m.x|0,
-                relativeCooldinates.y + v[1] * size + m.y|0)
+                relativeCooldinates.x + v[0] * SIZE + m.x|0,
+                relativeCooldinates.y + v[1] * SIZE + m.y|0)
             })
             if (terrainObject[id].length === 2) {
               context.closePath()
@@ -2119,11 +2237,11 @@ const draw = () => {
       context.beginPath()
       context.moveTo(player.x - stageOffset.x, player.y - stageOffset.y)
       context.lineTo(
-        player.x - stageOffset.x + size * player.dx,
-        player.y - stageOffset.y + size * player.dy)
+        player.x - stageOffset.x + SIZE * player.dx,
+        player.y - stageOffset.y + SIZE * player.dy)
       context.closePath()
       context.save()
-      context.lineWidth = size / 8
+      context.lineWidth = SIZE / 8
       context.stroke()
       context.restore()
     }
@@ -2168,8 +2286,8 @@ const draw = () => {
   {
     effectList.forEach(v => {
       context.save()
-      const w = size
-      const h = size
+      const w = SIZE
+      const h = SIZE
       context.fillStyle = 'hsl(0, 0%, 100%)'
       context.fillRect(
         v.x - stageOffset.x - w / 2,
@@ -2179,11 +2297,11 @@ const draw = () => {
     })
     textEffectList.forEach(v => {
       context.save()
-      context.font = `bold ${size}px sans-serif`
+      context.font = `bold ${SIZE}px sans-serif`
       context.fillStyle = v.c
       context.textAlign = 'center'
       const n = (textEffectData.lifetime - v.lifetime) * .02
-      const offsetY = -size * 2
+      const offsetY = -SIZE * 2
       context.fillText(
         v.text,
         v.x + Math.cos(v.d) * n - stageOffset.x|0,
@@ -2199,7 +2317,7 @@ const draw = () => {
   if (settings.type.map) {
     const multiple = 2
     const mapSize = {x: canvas.offsetWidth / 5, y: canvas.offsetHeight / 5}
-    const mapOffset = {x: canvas.offsetWidth - mapSize.x - size, y: size}
+    const mapOffset = {x: canvas.offsetWidth - mapSize.x - SIZE, y: SIZE}
     context.fillStyle = 'hsla(0, 0%, 0%, .1)'
     context.fillRect(mapOffset.x|0, mapOffset.y|0, mapSize.x|0, mapSize.y|0)
     context.fillStyle = 'hsla(10, 100%, 50%, .4)'
@@ -2212,8 +2330,8 @@ const draw = () => {
     mapData[field.name].layersIndex.collision.forEach(v => {
       for (let x = 0; x < mapData[field.name].layers[v].width; x++) {
         for (let y = 0; y < mapData[field.name].layers[v].height; y++) {
-          const X = multiple * (x * size - player.x) / size
-          const Y = multiple * (y * size - player.y) / size
+          const X = multiple * (x * SIZE - player.x) / SIZE
+          const Y = multiple * (y * SIZE - player.y) / SIZE
           if (
             -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 2 &&
             -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
@@ -2234,8 +2352,8 @@ const draw = () => {
     mapData[field.name].layers[mapData[
     field.name].layersIndex.objectgroup].objects.forEach(v => { // gate process
       if (v !== 'gate') return
-      const X = multiple * (v.x - player.x) / size + 1
-      const Y = multiple * (v.y - player.y) / size
+      const X = multiple * (v.x - player.x) / SIZE + 1
+      const Y = multiple * (v.y - player.y) / SIZE
       if (
         -mapSize.x / 2 < Math.round(X) && X < mapSize.x / 2 - 1 &&
         -mapSize.y / 2 < Math.ceil(Y) && Y < mapSize.y / 2
@@ -2243,7 +2361,7 @@ const draw = () => {
         context.fillStyle = 'hsla(0, 0%, 0%, .4)'
         context.fillRect(
           mapOffset.x + mapSize.x / 2 + X|0, mapOffset.y + mapSize.y / 2 + Y|0,
-          multiple * v.width / size|0, multiple * v.height / size|0
+          multiple * v.width / SIZE|0, multiple * v.height / SIZE|0
         )
       }
     })
@@ -2256,7 +2374,7 @@ const draw = () => {
       `x(m, row): ${Math.floor(player.x * .04)} ${player.x.toFixed(2)}`,
       `y(m, row): ${Math.floor(((
         mapData[field.name].layers[mapData[
-        field.name].layersIndex.tileset[0]].height * size) -
+        field.name].layersIndex.tileset[0]].height * SIZE) -
         player.y) * .04)} ${player.y.toFixed(2)}`,
       `dx: ${maxLog.dx.toFixed(2)} ${player.dx.toFixed(2)}`,
       `dy: ${maxLog.dy.toFixed(2)} ${player.dy.toFixed(2)}`,
@@ -2278,17 +2396,17 @@ const draw = () => {
       `enemy: ${enemies.length}`,
     ]
     context.fillStyle = 'hsla(0, 50%, 100%, .5)'
-    const offsetY = size * 8
+    const offsetY = SIZE * 8
     const fontsize = 10
     context.fillRect(
-      canvas.offsetWidth * .8 - size / 2, offsetY, size * 10, fontsize * (list.length + 1))
+      canvas.offsetWidth * .8 - SIZE / 2, offsetY, SIZE * 10, fontsize * (list.length + 1))
     context.fillStyle = 'hsl(0, 0%, 0%)'
     list.forEach((v, i) => {
       context.fillText(v, canvas.offsetWidth * .8, offsetY + fontsize * (1 + i))
     })
     { // HP bar
       let labelFlag = true
-      const offset = {x: size / 2, y: size / 2,}
+      const offset = {x: SIZE / 2, y: SIZE / 2,}
       let borderMethod = 1 // 1: ,2: ,4:
       const borderSize1 = 1
       const borderSize2 = 1
@@ -2298,10 +2416,10 @@ const draw = () => {
       borderMethod === 1 ? {t: borderSize1, r: borderSize1, b: borderSize1, l: borderSize1,} :
       borderMethod === 2 ? {t: borderSize1, r: borderSize2, b: borderSize1, l: borderSize2,} :
       {t: borderSize1, r: borderSize2, b: borderSize3, l: borderSize4,}
-      const labelWidth = size
-      const WIDTH_MAX = size * 5
+      const labelWidth = SIZE
+      const WIDTH_MAX = SIZE * 5
       const borderWidth = labelFlag ? WIDTH_MAX + labelWidth : WIDTH_MAX
-      const height = size / 2
+      const height = SIZE / 2
       const borderColor = 'hsla(0, 0%, 0%, 1)'
       const borderOffset = {x: offset.x, y: offset.y}
       if (labelFlag) {
@@ -2317,8 +2435,8 @@ const draw = () => {
       context.textAlign = 'left'
       const frameOffset = {x: offset.x + border.l, y: offset.y + border.t,}
       if (labelFlag) {
-        context.fillText('HP', offset.x + border.l, border.t + offset.y + size / 2)
-        frameOffset.x += size
+        context.fillText('HP', offset.x + border.l, border.t + offset.y + SIZE / 2)
+        frameOffset.x += SIZE
       }
       const BG_COLOR = 'hsla(0, 0%, 0%, 1)'
       context.fillStyle = BG_COLOR
@@ -2327,53 +2445,53 @@ const draw = () => {
       const HIT_POINT_COLOR = 'hsla(180, 100%, 50%, 1)'
       context.fillStyle = HIT_POINT_COLOR
       context.fillRect(frameOffset.x, frameOffset.y, WIDTH, height)
-      context.font = `bold ${size * .75}px sans-serif`
+      context.font = `bold ${SIZE * .75}px sans-serif`
       context.fillStyle = 'hsl(0, 0%, 100%)'
       context.textAlign = 'right'
       let denominatorFlag = true
       const fraction = denominatorFlag ? `${player.hitPoint} / ${player.hitPointMax}` : player.hitPoint
       const fractionOffset = {
-        x: offset.x + WIDTH_MAX, y: offset.y + border.t + height + border.b + size * .75}
+        x: offset.x + WIDTH_MAX, y: offset.y + border.t + height + border.b + SIZE * .75}
       if (labelFlag) fractionOffset.x += labelWidth
       context.fillText(fraction, fractionOffset.x, fractionOffset.y)
       context.strokeStyle = 'hsl(0, 0%, 25%)'
       context.strokeText(fraction, fractionOffset.x, fractionOffset.y)
     }
     enemies.forEach(v => {
-      const offset = {x:v.x - stageOffset.x - size, y: v.y - size * 2 - stageOffset.y}
+      const offset = {x:v.x - stageOffset.x - SIZE, y: v.y - SIZE * 2 - stageOffset.y}
       if (0 < v.hitPoint) {
         context.textAlign = 'right'
-        context.font = `bold ${size * .75}px sans-serif`
+        context.font = `bold ${SIZE * .75}px sans-serif`
         context.fillStyle = 'hsl(0, 0%, 100%)'
         let denominatorFlag = false
         const fraction = denominatorFlag ? `${v.hitPoint} / ${enemyData[v.skin].hitPointMax}` : v.hitPoint
-        const fractionOffset = {x: offset.x + size * 2, y: offset.y - size / 8}
+        const fractionOffset = {x: offset.x + SIZE * 2, y: offset.y - SIZE / 8}
         context.fillText(fraction, fractionOffset.x, fractionOffset.y)
         context.strokeStyle = 'hsl(0, 0%, 25%)'
         context.strokeText(fraction, fractionOffset.x, fractionOffset.y)
         context.fillStyle = 'hsl(0, 100%, 50%)'
-        const barWidth = v.hitPoint / enemyData[v.skin].hitPointMax * size * 2
-        context.fillRect(offset.x|0, offset.y|0, barWidth, size / 4)
+        const barWidth = v.hitPoint / enemyData[v.skin].hitPointMax * SIZE * 2
+        context.fillRect(offset.x|0, offset.y|0, barWidth, SIZE / 4)
       }
     })
     context.restore()
   }
   const drawTitle = () => {
     context.fillStyle = 'hsl(0, 0%, 0%)'
-    context.font = `${size * 4}px sans-serif`
+    context.font = `${SIZE * 4}px sans-serif`
     context.textAlign = 'center'
     const ow = -menuWidth / 2
     context.fillText('Title', canvas.offsetWidth / 2 + ow, canvas.offsetHeight / 2)
-    context.font = `${size * 2}px sans-serif`
+    context.font = `${SIZE * 2}px sans-serif`
     context.fillText(
       `Press '${keyMap.attack[0].toUpperCase()}' to Start`,
       canvas.offsetWidth / 2 - menuWidth / 2, canvas.offsetHeight * 3 / 4)
     Object.entries(keyMap).forEach(([k, v], i) => {
       context.fillText(
-        k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * size * 2)
+        k, canvas.offsetWidth * 3 / 4 + ow, canvas.offsetHeight * 1 / 4 + i * SIZE * 2)
       context.fillText(
-        v, canvas.offsetWidth * 3 / 4 + size * 8 + ow,
-        canvas.offsetHeight * 1 / 4 + i * size * 2)
+        v, canvas.offsetWidth * 3 / 4 + SIZE * 8 + ow,
+        canvas.offsetHeight * 1 / 4 + i * SIZE * 2)
     })
   }
   // if (screenState === screenList[0]) drawTitle()
@@ -2384,15 +2502,15 @@ const draw = () => {
     const ox = canvas.offsetWidth - menuWidth
     context.fillRect( // BG
       ox, 0, canvas.offsetWidth, canvas.offsetHeight)
-    context.font = `${size * 2}px sans-serif`
+    context.font = `${SIZE * 2}px sans-serif`
     context.fillStyle = 'hsl(0, 0%, 100%)'
     context.textAlign = 'left'
     Object.entries(settings.type).forEach(([k, v], i) => {
-      context.fillText(k, ox + size * 2, size * 4 + i * size * 2)
-      context.fillText(v, ox + size * 10, size * 4 + i * size * 2)
+      context.fillText(k, ox + SIZE * 2, SIZE * 4 + i * SIZE * 2)
+      context.fillText(v, ox + SIZE * 10, SIZE * 4 + i * SIZE * 2)
     })
-    context.fillText('[', ox + size, size * 4 + floatMenuCursor * size * 2)
-    context.fillText(']', ox + size * 15, size * 4 + floatMenuCursor * size * 2)
+    context.fillText('[', ox + SIZE, SIZE * 4 + floatMenuCursor * SIZE * 2)
+    context.fillText(']', ox + SIZE * 15, SIZE * 4 + floatMenuCursor * SIZE * 2)
     context.restore()
   }
   // drawFloatMenu()
@@ -2402,7 +2520,7 @@ const loadingScreen = () => {
   if (!loadedFlag) window.requestAnimationFrame(loadingScreen)
   // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
-  const a = size * 10
+  const a = SIZE * 10
   const polygon = 3
   const divide = 1
   context.beginPath()
@@ -2419,7 +2537,6 @@ const loadingScreen = () => {
 loadingScreen()
 Promise.all(resourceList).then(() => {
   loadedFlag = true
-  volumeControll()
   setMapProcess(field.name)
   console.log(mapData)
   main()
