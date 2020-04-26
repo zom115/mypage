@@ -116,7 +116,10 @@ td {
   color: #00d4ff;
 }
 .head-container details {
+  color: #00d4ff;
+  draggable: false;
   padding: 0 0.5rem;
+  position: relative;
 }
 .head-container details a {
   font-size: 1rem;
@@ -128,11 +131,10 @@ td {
 }
 .head-container details nav {
   background: #808080;
+  padding: 1rem;
   position: absolute;
   right: 0;
-  left: auto;
-  margin: 0 1rem;
-  padding: 1rem;
+  width: 100%;
 }
 .head-container details summary {
   outline: none;
