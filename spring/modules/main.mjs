@@ -19,14 +19,19 @@ const frameCounter = list => {
   } while (flag)
 }
 
+const gravityConstant = .0001
 const rigidBody = [
-  {x: SIZE * 1, y: SIZE * 10, r: SIZE / 4, g: false, f: {x: 0, y: 0},},
-  {x: SIZE * 7, y: SIZE * 10, r: SIZE / 4, g: false, f: {x: 0, y: 0},},
+  {x: SIZE * 7, y: SIZE * 10, r: SIZE / 4, f: {x: 0, y: 0},},
+  {x: SIZE * 10, y: SIZE * 10, r: SIZE / 4, f: {x: 0, y: 0},},
 ]
 // el: equilibrium length
 const spring = [
-  {from: 0, to: 1, el: SIZE * 5, k: .00001},
+  {from: 0, to: 1, el: SIZE * 3, k: .00001},
 ]
+
+let gravityFlag = false
+let fixFlag = false
+
 const main = () => setInterval(() => {
   internalDiffTime = globalTimestamp - currentTimestamp
   currentTimestamp = globalTimestamp
@@ -34,21 +39,32 @@ const main = () => setInterval(() => {
   // input
   if (key.s.flag) rigidBody[0].x -= 1
   if (key.f.flag) rigidBody[0].x += 1
-  // gravity
-  rigidBody.forEach(v => {
-    if (v.g) v.y += 1e-2
-  })
+  if (key.e.flag) rigidBody[0].y -= 1
+  if (key.d.flag) rigidBody[0].y += 1
+  if (key.g.isFirst()) gravityFlag = !gravityFlag
+  if (key.x.isFirst()) fixFlag = !fixFlag
   spring.forEach(v => {
     const addForce = (from, to) => {
-      const l = to.x - from.x
-      if (from.x < to.x) from.f.x += (l - v.el) * v.k / 2 * internalDiffTime
-      else if (to.x < from.x) from.f.x += (l + v.el) * v.k / 2 * internalDiffTime
+      const length = ((to.x - from.x) ** 2 + (to.y - from.y) ** 2) ** .5
+      const diff = length - v.el
+      const d = Math.atan2(to.y - from.y, to.x - from.x)
+      from.f.x += diff * Math.cos(d) * v.k * internalDiffTime
+      from.f.y += diff * Math.sin(d) * v.k * internalDiffTime
     }
     addForce(rigidBody[v.to], rigidBody[v.from])
     addForce(rigidBody[v.from], rigidBody[v.to])
   })
+  // gravity
+  if (gravityFlag) rigidBody.forEach(v => {
+    v.f.y += gravityConstant * internalDiffTime
+  })
+  if (fixFlag) {
+    rigidBody[1].f.x = 0
+    rigidBody[1].f.y = 0
+  }
   rigidBody.forEach(v => {
     v.x += v.f.x * internalDiffTime
+    v.y += v.f.y * internalDiffTime
   })
 }, 0)
 const draw = () => {
@@ -68,8 +84,10 @@ const draw = () => {
   })
   ctx.fill()
   const dispObject = {
-    'internal FPS'    : mainFrameList.length - 1,
-    'screen FPS'      : animFrameList.length - 1,
+    'internal FPS': mainFrameList.length - 1,
+    'screen FPS'  : animFrameList.length - 1,
+    'gravity'     : gravityFlag,
+    'fix'         : fixFlag,
   }
   ctx.textAlign = 'right'
   Object.keys(dispObject).forEach((k, i) => {
