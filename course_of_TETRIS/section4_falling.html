@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>4 | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="../scripts/main.js" defer></script>
+    <script src="scripts/section4_falling.js" defer></script>
+  </head>
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header>
+      <div class="head-container"><a href="../">あいうえおch.</a>
+        <details>
+          <summary>Members Link</summary>
+          <nav>
+            <ul>
+              <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+              <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main>
+      <nav><a href="../">ほーむ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>4</span>
+      </nav>
+      <article><a href="section3_2rotation.html">前へ</a><span> - </span><a href="section5_1fieldBroke.html">次へ</a>
+<h1>section4_falling</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>落ち物パズルゲーたる所以、<b>落下</b>。</p>
+<p>画面上から出てきて、画面下に触れるまえに消える。</p>
+<p>それだけ。</p><br>
+<details open>
+<summary>section4_falling.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
+const context = canvas.getContext('2d')
+let nextTetrimino = []
+let screenX = screenY = 0
+const nextNumber = 3
+let blockSize = 24
+class Tetrimino{
+  constructor(name, color, shape, condition = 0) {
+    this.name = name
+    this.color = color
+    this.shape = shape
+    this.condition = condition
+  }
+}
+const T = new Tetrimino('T', '#0ff', [
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 1, 0]])
+const J = new Tetrimino('J', '#00f', [
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 0, 1]])
+const L = new Tetrimino('L', '#f60', [
+  [0, 0, 0],
+  [1, 1, 1],
+  [1, 0, 0]])
+const Z = new Tetrimino('Z', '#0f0', [
+  [0, 0, 0],
+  [1, 1, 0],
+  [0, 1, 1]])
+const S = new Tetrimino('S', '#f0f', [
+  [0, 0, 0],
+  [0, 1, 1],
+  [1, 1, 0]])
+const I = new Tetrimino('I', '#f00', [
+  [0, 0, 0, 0],
+  [1, 1, 1, 1],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0]])
+const O = new Tetrimino('O', '#ff0', [
+  [1, 1],
+  [1, 1]])
+let makeArray = [T, J, L, Z, S, I, O]
+
+function shuffle() {
+  for (let i = makeArray.length - 1; i > 0; i--){
+    let r = Math.floor(Math.random() * (i + 1))
+    let tmp = makeArray[i]
+    makeArray[i] = makeArray[r]
+    makeArray[r] = tmp
+  }
+  return makeArray
+}
+
+function drawTetrimino() {
+  for (let i = 0;  i < nextTetrimino[0].shape.length;  i++) {
+    for (let j = 0;  j < nextTetrimino[0].shape[i].length;  j++) {
+      if (nextTetrimino[0].shape[i][j] === 1) {
+        context.fillStyle = nextTetrimino[0].color
+        context.fillRect(locationX + j * blockSize, locationY + i * blockSize, blockSize, blockSize)
+      }
+    }
+  }
+}
+function rotation(clockwise) {
+  let rows = nextTetrimino[0].shape.length
+  let columns = nextTetrimino[0].shape.length
+  let baffer = new Array(rows)
+  for (let i = 0; i < columns; i++) {
+    baffer[i] = new Array(rows).fill(0)
+  }
+  if (clockwise) {
+    for (let i = 0;  i < rows;  i++) {
+      for (let j = 0;  j < columns;  j++) {
+        baffer[j][i] = nextTetrimino[0].shape[columns - i - 1][j]
+      }
+    }
+  }else{
+    for (let i = 0;  i < rows;  i++) {
+      for (let j = 0;  j < columns;  j++) {
+        baffer[j][i] = nextTetrimino[0].shape[i][rows - j - 1]
+      }
+    }
+  }
+  nextTetrimino[0].shape = baffer
+}
+function chkCondition(clockwise) {
+  nextTetrimino[0].condition %= 4
+  if (nextTetrimino[0].name === 'O') {
+  }else if(nextTetrimino[0].name === 'Z') {
+    if(nextTetrimino[0].condition % 2) {
+      rotation(true)
+    }else{
+      rotation(false)
+    }
+  }else if(nextTetrimino[0].name === 'S' || nextTetrimino[0].name === 'I') {
+    if(nextTetrimino[0].condition % 2) {
+      rotation(false)
+    }else{
+      rotation(true)
+    }
+  }else{
+    if (clockwise) {
+      if (nextTetrimino[0].condition === 2) {
+        let buffer = nextTetrimino[0].shape.shift()
+        nextTetrimino[0].shape.push(buffer)
+      }
+      rotation(true)
+      if (nextTetrimino[0].condition === 3) {
+        let buffer = nextTetrimino[0].shape.pop()
+        nextTetrimino[0].shape.unshift(buffer)
+      }
+    }else{
+      if (nextTetrimino[0].condition === 2) {
+        let buffer = nextTetrimino[0].shape.shift()
+        nextTetrimino[0].shape.push(buffer)
+      }
+      rotation(false)
+      if (nextTetrimino[0].condition === 1) {
+        let buffer = nextTetrimino[0].shape.pop()
+        nextTetrimino[0].shape.unshift(buffer)
+      }
+    }
+  }
+}
+
+function onDown(e) {
+  if (screenX < canvas.width / 2) {
+    chkCondition(false)
+    nextTetrimino[0].condition += 1
+  }else{
+    chkCondition(true)
+    nextTetrimino[0].condition += 3
+  }
+}
+function onClick(e) {}
+function onMouseMove(e) {
+  screenX = e.clientX - canvas.offsetLeft
+  screenY = e.clientY - canvas.offsetTop
+}
+
+let locationX = canvas.width / 2 - blockSize * 3 / 2
+let locationY = blockSize * 5
+let dx = blockSize
+let dy = 1
+
+function draw(){
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  if (nextTetrimino.length < nextNumber) {
+    nextTetrimino.push(...shuffle())
+  }
+  drawTetrimino()
+  locationY += dy
+  if (canvas.height - blockSize * 4 < locationY) {
+    nextTetrimino.shift()
+    locationY = blockSize * 5
+    console.log(`length: ${nextTetrimino.length}`)
+    console.log('next:')
+    for (let i = 0; i < nextTetrimino[1].shape.length; i++) {
+      console.log(nextTetrimino[1].shape[i])
+    }
+  }
+  requestAnimationFrame(draw)
+}
+draw();
+
+canvas.addEventListener('mousedown', onDown, false)
+canvas.addEventListener('click', onClick, false)
+canvas.addEventListener('mousemove', onMouseMove, false)</pre></details>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>

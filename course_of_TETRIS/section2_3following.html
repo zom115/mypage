@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>2_3 | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="../scripts/main.js" defer></script>
+    <script src="scripts/section2_3following.js" defer></script>
+  </head>
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header>
+      <div class="head-container"><a href="../">あいうえおch.</a>
+        <details>
+          <summary>Members Link</summary>
+          <nav>
+            <ul>
+              <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+              <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main>
+      <nav><a href="../">ほーむ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>2_3</span>
+      </nav>
+      <article><a href="section2_2class.html">前へ</a>
+<a href="section3_1rotationIncomplete.html">次へ</a>
+<h1>section2_3following</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p>マウスオーバーでテトリミノ描画。</p>
+<p>いよいよ<b>画面更新</b>、テトリミノがマウスについてくる。</p><br>
+<p>ハンコ屋は廃業した、バンドで食っていこうね。</p><br>
+<details open>
+<summary>section2_3following.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
+const context = canvas.getContext('2d')
+var currentTetrimino = []
+const nextNumber = 3
+var blockSize = 32
+class Tetrimino{
+  constructor(shape, color){
+    this.shape = shape
+    this.color = color
+  }
+}
+const T = new Tetrimino([
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 1, 0]
+], '#0ff')
+const J = new Tetrimino([
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 0, 1]
+], '#00f')
+const L = new Tetrimino([
+  [0, 0, 0],
+  [1, 1, 1],
+  [1, 0, 0]
+], '#f60')
+const Z = new Tetrimino([
+  [0, 0, 0],
+  [1, 1, 0],
+  [0, 1, 1]
+], '#0f0')
+const S = new Tetrimino([
+  [0, 0, 0],
+  [0, 1, 1],
+  [1, 1, 0]
+], '#f0f')
+const I = new Tetrimino([
+  [0, 0, 0, 0],
+  [1, 1, 1, 1],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0]
+], '#f00')
+const O = new Tetrimino([
+  [1, 1],
+  [1, 1]
+], '#ff0')
+makeArray = [T, J, L, Z, S, I, O]
+
+function shuffle(arr){
+  for (var i = arr.length - 1; i > 0; i--){
+    var r = Math.floor(Math.random() * (i + 1))
+    var tmp = arr[i]
+    arr[i] = arr[r]
+    arr[r] = tmp
+  }
+  return arr
+}
+
+var x = y = 0
+function makeTetrimino(){
+  Array.prototype.push.apply(currentTetrimino, shuffle(makeArray))
+}
+function drawTetrimino(arr){
+  for (var i = 0;  i < arr.length;  i++) {
+    for (var j = 0;  j < arr[i].length;  j++) {
+      if (arr[i][j] === 1) {
+        context.fillStyle = currentTetrimino[0].color
+        context.fillRect(x + j * blockSize, y + i * blockSize, blockSize, blockSize)
+      }
+    }
+  }
+}
+
+function onDown(e) {}
+
+function onClick(e) {
+  currentTetrimino.shift()
+  console.log('length:' + currentTetrimino.length)
+  console.log('next:')
+  for (let i = 0; i < currentTetrimino[0].shape.length; i++){
+    console.log(currentTetrimino[0].shape[i])
+  }
+}
+var isMouseOver = false
+function onMouseOver(e) {
+  isMouseOver = true
+}
+function onMouseMove(e){
+  x = e.clientX - canvas.offsetLeft
+  y = e.clientY - canvas.offsetTop
+}
+function onMouseOut() {
+  isMouseOver = false
+  console.log('1')
+}
+
+function draw(){
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  if (isMouseOver) {
+    if (currentTetrimino.length < nextNumber) {
+      makeTetrimino()
+    }
+    drawTetrimino(currentTetrimino[0].shape)
+  }
+  requestAnimationFrame(draw)
+}
+draw();
+canvas.addEventListener('mousedown', onDown, false)
+canvas.addEventListener('click', onClick, false)
+canvas.addEventListener('mouseover', onMouseOver, false)
+canvas.addEventListener('mousemove', onMouseMove, false)
+canvas.addEventListener('mouseout', onMouseOut, false)</pre></details>
+<h2>雑記その1</h2>
+<p>コメントアウトとか、デバッグ用で無駄にconsole.log()とかが出てくるのはご愛嬌。</p>
+<p>本スジとは関係ないけど、動作確認には必要なことだから仕方ないよね。</p>
+<p>あとスコープとか命名規則とか、気づいたときにリファクタリングしてるからぐちゃぐちゃ。</p><br>
+<p>不等式の条件文苦手。</p>
+<p>左に小さいほう、右に大きいのって置いて、&lt;しか使わないようにしてる。</p>
+<a href="http://blog.canpan.info/cecece/archive/22">不等号は「&lt;」よりも「&gt;」のほうが難しい。</a>
+<p>ココロの数直線かー。</p>
+<p>右は右だし、右の反対で左を相対的に覚えられるわけじゃないから、</p>
+<p>東西とか、絶対的に染み付いてるものの反対ってなるとダメになる。</p>
+<p>UTF-8 BOMとか、そこら辺。</p><br>
+<p>プログラミングしてると、どんどん頭がコンピュータ寄りになっていく。</p>
+<p>2019年とか、</p>
+<p>一回桁数をバッファしてから左にいって読み直す。</p>
+<p>4桁だからいいけどさ、</p>
+<p>20190501123456</p>
+<p>読めない、時刻はSIあるけどね。</p>
+<p>おかしなことを、平気でやっているんだ、この世の中は。</p>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>

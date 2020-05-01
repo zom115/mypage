@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>ぱぐとさーす | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="../scripts/main.js" defer></script>
+  </head>
+  <script async src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header>
+      <div class="head-container"><a href="../">あいうえおch.</a>
+        <details>
+          <summary>Members Link</summary>
+          <nav>
+            <ul>
+              <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+              <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main>
+      <nav><a href="../">ほーむ</a><span> / </span><span>ぱぐとさーす</span>
+      </nav>
+      <article>
+        <h1>Pug &amp; Sass篇</h1>
+        <p>PugやSassをnpm-Scriptsで監視するまでをさくっと体系的に書いているところが少なかったので書きます。</p>
+        <p>Stylus篇は<a href="../useStylus/">こちら</a>。</p>
+        <h2>誰が読者対象？</h2>
+        <p>htmlを複数ページ作成して，ヘッダーやフッターなどの共通部分を</p>
+        <p>自動生成したいなっていう欲に駆られたらまず読んでほしいです。</p>
+        <p>2019年9月現在の個人的おすすめを教えます。</p>
+        <p>phpでやろうって人は対象外。</p>
+        <p>JavaScriptの知識でなんとかならないかということを出発地点に情報収集していったのが今回のエントリです。</p>
+        <p>Node.js及びjsonをちょこっと触るだけでなんとかなります。</p>
+        <p>いかに便利であるは他の方が散々書かれていますので，見慣れない単語が出てきたら逐一ググってください。</p><br>
+        <h2>何ができるの?</h2>
+        <p><b>Pug</b>を使えばhtmlの無駄を省いて書けます。</p>
+        <p><b>Sass</b>(SCSSではない)を使えばCSSの無駄を省いて書けます。</p>
+        <p>それだけです。</p>
+        <h2>個人的に何をしてはいけないのか</h2>
+        <p>CSSに似てるからって<b>SCSS</b>に流されない。</p>
+        <p><b>gulp</b>は使わない。</p>
+        <pre class="prettyprint lang-bash linenums">npm i <b>-g</b></pre>
+        <p>は極力避ける。</p>
+        <p><a href="https://mosapride.com/index.php/2018/02/06/post-681/">mosaの胃薬 | 【npm】グローバルインストールは控えるべき</a></p>
+        <h2>詳解</h2>
+        <p>Node.jsをインストール，初期化する。</p>
+        <p>npmでPugとnode-sassをインストールする。</p>
+        <pre class="prettyprint lang-bash linenums">npm i pug</pre>
+        <pre class="prettyprint lang-bash linenums">npm i node-sass</pre>
+        <p>package.jsonを編集してPugとSassを使えるようにする。</p>
+        <pre class="prettyprint lang-json linenums">{
+  &quot;scripts&quot;: {
+    &quot;pug&quot;: &quot;pug&quot;,
+    &quot;node-sass&quot;: &quot;node-sass&quot;
+  }
+}</pre>
+        <p>走らせるときは</p>
+        <pre class="prettyprint lang-bash linenums">npm run &lt;script name&gt;</pre>
+        <p>引数をつけたい時は</p>
+        <pre class="prettyprint lang-bash linenums">npm run &lt;script name&gt; -- &lt;option command&gt;</pre>
+        <p>ヘルプはこれで見られるよ。</p>
+        <pre class="prettyprint lang-bash linenums">npm run pug -- -h</pre>
+        <pre class="prettyprint lang-bash linenums">npm run npde-sass -- --help</pre>
+        <p>npm-run-allをインストールして、</p>
+        <pre class="prettyprint lang-bash linenums">npm i npm-run-all</pre>
+        <p>直列: serial、</p>
+        <pre class="prettyprint lang-bash linenums">run-s &lt;script name&gt; &lt;script name&gt;</pre>
+        <p>並列: parallelで実行。</p>
+        <pre class="prettyprint lang-bash linenums">run-p &lt;script name&gt; &lt;script name&gt;</pre>
+        <p>こんな感じに書く。</p>
+        <pre class="prettyprint lang-json linenums">&quot;scripts&quot;: {
+  &quot;build-pug&quot;: &quot;pug &lt;input directory&gt; -b &lt;input directory&gt; -o &lt;output directory&gt; -P&quot;,
+  &quot;build-sass&quot;: &quot;node-sass &lt;input directory&gt; -o &lt;output directory&gt;&quot;,
+  &quot;build&quot;: &quot;run-p build-*&quot;,
+  &quot;watch-pug&quot;: &quot;pug &lt;input directory&gt; -b &lt;input directory&gt; -o &lt;output directory&gt; -P -w&quot;,
+  &quot;watch-sass&quot;: &quot;node-sass &lt;input directory&gt; -o &lt;output directory&gt; -w&quot;,
+  &quot;start&quot;: &quot;run-p watch-*&quot;
+}</pre>
+        <p>start restart stop testはrunがいらない。これで監視開始なのだ。</p>
+        <pre class="prettyprint lang-bash linenums">npm start</pre>
+        <p>preタグを複数行にまたいで使いたいときにはこれもいれよう。</p>
+        <pre class="prettyprint lang-bash linenums">npm i jstransformer-escape-html</pre><a href="https://kuroeveryday.blogspot.com/2018/08/how-to-display-raw-html-and-script-code-in-pug.html">Black Everyday Company | pug(Jade)でエスケープせずhtmlタグやscriptをそのまま表示させる方法</a><br><br>
+        <p>ローカルサーバー立ち上げたりいろいろできるけど，とりあえずこんなもん。</p>
+        <p>記法は各々調べよう。おわり。</p>
+        <h2>似たようなやつ</h2>
+        <p>html: ejs, haml, pug</p>
+        <p>css: LESS, sass, Stylus</p>
+        <p>task ranner: grunt, gulp, webpack, parcel</p>
+        <h2>以下，散文</h2>
+        <p>愚痴ばっかり書いてある。</p>
+        <p>新しいことしようとしたときに数百サイトをはしごしたらみんなこうなるよね。</p><br>
+        <p>よしサイトのページ数も増えたし共通部分の自動生成ができるなにかないかな</p>
+        <p>ejs ... headerやhooterをまとめてね，そう，これよこれ，良さげじゃないか</p>
+        <p>gulp ... んー，node.jsで動くタスクランナーか。これ使って自動かするのね。便利便利。</p>
+        <p>Sass ... は？SCSSと混同してんじゃねーよ。どう考えてもSass優位じゃねーか。SCSSer滅べや。</p>
+        <p>そんなこんなでおぼつかないsassを書き書きしつつgulpを使う。</p>
+        <p>チュートリアル記事見ながら見慣れないエラーをヌルポガッ，この先が思いやられる。</p>
+        <p>ふと思う。</p>
+        <p>「いやこれ，npmで入れるときのsassのコンバータそのまま使わせろや。」</p>
+        <p>「ejsよりPugのほうが書きやすいじゃねーか。」</p>
+        <p>そんなこんなでnpm-scriptsで走らせるPugとSassがナウいんじゃないでしょうか。</p><br>
+        <p>これから触ろうと思っているもの</p>
+        <p>StylusはSass以上に短縮できるっぽい。すぐ使おう。</p>
+        <p>PostCSS ... babelとかでprefixをいちいちやるのが煩わしいって思ってる人向け。つまり今じゃない。</p>
+        <p>Vue.jsとかnuxt.jsとかはまだ触れない。ちょっとまってほしい。</p>
+        <p>もう少し知見が追いついたらwebpack触ってみよう。</p><br>
+        <p>とまあ，他所様で散々こすられているネタだとは思うのですが，htmlを自動生成したいという欲が出てきたら今一度立ち止まって取捨選択してみましょうというのが今回の意見だったわけです。</p>
+        <p>局所的に効率良く書けるものが，全体を通して楽とは限らないわけです。</p>
+        <p>なんならphpやるほうが学習コストが少なかったかもしれないのは内緒。</p><br><br><br><br><br>
+        <p>どうも，フロントエンドエンジニアの〇〇です。</p>
+        <p>まずこれがいらん。しっとるっちゅうねん。</p>
+        <p>おまえさんの技量は記事の内容で図るからさっさと教えろや</p>
+        <p>ほんとフラストレーションたまる</p><br>
+        <p>使い方っつってんのに出力すらできてないサイトなんなの</p><br><br>
+        <p>待って。この手の記事書いてる人はみんな金髪美少女だと思えばいいんじゃないかな。</p>
+        <p>ほら，マルチでFPSやってて「お兄ちゃんのだからわからない」って言ったら急に優しくなったってやつ。</p>
+        <p>そうだ，そうしよう。なんだこれ誤字もテキトーな説明も全部愛おしいぞ。</p>
+        <p>ということで今日からわたしも金髪美少女です。人類みな金髪美少女です。</p><br><br>
+        <p>みんなは最初に書いたindex.htmlのこと覚えてる？</p>
+        <p>僕は覚えてるよ。いつも使ってるブラウザで，</p>
+        <p>真っ白な背景にでかでかとh1要素の"hello world!!"が表示されたことをね。</p>
+        <p>あの感動を，テンプレートエンジンでもう一度味わいたいんだ。なのにハードルが高くてさ。</p>
+        <p>やれgulpだのnuxt.jsだの。</p>
+        <p>本質じゃないところに引っ掻き回されたくないのにさ。</p>
+        <p>だから僕はnpm-scriptsを選んだんだ。</p>
+        <p>余計なものはいらない。PugとSassで十分さ。</p><br><br><br>
+        <p>ちょっとまってくれ</p><br>
+        <p>- 本当にgulpを使うのかい？</p>
+        <p>npm-scriptsで同じことができるよ</p>
+        <p>デメリットを言う。</p>
+        <p>1. これから先gulpが使ういろんなパッケージがアップデートされる度にエラー対処に付き合わなければならない。</p>
+        <p>2. gulpを扱ってもNode.jsやJavaScriptの直接の知識は身につかない。</p>
+        <p>それでもなおgulpを触る必要があるのは，</p>
+        <p>1. gulpが絡んでいる既存のプロジェクトに途中参入する場合</p>
+        <p>2. 身近にgulp使いがいて，気軽に教えてもらえる場合</p>
+        <p>これらに当てはまらないなら，今日からejs, Haml, pugをためだけのにgulpを使いだすgulp使いは君の敵だ。</p><br><br><br>
+        <p> 茎わかめが好きな人が酢こんぶも好きだと思わないでほしい。まあどっちも好きだけど。</p><br>
+        <p>文句があるやつは今すぐまつ毛ひっぱってまぶた浮かせて。</p>
+        <p>一本も抜けなかったら話聞いてあげる。</p>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>

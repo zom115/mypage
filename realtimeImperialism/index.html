@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>いんぺりあるたいむ | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="../scripts/main.js" defer></script>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/main.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="head-container"><a href="../">あいうえおch.</a>
+        <details>
+          <summary>Members Link</summary>
+          <nav>
+            <ul>
+              <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+              <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main>
+      <nav><a href="../">ほーむ</a><span> / </span><span>いんぺりあるたいむ</span>
+      </nav>
+      <article>
+        <section>
+          <h1>Realtime Imperialism</h1>
+          <div id="display"></div>
+        </section>
+        <section>
+          <h2>うごかしかた</h2>
+          <p>いまのところクリック、タッチオンリー</p>
+        </section>
+        <section>
+          <h2>駄文</h2>
+          <p>視覚的なリアルタイム化はできそうだったけれど、本質の部分、今回に関しては、</p>
+          <p>workerの死亡判定で整合性がとれそうになくてエターナる。</p><br>
+          <p>具体的には、このゲームはターンごとに自動でworkerに食料を供給する。</p>
+          <p>レートは2 people / Grain,</p>
+          <p>3.5 people / Fluit,</p>
+          <p>4 people / Livestock or Fish</p>
+          <p>これを下回ると病気を患い、やがて餓死する。</p>
+          <p>今回は、Fullness: 満腹度を余計に追加した。</p>
+          <p>食料をCanteenで加工し、Cuisineを消費することでリアルタイムっぽく見せかけたが、</p>
+          <p>死亡判定に繋がらなくなってしまった。</p>
+          <p>足りない時はみんなで飢えて、全滅するか起死回生するか。</p>
+          <p>やはりターンベースの判定をリアルタイムに落とし込むのは無理がありそうだった。</p><br>
+          <p>そうでなくても、hex tileをリニアに落とし込むのに難があって相当計算した。</p>
+          <p>資料不足からくる、いくつかの勘違い、目算の誤りを理由に、</p>
+          <p>今の所は開発停止とする。</p>
+          <p>多分、言わなくても、言われなくてもわかってることは多い。</p>
+          <p>楽しかったぜ、でももうアクションゲームがつくりたくてしかたないんだ。</p><br>
+          <p>以下開発時のメモ。TODOとか消したり書いたりしてるからぐちゃぐちゃ。</p><br>
+          <p># imperialism</p><br>
+          <p>## 勘違い</p><br>
+          <p>- 技師が生産するわけではない</p>
+          <p>  生産は毎ターン自動で収穫、採掘</p>
+          <p>  技師は土壌改善や採掘数増加のためにいる</p><br>
+          <p>- railの敷設に資源はいらない</p>
+          <p>  1ターン1hex伸ばせる。払うのは時間</p><br>
+          <p>- hex上に施設を設置する</p>
+          <p>  地形と施設は別</p><br>
+          <p>だってさ、だってさ、この頁が悪いんだよ</p>
+          <p>[ターン制ストラテジーが好き インペリアリズム(初代)](http://apz.blog100.fc2.com/blog-entry-24.html)</p>
+          <p>こんな魅せ記事書かれたらさ、作りたくなっちゃうじゃん</p>
+          <p>でもさ、できないんだよ。手元に資料が乏しい状態で、そんなに崇高な、高尚なメカニズム。</p>
+          <p>humbleで6ドルぽっちで売ってるけど、それすら出せないんだ。今の所持金じゃ。</p>
+          <p>だれか、へるぷ。。。</p>
+          <p>humbleでセール時1.5ドルですってよ奥さん。</p><br>
+          <p>phase</p>
+          <p>  土地品定め canvas, terrain</p>
+          <p>  技師配置 job</p>
+          <p>  Transport, Ledger 港要素</p>
+          <p>  Warehouse, 工場 buiilding</p>
+          <p>  Board of Trade</p>
+          <p>  Duplomacy 外交要素</p><br>
+          <p>技師配置と外交はmapの大小</p>
+          <p>あとは戦闘要素</p><br>
+          <p>prospectorが発見</p>
+          <p>engeneerがrailyardで敷設</p>
+          <p>各技術者が開発</p><br>
+          <p>Cost to Build / Upgrade 初期コスト</p><br>
+          <p>Shipyard</p>
+          <p>Railyard</p>
+          <p>  0</p><br>
+          <p>施設</p>
+          <p>  青銅鋳造所</p>
+          <p>加工品</p>
+          <p>  青銅 = 銅 + 錫</p><br>
+          <p>食料資源</p>
+          <p>  魚 = 港 + 船舶</p><br>
+          <p>労働力</p>
+          <p>  建築士 = 鋳鉄 + 材木</p>
+          <p>    地形整備</p>
+          <p>  建設技師 = 鋳鉄 + 材木</p>
+          <p>    道路敷設</p><br>
+          <p>輸送能力 lumber, steel</p>
+          <p>  ここをちゃんと整備したらcanvasに横棒一直線がなくなるはず</p>
+          <p>  国内輸送力</p>
+          <p>  国外輸送力</p><br>
+          <p>- 建設</p>
+          <p>  セルを指定すれば建築士はオミット？</p>
+          <p>  倉庫</p>
+          <p>    あるいは適した加工場所に自動で均等配分していってもらうか</p><br>
+          <p>    なんでも無尽蔵に突っ込める。</p>
+          <p>    ただし下層からの侵攻により規定数を超えると略奪される。</p>
+          <p>    規定数の計算式は1階層*nの保有量</p>
+          <p>    防衛に成功すると略奪を免れるが、次フェーズ(2倍毎の規定数)の度により深部から侵攻される。</p>
+          <p></p>
+          <p>- 敷設</p>
+          <p>  とりあえずオミット</p><br>
+          <p>Railyard</p>
+          <p>  manpower * 2</p>
+          <p>  steel</p>
+          <p>  Lumber</p><br>
+          <p>- University</p>
+          <p>  Engineer</p>
+          <p>    paper * 2</p>
+          <p>    money * 2000</p>
+          <p>  Prospector</p>
+          <p>    paper * 2</p>
+          <p>    money * 500</p><br>
+          <p>船頭多くして船山に上る方式</p>
+          <p>  log2(1 + manPower * level)</p><br>
+          <p>json importしたくない？</p><br>
+          <p>Entrench 塹壕 集団戦？ユニット化？</p>
+          <p>Armory</p>
+          <p>  middle * 1</p>
+          <p>  Skirmishers</p>
+          <p>    Cannon * 1</p>
+          <p>      Firepower</p>
+          <p>      Move</p>
+          <p>      Range</p>
+          <p>      Entrench</p>
+          <p>  Regulars</p>
+          <p>    Cannon * 1</p>
+          <p>    money * 500</p>
+          <p>      10 4 5 Yes</p>
+          <p>  Hussars</p>
+          <p>    Armaments * 1</p>
+          <p>    Horse * 1</p>
+          <p>    money * 100</p>
+          <p>    7 11 3 No</p>
+          <p>  Light Artillery</p>
+          <p>    Cannon * 1</p>
+          <p>    House * 1</p>
+          <p>    money * 1000</p>
+          <p>      10 5 9 No</p>
+          <p>Shipyard</p>
+          <p>  Merchant Ships</p>
+          <p>    Trader</p>
+          <p>      Fabric * 2</p>
+          <p>      Lumber * 4</p>
+          <p>        0 0 0 25 0 2</p>
+          <p>    Indiaman</p>
+          <p>      Fabric * 3</p>
+          <p>      Lumber * 7</p>
+          <p>    Paddlewheeler</p>
+          <p>      Lumber * 6</p>
+          <p>      steel * 2</p>
+          <p>      coal * 10</p>
+          <p>        0 0 5 35 0 8</p>
+          <p>    Stramship</p>
+          <p>    Clipper</p>
+          <p>      Fabric * 2</p>
+          <p>      Lumber * 6</p>
+          <p>        0 0 0 25 0 4</p>
+          <p>    Freighter</p>
+          <p>  Warships</p>
+          <p>    Frigates</p>
+          <p>      Fabric * 3</p>
+          <p>      Lumber * 5</p>
+          <p>      Armanents * 2</p>
+          <p>        Firepower: 3</p>
+          <p>        Range: 5</p>
+          <p>        Armor: 10</p>
+          <p>        Hull: 35</p>
+          <p>        Speed: 4</p>
+          <p>        Cargo: 0</p>
+          <p>    Ship-of-the-Line</p>
+          <p>      Fabric * 3</p>
+          <p>      Lumber * 8</p>
+          <p>      Armanents * 5</p>
+          <p>        6 6 20 65 3 0</p>
+          <p>    Raider</p>
+          <p>      Lumber * 6</p>
+          <p>      Armanents * 3</p>
+          <p>      Coal * 10</p>
+          <p>        3 7 20 30 7 0</p>
+          <p>    Armoured Cruisers</p>
+          <p>    Battlecruisers</p><br>
+          <p>Technologies</p>
+          <p>  Streamlined Hulls</p>
+          <p>    1500</p>
+          <p>      Clipper Ships</p>
+          <p>  Cotton Gin</p>
+          <p>    1000</p>
+          <p>  Seed Drill</p>
+          <p>  High Pressure Steam Engine</p>
+          <p>    Engeneers to build railroads</p>
+          <p>兵科 millitia</p>
+          <p>  infantry</p>
+          <p>  cavalry</p>
+          <p>  artillery</p>
+          <p>  conbat engineers</p><br>
+          <p>武器工廠 armaments arsenal</p>
+          <p>  breechloading rifle</p>
+          <p>  bessener converter</p>
+          <p>  rifled guns</p><br>
+          <p>  machine guns</p>
+          <p>  internal conbustion</p>
+          <p>  heavy guns</p>
+          <p>  dynamite</p><br>
+          <p>## wish</p><br>
+          <p>- ボタンが押しっぱなしで増えるといいな</p>
+          <p>  あるいはホールドすると上下にスライダーが出てきて数値指定できるやつ</p>
+          <p>- 数値でがちゃがちゃしなければいいな</p>
+          <p>  k M ... , eN の採用</p>
+          <p>  1</p>
+          <p>  10</p>
+          <p>  100</p>
+          <p>  1,000</p>
+          <p>  10,000</p>
+          <p>  100,000</p>
+          <p>  1</p>
+          <p>  10</p>
+          <p>  100</p>
+          <p>  1.00k</p>
+          <p>  10.0k</p>
+          <p>  100k</p>
+          <p>  exponent</p>
+          <p>  1</p>
+          <p>  10</p>
+          <p>  1.0E2</p>
+          <p>  1.0E3</p>
+          <p>  1.0E4</p>
+          <p>  1.0E5</p>
+          <p>- pageにmoneyとか、常に把握しておきたいものをfloatさせたい</p>
+          <p>- 帰るときにresources表示してよ</p>
+          <p>1ターンあたりの成果を調整</p>
+          <p>  原作は線路引いて後半、あら快適～、を目指してるけど、</p>
+          <p>  輸送力を強化しても遠いもんは遠いよ。</p>
+          <p>  よって近傍1location分を1ターンとする。</p>
+          <p>  現状、経路往復6s調達4s、計10sが1ターン</p>
+          <p>  level 1工場はcap.2だから5s 1outが適正なのか。</p>
+          <p>  1人で作業してたら10sってどんぴしゃりじゃないか。</p>
+          <p>tradeをターン制のなかで分割して動くようにしよう</p><br>
+          <p>- Terrain</p><br>
+          <p>  Farm & Orchard</p>
+          <p>  Open Range, Fertile Hills</p>
+          <p>  mew roundしてる</p>
+          <p>  future round切り替え</p><br>
+          <p>prospector 1</p><br>
+          <p>スライドバーUX</p>
+          <p>  permanent toggle</p>
+          <p>  経過で減るのかとどまるのか</p>
+          <p>  あるいは減るものととどまるものを同じパーツで表現するべきではない気が</p><br>
+          <p>- 在庫ある限りtrade、可能な限り輸入</p><br>
+          <p>マウスオーバーしたときにentityをハイライト</p>
+          <p>不足分をハイライト</p><br>
+          <p>Capitol Building, migration policies</p>
+          <p>  1ターンで増やせる人口の1/4, ceilだわ</p>
+          <p>  foreign にアップグレードすると1/3に緩和だって、なんのこっちゃ</p><br>
+          <p>缶詰の代替用法</p><br>
+          <p>Prospectorが発見した資源の表示がどうしても納得できないけど進める。</p>
+          <p>  マウスオーバーで表示はだめ。1画面に全部表示させる。</p><br>
+          <p>Canteenが手動なのは明らかに地獄</p>
+          <p>  数値が下回ったら自動で生産ボタンを設置すべき</p>
+          <p>  同様に、Tradeもこの数値を残して輸出、あればこの数値は輸入をば</p><br>
+          <p>## TODO</p><br>
+          <p>Prospector</p>
+          <p>  Iron, Coal, Gold, Gems, Oilの埋蔵量を調査</p>
+          <p>Engeneer</p>
+          <p>  locationに敷設</p>
+          <p>  施設建造</p>
+          <p>    Rail depots</p>
+          <p>    Ports</p>
+          <p>    Fortifications</p><br>
+          <p>中継施設での生活</p>
+          <p>  ストック</p>
+          <p>    食料</p>
+          <p>    収穫物</p><br>
+          <p>Railyard</p>
+          <p>  移動n倍ボーナス</p>
+          <p>  輸送力</p>
+          <p>  集積所</p>
+          <p>    自己+-3マスを回収</p>
+          <p>      コレ地下要素にしない？</p><br>
+          <p>Technology</p>
+          <p>Shipment</p>
+          <p>  輸送力の数だけBidの品数を増やせる</p><br>
+          <p>## issue</p><br>
+          <p>locateを消して地形が残ってると違うresourceでもお構いなしにもってくる</p>
+          <p>  canvasでspliceするのではなく、null埋めする</p>
+          <p>Labourの加算はworker単位でやらせたほうがいい</p>
+          <p>  死亡時に残ったままになってる</p>
+          <h2>食糧問題補足</h2>
+          <p>hex基準だと1capital 3coloniesで28作業員分の食料がまかなえる</p>
+          <p>14G : 7F : 8Lのバランスが絶妙。ここら辺のデザインは数字好きがやってるはず</p><br>
+          <p>ただし技師と小作農の消費は含まれない(はず)。</p>
+          <p>よって、リアルタイム化の際には勘定に入れるよう注意</p><br>
+          <p>4ターンで216moves(片道あたり, 往復108)</p>
+          <p>capital周辺は31, colonyは29</p>
+          <p>114作業員相当</p><br>
+          <p>リアルタイム化</p>
+          <p>1moveを最小単位とした場合、</p>
+          <p>2moves(往復) + worktime = 10s</p>
+          <p>1s hullness-- として</p>
+          <p>18ターンで7人を養うためには1260必要</p>
+          <p>hullness.maxは180相当</p><br>
+          <p>この大分前の計算してる時に不足分が餓死って無理じゃね？ってなった</p>
+          <p>hullnessとかいうクソシステムなのであった</p>
+        </section>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>

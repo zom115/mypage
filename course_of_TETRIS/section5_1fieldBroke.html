@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>5_1 | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="../scripts/main.js" defer></script>
+    <script src="scripts/section5_1fieldBroke.js" defer></script>
+  </head>
+  <script async="" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=sunburst"></script>
+  <body>
+    <header>
+      <div class="head-container"><a href="../">あいうえおch.</a>
+        <details>
+          <summary>Members Link</summary>
+          <nav>
+            <ul>
+              <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+              <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main>
+      <nav><a href="../">ほーむ</a><span> / </span><a href="./">てとりすこうざ</a><span> / </span><span>5_1</span>
+      </nav>
+      <article><a href="section4_falling.html">前へ</a><span> - </span><a href="section5_2fieldIncomplete.html">次へ</a>
+<h1>section5_1fieldBroke</h1>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<p><b>フィールド形状</b></p>
+<p>(20 + 1行) * 10列</p>
+<p>ついでに<b>ネクスト表示</b>もしたぞ。</p>
+<p>でも、見た目を先行させすぎた。</p><br>
+<p>OOPの教科書的なハマり方をした。思いっきりシャローコピーしてる。</p>
+<p>具体的にはネクストの回転が前の状態を踏襲してる。</p>
+<p>シャローコピーじゃなくて参照の値渡しらしいけど。</p><br>
+<p>てかconstなのに書き換わるのか。意味ないじゃん。</p>
+<p>クラスもオブジェクトも浅くなる。果てはJSのクラスはクラスじゃないという始末。</p>
+<p><a href="https://woshidan.hatenablog.com/entry/2014/09/06/002003">JavaScriptのオブジェクトを扱うとき、=はただの値渡しではない</a></p><br>
+<p>じゃあ、生の値を与え続けるのがラクっぽい？</p><br>
+<details open>
+<summary>section5_1fieldBroke.js</summary>
+        <pre class="prettyprint lang-js linenums">const canvas = document.getElementById(('myCanvas'))
+const context = canvas.getContext('2d')
+let screenX = screenY = 0
+const nextNumber = 3
+let size = 24
+class Tetrimino{
+  constructor(name, color, shape, condition = 0) {
+    this.name = name
+    this.color = color
+    this.shape = shape
+    this.condition = condition
+  }
+}
+const T = new Tetrimino('T', '#0ff', [
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 1, 0]])
+const J = new Tetrimino('J', '#00f', [
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 0, 1]])
+const L = new Tetrimino('L', '#f60', [
+  [0, 0, 0],
+  [1, 1, 1],
+  [1, 0, 0]])
+const Z = new Tetrimino('Z', '#0f0', [
+  [0, 0, 0],
+  [1, 1, 0],
+  [0, 1, 1]])
+const S = new Tetrimino('S', '#f0f', [
+  [0, 0, 0],
+  [0, 1, 1],
+  [1, 1, 0]])
+const I = new Tetrimino('I', '#f00', [
+  [0, 0, 0, 0],
+  [1, 1, 1, 1],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0]])
+const O = new Tetrimino('O', '#ff0', [
+  [0, 0, 0],
+  [0, 1, 1],
+  [0, 1, 1]])
+const tetriminoSet = [T, J, L, Z, S, I, O]
+let nextTetrimino = []
+let current
+function shuffle() {
+  let arr = ['T', 'J', 'L', 'Z', 'S', 'I', 'O']
+  for (let i = arr.length - 1; i > 0; i--){
+    let r = Math.floor(Math.random() * (i + 1))
+    let tmp = arr[i]
+    arr[i] = arr[r]
+    arr[r] = tmp
+  }
+  return arr
+}
+
+function drawTetrimino() {
+  for (let i = 0;  i < current.shape.length;  i++) {
+    for (let j = 0;  j < current.shape[i].length;  j++) {
+      if (current.shape[i][j] === 1) {
+        context.fillStyle = current.color
+        context.fillRect(locationX + j * size, locationY + i * size, size, size)
+      }
+    }
+  }
+}
+function drawNext() {
+  let next = tetriminoSet.find(x => x.name === nextTetrimino[1])
+  for (let i = 0;  i < next.shape.length;  i++) {
+    for (let j = 0;  j < next.shape[i].length;  j++) {
+      if (next.shape[i][j] === 1) {
+        context.fillStyle = next.color
+        context.fillRect(size * (5 + j),size * (1 + i), size, size)
+      }
+    }
+  }
+}
+function rotation(clockwise) {
+  let rows = current.shape.length
+  let columns = current.shape.length
+  let baffer = new Array(rows)
+  for (let i = 0; i < columns; i++) {
+    baffer[i] = new Array(rows).fill(0)
+  }
+  if (clockwise) {
+    for (let i = 0;  i < rows;  i++) {
+      for (let j = 0;  j < columns;  j++) {
+        baffer[j][i] = current.shape[columns - i - 1][j]
+      }
+    }
+  }else{
+    for (let i = 0;  i < rows;  i++) {
+      for (let j = 0;  j < columns;  j++) {
+        baffer[j][i] = current.shape[i][rows - j - 1]
+      }
+    }
+  }
+  current.shape = baffer
+}
+function chkCondition(clockwise) {
+  current.condition %= 4
+  console.log(current.condition)
+  if (current.name === 'O') {
+  }else if(current.name === 'Z') {
+    if(current.condition % 2) {
+      rotation(true)
+    }else{
+      rotation(false)
+    }
+  }else if(current.name === 'S' || current.name === 'I') {
+    if(current.condition % 2) {
+      rotation(false)
+    }else{
+      rotation(true)
+    }
+  }else{
+    if (clockwise) {
+      if (current.condition === 2) {
+        let buffer = current.shape.shift()
+        current.shape.push(buffer)
+      }
+      rotation(true)
+      if (current.condition === 3) {
+        let buffer = current.shape.pop()
+        current.shape.unshift(buffer)
+      }
+    }else{
+      if (current.condition === 2) {
+        let buffer = current.shape.shift()
+        current.shape.push(buffer)
+      }
+      rotation(false)
+      if (current.condition === 1) {
+        let buffer = current.shape.pop()
+        current.shape.unshift(buffer)
+      }
+    }
+  }
+}
+
+function onDown(e) {
+  if (screenX < canvas.width / 2) {
+    chkCondition(false)
+    current.condition += 1
+  }else{
+    chkCondition(true)
+    current.condition += 3
+  }
+}
+function onClick(e) {}
+function onMouseMove(e) {
+  screenX = e.clientX - canvas.offsetLeft
+  screenY = e.clientY - canvas.offsetTop
+}
+
+let locationX = size * 5
+let locationY = size * 5
+let dx = size
+let dy = 1
+
+const empty = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+let field = [
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+]
+for (let i = 0; i < 20; i++) {
+  field.push(empty)
+}
+
+for (let i = 0; i < field.length; i++){
+  console.log(field[field.length - i - 1])
+}
+
+console.log('setup')
+context.fillStyle = '#ccc'
+context.fillRect(size, size, size * 12, size * 25)
+context.clearRect(size * 5, size * 2, size * 4, size * 2)
+nextTetrimino.push(...shuffle())
+current = tetriminoSet.find(x => x.name === nextTetrimino[0])
+drawNext()
+
+function draw(){
+  context.clearRect(size * 2, size * 5, size * 10, size * 20)
+  // lottery
+  if (nextTetrimino.length < nextNumber) {
+    nextTetrimino.push(...shuffle())
+  }
+  drawTetrimino()
+  locationY += dy
+  //next
+  if (canvas.height - size * 4 < locationY) {
+    nextTetrimino.shift()
+    console.log(`length: ${nextTetrimino.length}`)
+    current = tetriminoSet.find(x => x.name === nextTetrimino[0])
+    locationY = size * 5
+    context.clearRect(size * 5, size * 2, size * 4, size * 2)
+    drawNext()
+  }
+  requestAnimationFrame(draw)
+}
+draw();
+
+canvas.addEventListener('mousedown', onDown, false)
+canvas.addEventListener('click', onClick, false)
+canvas.addEventListener('mousemove', onMouseMove, false)</pre></details>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>
