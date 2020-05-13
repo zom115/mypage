@@ -1,5 +1,5 @@
 import {key} from '../../modules/key.mjs'
-const version = 'v.0.8.7'
+const version = 'v.0.8.8'
 const canvas = document.getElementById`canvas`
 const DOM = {
   operation: document.getElementById`operation`,
@@ -25,7 +25,9 @@ document.getElementById('clear').addEventListener('click', () => {
   storage.clear()
 })
 const setDOM = (key, value) => {
-  if (Object.keys(DOM).some(x => x === key)) DOM[key].innerHTML = value.toUpperCase()
+  if (Object.keys(DOM).some(x => x === key)) {
+    DOM[key].innerHTML = value === ' ' ? 'SPACE' : value.toUpperCase()
+  }
 }
 const setStorageFirst = (key, value) => {
   const exists = storage.getItem(key)
@@ -2079,7 +2081,7 @@ const drawStore = () => {
       context.save()
       context.textAlign = 'center'
       context.fillText(
-        `[HOLD ${action.lookUp.toUpperCase()}]`,
+        `[HOLD ${getKeyName(action.lookUp)}]`,
         relativeX(object.x + size * 2.5), relativeY(object.y - size * 6.5)
       )
       const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
@@ -2111,7 +2113,7 @@ const drawStore = () => {
       ? `hsl(280, 50%, ${50 + 50 * key[action.lookRight].holdtime / holdTimeLimit}%)`
       : (material < expence) ? 'hsla(280, 50%, 50%, .4)' :'hsl(280, 50%, 50%)'
       context.fillText(
-        `[HOLD ${action.lookRight.toUpperCase()}]`,
+        `[HOLD ${getKeyName(action.lookRight)}]`,
         relativeX(object.x+size * 6), relativeY(object.y)
       )
       const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
@@ -2144,7 +2146,7 @@ const drawStore = () => {
       context.save()
       context.textAlign = 'center'
       context.fillText(
-        `[HOLD ${action.lookDown.toUpperCase()}]`,
+        `[HOLD ${getKeyName(action.lookDown)}]`,
         relativeX(object.x + size * 2.5), relativeY(object.y+size * 5.5)
       )
       const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
@@ -2179,7 +2181,7 @@ const drawStore = () => {
       context.save()
       context.textAlign = 'right'
       context.fillText(
-        `[HOLD ${action.lookLeft.toUpperCase()}]`,
+        `[HOLD ${getKeyName(action.lookLeft)}]`,
         relativeX(object.x-size * 1), relativeY(object.y)
       )
       const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
@@ -2548,27 +2550,33 @@ const reset = () => {
   resetScreen()
 }; reset()
 let mapMode = false
+const getKeyName = key => {
+  if (key === ' ') return 'SPACE'
+  else return key.toUpperCase() // can't work in turco
+}
 const drawTitleScreen = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
-  context.drawImage(loadedMap['images/ROGOv1.2.png'], ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
+  context.drawImage(
+    loadedMap['images/ROGOv1.2.png'],
+    ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
   context.textAlign = 'center'
   context.font = `${size}px sans-serif`
   context.fillStyle = (ss % 3 === 2) ? `hsla(10, 50%, 40%, ${1 - (ms / 1e3) * 3 / 4})`
   : (ss % 3 === 1) ? 'hsl(10, 50%, 40%)'
   : `hsla(10, 50%, 40%, ${.25 + (ms / 1e3) * 3 / 4})`
   context.fillText(
-    `PRESS [${action.fire.toUpperCase()}] TO START`, // can't work in turco
+    `PRESS [${getKeyName(action.fire)}] TO START`,
     canvas.offsetWidth / 2, canvas.offsetHeight * 2 / 3
   )
   context.fillStyle = 'hsla(210, 100%, 40%, .75)'
   context.fillText(
-    `PRESS [${action.slow.toUpperCase()}] TO EDIT KEY LAYOUT`,
+    `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`,
     canvas.offsetWidth / 2, canvas.offsetHeight * 4 / 5
   )
   context.fillText(
-    `[${action.change.toUpperCase()}]MAP: ${mapMode}`,
+    `[${getKeyName(action.change)}]MAP: ${mapMode}`,
     canvas.offsetWidth / 2 , canvas.offsetHeight *.9
   )
   context.textAlign = 'right'
@@ -2666,7 +2674,7 @@ const resultProcess = () => {
     `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
   )
   context.fillText(
-    `BACK TO TITLE[${action.back.toUpperCase()}]`,
+    `BACK TO TITLE[${getKeyName(action.back)}]`,
     canvas.offsetWidth / 2, canvas.offsetHeight * 7/ 8
   )
   context.fillStyle = 'hsla(30, 100%, 50%, .5)'
@@ -2957,7 +2965,7 @@ const keyLayoutProcess = () => {
       inKey === order.indexOf(action.back) && !key[action.back].flag
     ) ? 'hsla(0, 0%, 35%, .3)' : 'hsla(340, 100%, 35%, .6)'
   context.fillText(
-    `[HOLD "${action.back.toUpperCase()}"] TO TITLE`,
+    `[HOLD "${getKeyName(action.back)}"] TO TITLE`,
     canvas.offsetWidth - size, canvas.offsetHeight - size
   )
   if (inKey === order.indexOf(action.back)) {
