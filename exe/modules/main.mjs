@@ -70,7 +70,7 @@ const enemyProcess = () => {
       } else if (e.y < ownState.y && e.time === e.weight) {
         e.y += 1
         e.time = 0
-      }else if (ownState.y < e.y && e.time === e.weight) {
+      } else if (ownState.y < e.y && e.time === e.weight) {
         e.y -= 1
         e.time = 0
       }
@@ -108,9 +108,9 @@ const draw = () => {
     })
   })
   enemies.forEach(e => {
-    context.fillStyle = e.state === 'guard' ? 'hsl(60, 100%, 25%)'
-    : e.state === 'attack' ? 'hsl(60, 100%, 90%)'
-    : 'hsl(60, 100%, 50%)'
+    context.fillStyle = e.state === 'guard' ? 'hsl(60, 100%, 25%)' :
+    e.state === 'attack' ? 'hsl(60, 100%, 90%)' :
+    'hsl(60, 100%, 50%)'
     context.fillRect(
       offset.x + cellSize.x * e.x + size * 1.5,
       offset.y + cellSize.y * e.y + size,
@@ -205,8 +205,8 @@ const draw = () => {
     }
   } else {
     context.fillStyle = 0 < ownState.charge
-    ? `hsl(220, 100%, ${50 + (ownState.charge / ownState.chargeLimit) * 30}%)`
-    : 0 < ownState.shotEffect ? 'hsl(220, 100%, 80%)' : 'hsl(220, 100%, 50%)'
+    ? `hsl(220, 100%, ${50 + (ownState.charge / ownState.chargeLimit) * 30}%)` :
+    0 < ownState.shotEffect ? 'hsl(220, 100%, 80%)' : 'hsl(220, 100%, 50%)'
     context.fillRect(
       offset.x + cellSize.x * ownState.x + size * 1.5,
       offset.y + cellSize.y * ownState.y - size * 1.5,
