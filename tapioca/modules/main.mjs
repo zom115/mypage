@@ -1,5 +1,16 @@
-import {key} from '../../modules/key.mjs'
-const version = 'v.0.8.8'
+import {key, globalTimestamp} from '../../modules/key.mjs'
+const keyMap = {
+  lookUp: ['i'],
+  lookRight: ['l'],
+  lookDown: ['k'],
+  lookLeft: ['j'],
+}
+let intervalDiffTime = 1
+let currentTime = globalTimestamp
+const isKeyFirst = list => {
+  return list.some(v => key[v].holdtime !== 0 && key[v].holdtime <= intervalDiffTime)
+}
+const version = 'v.0.8.8.1'
 const canvas = document.getElementById`canvas`
 const DOM = {
   operation: document.getElementById`operation`,
@@ -1558,13 +1569,13 @@ const inventoryProcess = () => {
     {x: -size * 5.5, y: 0}
   ]
   const selectedBuffer = selectedIndex
-  selectedIndex = (key[action.lookUp].isFirst()) ? 1 :
-  (key[action.lookRight].isFirst()) ? 2 :
-  (key[action.lookDown].isFirst()) ? 3 :
-  (key[action.lookLeft].isFirst()) ? 4 : selectedIndex
+  selectedIndex = (isKeyFirst(keyMap.lookUp)) ? 1 :
+  (isKeyFirst(keyMap.lookRight)) ? 2 :
+  (isKeyFirst(keyMap.lookDown)) ? 3 :
+  (isKeyFirst(keyMap.lookLeft)) ? 4 : selectedIndex
   const swapArray = (pressedKey, num) => {
     console.log(pressedKey)
-    if (num + 1 <= inventory.length && key[pressedKey].isFirst() && afterglow.inventory === 0) {
+    if (num + 1 <= inventory.length && isKeyFirst(pressedKey) && afterglow.inventory === 0) {
       if (key[action.slow].flag) {
         inventory[num].type = 'droppedWeapon'
         inventory[num].unavailableTime = 30
@@ -1580,10 +1591,10 @@ const inventoryProcess = () => {
       selectedIndex = 0
     }
   }
-  if (selectedBuffer === 1 || key[action.slow].flag) swapArray(action.lookUp, 1)
-  if (selectedBuffer === 2 || key[action.slow].flag) swapArray(action.lookRight, 2)
-  if (selectedBuffer === 3 || key[action.slow].flag) swapArray(action.lookDown, 3)
-  if (selectedBuffer === 4 || key[action.slow].flag) swapArray(action.lookLeft, 4)
+  if (selectedBuffer === 1 || key[action.slow].flag) swapArray(keyMap.lookUp, 1)
+  if (selectedBuffer === 2 || key[action.slow].flag) swapArray(keyMap.lookRight, 2)
+  if (selectedBuffer === 3 || key[action.slow].flag) swapArray(keyMap.lookDown, 3)
+  if (selectedBuffer === 4 || key[action.slow].flag) swapArray(keyMap.lookLeft, 4)
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
@@ -2969,6 +2980,9 @@ const keyLayoutProcess = () => {
   }
 }
 const loop = () => {
+  intervalDiffTime = globalTimestamp - currentTime
+  if (100 < intervalDiffTime) intervalDiffTime = 0
+  currentTime = globalTimestamp
   if (state === 'title') titleProcess()
   else if (state === 'main') mainProcess()
   else if (state === 'pause') pauseProcess()
