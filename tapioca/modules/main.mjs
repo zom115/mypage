@@ -17,9 +17,9 @@ const DOM = {
   debug: document.getElementById`debug`
 }
 const context = canvas.getContext`2d`
-context.imageSmoothingEnabled
-= context.msImageSmoothingEnabled
-= context.webkitImageSmoothingEnabled = false
+context.imageSmoothingEnabled =
+context.msImageSmoothingEnabled =
+context.webkitImageSmoothingEnabled = false
 const storage = localStorage
 document.getElementById('clear').addEventListener('click', () => {
   storage.clear()
@@ -534,8 +534,8 @@ const speedAdjust = () => {
   } else cloneSpeed = ownSpeed.current
 }
 const moving = () => {
-  let {dx, dy} = (ownSpeed.max < ownSpeed.current) ? directionCalc(currentDirection)
-  : directionCalc(direction)
+  let {dx, dy} = (ownSpeed.max < ownSpeed.current) ? directionCalc(currentDirection) :
+  directionCalc(direction)
   differenceAddition(ownPosition, dx * ownSpeed.current, dy * ownSpeed.current)
   if (cloneFlag) {
     if (key[action.slow].flag) {
@@ -592,24 +592,22 @@ const cloneProcess = () => {
   if (60 < clonePosition.length) clonePosition.shift()
 }
 const setOwnImage = arg => {
-  return (arg === 1) ? 'images/TP2U.png'
-  : (arg === 3) ? 'images/TP2RU.png'
-  : (arg === 2) ? 'images/TP2R.png'
-  : (arg === 6) ? 'images/TP2RD.png'
-  : (arg === 4) ? 'images/TP2D.png'
-  : (arg === 12) ? 'images/TP2LD.png'
-  : (arg === 8) ? 'images/TP2L.png'
-  : (arg === 9) ? 'images/TP2LU.png'
-  : 'images/TP2F.png'
+  return (arg === 1) ? 'images/TP2U.png' :
+  (arg === 3) ? 'images/TP2RU.png' :
+  (arg === 2) ? 'images/TP2R.png' :
+  (arg === 6) ? 'images/TP2RD.png' :
+  (arg === 4) ? 'images/TP2D.png' :
+  (arg === 12) ? 'images/TP2LD.png' :
+  (arg === 8) ? 'images/TP2L.png' :
+  (arg === 9) ? 'images/TP2LU.png' : 'images/TP2F.png'
 }
 const drawClone = () => {
   const delayStep = 15
   const imgClone = ((
     ownStepLimit / 2 + delayStep <= ownStep || ownStep < delayStep) &&
     cloneSpeed <= ownSpeed.max
-  ) ? 'images/TP2F.png'
-  : (0 < angle) ? setOwnImage(angle)
-  : setOwnImage(direction)
+  ) ? 'images/TP2F.png' :
+  (0 < angle) ? setOwnImage(angle) : setOwnImage(direction)
   const pos = {
     x: clonePosition.reduce((a, v) => {return a + v.dx}, ownPosition.x),
     y: clonePosition.reduce((a, v) => {return a + v.dy}, ownPosition.y)
@@ -641,10 +639,9 @@ const drawMyself = () => {
   if (direction === 0) ownStep = 0
   else ownStep = (ownStep+1)|0
   const imgMyself = ownStepLimit / 2 <= ownStep && ownSpeed.current <= ownSpeed.max
-  ? 'images/TP2F.png'
-  : ownSpeed.max < ownSpeed.current && 0 < currentDirection ? setOwnImage(currentDirection)
-  : 0 < angle ? setOwnImage(angle)
-  : setOwnImage(direction)
+  ? 'images/TP2F.png' :
+  ownSpeed.max < ownSpeed.current && 0 < currentDirection ? setOwnImage(currentDirection) :
+  0 < angle ? setOwnImage(angle) : setOwnImage(direction)
   const pos = { // recoil effect
     x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
     y: canvas.offsetHeight / 2 + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
@@ -905,9 +902,9 @@ const enemyProcess = () => {
 }
 const drawEnemies = () => {
   enemies.forEach(enemy => {
-    context.fillStyle = (enemy.imageID === 0) ? 'hsla(0, 100%, 50%, .5)'
-    : (enemy.imageID === 1) ? 'hsla(300, 100%, 50%, .5)'
-    : (enemy.imageID === 2) ? 'hsla(60, 100%, 60%, .5)' : 'hsla(0, 0%, 100%, .5)'
+    context.fillStyle = (enemy.imageID === 0) ? 'hsla(0, 100%, 50%, .5)' :
+    (enemy.imageID === 1) ? 'hsla(300, 100%, 50%, .5)' :
+    (enemy.imageID === 2) ? 'hsla(60, 100%, 60%, .5)' : 'hsla(0, 0%, 100%, .5)'
     if (
       enemy.x < ownPosition.x - canvas.offsetWidth/2 + radius &&
      enemy.y < ownPosition.y - canvas.offsetHeight/2 + radius // left & top
@@ -933,19 +930,19 @@ const drawEnemies = () => {
     } else if (ownPosition.y + canvas.offsetHeight/2 + radius < enemy.y) { // out of bottom
       context.fillRect(relativeX(enemy.x - radius), canvas.offsetHeight - size, size, size)
     } else {
-      const imgPath = (enemy.imageID === 0)
-      ? {F: 'images/JK32F.png', L: 'images/JK32L.png', R: 'images/JK32R.png'}
-      : (enemy.imageID === 1)
-      ? {F: 'images/JK33F.png', L: 'images/JK33L.png', R: 'images/JK33R.png'}
-      : (enemy.imageID === 2)
-      ? {F: 'images/JK34F.png', L: 'images/JK34L.png', R: 'images/JK34R.png'}
-      : {F: 'images/JK35Fv1.png', L:'images/JK35Fv1.png', R: 'images/JK35Fv1.png'}
-      const imgEnemy = (enemy.step <= enemy.stepLimit * 3 / 8) ? imgPath.R
-      : (enemy.stepLimit / 2 <= enemy.step && enemy.step <= enemy.stepLimit * 7 / 8)
-      ? imgPath.L : imgPath.F
-      const coordinate = (enemy.life <= 0)
-      ? {x:enemy.x - radius, y:enemy.y - radius + (enemy.timer - damageTimerLimit) * .25}
-      : {x:enemy.x - radius, y:enemy.y - radius}
+      const imgPath = (enemy.imageID === 0) ?
+      {F: 'images/JK32F.png', L: 'images/JK32L.png', R: 'images/JK32R.png'} :
+      (enemy.imageID === 1) ?
+      {F: 'images/JK33F.png', L: 'images/JK33L.png', R: 'images/JK33R.png'} :
+      (enemy.imageID === 2) ?
+      {F: 'images/JK34F.png', L: 'images/JK34L.png', R: 'images/JK34R.png'} :
+      {F: 'images/JK35Fv1.png', L:'images/JK35Fv1.png', R: 'images/JK35Fv1.png'}
+      const imgEnemy = (enemy.step <= enemy.stepLimit * 3 / 8) ? imgPath.R :
+      (enemy.stepLimit / 2 <= enemy.step && enemy.step <= enemy.stepLimit * 7 / 8) ?
+      imgPath.L : imgPath.F
+      const coordinate = (enemy.life <= 0) ?
+      {x:enemy.x - radius, y:enemy.y - radius + (enemy.timer - damageTimerLimit) * .25} :
+      {x:enemy.x - radius, y:enemy.y - radius}
         context.save()
       if (enemy.life <= 0) context.globalAlpha = enemy.timer/damageTimerLimit
       context.drawImage(
@@ -1030,8 +1027,8 @@ const bulletProcess = () => {
         bullets.splice(i, 1)
         return
       }
-      let theta = key[action.combatReload].flag ?  -degree * (Math.PI / 180)
-      : key[action.change].flag ? degree * (Math.PI / 180) : 0
+      let theta = key[action.combatReload].flag ?  -degree * (Math.PI / 180) :
+      key[action.change].flag ? degree * (Math.PI / 180) : 0
       const oldDx = bullet.dx
       const oldDy = bullet.dy
       bullet.dx = oldDx * Math.cos(theta) - oldDy * Math.sin(theta)
@@ -1171,8 +1168,7 @@ const dropItemProcess = () => {
     const distance = Math.sqrt(width ** 2 + height ** 2)
     let multiple = (
       item.type === 'weapon' || item.type === 'droppedWeapon') &&
-      inventorySize <= inventory.length
-    ? 0 : .5 + 160 / (distance) // : size / 512
+      inventorySize <= inventory.length ? 0 : .5 + 160 / (distance) // : size / 512
     if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
     else {
       item.x = item.x + width / distance * multiple
@@ -1272,9 +1268,9 @@ const drawDropItems = () => {
       context.arc(relativeX(item.x), relativeY(item.y), explosiveRange, 0, Math.PI * 2, false)
       context.fill()
     } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
-      context.fillStyle = (item.type === 'droppedWeapon')
-      ? `hsla(180, 100%, 30%, ${item.life/600})`
-      : 'hsl(180, 100%, 40%)'
+      context.fillStyle = (item.type === 'droppedWeapon') ?
+      `hsla(180, 100%, 30%, ${item.life/600})` :
+      'hsl(180, 100%, 40%)'
       context.fillRect(relativeX(item.x), relativeY(item.y), size * 2 / 3, size * 2 / 3)
     }
   })
@@ -1318,8 +1314,8 @@ const drawIndicator = () => {
     context.font = `${size}px sans-serif`
   }
   const cartridges = inventory[0].magazines[firearm.grip]
-  context.fillStyle = (cartridges < inventory[0].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)'
-  : (cartridges < inventory[0].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
+  context.fillStyle = (cartridges < inventory[0].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
+  (cartridges < inventory[0].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
   context.save()
   const inChamber = (firearm.chamberFlag) ? 1 : 0
   context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - size * 3)
@@ -1337,10 +1333,10 @@ const drawIndicator = () => {
   const putAwayTime = reload.putAway * inventory[0].reloadSpeed
   const takeOutTime = reload.takeOut * inventory[0].reloadSpeed
   const unreleaseTime = reload.unrelease * inventory[0].reloadSpeed
-  let ratio = (reload.state === 'release' && reload.time <= releaseTime)
-  ? 1 - reload.time / releaseTime // 1
-  : (reload.state === 'unrelease' && reload.time <= unreleaseTime) // 2
-  ? reload.time / unreleaseTime : 1
+  let ratio = (reload.state === 'release' && reload.time <= releaseTime) ?
+  1 - reload.time / releaseTime : // 1
+  (reload.state === 'unrelease' && reload.time <= unreleaseTime) ? // 2
+  reload.time / unreleaseTime : 1
   if (reload.state === 'done' || reload.state === 'release' || reload.state === 'unrelease') {
     c.y = yOffset - (ratio - 1) * inventory[0].magazineSize * cartridgeSize * yHeight
     if (slide.state !== 'release' && slide.time === 0) { // slide gauge
@@ -1361,20 +1357,18 @@ const drawIndicator = () => {
       )
     }
   }
-  ratio = (reload.state === 'release') ? 1 - reload.time / releaseTime
-  : (reload.state === 'putAway') ? reload.time / putAwayTime
-  : (reload.state === 'takeOut') ? 1 - reload.time / takeOutTime
-  : (reload.state === 'unrelease') ? reload.time / unreleaseTime
-  : 1
+  ratio = (reload.state === 'release') ? 1 - reload.time / releaseTime :
+  (reload.state === 'putAway') ? reload.time / putAwayTime :
+  (reload.state === 'takeOut') ? 1 - reload.time / takeOutTime :
+  (reload.state === 'unrelease') ? reload.time / unreleaseTime : 1
   inventory[0].magazines.forEach((magazine, index) => {
     if (magazine !== -1) {
-      context.fillStyle = (0 < afterglow.reload && index === firearm.grip)
-      ? 'hsla(0, 100%, 100%, .7)'
-      : (magazine < inventory[0].magazineSize * .1)
-      ? 'hsla(0, 100%, 60%, .7)'
-      : (magazine < inventory[0].magazineSize * .3)
-      ? 'hsla(60, 100%, 70%, .7)'
-      : 'hsla(210, 100%, 50%, .7)'
+      context.fillStyle = (0 < afterglow.reload && index === firearm.grip) ?
+      'hsla(0, 100%, 100%, .7)' :
+      (magazine < inventory[0].magazineSize * .1) ?
+      'hsla(0, 100%, 60%, .7)' :
+      (magazine < inventory[0].magazineSize * .3) ?
+      'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
       if (
         index === firearm.grip && !(reload.state === 'putAway' || reload.state === 'takeOut')
       ) c.x = canvas.offsetWidth - size * 5.25
@@ -1420,17 +1414,17 @@ const drawIndicator = () => {
       }
     }
   })
-  context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)'
-  : (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)'
-  : 'hsla(210, 100%, 50%, .7)' // dash guage
+  context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)' :
+  (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)' :
+  'hsla(210, 100%, 50%, .7)' // dash guage
   if (0 < afterglow.dashGauge) afterglow.dashGauge = (afterglow.dashGauge-1)|0
   c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
   context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
   context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
-  context.fillStyle = (0 < afterglow.round) // round number
-  ? `hsla(0, 100%, 30%, ${(1 - afterglow.round / wave.intervalLimit)*.7})`
-  : (wave.interval === 0) ? 'hsla(0, 100%, 30%, .7)'
-  : `hsla(0, 100%, 30%, ${(wave.interval / wave.intervalLimit)*.7})`
+  context.fillStyle = (0 < afterglow.round) ? // round number
+  `hsla(0, 100%, 30%, ${(1 - afterglow.round / wave.intervalLimit)*.7})` :
+  (wave.interval === 0) ? 'hsla(0, 100%, 30%, .7)' :
+  `hsla(0, 100%, 30%, ${(wave.interval / wave.intervalLimit)*.7})`
   if (0 < afterglow.round) afterglow.round = (afterglow.round-1)|0
   c = {x: size, y: canvas.offsetHeight - size}
   drawText(size * 1.5, 'left', wave.number, c)
@@ -1564,11 +1558,12 @@ const inventoryProcess = () => {
     {x: -size * 5.5, y: 0}
   ]
   const selectedBuffer = selectedIndex
-  selectedIndex = (key[action.lookUp].isFirst()) ? 1
-  : (key[action.lookRight].isFirst()) ? 2
-  : (key[action.lookDown].isFirst()) ? 3
-  : (key[action.lookLeft].isFirst()) ? 4 : selectedIndex
+  selectedIndex = (key[action.lookUp].isFirst()) ? 1 :
+  (key[action.lookRight].isFirst()) ? 2 :
+  (key[action.lookDown].isFirst()) ? 3 :
+  (key[action.lookLeft].isFirst()) ? 4 : selectedIndex
   const swapArray = (pressedKey, num) => {
+    console.log(pressedKey)
     if (num + 1 <= inventory.length && key[pressedKey].isFirst() && afterglow.inventory === 0) {
       if (key[action.slow].flag) {
         inventory[num].type = 'droppedWeapon'
@@ -1594,27 +1589,28 @@ const inventoryProcess = () => {
 const setWave = () => {
   wave.number = (wave.number+1)|0
   wave.delayTime = 0
-  wave.delayLimit = (wave.number === 1) ? 120
-  : (wave.delayLimit < 4.8) ? 4.8 : wave.delayLimit * .95
+  wave.delayLimit = (wave.number === 1) ? 120 :
+  (wave.delayLimit < 4.8) ? 4.8 : wave.delayLimit * .95
   wave.amount = 0
-  wave.amountLimit = (wave.number === 9) ? 31 // unconfirmed
-  : (wave.number === 8) ? 29 // same on top
-  : (wave.number === 7) ? 28 // same on top
-  : (wave.number === 6) ? 27 // same on top
-  : (wave.number === 5) ? 24
-  : (wave.number === 4) ? 18
-  : (wave.number === 3) ? 13
-  : (wave.number === 2) ? 8
-  : (wave.number === 1) ? 6 : (.0842 * wave.number ** 2 + .1954 * wave.number + 22.05)+.5|0
-  wave.hitPoint = (wave.number === 9) ? 950
-  : (wave.number === 8) ? 850
-  : (wave.number === 7) ? 750
-  : (wave.number === 6) ? 650
-  : (wave.number === 5) ? 550
-  : (wave.number === 4) ? 450
-  : (wave.number === 3) ? 350
-  : (wave.number === 2) ? 250
-  : (wave.number === 1) ? 150 : wave.hitPoint * 1.1
+  wave.amountLimit = (wave.number === 9) ? 31 : // unconfirmed
+  (wave.number === 8) ? 29 : // same on top
+  (wave.number === 7) ? 28 : // same on top
+  (wave.number === 6) ? 27 : // same on top
+  (wave.number === 5) ? 24 :
+  (wave.number === 4) ? 18 :
+  (wave.number === 3) ? 13 :
+  (wave.number === 2) ? 8 :
+  (wave.number === 1) ? 6 :
+  (.0842 * wave.number ** 2 + .1954 * wave.number + 22.05)+.5|0
+  wave.hitPoint = (wave.number === 9) ? 950 :
+  (wave.number === 8) ? 850 :
+  (wave.number === 7) ? 750 :
+  (wave.number === 6) ? 650 :
+  (wave.number === 5) ? 550 :
+  (wave.number === 4) ? 450 :
+  (wave.number === 3) ? 350 :
+  (wave.number === 2) ? 250 :
+  (wave.number === 1) ? 150 : wave.hitPoint * 1.1
 }
 const waveProcess = () => {
   if (0 < wave.interval) {
@@ -1632,22 +1628,22 @@ const waveProcess = () => {
     const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
     const a = ~~(Math.random() * 360 + 1)
     const setEnemySpeed = () => {
-      return (wave.number === 16) ? .95 + Math.random() * .05 // pre
-      : (wave.number === 15) ? .9 + Math.random() * .1
-      : (wave.number === 14) ? .85 + Math.random() * .15
-      : (wave.number === 13) ? .8 + Math.random() * .2
-      : (wave.number === 12) ? .75 + Math.random() * .25
-      : (wave.number === 11) ? .75 + Math.random() * .2
-      : (wave.number === 10) ? .75 + Math.random() * .15
-      : (wave.number === 9) ? .7 + Math.random() * .25
-      : (wave.number === 8) ? .7 + Math.random() * .2
-      : (wave.number === 7) ? .7 + Math.random() * .15
-      : (wave.number === 6) ? .65 + Math.random() * .2
-      : (wave.number === 5) ? .65 + Math.random() * .15
-      : (wave.number === 4) ? .65 + Math.random() * .1
-      : (wave.number === 3) ? .6 + Math.random() * .15
-      : (wave.number === 2) ? .6 + Math.random() * .1
-      : (wave.number === 1) ? .6 + Math.random() * .05 : 1
+      return (wave.number === 16) ? .95 + Math.random() * .05 : // pre
+      (wave.number === 15) ? .9 + Math.random() * .1 :
+      (wave.number === 14) ? .85 + Math.random() * .15 :
+      (wave.number === 13) ? .8 + Math.random() * .2 :
+      (wave.number === 12) ? .75 + Math.random() * .25 :
+      (wave.number === 11) ? .75 + Math.random() * .2 :
+      (wave.number === 10) ? .75 + Math.random() * .15 :
+      (wave.number === 9) ? .7 + Math.random() * .25 :
+      (wave.number === 8) ? .7 + Math.random() * .2 :
+      (wave.number === 7) ? .7 + Math.random() * .15 :
+      (wave.number === 6) ? .65 + Math.random() * .2 :
+      (wave.number === 5) ? .65 + Math.random() * .15 :
+      (wave.number === 4) ? .65 + Math.random() * .1 :
+      (wave.number === 3) ? .6 + Math.random() * .15 :
+      (wave.number === 2) ? .6 + Math.random() * .1 :
+      (wave.number === 1) ? .6 + Math.random() * .05 : 1
     }
     enemies.push({
       life: wave.hitPoint+.5|0,
@@ -2031,9 +2027,8 @@ const drawStore = () => {
             )
     } else {
       context.save()
-      const imgStore = (object.ID === 0) ? 'images/st1v2.png'
-      : (object.ID === 1) ? 'images/st2v1.png'
-      : 'images/stv1.png'
+      const imgStore = (object.ID === 0) ? 'images/st1v2.png' :
+      (object.ID === 1) ? 'images/st2v1.png' : 'images/stv1.png'
       if (index === 6) {
         context.scale(1, 1)
         context.drawImage(loadedMap[imgStore], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
@@ -2073,11 +2068,11 @@ const drawStore = () => {
         ~~((relativeY(object.y - size * 6)/3)+.5)
       )
       context.restore()
-      context.fillStyle = (0 < effect)
-      ? `hsl(0, 50%, ${50 + 50 * effect / holdTimeLimit}%)`
-      : (expence <= material && key[action.lookUp].holdtime <= holdTimeLimit)
-      ? `hsl(0, 50%, ${50 + 50 * key[action.lookUp].holdtime / holdTimeLimit}%)`
-      : (material < expence) ? 'hsla(0, 50%, 50%, .4)' :'hsl(0, 50%, 50%)'
+      context.fillStyle = (0 < effect) ?
+      `hsl(0, 50%, ${50 + 50 * effect / holdTimeLimit}%)` :
+      (expence <= material && key[action.lookUp].holdtime <= holdTimeLimit) ?
+      `hsl(0, 50%, ${50 + 50 * key[action.lookUp].holdtime / holdTimeLimit}%)` :
+      (material < expence) ? 'hsla(0, 50%, 50%, .4)' :'hsl(0, 50%, 50%)'
       context.save()
       context.textAlign = 'center'
       context.fillText(
@@ -2107,11 +2102,11 @@ const drawStore = () => {
         ~~((relativeY(object.y + size * .5)/3)+.5)
       )
       context.restore()
-      context.fillStyle = (0 < effect)
-      ? `hsl(280, 50%, ${50 + 50 * effect/holdTimeLimit}%)`
-      : (expence <= material && key[action.lookRight].holdtime <= holdTimeLimit)
-      ? `hsl(280, 50%, ${50 + 50 * key[action.lookRight].holdtime / holdTimeLimit}%)`
-      : (material < expence) ? 'hsla(280, 50%, 50%, .4)' :'hsl(280, 50%, 50%)'
+      context.fillStyle = (0 < effect) ?
+      `hsl(280, 50%, ${50 + 50 * effect/holdTimeLimit}%)` :
+      (expence <= material && key[action.lookRight].holdtime <= holdTimeLimit) ?
+      `hsl(280, 50%, ${50 + 50 * key[action.lookRight].holdtime / holdTimeLimit}%)` :
+      (material < expence) ? 'hsla(280, 50%, 50%, .4)' :'hsl(280, 50%, 50%)'
       context.fillText(
         `[HOLD ${getKeyName(action.lookRight)}]`,
         relativeX(object.x+size * 6), relativeY(object.y)
@@ -2138,11 +2133,11 @@ const drawStore = () => {
         ~~((relativeY(object.y + size * 6)/3)+.5)
       )
       context.restore()
-      context.fillStyle = (0 < effect)
-      ? `hsl(340, 50%, ${50 + 50 * effect / holdTimeLimit}%)`
-      : (expence <= material && key[action.lookDown].holdtime <= holdTimeLimit)
-      ? `hsl(340, 50%, ${50 + 50 * key[action.lookDown].holdtime / holdTimeLimit}%)`
-      : (material < expence) ? 'hsla(340, 50%, 50%, .4)' :'hsl(340, 50%, 50%)'
+      context.fillStyle = (0 < effect) ?
+      `hsl(340, 50%, ${50 + 50 * effect / holdTimeLimit}%)` :
+      (expence <= material && key[action.lookDown].holdtime <= holdTimeLimit) ?
+      `hsl(340, 50%, ${50 + 50 * key[action.lookDown].holdtime / holdTimeLimit}%)` :
+      (material < expence) ? 'hsla(340, 50%, 50%, .4)' :'hsl(340, 50%, 50%)'
       context.save()
       context.textAlign = 'center'
       context.fillText(
@@ -2173,11 +2168,11 @@ const drawStore = () => {
         ~~((relativeY(object.y + size * .5)/3)+.5)
       )
       context.restore()
-      context.fillStyle = (0 < effect)
-      ? `hsl(100, 50%, ${50 + 50 * effect/holdTimeLimit}%)`
-      : (expence <= material && key[action.lookLeft].holdtime <= holdTimeLimit)
-      ? `hsl(100, 50%, ${50 + 50 * key[action.lookLeft].holdtime / holdTimeLimit}%)`
-      : (material < expence) ? 'hsla(100, 50%, 50%, .4)' :'hsl(100, 50%, 50%)'
+      context.fillStyle = (0 < effect) ?
+      `hsl(100, 50%, ${50 + 50 * effect/holdTimeLimit}%)` :
+      (expence <= material && key[action.lookLeft].holdtime <= holdTimeLimit) ?
+      `hsl(100, 50%, ${50 + 50 * key[action.lookLeft].holdtime / holdTimeLimit}%)` :
+      (material < expence) ? 'hsla(100, 50%, 50%, .4)' :'hsl(100, 50%, 50%)'
       context.save()
       context.textAlign = 'right'
       context.fillText(
@@ -2652,9 +2647,9 @@ const pauseProcess = () => {
   drawing()
   context.save()
   context.font = '32px sans-serif'
-  context.fillStyle = (ss % 3 === 2) ? `hsl(60, ${100 * (1 - (ms / 1e3))}%, 40%)`
-  : (ss % 3 === 1) ? 'hsl(60, 100%, 40%)'
-  : `hsl(60, ${100 * (ms / 1e3)}%, 40%)`
+  context.fillStyle = (ss % 3 === 2) ? `hsl(60, ${100 * (1 - (ms / 1e3))}%, 40%)` :
+  (ss % 3 === 1) ? 'hsl(60, 100%, 40%)' :
+  `hsl(60, ${100 * (ms / 1e3)}%, 40%)`
   context.textAlign = 'center'
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
   context.restore()
@@ -2713,35 +2708,34 @@ const keyInput = () => {
   return () => {
     bfr = aft
     aft = (
-    key.q.isFirst()) ? 0
-    : (key.w.isFirst()) ? 1
-    : (key.e.isFirst()) ? 2
-    : (key.r.isFirst()) ? 3
-    : (key.t.isFirst()) ? 4
-    : (key.y.isFirst()) ? 5
-    : (key.u.isFirst()) ? 6
-    : (key.i.isFirst()) ? 7
-    : (key.o.isFirst()) ? 8
-    : (key.p.isFirst()) ? 9
-    : (key.a.isFirst()) ? 10
-    : (key.s.isFirst()) ? 11
-    : (key.d.isFirst()) ? 12
-    : (key.f.isFirst()) ? 13
-    : (key.g.isFirst()) ? 14
-    : (key.h.isFirst()) ? 15
-    : (key.j.isFirst()) ? 16
-    : (key.k.isFirst()) ? 17
-    : (key.l.isFirst()) ? 18
-    : (key.z.isFirst()) ? 20
-    : (key.x.isFirst()) ? 21
-    : (key.c.isFirst()) ? 22
-    : (key.v.isFirst()) ? 23
-    : (key.b.isFirst()) ? 24
-    : (key.n.isFirst()) ? 25
-    : (key.m.isFirst()) ? 26
-    : (key.Shift.isFirst()) ? 30
-    : (key[' '].isFirst()) ? 31
-    : -2
+    key.q.isFirst()) ? 0 :
+    (key.w.isFirst()) ? 1 :
+    (key.e.isFirst()) ? 2 :
+    (key.r.isFirst()) ? 3 :
+    (key.t.isFirst()) ? 4 :
+    (key.y.isFirst()) ? 5 :
+    (key.u.isFirst()) ? 6 :
+    (key.i.isFirst()) ? 7 :
+    (key.o.isFirst()) ? 8 :
+    (key.p.isFirst()) ? 9 :
+    (key.a.isFirst()) ? 10 :
+    (key.s.isFirst()) ? 11 :
+    (key.d.isFirst()) ? 12 :
+    (key.f.isFirst()) ? 13 :
+    (key.g.isFirst()) ? 14 :
+    (key.h.isFirst()) ? 15 :
+    (key.j.isFirst()) ? 16 :
+    (key.k.isFirst()) ? 17 :
+    (key.l.isFirst()) ? 18 :
+    (key.z.isFirst()) ? 20 :
+    (key.x.isFirst()) ? 21 :
+    (key.c.isFirst()) ? 22 :
+    (key.v.isFirst()) ? 23 :
+    (key.b.isFirst()) ? 24 :
+    (key.n.isFirst()) ? 25 :
+    (key.m.isFirst()) ? 26 :
+    (key.Shift.isFirst()) ? 30 :
+    (key[' '].isFirst()) ? 31 : -2
     if (aft === -2) aft = bfr
     else if (bfr === aft) aft = -2
     if (
@@ -2790,12 +2784,12 @@ const keyLayoutProcess = () => {
     setOperation()
   }
   if (rowNum === 0 && (key[action.left].isFirst() || key[action.right].isFirst())) {
-    reload.auto = (reload.auto === 'ON') ? setStorage('autoReload', 'OFF')
-    : setStorage('autoReload', 'ON')
+    reload.auto = (reload.auto === 'ON') ? setStorage('autoReload', 'OFF') :
+    setStorage('autoReload', 'ON')
   }
   if (rowNum === 1 && (key[action.left].isFirst() || key[action.right].isFirst())) {
-    combatReload.auto = (combatReload.auto === 'ON') ? setStorage('autoCombatReload', 'OFF')
-    : setStorage('autoCombatReload', 'ON')
+    combatReload.auto = (combatReload.auto === 'ON') ? setStorage('autoCombatReload', 'OFF') :
+    setStorage('autoCombatReload', 'ON')
   }
   if (
     inKey === order.indexOf(action.back) && holdTimeLimit <= key[action.back].holdtime
@@ -2805,8 +2799,8 @@ const keyLayoutProcess = () => {
   let p = {x: canvas.offsetWidth * .56, y: canvas.offsetHeight * .3} // absolute coordinate
   context.textAlign = 'right'
   context.fillText('OPERATION MODE:', p.x, p.y - size * 2)
-  context.fillStyle = (ms < 500) ? `hsla(30, 100%, 45%, ${(1 - (ms / 1e3) - .25) * 2})`
-  : `hsla(30, 100%, 45%, ${((ms / 1e3) - .25) * 2})`
+  context.fillStyle = (ms < 500) ? `hsla(30, 100%, 45%, ${(1 - (ms / 1e3) - .25) * 2})` :
+  `hsla(30, 100%, 45%, ${((ms / 1e3) - .25) * 2})`
   context.save()
   if (rowNum !== 0) context.fillStyle = 'hsl(210, 100%, 40%)'
   context.fillText('AUTO RELOAD:', p.x, p.y)
@@ -2882,23 +2876,22 @@ const keyLayoutProcess = () => {
         context.fillStyle = ((
           i === order.indexOf(action.up) || i === order.indexOf(action.right) ||
           i === order.indexOf(action.down) || i === order.indexOf(action.left))
-        ) ? 'hsla(0, 0%, 35%, .3)'
-        : (Object.values(action).some(x => order[i] === x)) ? 'hsla(20, 100%, 50%, .5)'
-        : 'hsla(20, 100%, 50%, .3)'
+        ) ? 'hsla(0, 0%, 35%, .3)' :
+        (Object.values(action).some(x => order[i] === x)) ? 'hsla(20, 100%, 50%, .5)' :
+        'hsla(20, 100%, 50%, .3)'
       } else {
         context.fillStyle = (
           Object.values(action).some(x => order[i] === x) &&
           !(i === order.indexOf(action.up) || i === order.indexOf(action.right) ||
           i === order.indexOf(action.down) || i === order.indexOf(action.left))
-        ) ? 'hsla(20, 100%, 50%, .5)'
-        : 'hsla(0, 0%, 35%, .3)'
+        ) ? 'hsla(20, 100%, 50%, .5)' : 'hsla(0, 0%, 35%, .3)'
       }
     }
     if (i === inKey) {
-      context.fillStyle = (ss % 2 === 0) ? `hsl(60, 100%, ${45 + 5 * (1 - (ms / 1e3))}%)`
-      : `hsl(60, 100%, ${45 + 5 * (ms / 1e3)}%)`
-      context.font = (ss % 2 === 0) ? `${size * (2 - .1 * (1 - (ms / 1e3)))}px sans-serif`
-      : `${size * (2 - .1 * (ms / 1e3))}px sans-serif`
+      context.fillStyle = (ss % 2 === 0) ? `hsl(60, 100%, ${45 + 5 * (1 - (ms / 1e3))}%)` :
+      `hsl(60, 100%, ${45 + 5 * (ms / 1e3)}%)`
+      context.font = (ss % 2 === 0) ? `${size * (2 - .1 * (1 - (ms / 1e3)))}px sans-serif` :
+      `${size * (2 - .1 * (ms / 1e3))}px sans-serif`
     } else if (i === 19 || i === 27 || i === 28 || i === 29) {
       context.fillStyle = 'hsla(210, 100%, 40%, .1)'
     }
