@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Unity WebGL Player | roll_a_ball | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="../scripts/main.js" defer></script>
+    <script src="TemplateData/UnityProgress.js"></script>
+    <script src="Build/UnityLoader.js"></script>
+    <script>var gameInstance = UnityLoader.instantiate("gameContainer", "Build/webgl.json", {onProgress: UnityProgress});</script>
+  </head>
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <body>
+    <header>
+      <div class="head-container"><a href="../">あいうえおch.</a>
+        <details>
+          <summary>Members Link</summary>
+          <nav>
+            <ul>
+              <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+              <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main>
+      <nav><a href="../">ほーむ</a><span> / </span><span>Unity WebGL Player | roll_a_ball</span>
+      </nav>
+      <article>
+        <section>
+          <h1>roll_a_ball</h1>
+        </section>
+        <section>
+          <div class="webgl-content">
+            <div id="gameContainer" style="width:960px; height: 600px"></div>
+            <div class="footer">
+              <div class="webgl-logo"></div>
+              <div class="fullscreen" onclick="gameInstance.SetFullscreen(1)"></div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <h2>うごかしかた</h2>
+          <p>お決まりのWASD。</p>
+        </section>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>
