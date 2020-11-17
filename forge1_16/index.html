@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Minecraft Forge 1.16 | Okada's mypage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="../scripts/main.js" defer></script>
+    <script src="modules/main.mjs" type="module"></script>
+  </head>
+  <body>
+    <header>
+      <div class="head-container"><a href="../">あいうえおch.</a>
+        <details>
+          <summary>Members Link</summary>
+          <nav>
+            <ul>
+              <li><a href="https://nogak.github.io/mypage/">Nogami's Room</a></li>
+              <li><a href="https://oono10.github.io/mypage/">Oono's Room</a></li>
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main>
+      <nav><a href="../">ほーむ</a><span> / </span><span>Minecraft Forge 1.16</span>
+      </nav>
+      <article>
+        <section>
+          <h1>1.16.3 mod 紀行</h1>
+          <p>自分用にメモとってたら結構な物量になってて</p>
+          <p>もったいないし、せっかくだからてきとーに加筆して載っけとく</p>
+        </section>
+        <section>
+          <h2>目次</h2>
+          <p><a href="#vanlla-magic-2">Vanlla Magic 2</a></p>
+          <p><a href="#animarium">Animarium</a></p>
+          <p><a href="#enigmatic-legacy">Enigmatic Legacy</a></p>
+          <p><a href="#ice-and-fire">Ice and Fire</a></p>
+          <p><a href="#inventory-tweaks-renewed">Inventory tweaks Renewed</a></p>
+          <p><a href="#misc">misc</a></p>
+          <p><a href="#vanilla-client">vanilla client</a></p>
+          <p><a href="#curios">curios</a></p>
+          <p><a href="#pickle-tweaks">Pickle Tweaks</a></p>
+          <p><a href="#farlanders">Farlanders</a></p>
+          <p><a href="#cute-mob-models-sound-pack">Cute Mob Models Sound Pack</a></p>
+          <p><a href="#borderless">Borderless</a></p>
+          <p><a href="#ceramics">Ceramics</a></p>
+          <p><a href="#mutant-beasts">Mutant Beasts</a></p>
+          <p><a href="#crossroads">crossroads</a></p>
+          <p><a href="#cute-mob-models-resource-pack">Cute Mob Models resource pack</a></p>
+          <p><a href="#spice-of-life-carrot-edition">Spice of Life: Carrot edition</a></p>
+          <p><a href="#craft-tweaker">Craft Tweaker</a></p>
+          <p><a href="#cooking-for-blockhead">Cooking for Blockhead</a></p>
+          <p><a href="#better-advancements">Better Advancements</a></p>
+          <p><a href="#inspirations">Inspirations</a></p>
+          <p><a href="#mrcrayfishs-vehicle-mod">MrCrayfish's Vehicle mod</a></p>
+          <p><a href="#tofucraftreload">TofuCraftReload</a></p>
+          <p><a href="#reliquary">Reliquary</a></p>
+          <p><a href="#vampirism">Vampirism</a></p>
+          <p><a href="#industrial-foregoing">Industrial Foregoing</a></p>
+          <p><a href="#immersive-engineering">Immersive Engineering</a></p>
+          <p><a href="#pcr">PC:R</a></p>
+          <p><a href="#natures-aura">Nature's Aura</a></p>
+          <p><a href="#rats">Rats</a></p>
+          <p><a href="#doggy-talent">Doggy Talent</a></p>
+          <p><a href="#blue-power">Blue Power</a></p>
+          <p><a href="#xnet">Xnet</a></p>
+          <p><a href="#psi">Psi</a></p>
+          <p><a href="#prefab">prefab</a></p>
+          <p><a href="#packing-tape">packing tape</a></p>
+          <p><a href="#comforts">comforts</a></p>
+          <p><a href="#elementalcraft">elementalCraft</a></p>
+          <p><a href="#refine-relocation">Refine Relocation</a></p>
+          <p><a href="#simple-storage-network">Simple Storage Network</a></p>
+          <p><a href="#modular-routers">Modular Routers</a></p>
+          <p><a href="#item-filter">item filter</a></p>
+          <p><a href="#weeping-angels">Weeping Angels</a></p>
+          <p><a href="#building-gadgets">building gadgets</a></p>
+          <p><a href="#tool-belt">Tool Belt</a></p>
+          <p><a href="#mine-menu">Mine Menu</a></p>
+          <p><a href="#find-me">Find Me</a></p>
+          <p><a href="#solar-flux-reborn">Solar Flux Reborn</a></p>
+          <p><a href="#trapcraft">Trapcraft</a></p>
+          <p><a href="#cyclic">Cyclic</a></p>
+          <p><a href="#custom-crosshair">Custom Crosshair</a></p>
+          <p><a href="#jei">jei</a></p>
+          <p><a href="#mantle">Mantle</a></p>
+          <p><a href="#bountiful-baubles">Bountiful Baubles</a></p>
+        </section>
+        <section>
+          <h2>spice of life 連携</h2>
+          <h3>というより食料追加されるmod</h3>
+          <p>Animarium</p>
+          <p>Crossroads</p>
+          <p>Ice and Fire</p>
+          <p>Inspirations</p>
+          <p>Pickle Tweaks</p>
+          <p>Pneumaticcraft repressurized</p>
+          <p>Rats</p>
+          <p>Reliquary</p>
+          <p>Vampirism</p>
+          <p>TofuCraftReloaded</p>
+          <h3>Foodメインのmod</h3>
+          <p>Aquaculture</p>
+          <p>FarmersDelight</p>
+          <p>foodexpansion</p>
+          <p>Pam's HarventCraft2</p>
+          <p>foodcore</p>
+          <p>crops</p>
+          <p>Expansionこないかなー</p>
+          <p>simplefarming</p>
+          <p>thermal cultivation</p>
+        </section>
+        <section>
+          <h2>日記。もとい散文</h2>
+          <p>画像が一切ないけど気にしない</p>
+          <p>本当に伝えたかったら動画化するし、そんな気概はないでござる</p>
+          <p>素晴らしいmodを広める為ではなく、</p>
+          <p>自分に合わないと感じたmodを省く作業だからそんなに愉快じゃないし</p>
+          <p>Patchouliの連携modだったり、目についたmodを試してみる</p>
+          <p>mod packほどガッツリやりたいわけじゃないし、</p>
+          <p>そのmod単体を知らないのにレシピ改変食らってて嫌いにはなりたくないから</p>
+          <p>各々を味見してみる</p>
+          <p>ちなみに、味見するまでもなく自分の中で傑作選入りしてるのは</p>
+          <p>Applied Energistics 2</p>
+          <p>CC: Tweaked</p>
+          <p>Mekanism</p>
+          <p>工業一色だね。他にもお気に入りのmodはあるけど過去バージョンで更新止まっててな</p>
+          <p>そのバージョンに戻って遊べばええねん</p>
+          <p>魔術modもある程度は触ってたけど、</p>
+          <p>一番おもしろかったのはThaumCraftかな</p>
+          <p>なんでもCoFH Teamが頑張ってるらしいじゃん。期待大ですわ</p>
+          <p>あとは軽量化とか操作改善とか</p>
+          <p>以下、順不同</p>
+          <h3 id="vanlla-magic-2">Vanlla Magic 2</h3>
+          <p>ちょっと進めてみよう</p>
+          <p>Tooltipに満腹度のメーターが追加されるのはこいつの仕業</p>
+          <p>AppleSkin入れるよね？</p>
+          <p>あっちのほうがバニラの見慣れてるアイコン使ってくれてるから見やすいよね？いらないよね？</p>
+          <p>clientのconfigで消せる模様</p>
+          <p>インベントリに1個づつブロックが入るぞ</p>
+          <p>なんだこれは</p>
+          <p>Questこなしていけば解決するのかな</p>
+          <p>とんでもないmodなんじゃないか</p>
+          <p>単体で導入してやるしかないな</p>
+          <p>あれ？スクロールが効かない？</p>
+          <p>ミドルクリックでアイテムピックもできない</p>
+          <p>QuestのGlassが作れない</p>
+          <p>Coalは消費する上にSandはCoblestoneになる</p>
+          <p>SaplingがOakで止まらない</p>
+          <p>右クリックし続けると変換しっぱなしだし、これはバグでしょ</p>
+          <p>アイテムに所有権でも設定されてるのかな</p>
+          <p>一度インベントリに入れたらドロップしても自動でスタックするようになるけど、</p>
+          <p>初めて採掘してアイテム化した丸石とかだとスタックできない</p>
+          <p>謎仕様だ</p>
+          <p>curseforge覗いたらコメント欄で作者がBug fixしてるってかいてるわ</p>
+          <p>特に目新しい仕様もないし、スタック・操作関連の致命的なバグのせいで好きになれないな</p>
+          <p>バグじゃなくて仕様で、どんどん便利になっていくなら、いいコンセプトだったんだけどね</p>
+          <p>追加アイテム1つもなしでここまでやってるのはすごいんだろうけど、</p>
+          <p>キー追加の時点でナンセンスだね</p>
+          <p>Advancementsの1ページでいいだろうに</p>
+          <p>Patchouli連携で本の1冊でも加えればいいのに</p>
+          <p>jeiにレシピ載せればいいのに</p>
+          <p>バニラのBeacon構造はggrksの精神だけどさ、そういうところ継承しなくていいよ</p>
+          <p>魔術modには魔術modなりの面倒くささがあって楽しいんだけど、</p>
+          <p>そこらへんのポリシーが感じられないよね</p>
+          <h3 id="animarium">Animarium</h3>
+          <p>エグいな</p>
+          <p>Wild Dogっていうドーベルマンみたいなのがやばい</p>
+          <p>装備なしだとすぐ死ねる</p>
+          <p>序盤にこの強さの敵が出てくるのは萎えるひといそう</p>
+          <p>え？自分はどうなのかって？</p>
+          <p>濡れる</p>
+          <p>ピラニアのせいで川沿いの畑に近づくと荒らされる</p>
+          <p>いつぞやのバニラのウサギ並に鬱陶しいなこれ</p>
+          <p>クマさん足速ない？</p>
+          <p>みんなモデリングがいい感じ</p>
+          <p>追加食料はいいとして、追加装備が中途半端ね</p>
+          <p>壊れ性能よりはよっぽどマシだけど</p>
+          <p>結局賑やかし要素かな</p>
+          <p>農業も安定しないくらいの序盤でも渡り合えるような、</p>
+          <p>Flint装備とかが他modで追加されてたらぜひとも入れたいmodだね</p>
+          <h3 id="enigmatic-legacy">Enigmatic Legacy</h3>
+          <p>死んだ時にGrave系の作用あるね</p>
+          <p>curios対応で、MagnetなRingとか、便利系をいろいろ揃えてくれてる</p>
+          <p>でもつらいぞこのmod</p>
+          <p>序盤はRing無視してたんだけど、興味本位でつけてみたら</p>
+          <p>攻撃力、防御力は半減</p>
+          <p>ゴーレムは敵対化</p>
+          <p>外せない。やべーよこれ</p>
+          <p>居候しながら村興ししてたのに、もうこの村にはいられない</p>
+          <p>攻略したいなあこのmod</p>
+          <p>あと、ワールド作成のときにNew Worldじゃなくなるのはこれ</p>
+          <h3 id="ice-and-fire">Ice and Fire</h3>
+          <p>タイトル画面戻せないかな</p>
+          <p>modが何個入ってるのかもわからんぞこれ</p>
+          <p>iceandfire-client.toml</p>
+          <p>[general]</p>
+          <p>"Custom main menu" = false</p>
+          <p>でおｋ</p>
+          <p>朝起きたら幽霊が目の前飛び回っててびっくりした</p>
+          <p>別に敵対はしてなさそう？</p>
+          <p>そんなことはなかった</p>
+          <p>おひさまも関係なさそう</p>
+          <p>危ないぞこいつ</p>
+          <p>君を入れているとJustEnoughResourcesが機能しなくなるのだ</p>
+          <p>でもどうせバニラ鉱石しか表示されないし、いいか</p>
+          <h3 id="inventory-tweaks-renewed">Inventory tweaks Renewed</h3>
+          <p>ソートボタン邪魔</p>
+          <p>invtweaks-client.toml</p>
+          <p>[tewaks]</p>
+          <p>enableButtons = 0</p>
+          <p>でおｋ</p>
+          <p>tomlってkey-valueの縛り、jsonよりゆるいみたい？</p>
+          <p>config弄ってて思った</p>
+          <p>まあいいや</p>
+          <h3 id="misc">misc</h3>
+          <p>カクついて仕方ないな、入ってるmodは89個か。絞るか</p>
+          <p>とりあえずspice of life連携(食料追加)もAdvencementもないmodだけにしようそうしよう</p>
+          <p>F3のデバッグ画面閉じるとカクつく</p>
+          <p>なんだこれ</p>
+          <p>でも初期生成後は安定するからいいや</p>
+          <p>チャンク更新でカクつくなあ</p>
+          <p>更に絞るぞ</p>
+          <p>前提modが必要なmodも切るぞ</p>
+          <p>症状が改善しないなあ</p>
+          <p>これ今やってることの逆</p>
+          <p>つまり、食料追加されてるかAdvancementがあるか</p>
+          <p>前提modが必要なのだけ揃えたらカクつかないんじゃね？</p>
+          <p>変えてみた。その逆をやってみた</p>
+          <p>ひでえカクつきはないわ</p>
+          <p>てことは、、、そういうことだよね</p>
+          <p>悲しいかな、原因を割り出していったらMekanismっぽい</p>
+          <p>Mekanism-1.16.3-10.0.13.438で確認</p>
+          <p>1.16.1では安定してたと思うから、アプデしとけばなんとかなるっしょ</p>
+          <p>Mekanism-1.16.3-10.0.13.444にアップデート</p>
+          <p>本当にMekanismのせいなのか？</p>
+          <p>洞窟に潜ると途端に重くなる</p>
+          <p>やっぱりMekanismをそっくりそのまま抜いただけでまったく重くなくなる</p>
+          <p>なんでや？ベビーMobのスポーン関連か？</p>
+          <p>チビクリーパーがカスタムモデルのテクスチャ拾えてなくてバグってたからそれ関連でメモリリークでもしてるのかな</p>
+          <p>理由はわからないけど、どうやらそうらしい</p>
+          <p>カスタムモデル切ったら全然ラグらなくなったもん</p>
+          <p>ごめんねMekanism、君のせいじゃなかったよ</p>
+          <h3 id="vanilla-client">vanilla client</h3>
+          <p>過去に入ってたmodが抜けてると、</p>
+          <p>ないけど大丈夫？ブロックとかアイテム消えるよ？</p>
+          <p>ってなってたけど</p>
+          <p>現バージョンだとエラー落ちするんだね</p>
+          <p>でもAE2だけを入れて抜いてをやってみたら、そんなことなかった</p>
+          <p>Experimental Settingsうんぬんかんぬんで</p>
+          <p>大丈夫？バックアップ取る？結婚する？って聞いてきてくれた</p>
+          <p>Item IDとか廃止されて、mod同士の競合は起きにくくなってるけど</p>
+          <p>クライアントというかForgeの安定性がアレだよね、マシにはなってきてるんだけどさ</p>
+          <p>新しい要素を加えて、かつstableを維持する難しさはわかる。がんばえー</p>
+          <h3 id="curios">curios</h3>
+          <p>右上のチェックマークの機能がわかんね</p>
+          <p>わかった。これ見た目を反映させるかのトグルスイッチだ</p>
+          <h3 id="pickle-tweaks">Pickle Tweaks</h3>
+          <p>右クリック収穫できる</p>
+          <p>それとツールのDurabiliryが0に近づくと消滅しないでツールチップにBROKENってなる</p>
+          <p>常にニコイチ修復したいから個人的にはありがたいんだけど、</p>
+          <p>剣がBROKENってなったときかなり辛いよこれ</p>
+          <p>このデメリットと表裏一体なのが至高なんだよね</p>
+          <p>Charcoal PieceっていうFurnace1回分の燃料いいね</p>
+          <p>EnderIOみたいにMagnetあんじゃん</p>
+          <p>PickupWidlyリストラできんじゃん</p>
+          <p>Emelardツールの性能もまあDiamondとNetheriteの間くらいでいいじゃん</p>
+          <p>Paxelの耐久値がMekanism製の1.5倍くらいある</p>
+          <h3 id="farlanders">Farlanders</h3>
+          <p>Fanmade Endermanが納得いかない</p>
+          <p>Endermanの逆やりたいって気持ちはわかるけど</p>
+          <p>急に出てきて背後からタコ殴りはダメでしょ</p>
+          <p>男女が英語で囁いてくるし</p>
+          <p>minecraftがやりたいんであってホラーゲームがやりたいんじゃないんだな</p>
+          <p>君はリストラだ</p>
+          <h3 id="cute-mob-models-sound-pack">Cute Mob Models Sound Pack</h3>
+          <p>うーん</p>
+          <p>村人の鼻歌がピッチ上げたおっさんにしか聞こえない</p>
+          <p>Japaneseっぽく聞こえるのも入ってるけど大半が外国人おねえさんボイス</p>
+          <p>欲しいのはBeautyでもSexyでもなくCuteなんだなー</p>
+          <p>厳密にはmodではなくresource packだが、君もリストラだ</p>
+          <p>後で中身覗いてみた</p>
+          <p>連続して聞いたら村人の鼻歌はおっさんではない</p>
+          <p>ghast, silverfish, wolfあたりはアリかな</p>
+          <p>spider - say4のしゅわしゅわいってるのはかわいい</p>
+          <p>lmmみたいに有志が作ってないのかな？</p>
+          <h3 id="borderless">Borderless</h3>
+          <p>画面の裏にあるのがActiveになっても最上位にこないね</p>
+          <p>フルスクリーンから切り替えればいいんだけど、そうじゃないよね</p>
+          <p>仕方ないね</p>
+          <p>config/borderless-client.toml</p>
+          <p>[general]</p>
+          <p>fullscreenMode = "BORDERLESS"</p>
+          <p>にしたら望み通りの挙動になった</p>
+          <p>あー、いいっすね～</p>
+          <p>ゲーム内でも設定できるわこれ</p>
+          <p>デフォルトの"BEST"は日本語で常に最前面みたいなあれか</p>
+          <p>そりゃずっとminecraftが最前面ですわ</p>
+          <h3 id="ceramics">Ceramics</h3>
+          <p>Kilnは燃費が2倍になるのか</p>
+          <p>建築勢じゃないから賑やかしの追加ブロック類はいらないなあ</p>
+          <p>Mystical Agricalture入れるから効率で見たらこっちだしなあ</p>
+          <p>しかも木も金属の粉も焼けないのね</p>
+          <p>、、、使えねえ</p>
+          <p>焼き増したらRainbowのサイクルで色変えられるし、</p>
+          <p>シンプルでなかなかいいmodだとは思う</p>
+          <p>1.12.2のときってTinCoのFausetみたいなのなかったっけ？</p>
+          <p>オミットしたのかな</p>
+          <h3 id="mutant-beasts">Mutant Beasts</h3>
+          <p>変異体を見てみたいっていう一発ネタか、</p>
+          <p>対抗しうる強力な武器なり防具なりがあればって感じだよねこれ</p>
+          <p>ダイヤとかNetheriteの上位装備でやっとだよ</p>
+          <p>工業と魔術の高みを目指す上では弊害でしかないね</p>
+          <p>君もリストラだ</p>
+          <h3 id="crossroads">crossroads</h3>
+          <p>Patchouliに認識されねーなと思ったら</p>
+          <p>essentialsの書にcrossroadsが併記されてるのね</p>
+          <p>ちょい不親切だったけど、crossroadsの感じ、いいねー</p>
+          <p>RotaryCraftとかFactorizationとかBetter With Modとか</p>
+          <p>掛け合わせたような、</p>
+          <p>複合エネルギー系でありあり</p>
+          <p>じっくり腰を据えてやりたいねー</p>
+          <h3 id="cute-mob-models-resource-pack">Cute Mob Models resource pack</h3>
+          <p>これ導入してると副作用が結構あるな</p>
+          <ul>
+            <li>本家にあった、当たり判定通りにするオプションがないのが辛いな</li>
+            <li>VoxelMapがresourcepackを元にアイコン作ってるみたいだから化ける</li>
+            <li>家畜まで可愛くするから気軽にコロがせないよ</li>
+          </ul>
+          <p>単純に視認性の問題もあって、全肯定はできないけど、</p>
+          <p>でももう必須ですわ</p>
+          <p>パンダ可愛すぎるでしょこれ</p>
+          <p>家畜だけ分離したやつ作るか</p>
+          <p>brown_mooshroom</p>
+          <p>chicken</p>
+          <p>cow</p>
+          <p>pig</p>
+          <p>red_mooshroom</p>
+          <p>sheep</p>
+          <p>バニラのテクスチャもあれはあれで愛嬌があっていいんだよね</p>
+          <p>CMMRPのヒツジさんから羊毛を剥いでたり、</p>
+          <p>ウシさんからミルク絞ってると、絵的に犯罪臭がパないよ</p>
+          <p>薄い本が厚くなるな</p>
+          <h3 id="spice-of-life-carrot-edition">Spice of Life: Carrot edition</h3>
+          <p>Blacklist登録が悩ましいところよね</p>
+          <p>明らかに毒なソラニンじゃがいもとかゾンビ肉とかはフィルタかけるならマストだけど、</p>
+          <p>生魚って回虫とかいそうだし、</p>
+          <p>生肉をどうするかだよね</p>
+          <p>生の鶏肉って毒くらうんだ。へー</p>
+          <p>現実だと馬刺しとかユッケもあるしなあ</p>
+          <p>でもなんでイスラム教で豚肉食べちゃダメっていってるのか知ってる？</p>
+          <p>あれって生で豚肉食べるのが流行って食中毒が蔓延したからなんだって</p>
+          <p>そりゃ昔の衛生環境だったらNGだろうけど、現代も律儀に盲信してるのって、、、</p>
+          <p>いや、宗教に首突っ込んだらあかんね。救われてるひともいるんだから</p>
+          <p>それでいったら生類憐れみの令も飢饉のときに狂犬病がうんぬんって、、、</p>
+          <p>犬将軍とか散々言われてたらしいけど、民を想ってのことだったんだねー</p>
+          <p>閑話休題、ゲームバランス考えると、序盤の嵩上げで食べる品目が少なくなるから、</p>
+          <p>デフォルトの5品刻みでやると難度上がるんだよね</p>
+          <p>ここを数字弄って調整するか、ここまできたらもう好みの問題だね</p>
+          <p>あれだ、Steaveさんは特殊な訓練を受けてるっていう例のアレってことで、ここはどうかよしなに</p>
+          <p>まあいいや、書式はこうだよって備忘録だけ残して結局フィルタかけねーなこれ<em>WorldName</em></p>
+          <p>/serverconfig/solcarrot-server.toml</p>
+          <p>[filtering]</p>
+          <p>blacklist = ["minecraft:chicken", "minecraft:poisonous_potato", "minecraft:pufferfish", "minecraft:rotten_flesh", "minecraft:spider_eye"]</p>
+          <p>[miscellaneous]</p>
+          <p>resetOnDeath = true</p>
+          <p>String書きしないとワールドに入れなかったお</p>
+          <p>デスペナはほしいからresetOnDeathはtrueで</p>
+          <p>1.10.2から見て、品目が増えてるのにパラメータが固定だったら、</p>
+          <p>好きに調整しろってことだろうから、そうさせてもらうわ</p>
+          <p>1.10.2</p>
+          <p>全31品目</p>
+          <p>1.16.3</p>
+          <p>全36品目</p>
+          <p>milestoneは変わらず25品目でハート+10個</p>
+          <p>n品目食べるとハート+1とか</p>
+          <h3 id="craft-tweaker">Craft Tweaker</h3>
+          <p>使えねえ</p>
+          <p>そりゃレシピ改変できるのは当たり前だけどさ</p>
+          <p>村人との取引内容を改変したいんだよ</p>
+          <p>量産できるEmeraldでDiamond装備が買えるのはヌルいでしょ</p>
+          <p>まあだからこそNetherite装備が追加されたのかもしれないけどさ</p>
+          <p>entity.minecraft.villager だと思うんだけど、</p>
+          <p>クラフトレシピじゃない以上消すのも加えるのもできないんだよね</p>
+          <h3 id="cooking-for-blockhead">Cooking for Blockhead</h3>
+          <p>見た目と実益を兼ねてていい感じ</p>
+          <p>ただコンテナがかなり雑で笑う</p>
+          <p>生肉はFridgeに入れたほうがいいと思ったんだけど、調理できないし</p>
+          <p>あれかな？常温まで戻さないと調理しにくいのかな？</p>
+          <p>そんなこだわりないんだけどな</p>
+          <h3 id="better-advancements">Better Advancements</h3>
+          <p>設定項目でInventoryにタブ追加するってあるけど</p>
+          <p>Inventory/Advancementsも</p>
+          <p>Esc/Advancementsも操作回数変わらんよね</p>
+          <p>Escはマウスのサイドボタンに仕込んであるし</p>
+          <p>なんなら、よくアクセスするInventoryにタブ表示されて邪魔まである</p>
+          <p>それにキーコンフィグに項目あったよな確か</p>
+          <p>よってfalse</p>
+          <h3 id="inspirations">Inspirations</h3>
+          <p>センスいいなあこのmod</p>
+          <p>現実ならその挙動だよねっていうアイテム追加とか</p>
+          <p>装飾ブロックも良さげ</p>
+          <p>Collectorのアナザーレシピがいいよね</p>
+          <p>Cauldronのjei閲覧レシピあるのがいいわあ</p>
+          <p>Vanilla Magicに爪の垢煎じて飲ませたいよ</p>
+          <p>賑やかし系のmodの中ではかなり好きかも</p>
+          <h3 id="mrcrayfishs-vehicle-mod">MrCrayfish's Vehicle mod</h3>
+          <p>ゲーム内の説明なくて四苦八苦したけど、いいよこれ</p>
+          <p>資源も湯水のように使うし、蓄財のいい捌け口になりそう</p>
+          <h3 id="tofucraftreload">TofuCraftReload</h3>
+          <p>これまたゲーム内説明皆無だから解説サイトだよりだけど</p>
+          <p>このmodの場合はファンメイドだから仕方ないよね</p>
+          <p>Spice of Lifeのよきお相手ですね</p>
+          <p>トーフニアンに会いに行こう</p>
+          <p>この子入れて新しく始めると、</p>
+          <p>実験的だから保証しないよドラゴンだー</p>
+          <p>って言われる</p>
+          <h3 id="reliquary">Reliquary</h3>
+          <p>バニラmobドロップを追加して、色々やりたい放題なアイテム追加するのか</p>
+          <p>一番魅力的に見えたのは各敵対mobがプレイヤーを無視するCharm</p>
+          <p>と思ったらこれ耐久値あるのか</p>
+          <p>UnbreakingはつけられてもMendingはつけられないから実質使い捨てか</p>
+          <p>Lootingでできる限りドロップ増やすか、そもそも相手しないで別処理するかだね</p>
+          <p>そんなにだね、これは</p>
+          <h3 id="vampirism">Vampirism</h3>
+          <p>スキル習得</p>
+          <p>4 * 4グリッドクラフト</p>
+          <p>Vampire堕ちもできるのかな？</p>
+          <p>敵対mobが弱くて専用装備作る意義に欠けるよね</p>
+          <p>ただ体力がとんでもない個体のスポーンエッグも用意されてるから楽しめるかもしれん</p>
+          <p>攻撃受けてからしばらくしたら日光が刺すように痛く感じたりするんだろうか</p>
+          <p>それだったらWarewolfにもなりたくなってくるじゃないか</p>
+          <h3 id="industrial-foregoing">Industrial Foregoing</h3>
+          <p>MFR2時代はヌルくてFFMとかの自動林業に逃げてたけど</p>
+          <p>今のIndustrial Foregoingはなかなかいいかも</p>
+          <p>スタンドアロンであることを放棄してるよねこれ</p>
+          <p>独自のエネルギーとか液体パイプって元からなかったか</p>
+          <p>併用してもらうこと前提で作ってるのね</p>
+          <h3 id="immersive-engineering">Immersive Engineering</h3>
+          <p>Magnetic Gloveってショトカキー有効にするだけの為のアイテムか</p>
+          <p>Engineer's WorkbenchでHeavy Plated Shield(バニラのシールドは不可)に入れられる</p>
+          <p>だったらEngineer's Toolboxのショトカ用意してくれよな</p>
+          <p>アイテムマグネットかと思ったのに、残念</p>
+          <p>Engineer's Workbenchって自動搬入・搬出できなくて使い勝手よくないんだよな</p>
+          <p>プレスマシンでGraphite Electrodeのレシピ用意されてる辺り、意図的にやってるんだろうけどね</p>
+          <p>redditもapiのimport/export部分消されてるから絶対無理みたいなことみんな書いてるわ</p>
+          <p>ここを自動化してくれるmodあるならありがたいな</p>
+          <h3 id="pcr">PC:R</h3>
+          <p>実はそんなに触ってない</p>
+          <p>なめるように要素をしゃぶり尽くしたいね</p>
+          <h3 id="natures-aura">Nature's Aura</h3>
+          <p>楽しそう</p>
+          <p>昔は英語読むにうんざりしてたから直感でわかる工業ばっかりやってたけど</p>
+          <p>ありやな</p>
+          <p>Botaniaとセットで攻略したい</p>
+          <h3 id="rats">Rats</h3>
+          <p>かわ</p>
+          <p>やりこめそう</p>
+          <h3 id="doggy-talent">Doggy Talent</h3>
+          <p>Advancementsがログに二重に表示されててうるさい</p>
+          <p>と思ったらバニラとこいつで重複してるのか</p>
+          <p>ホイッスル使うと座ったり立ったりはするんだけど</p>
+          <p>敵に向かっていってくれない</p>
+          <p>やり方があるんだろうか</p>
+          <p>リストラだ</p>
+          <h3 id="blue-power">Blue Power</h3>
+          <p>工業mod御三家Red Powerのクローンらしい</p>
+          <p>BC, IC2に比べるといかんせんボリュームがね</p>
+          <p>Project Redのボリュームを期待してた</p>
+          <p>後発にどんどん追い抜かれていった感じがすごい</p>
+          <p>今あえてBlue Powerを選ぶ理由はあるんだろうか</p>
+          <h3 id="xnet">Xnet</h3>
+          <p>シンプルにまとまってて良さげ</p>
+          <p>他modのアイテムコンテナと発電機次第ってとこはある</p>
+          <p>相乗効果狙いだね。あとで詳しく調べておこう</p>
+          <h3 id="psi">Psi</h3>
+          <p>とりあえずTutorial終わらせた</p>
+          <p>今まではWitcheryのMystic Branchみたいなのだと思って手出してなかったけど</p>
+          <p>超面白いじゃんこれ</p>
+          <h3 id="prefab">prefab</h3>
+          <p>ボーナスチェストON, 任意に構造物建てられると思えばありや</p>
+          <h3 id="packing-tape">packing tape</h3>
+          <p>紙を消費して包むのね</p>
+          <p>Spawnerは鯖コンフィグのホワイトリストに登録すれば可能と</p>
+          <p>Mekanismを入れない環境ならありかな</p>
+          <h3 id="comforts">comforts</h3>
+          <p>リスポン地点を変更しない寝袋とハンモックの追加ね</p>
+          <p>ハンモックは4マス必要と</p>
+          <p>いらないかな</p>
+          <p>別ディメンションで爆発するかな？</p>
+          <p>検証が面倒くさいくらいにはこのmodに興味ないかな</p>
+          <h3 id="elementalcraft">elementalCraft</h3>
+          <p>鉱石倍化とスペルスクロールね</p>
+          <p>ふーん</p>
+          <h3 id="refine-relocation">Refine Relocation</h3>
+          <p>Diamond Chestは16*7スロット</p>
+          <p>アイテム個別ではなくアイテム群のフィルタ指定</p>
+          <h3 id="simple-storage-network">Simple Storage Network</h3>
+          <p>確かにシンプル</p>
+          <p>これも他mod追加のコンテナ次第</p>
+          <h3 id="modular-routers">Modular Routers</h3>
+          <p>今回の倉庫系modの中で一番使い勝手が良さそう</p>
+          <p>なんだかんだでAE2と併用することしか考えてないから</p>
+          <p>オートクラフトだのアイテム転送だのは基本どうでもいい</p>
+          <h3 id="item-filter">item filter</h3>
+          <p>バニラのホッパーとかに作用するアイテム追加か</p>
+          <p>極力バニラ風味でいたいならいいんだろうけど</p>
+          <p>微妙かな</p>
+          <h3 id="weeping-angels">Weeping Angels</h3>
+          <p>これ原作知らないとわからないな</p>
+          <p>知ってればおもしろそうではある</p>
+          <p>Statueはいいとして、ほかに追加されるアイテム、ブロックの使途がわからん</p>
+          <h3 id="building-gadgets">building gadgets</h3>
+          <p>よくある直線にブロックをおけるツール</p>
+          <p>RF消費する？</p>
+          <p>工業mod併用前提か</p>
+          <p>Structureのコピペもできるっぽいけど使いこなせる気がしない</p>
+          <p>AE2のSpatial Cellでいいよね</p>
+          <p>ってAE2好きすぎだよな</p>
+          <h3 id="tool-belt">Tool Belt</h3>
+          <p>curiosのインベントリスロットと独自スロット、どっちにも入るな</p>
+          <p>独自スロットもショトカキー有効で、</p>
+          <p>curiosのBeltスロットが優先されるみたい</p>
+          <p>他modのBelt追加も考えてのことかな</p>
+          <p>てことは独自スロットに入れるのが安牌ね</p>
+          <p>Pi MenuのGUI流行ってんね</p>
+          <p>ALの影響かな？影響力ありそうだもんね</p>
+          <p>Psi触ったときも思ったけど、シングルプレイでGUI開いてる時に世界止まるのよね</p>
+          <p>Pi Menuくらい簡素なGUIだったら移動系キー受け付けてもいいと思うんだけど</p>
+          <p>MCPとかAPIに乗っかってコーディングしてると、そううまくはいかないんだろうね</p>
+          <p>まあ、内情は察せる</p>
+          <p>minemenu-common.toml</p>
+          <p>[menu]</p>
+          <p>allowClickOutsideBounds = true</p>
+          <p>releaseToSwap = true</p>
+          <p>こうっすね</p>
+          <h3 id="mine-menu">Mine Menu</h3>
+          <p>toolbelt-client.toml</p>
+          <p>[general]</p>
+          <p>displayEmptySlots = true</p>
+          <p>menuAnimation = false</p>
+          <p>releaseToSelect = true</p>
+          <p>こうっすね</p>
+          <p>アニメーションのフレーム数を指定できれば最高だったんだけどね</p>
+          <p>デフォルトは長すぎる</p>
+          <h3 id="find-me">Find Me</h3>
+          <p>インベントリ内で、手持ちかjei一覧のアイテムにカーソルを合わせたときに</p>
+          <p>設定したキーを押すと、そのアイテムがしまってあるコンテナにパーティクルが出るのね</p>
+          <p>要るか？こんなの</p>
+          <p>バニラでもちゃんと整理するから、シングルプレイなら絶対に使わない自信がある</p>
+          <p>マルチ？知るかんなもん</p>
+          <p>だからAE2の使用を強制したいんだよ</p>
+          <h3 id="solar-flux-reborn">Solar Flux Reborn</h3>
+          <p>要求も高くていいんじゃないすかね</p>
+          <p>追加リソース不要とかメンテフリーとか、現実なら大歓迎なんだけど、</p>
+          <p>ことゲームにおいてはつまんなくなるから、あんまり好きじゃない</p>
+          <p>永パ構築に2手3手かかる面倒くささが絶妙だと、たまらんのですよ</p>
+          <p>わかってくれるかなー、まあ自分で自分を理解して納得してれば共感とかいらんのだけどね</p>
+          <p>だったらなんでこんなの書いて載せてるんだっていうでっていう</p>
+          <p>所詮チラ裏ですよ</p>
+          <h3 id="trapcraft">Trapcraft</h3>
+          <p>送風ファン、周辺のアイテムを引き寄せるマグネティックチェスト、落とし穴、トラバサミ、剣山、着火ブロック</p>
+          <p>トラップタワーの為なんだろうけど、対人に悪用されるビジョンしか思い浮かばない</p>
+          <p>海外だとTTじゃなくてFarmっていうのが一般的だし、</p>
+          <p>"Trap"craftって名付けてるあたり、作者も狙ってんのかな</p>
+          <p>勘ぐり過ぎか。あーココロが汚いね</p>
+          <p>深淵を覗く時ってやつ</p>
+          <p>ピュアになりたい</p>
+          <h3 id="cyclic">Cyclic</h3>
+          <p>他のmod喰う便利アイテムだらけだな</p>
+          <p>Heartの上限は100(HP: 200)まで、下限は1(HP: 2)で、</p>
+          <p>それ以下でEmpty Heart ContainerをつかうとHeart消費なしで経験値をくれる</p>
+          <p>Spice of Life: Carrot Editionブチ壊しなんだよな</p>
+          <p>cyclic.toml</p>
+          <p>[cyclic]</p>
+          <p>hearts = false</p>
+          <p>SoLを優先したい</p>
+          <p>基本的にmodの鯖コンフィグは弄りたくはないんだけど、</p>
+          <p>デスペナが欲しいが為にSoLの鯖コンフィグに手を出してるんだし、</p>
+          <p>これだけは設定させてくれ</p>
+          <p>MagnetアビリティがEnchantmentってのはいいかもね</p>
+          <p>Cyclicが完全に上位互換で食ってしまうようなmodは外せばいいし</p>
+          <p>機能が競合するようならそれぞれ試して比較すればいいよね</p>
+          <p>そういうのを楽しむのもmodの醍醐味だよ、うん</p>
+          <p>追加装備が壊れ性能してる</p>
+          <p>Netheriteを凌駕しちゃだめじゃないのか？</p>
+          <h3 id="custom-crosshair">Custom Crosshair</h3>
+          <p>クロスヘアは#FF00FFにするのが好きなんだけど</p>
+          <p>敵対Mobに合わせたときに赤になるの、変化が少なくて見づらい</p>
+          <p>近接攻撃で射程圏内か測るのに必要なんだよね</p>
+          <p>変えられねーかなー</p>
+          <p>あった</p>
+          <p>crosshair_config.ccmcfg</p>
+          <p>highlight_hostile_colour:220/40/40/255</p>
+          <p>ここ書き換えればおｋ、colourってイギリス英語だっけ</p>
+          <p>crosshair_colour:255/65/255/127</p>
+          <p>highlight_hostile_colour:255/0/0/255</p>
+          <p>にした。妥協</p>
+          <p>だって敵対は赤じゃん</p>
+          <p>せっかくバージョンアップ重ねてUI改善していってるんだから、</p>
+          <p>ゲーム内設定で全部変えられればいいのに</p>
+          <p>ダサダサUIじゃないし、項目数絞っててもそんなにスッキリしてないぞ</p>
+          <h3 id="jei">jei</h3>
+          <p>jei-client.toml</p>
+          <p>[advanced]</p>
+          <p>CenterSearch = true</p>
+          <p>いつからだったか、ゲーム内でコンフィグが弄れなくなってしまったのだ</p>
+          <p>右の表示スペース増えるからこの設定好きなんだよねー</p>
+          <p>AE2のME InterfaceはTall Modeが優先されるから右にずれてくれるし、言うことなしなのだ</p>
+          <h3 id="mantle">Mantle</h3>
+          <p>TinCo式というかTerraria式のヘルス表示してくれるのか</p>
+          <h3 id="bountiful-baubles">Bountiful Baubles</h3>
+          <p>Terrariaのアクセサリーです本当にありがとうございました</p><br>
+          <p>これ後でページ分けたほうがいいな、後とか言ってやらないんだけどね</p>
+          <p>mdからhtmlからpugの変換しただけという</p>
+          <p>テンプレートエンジンってすごいんだなって</p>
+        </section>
+      </article>
+    </main>
+    <footer>
+    </footer>
+  </body>
+</html>
