@@ -11,19 +11,28 @@ const base = 'http://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2'
 // ?key=20689F67085593FF34262A093673DFEA&steamid=76561198271332918&appid=18700
 const GUSFG = 'https://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v2/'
 let option = `${key}${steamid}${appid}`
-let test = new URL(option, GUSFG)
-console.log(test)
-
-let httpRequest = new XMLHttpRequest()
-if (!httpRequest) {
-  alert('なんか失敗したっぽい。XMLHTTP インスタンスが作れなかったって。')
-}
-const alertContents = () => {  
-  if (httpRequest.readyState === XMLHttpRequest.DONE) {
-    if (httpRequest.status === 200) alert(httpRequest.responseText)
-    else alert('リクエストに問題が発生したよ。')
+fetch(GUSFG + option, {
+  method: 'GET',
+  mode: 'cors',
+  credentials: 'include',
+  headers: {
+    'X-MyRequest': 'this-is-cors-test',
+    'X-MyOption': 'my-option'
   }
-}
-httpRequest.onreadystatechange = alertContents
-httpRequest.open('GET', `${GUSFG}${option}`)
-httpRequest.send()
+})
+  .then(response => response.json())
+  .then(data => console.log(data))
+
+// let httpRequest = new XMLHttpRequest()
+// if (!httpRequest) {
+//   alert('なんか失敗したっぽい。XMLHTTP インスタンスが作れなかったって。')
+// }
+// const alertContents = () => {  
+//   if (httpRequest.readyState === XMLHttpRequest.DONE) {
+//     if (httpRequest.status === 200) alert(httpRequest.responseText)
+//     else alert('リクエストに問題が発生したよ。')
+//   }
+// }
+// httpRequest.onreadystatechange = alertContents
+// httpRequest.open('GET', `${GUSFG}${option}`)
+// httpRequest.send()
