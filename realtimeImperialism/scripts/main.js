@@ -1356,7 +1356,7 @@ const debugBonusInit = () => {
   entityObject['Paper'] += 8 * 5
   entityObject['Lumber'] += 24 * 5
   entityObject['Steel'] += 19 * 5
-  entityObject['Cuisine'] += 0
+  entityObject['Cuisine'] += 1e4
   entityObject['Canned Food'] += 20 * 5
   entityObject['Clothing'] += 5 * 5
   entityObject['Furniture'] += 5 * 5
