@@ -140,7 +140,7 @@ const gravitationalAcceleration = 9.80665 * 1000 / 25 / 1000 ** 2
 let coefficient = 5
 let elasticModulus = 0 // 0 to 1
 const wallFF = 0
-let userFF = .1
+let userFF = .05
 let frictionalForce = userFF // 0 to 1
 const ownCondition = {x: 0, y: 0, dx: 0, dy: 0, landFlag: false,}
 const collisionRange = size / 2 * .9
@@ -175,10 +175,10 @@ const input = () => {
     elasticModulus = orgRound(elasticModulus + .1, 10)
   }
   if (keyMapObject.subFrictionalForce.isFirst() && 0 < userFF) {
-    userFF = orgRound(userFF - .1, 10)
+    userFF = orgRound(userFF - .01, 100)
   }
   if (keyMapObject.addFrictionalForce.isFirst() && userFF < 1) {
-    userFF = orgRound(userFF + .1, 10)
+    userFF = orgRound(userFF + .01, 100)
   }
   if (keyMapObject.gravity.isFirst()) gravityFlag = !gravityFlag
   if (!gravityFlag) {
