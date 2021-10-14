@@ -1,0 +1,23 @@
+{ "columns":37,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"",
+         "target":"gothicVaniaTown"
+        }
+    },
+ "image":"GothicVania-town-files\/PNG\/environment\/layers\/tileset.png",
+ "imageheight":192,
+ "imagewidth":592,
+ "margin":0,
+ "name":"tileset_GothicVaniaTown",
+ "spacing":0,
+ "tilecount":444,
+ "tiledversion":"2020.03.18",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#003039",
+ "type":"tileset",
+ "version":1.2
+}

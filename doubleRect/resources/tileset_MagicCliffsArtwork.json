@@ -1,0 +1,23 @@
+{ "columns":40,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"",
+         "target":"."
+        }
+    },
+ "image":"MagicCliffsArtwork\/tileset.png",
+ "imageheight":320,
+ "imagewidth":640,
+ "margin":0,
+ "name":"tileset_magicCliffsArtwork",
+ "spacing":0,
+ "tilecount":800,
+ "tiledversion":"2020.03.18",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#003039",
+ "type":"tileset",
+ "version":1.2
+}
