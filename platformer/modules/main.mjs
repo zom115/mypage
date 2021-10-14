@@ -404,6 +404,7 @@ const setMapProcess = arg => {
   // getMusic(mapObject[arg])
 }
 const mapObjectProcess = () => {
+  // warp destination, open door, move spot
   mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
     if (v.name === 'gate' &&
       v.x < ownCondition.x && ownCondition.x < v.x + v.width &&
