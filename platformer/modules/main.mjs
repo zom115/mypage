@@ -19,21 +19,21 @@ const frameCounter = list => {
 }
 let currentTime = globalTimestamp
 let intervalDiffTime = 1
-const volume = document.getElementById('volume')
-const span = document.createElement`span`
-volume.appendChild(span)
-span.textContent = 'Volume'
-const volumeController = document.createElement`input`
-volume.appendChild(volumeController)
-volumeController.type = 'range'
-volumeController.value = 0
-const volumeIndecator = document.createElement`span`
-volume.appendChild(volumeIndecator)
-volumeIndecator.textContent = volumeController.value
-volumeController.addEventListener('input', (e) => {
-  volumeIndecator.textContent = e.target.value
-  Object.values(audioObject).forEach(v => v.volume = e.target.value / 100)
-})
+// const volume = document.getElementById`volume`
+// const span = document.createElement`span`
+// volume.appendChild(span)
+// span.textContent = 'Volume'
+// const volumeController = document.createElement`input`
+// volume.appendChild(volumeController)
+// volumeController.type = 'range'
+// volumeController.value = 0
+// const volumeIndecator = document.createElement`span`
+// volume.appendChild(volumeIndecator)
+// volumeIndecator.textContent = volumeController.value
+// volumeController.addEventListener('input', (e) => {
+//   volumeIndecator.textContent = e.target.value
+//   Object.values(audioObject).forEach(v => v.volume = e.target.value / 100)
+// })
 const canvas = document.getElementById`canvas`
 const context = canvas.getContext`2d`
 const size = 16
@@ -401,7 +401,7 @@ const setMapProcess = arg => {
   mapName = arg
   setStartPosition(mapObject[arg])
   getColor(mapObject[arg])
-  getMusic(mapObject[arg])
+  // getMusic(mapObject[arg])
 }
 const mapObjectProcess = () => {
   mapObject[mapName].layers[mapObject[mapName].layersIndex.objectgroup].objects.forEach(v => {
