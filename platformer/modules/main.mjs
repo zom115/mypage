@@ -617,15 +617,17 @@ const getMapData = directory => {
   })
 }
 let directoryList = [
-  'map_GothicVaniaTown',
-  'map_MagicCliffsArtwork',
+  'map_Start',
+  // 'map_GothicVaniaTown',
+  // 'map_MagicCliffsArtwork',
 ]
 let mapName = directoryList[0]
-let mapColor = 'rgb(127, 127, 127)'
+let mapColor = 'rgb(191, 191, 191)'
 const getColor = arg => {
   arg.layersIndex.objectgroup.forEach(v => {
     const index = arg.layers[v].objects.findIndex(vl => vl.name === 'color')
-    if (index !== 0) {
+    console.log(arg.layers[v].objects, index)
+    if (0 <= index) { // -1: not exist
       let color = arg.layers[v].objects[index].properties[0].value
       mapColor = `rgba(${
         parseInt(color.slice(3, 5), 16)}, ${
