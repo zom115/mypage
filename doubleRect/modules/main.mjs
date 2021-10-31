@@ -300,10 +300,10 @@ const collisionDetect = () => {
             const oy = ownCondition.y
             const dx = ownCondition.dx
             const dy = ownCondition.dy
-            const ax = x * size + ro[0] * size
-            const ay = y * size + ro[1] * size
-            const bx = x * size + rn[0] * size
-            const by = y * size + rn[1] * size
+            const ax = (x + ro[0]) * size
+            const ay = (y + ro[1]) * size
+            const bx = (x + rn[0]) * size
+            const by = (y + rn[1]) * size
             const abx = bx - ax
             const aby = by - ay
             let nx = -aby
