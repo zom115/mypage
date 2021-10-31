@@ -2399,7 +2399,7 @@ const relativeX = (arg) => {
 const relativeY = (arg) => {
   return canvas.offsetHeight / 2 - ownPosition.y + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
 }
-const drawMain = () => {
+const drawMain = () => {s
   drawField()
   if (0 < objects.length) drawObjects()
   if (0 < clonePosition.length) drawClone()
@@ -2412,6 +2412,7 @@ const drawMain = () => {
   if (inventoryFlag) drawInventory()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
+  if (state === 'pause') drawPause()
 }
 const command = () => {
   let bool = false
@@ -2660,8 +2661,7 @@ const mainProcess = () => {
     reviveFlag = false
   }
 }
-const pauseProcess = () => {
-  if (key[action.pause].isFirst()) state = 'main'
+const drawPause = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
@@ -2673,6 +2673,9 @@ const pauseProcess = () => {
   context.textAlign = 'center'
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
   context.restore()
+}
+const pauseProcess = () => {
+  if (key[action.pause].isFirst()) state = 'main'
 }
 const drawResult = () => {
   context.font = '32px sans-serif'
@@ -3010,8 +3013,11 @@ const draw = () => {
   frameCounter(animationFrameList)
   resetScreen()
   if (state === 'title') drawTitleScreen()
-  else if (state === ('main' || 'pause')) drawMain()
-  else if (state === 'keyLayout') drawKeyLayout()
+  else if (state === 'main') drawMain()
+  else if (state === 'pause') {
+    drawMain()
+    drawPause()
+  } else if (state === 'keyLayout') drawKeyLayout()
   if (state === 'result') drawResult()
   drawDebug()
 }
