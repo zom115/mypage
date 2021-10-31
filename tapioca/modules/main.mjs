@@ -27,7 +27,6 @@ canvas.addEventListener('mousemove', e => {
   let rect = e.target.getBoundingClientRect()
   // mouseCooldinateObject.x = e.clientX - rect.left
   // mouseCooldinateObject.y = e.clientY - rect.top
-  console.log(e)
 }, false)
 canvas.addEventListener('mousedown', () => {mouseFlag = true}, false)
 canvas.addEventListener('mouseup', () => {mouseFlag = false}, false)
@@ -2400,7 +2399,7 @@ const relativeX = (arg) => {
 const relativeY = (arg) => {
   return canvas.offsetHeight / 2 - ownPosition.y + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
 }
-const drawing = () => {
+const drawMain = () => {
   drawField()
   if (0 < objects.length) drawObjects()
   if (0 < clonePosition.length) drawClone()
@@ -2572,7 +2571,6 @@ const reset = () => {
   setWave()
   wave.interval = 0
   defeatCount = 0
-  resetScreen()
 }; reset()
 let mapMode = false
 const getKeyName = key => {
@@ -2627,7 +2625,6 @@ const drawTitleScreen = () => {
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
 }
 const titleProcess = () => {
-  resetScreen()
   if (key[action.fire].isFirst()) {
     reset()
     if (manyAmmo()) {
@@ -2642,10 +2639,8 @@ const titleProcess = () => {
     state = 'keyLayout'
   }
   if (key[action.change].isFirst()) mapMode = !mapMode
-  drawTitleScreen()
 }
 const mainProcess = () => {
-  resetScreen()
   timer = (timer+1)|0
   interfaceProcess()
   if (!firearm.chamberFlag) slideProcess()
@@ -2658,7 +2653,6 @@ const mainProcess = () => {
   if (0 < dropItems.length) dropItemProcess()
   if (cloneFlag) cloneProcess()
   if (inventoryFlag) inventoryProcess()
-  drawing()
   if (direction !== 0) direction = 0
   if (angle !== 0) angle = 0
   if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
@@ -2670,11 +2664,9 @@ const mainProcess = () => {
 }
 const pauseProcess = () => {
   if (key[action.pause].isFirst()) state = 'main'
-  resetScreen()
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
-  drawing()
   context.save()
   context.font = '32px sans-serif'
   context.fillStyle = (ss % 3 === 2) ? `hsl(60, ${100 * (1 - (ms / 1e3))}%, 40%)` :
@@ -2684,11 +2676,7 @@ const pauseProcess = () => {
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
   context.restore()
 }
-const resultProcess = () => {
-  manyAmmo()
-  if (key[action.back].isFirst()) reset()
-  resetScreen()
-  drawing()
+const drawResult = () => {
   context.font = '32px sans-serif'
   context.fillStyle = 'hsl(0, 100%, 40%)'
   context.textAlign = 'center'
@@ -2720,6 +2708,10 @@ const resultProcess = () => {
   context.font = '32px sans-serif'
   context.fillStyle = 'hsl(300, 100%, 50%)'
   context.fillText('カットイン(仮)', size*5, canvas.offsetHeight / 2)
+}
+const resultProcess = () => {
+  manyAmmo()
+  if (key[action.back].isFirst()) reset()
 }
 const swap = (get, set) => {
   let before = Object.keys(action)[Object.values(action).indexOf(order[get])]
@@ -2796,34 +2788,39 @@ const menuColumn = () => {
     return num
   }
 }; const rotate = menuColumn()
+let rowPosition = 0
+let keyPosition = -2
 const keyLayoutProcess = () => {
-  resetScreen()
-  const nowTime = Date.now()
-  const ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
-  const ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
-  const rowNum = rotate()
-  let inKey = input()
-  if (inKey === order.indexOf('w') && holdTimeLimit <= key.w.holdtime &&
+  rowPosition = rotate()
+  keyPosition = input()
+  if (keyPosition === order.indexOf('w') && holdTimeLimit <= key.w.holdtime &&
     !(Object.values(action).some(x => x === 'w' || x === 'a'))) {
     operationMode = setStorage('operation', 'WASD')
     setOperation()
   }
-  if (inKey === order.indexOf('e') && holdTimeLimit <= key.e.holdtime &&
+  if (keyPosition === order.indexOf('e') && holdTimeLimit <= key.e.holdtime &&
     !(Object.values(action).some(x => x === 'e' || x === 'f'))) {
     operationMode = setStorage('operation', 'ESDF')
     setOperation()
   }
-  if (rowNum === 0 && (key[action.left].isFirst() || key[action.right].isFirst())) {
+  if (rowPosition === 0 && (key[action.left].isFirst() || key[action.right].isFirst())) {
     reload.auto = (reload.auto === 'ON') ? setStorage('autoReload', 'OFF') :
     setStorage('autoReload', 'ON')
   }
-  if (rowNum === 1 && (key[action.left].isFirst() || key[action.right].isFirst())) {
+  if (rowPosition === 1 && (key[action.left].isFirst() || key[action.right].isFirst())) {
     combatReload.auto = (combatReload.auto === 'ON') ? setStorage('autoCombatReload', 'OFF') :
     setStorage('autoCombatReload', 'ON')
   }
   if (
-    inKey === order.indexOf(action.back) && holdTimeLimit <= key[action.back].holdtime
+    keyPosition === order.indexOf(action.back) && holdTimeLimit <= key[action.back].holdtime
   ) state = 'title'
+}
+const drawKeyLayout = () => {
+  console.log('a')
+  // resetScreen()
+  const nowTime = Date.now()
+  const ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
+  const ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
   context.font = `${size * .65}px sans-serif`
   context.fillStyle = 'hsl(210, 100%, 40%)'
   let p = {x: canvas.offsetWidth * .56, y: canvas.offsetHeight * .3} // absolute coordinate
@@ -2832,18 +2829,18 @@ const keyLayoutProcess = () => {
   context.fillStyle = (ms < 500) ? `hsla(30, 100%, 45%, ${(1 - (ms / 1e3) - .25) * 2})` :
   `hsla(30, 100%, 45%, ${((ms / 1e3) - .25) * 2})`
   context.save()
-  if (rowNum !== 0) context.fillStyle = 'hsl(210, 100%, 40%)'
+  if (rowPosition !== 0) context.fillStyle = 'hsl(210, 100%, 40%)'
   context.fillText('AUTO RELOAD:', p.x, p.y)
   context.restore()
   context.save()
-  if (rowNum !== 1) context.fillStyle = 'hsl(210, 100%, 40%)'
+  if (rowPosition !== 1) context.fillStyle = 'hsl(210, 100%, 40%)'
   context.fillText('AUTO COMBAT RELOADING:', p.x, p.y + size)
   context.restore()
   p.x = p.x + size * 1.75
   context.textAlign = 'center'
   context.font = `bold ${size * .5}px sans-serif`
-  context.fillText('＜', p.x - size * 1.4, p.y + size * rowNum - size/16)
-  context.fillText('＞', p.x + size * 1.4, p.y + size * rowNum - size/16)
+  context.fillText('＜', p.x - size * 1.4, p.y + size * rowPosition - size/16)
+  context.fillText('＞', p.x + size * 1.4, p.y + size * rowPosition - size/16)
   context.fillStyle = 'hsl(210, 100%, 40%)'
   context.font = `${size * .65}px sans-serif`
   if (operationMode === 'WASD') {
@@ -2889,7 +2886,7 @@ const keyLayoutProcess = () => {
     if ((
       action.up === 'e' && key.w.flag && key.w.holdtime < holdTimeLimit) &&
       i === order.indexOf('w') &&
-      inKey === order.indexOf('w') || inKey === order.indexOf('e') &&
+      keyPosition === order.indexOf('w') || keyPosition === order.indexOf('e') &&
       (action.up === 'w' && key.e.flag && key.e.holdtime < holdTimeLimit) &&
       i === order.indexOf('e')
     ) {
@@ -2901,8 +2898,8 @@ const keyLayoutProcess = () => {
         size * 1.73, -size * 1.69 * time / holdTimeLimit
       )
     }
-    if (inKey !== -2 && inKey !== order.indexOf(action.up) && !flag) {
-      if (Object.values(action).some(x => order[inKey] === x)) {
+    if (keyPosition !== -2 && keyPosition !== order.indexOf(action.up) && !flag) {
+      if (Object.values(action).some(x => order[keyPosition] === x)) {
         context.fillStyle = ((
           i === order.indexOf(action.up) || i === order.indexOf(action.right) ||
           i === order.indexOf(action.down) || i === order.indexOf(action.left))
@@ -2917,7 +2914,7 @@ const keyLayoutProcess = () => {
         ) ? 'hsla(20, 100%, 50%, .5)' : 'hsla(0, 0%, 35%, .3)'
       }
     }
-    if (i === inKey) {
+    if (i === keyPosition) {
       context.fillStyle = (ss % 2 === 0) ? `hsl(60, 100%, ${45 + 5 * (1 - (ms / 1e3))}%)` :
       `hsl(60, 100%, ${45 + 5 * (ms / 1e3)}%)`
       context.font = (ss % 2 === 0) ? `${size * (2 - .1 * (1 - (ms / 1e3)))}px sans-serif` :
@@ -2985,22 +2982,20 @@ const keyLayoutProcess = () => {
   context.fillText('KEY LAYOUT EDITOR', size, size * 1.75)
   context.textAlign = 'right'
   context.fillStyle = (
-      inKey === order.indexOf(action.back) && !key[action.back].flag
+      keyPosition === order.indexOf(action.back) && !key[action.back].flag
     ) ? 'hsla(0, 0%, 35%, .3)' : 'hsla(340, 100%, 35%, .6)'
   context.fillText(
     `[HOLD "${getKeyName(action.back)}"] TO TITLE`,
     canvas.offsetWidth - size, canvas.offsetHeight - size
   )
-  if (inKey === order.indexOf(action.back)) {
+  if (keyPosition === order.indexOf(action.back)) {
     context.fillRect(
       canvas.offsetWidth - size * 11.5, canvas.offsetHeight - size,
       size * 10.6 * key[action.back].holdtime / holdTimeLimit, size * .2
     )
   }
 }
-const debugDraw = () => {
-  requestAnimationFrame(debugDraw)
-  frameCounter(animationFrameList)
+const drawDebug = () => {
   context.textAlign = 'left'
   context.font = `${size / 2}px sans-serif`
   let coordinate = (testNum != undefined) ? `${testNum.offsetX} ${testNum.offsetY}` : 'unknown'
@@ -3011,6 +3006,16 @@ const debugDraw = () => {
   for (let i = 0; i < array.length; i++) {
     context.fillText(array[i], size / 2, size / 2 * (i + 1))
   }
+}
+const draw = () => {
+  requestAnimationFrame(draw)
+  frameCounter(animationFrameList)
+  resetScreen()
+  if (state === 'title') drawTitleScreen()
+  else if (state === ('main' || 'pause')) drawMain()
+  else if (state === 'keyLayout') drawKeyLayout()
+  if (state === 'result') drawResult()
+  drawDebug()
 }
 const loop = () => setInterval(() => {
   frameCounter(internalFrameList)
@@ -3080,6 +3085,6 @@ const timerId = setInterval(() => { // loading monitoring
   if (loadedList.length === imagePathList.length) { // untrustworthy length in associative
     clearInterval(timerId)
     loop()
-    debugDraw()
+    draw()
   }
 }, 100)
