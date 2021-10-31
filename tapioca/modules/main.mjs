@@ -12,6 +12,21 @@ const isKeyFirst = list => {
 }
 const version = 'v.0.8.8.1'
 const canvas = document.getElementById`canvas`
+canvas.addEventListener('mouseover', () => {
+  // document.draggable = false
+  // canvas.draggable = false
+  // document.getElementById`canvas`.style.cursor = 'none'
+}, false)
+let testNum
+canvas.addEventListener('mousemove', e => {
+  testNum = e
+  let rect = e.target.getBoundingClientRect()
+  // mouseCooldinateObject.x = e.clientX - rect.left
+  // mouseCooldinateObject.y = e.clientY - rect.top
+  console.log(e)
+}, false)
+canvas.addEventListener('mousedown', () => {mouseFlag = true}, false)
+canvas.addEventListener('mouseup', () => {mouseFlag = false}, false)
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -2979,6 +2994,15 @@ const keyLayoutProcess = () => {
     )
   }
 }
+const debugDraw = () => {
+  context.textAlign = 'left'
+  context.font = `${size / 2}px sans-serif`
+  let coordinate = (testNum != undefined) ? `${testNum.offsetX} ${testNum.offsetY}` : 'unknown'
+  const array = [coordinate]
+  for (let i = 0; i < array.length; i++) {
+    context.fillText(array[i], size / 2, size / 2 * (i + 1))
+  }
+}
 const loop = () => {
   intervalDiffTime = globalTimestamp - currentTime
   if (100 < intervalDiffTime) intervalDiffTime = 0
@@ -2988,6 +3012,7 @@ const loop = () => {
   else if (state === 'pause') pauseProcess()
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
+  debugDraw()
   requestAnimationFrame(loop)
 }
 const imagePathList = [
