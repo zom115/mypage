@@ -340,11 +340,16 @@ const differenceAddition = (position, dx, dy) => {
       }
     }
   })
-  if (!flag.x) position.x = position.x - dx
-  if (!flag.y) position.y = position.y - dy
+  if (!flag.x) position.x = position.x - dx * 60 / 1000 * intervalDiffTime
+  if (!flag.y) position.y = position.y - dy * 60 / 1000 * intervalDiffTime
 }
 const directionCalc = arg => {
   let dx = 0, dy = 0
+  /*
+    6 4 12
+    2 0 8
+    3 1 9
+  */
   if (arg === 1) dy = 1
   else if (arg === 3) {
     dx = -1 / Math.SQRT2
