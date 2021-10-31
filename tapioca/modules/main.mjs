@@ -3000,16 +3000,19 @@ const drawKeyLayout = () => {
   }
 }
 const drawDebug = () => {
-  context.textAlign = 'left'
+  context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
   let coordinate = (testNum != undefined) ? `${testNum.offsetX} ${testNum.offsetY}` : 'unknown'
-  const array = [
-    coordinate,
-    internalFrameList.length - 1,
-    animationFrameList.length - 1]
-  for (let i = 0; i < array.length; i++) {
-    context.fillText(array[i], size / 2, size / 2 * (i + 1))
+  const dictionary = {
+    'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
+    'cursor(x, y)': coordinate,
+    internalFps: internalFrameList.length - 1,
+    screenFps: animationFrameList.length - 1
   }
+  Object.keys(dictionary).forEach((v, i) => {
+    context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
+    context.fillText(dictionary[v], canvas.width, size / 2 * (i + 1))
+  })
 }
 const draw = () => {
   requestAnimationFrame(draw)
