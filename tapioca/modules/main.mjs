@@ -141,7 +141,7 @@ let afterglow = {
   reset: 0
 }
 const flashTimeLimit = 5
-let ownPosition = {}
+const ownPosition = {x: 0, y: 0}
 let clonePosition = []
 let cloneFlag = false
 let clonePower = .8
@@ -2440,10 +2440,8 @@ const resetScreen = () => context.clearRect(0, 0, canvas.offsetWidth, canvas.off
 const reset = () => {
   state = 'title'
   point = 500
-  ownPosition = {
-    x: canvas.offsetWidth / 2,
-    y: canvas.offsetHeight / 2
-  }
+  ownPosition.x = canvas.offsetWidth / 2
+  ownPosition.y = canvas.offsetHeight / 2
   clonePosition = []
   cloneFlag = false
   cloneDashType1Flag = false
