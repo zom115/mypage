@@ -2399,7 +2399,7 @@ const relativeX = (arg) => {
 const relativeY = (arg) => {
   return canvas.offsetHeight / 2 - ownPosition.y + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
 }
-const drawMain = () => {s
+const drawMain = () => {
   drawField()
   if (0 < objects.length) drawObjects()
   if (0 < clonePosition.length) drawClone()
