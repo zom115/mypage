@@ -76,7 +76,7 @@ const setStorage = (key, value) => {
 let debugMode = true
 let operationMode = setStorageFirst('operation', 'WASD')
 let angleMode = setStorageFirst('angle', 'IJKL')
-let state, point, timer
+let state, point
 let inventoryFlag = false
 let inventorySize = 5
 let inventory = []
@@ -2434,7 +2434,6 @@ const resetScreen = () => context.clearRect(0, 0, canvas.offsetWidth, canvas.off
 const reset = () => {
   state = 'title'
   point = 500
-  timer = 0
   ownPosition = {
     x: canvas.offsetWidth / 2,
     y: canvas.offsetHeight / 2
@@ -2641,7 +2640,6 @@ const titleProcess = () => {
   if (key[action.change].isFirst()) mapMode = !mapMode
 }
 const mainProcess = () => {
-  timer = (timer+1)|0
   interfaceProcess()
   if (!firearm.chamberFlag) slideProcess()
   waveProcess()
