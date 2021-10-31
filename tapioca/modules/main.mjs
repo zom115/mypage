@@ -3077,7 +3077,7 @@ imagePathList.forEach(path => {
   }
 })
 const timerId = setInterval(() => { // loading monitoring
-  if (loadedList.length === imagePathList.length) { // untrustworthy length in assosiative
+  if (loadedList.length === imagePathList.length) { // untrustworthy length in associative
     clearInterval(timerId)
     loop()
     debugDraw()
