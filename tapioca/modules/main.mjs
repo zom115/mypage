@@ -1,10 +1,14 @@
 import {key, globalTimestamp} from '../../modules/key.mjs'
+import {frameCounter} from '../../modules/frameCounter.mjs'
 const keyMap = {
   lookUp: ['i'],
   lookRight: ['l'],
   lookDown: ['k'],
   lookLeft: ['j'],
 }
+
+const internalFrameList = []
+const animationFrameList = []
 let intervalDiffTime = 1
 let currentTime = globalTimestamp
 const isKeyFirst = list => {
@@ -2995,15 +2999,21 @@ const keyLayoutProcess = () => {
   }
 }
 const debugDraw = () => {
+  requestAnimationFrame(debugDraw)
+  frameCounter(animationFrameList)
   context.textAlign = 'left'
   context.font = `${size / 2}px sans-serif`
   let coordinate = (testNum != undefined) ? `${testNum.offsetX} ${testNum.offsetY}` : 'unknown'
-  const array = [coordinate]
+  const array = [
+    coordinate,
+    internalFrameList.length - 1,
+    animationFrameList.length - 1]
   for (let i = 0; i < array.length; i++) {
     context.fillText(array[i], size / 2, size / 2 * (i + 1))
   }
 }
-const loop = () => {
+const loop = () => setInterval(() => {
+  frameCounter(internalFrameList)
   intervalDiffTime = globalTimestamp - currentTime
   if (100 < intervalDiffTime) intervalDiffTime = 0
   currentTime = globalTimestamp
@@ -3012,9 +3022,7 @@ const loop = () => {
   else if (state === 'pause') pauseProcess()
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
-  debugDraw()
-  requestAnimationFrame(loop)
-}
+}, 0)
 const imagePathList = [
   'images/TP2F.png',
   'images/TP2U.png',
@@ -3072,5 +3080,6 @@ const timerId = setInterval(() => { // loading monitoring
   if (loadedList.length === imagePathList.length) { // untrustworthy length in assosiative
     clearInterval(timerId)
     loop()
+    debugDraw()
   }
 }, 100)
