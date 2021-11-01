@@ -253,8 +253,8 @@ const updateBullet = () => {
       const oldDy = bullet.dy
       bullet.dx = oldDx * Math.cos(theta) - oldDy * Math.sin(theta)
       bullet.dy = oldDx * Math.sin(theta) + oldDy * Math.cos(theta)
-      bullet.x = bullet.x - bullet.dx * bulletSpeed
-      bullet.y = bullet.y - bullet.dy * bulletSpeed
+      bullet.x = bullet.x + bullet.dx * bulletSpeed
+      bullet.y = bullet.y + bullet.dy * bulletSpeed
       if (explosive2Flag) {
         if (bullet.life === 1) {
           const distance = enemies.map(enemy => {
@@ -596,6 +596,7 @@ const firingProcess = () => {
   if (!firearm.chamberFlag) return
   let {dx, dy} = (angle !== 0) ? directionCalc(angle) : directionCalc(currentDirection)
   if (dx === 0 && dy === 0) return
+  [dx, dy] = [-dx, -dy]
   if (reload.state !== 'done') { // random direction when incomplete reload
     const tmpDx = dx
     const tmpDy = dy
