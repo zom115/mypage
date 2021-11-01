@@ -2594,25 +2594,30 @@ const drawTitleScreen = () => {
 
   const word = {
     text: `PRESS [${getKeyName(action.fire)}] TO START`,
-    x: canvas.offsetWidth / 2,
-    y: canvas.offsetHeight * 2 / 3
+    absoluteX: canvas.offsetWidth / 2,
+    absoluteY: canvas.offsetHeight * 2 / 3,
+    offsetX: undefined,
+    offsetY: undefined,
+    width: undefined,
+    height: undefined
   }
   const measure = context.measureText(word.text)
   Object.assign(
-    measure,
-    {x: word.x - measure.actualBoundingBoxLeft},
-    {y: word.y - measure.actualBoundingBoxAscent},
+    word,
+    {offsetX: word.absoluteX - measure.actualBoundingBoxLeft},
+    {offsetY: word.absoluteY - measure.actualBoundingBoxAscent},
+    {width: measure.width},
     {height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent}
   )
   const offset = {
-    x: cursor.offsetX - measure.x,
-    y: cursor.offsetY - measure.y
+    x: cursor.offsetX - word.offsetX,
+    y: cursor.offsetY - word.offsetY
   }
   if (
-    0 <= offset.x && offset.x <= measure.width &&
-    0 <= offset.y && offset.y <= measure.height
+    0 <= offset.x && offset.x <= word.width &&
+    0 <= offset.y && offset.y <= word.height
   ) {
-    context.fillRect( measure.x, measure.y, measure.width, measure.height)
+    context.fillRect(word.offsetX, word.offsetY, word.width, word.height)
   }
 
   // glow effect
@@ -2623,7 +2628,7 @@ const drawTitleScreen = () => {
       ? 'hsl(10, 50%, 40%)'
     : `hsla(10, 50%, 40%, ${.25 + (ms / 1e3) * 3 / 4})`
 
-  context.fillText(word.text, word.x, word.y)
+  context.fillText(word.text, word.absoluteX, word.absoluteY)
 
   context.fillStyle = 'hsla(210, 100%, 40%, .75)'
   context.fillText(
