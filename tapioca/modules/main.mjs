@@ -177,7 +177,184 @@ let objects, currentDirection, ownStep
 let direction = 0
 let angle = 0
 let ownStepLimit = 50
-let dropItems, bullets
+let dropItems
+let bullets
+const setBullet = (life, x, y, dx, dy, homingFlag) => {
+  bullets.push({
+    life: life,
+    x: x,
+    y: y,
+    dx: dx,
+    dy: dy,
+    detectFlag: false,
+    detectID: -1,
+    isHoming: homingFlag
+  })
+}
+const updateBullet = () => {
+  if (homingFlag) {
+    bullets.forEach((bullet, i) => {
+      bullet.life = bullet.life - 1
+      if (inventory[0].baseBulletLife < bullet.life) {
+        bullet.x = bullet.x - bullet.dx
+        bullet.y = bullet.y - bullet.dy
+        return
+      }
+      if (bullet.life < 0) {
+        bullets.splice(i, 1)
+        return
+      }
+      const distance = enemies.map(enemy => {
+        if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
+      })
+      const index = distance.indexOf(Math.min(...distance))
+      if (index === -1) return
+      const width = bullet.x - enemies[index].x
+      const height = bullet.y - enemies[index].y
+      const length = Math.sqrt(width ** 2 + height ** 2)
+      const minTheta =  -degree * (Math.PI / 180)
+      const maxTheta = degree * (Math.PI / 180)
+      const bulletDegree = Math.atan2(bullet.dy, bullet.dx) * 180 / Math.PI + 180 + degree
+      const wishDegree = Math.atan2(height, width) * 180 / Math.PI + 180 + degree
+      if (wishDegree - degree < bulletDegree && bulletDegree < wishDegree + degree) { // inner
+        bullet.dx = width / length
+        bullet.dy = height / length
+      } else if (0) { // clockwork side
+        bullet.dx = bullet.dx * Math.cos(minTheta) - bullet.dy * Math.sin(minTheta)
+        bullet.dy = bullet.dx * Math.sin(minTheta) + bullet.dy * Math.cos(minTheta)
+      } else { // another clockwork side
+        bullet.dx = bullet.dx * Math.cos(maxTheta) - bullet.dy * Math.sin(maxTheta)
+        bullet.dy = bullet.dx * Math.sin(maxTheta) + bullet.dy * Math.cos(maxTheta)
+      }
+      bullet.x = bullet.x - bullet.dx * bulletSpeed
+      bullet.y = bullet.y - bullet.dy * bulletSpeed
+      if (length < radius + bulletRadius){
+        const damage = inventory[0].damage * bullet.life / inventory[0].baseBulletLife
+        enemies[index].life = enemies[index].life - damage
+        bullet.life = 0
+        const additionalPoint = (enemies[index].life <= 0) ? 100 : 10
+        if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
+        point = (point+additionalPoint)|0
+        afterglow.point.push({number: additionalPoint, count: 30})
+        enemies[index].damage = damage
+        enemies[index].timer = damageTimerLimit
+      }
+    })
+  } else {
+    bullets.forEach((bullet, i) => {
+      bullet.life = bullet.life - 1
+      if (bullet.life < 0) {
+        bullets.splice(i, 1)
+        return
+      }
+      let theta = key[action.combatReload].flag ?  -degree * (Math.PI / 180) :
+      key[action.change].flag ? degree * (Math.PI / 180) : 0
+      const oldDx = bullet.dx
+      const oldDy = bullet.dy
+      bullet.dx = oldDx * Math.cos(theta) - oldDy * Math.sin(theta)
+      bullet.dy = oldDx * Math.sin(theta) + oldDy * Math.cos(theta)
+      bullet.x = bullet.x - bullet.dx * bulletSpeed
+      bullet.y = bullet.y - bullet.dy * bulletSpeed
+      if (explosive2Flag) {
+        if (bullet.life === 1) {
+          const distance = enemies.map(enemy => {
+            if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
+          })
+          distance.forEach((radius, index) => {
+            if (radius < explosiveRange) {
+              const damage = inventory[0].damage * (1 - radius / explosiveRange)
+              enemies[index].life = enemies[index].life - damage
+              const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
+              if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
+              point = (point+additionalPoint)|0
+              afterglow.point.push({number: additionalPoint, count: 30})
+              enemies[index].damage = damage
+              enemies[index].timer = damageTimerLimit
+              dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
+            }
+          })
+        } else if (bullet.prepareFlag && key[action.fire].isFirst()) bullet.life = 2
+        else if (key[action.fire].isFirst()) bullet.prepareFlag = true
+        return false
+      }
+      const hit = enemies.findIndex((enemy, index) => {
+        return index !== bullet.detectID && 0 < enemy.life &&
+        Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2) < radius + bulletRadius
+      })
+      if (explosive3Flag) {
+        if (bullet.life === 1) {
+          const distance = enemies.map(enemy => {
+            if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
+          })
+          distance.forEach((radius, index) => {
+            if (radius < explosiveRange) {
+              const damage = inventory[0].damage * (1 - radius / explosiveRange)
+              enemies[index].life = enemies[index].life - damage
+              const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
+              if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
+              point = (point+additionalPoint)|0
+              afterglow.point.push({number: additionalPoint, count: 30})
+              enemies[index].damage = damage
+              enemies[index].timer = damageTimerLimit
+              dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
+            }
+          })
+        } else if (bullet.prepareFlag && key[action.fire].isFirst()) {
+          bullet.life = 2
+          return
+        }
+        else if (key[action.fire].isFirst()) bullet.prepareFlag = true
+        if (hit === -1) return
+        bullet.dx = 0
+        bullet.dy = 0
+        bullet.x = bullet.x - 1/(enemies[hit].x - bullet.x)
+        bullet.y = bullet.y - 1/(enemies[hit].y - bullet.y)
+        bullet.life = bullet.life + 1
+        return false
+      } else if (hit === -1) {
+        if (!explosive1Flag && !explosive2Flag && !explosive3Flag) bullet.detectFlag = false
+        return
+      } else {
+        if (!bullet.detectFlag && bullet.detectID !== hit) {
+          bullet.detectFlag = true
+          bullet.detectID = hit
+          let damage = inventory[0].damage * bullet.life / inventory[0].baseBulletLife
+          if (explosive1Flag) {
+            dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
+            bullet.dx = 0, bullet.dy = 0
+            if (typeof bullet.explosive1life !== 'number') {
+              bullet.explosive1life = bullet.life
+              const distance = enemies.map(enemy => {
+                if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
+              })
+              distance.forEach((radius, index) => {
+                if (radius < explosiveRange) {
+                  damage = inventory[0].damage * (1 - radius / explosiveRange)
+                  enemies[index].life = enemies[index].life - damage
+                  const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
+                  if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
+                  point = (point+additionalPoint)|0
+                  afterglow.point.push({number: additionalPoint, count: 30})
+                  enemies[index].damage = damage
+                  enemies[index].timer = damageTimerLimit
+                }
+              })
+            }
+          } else {
+            enemies[hit].life = enemies[hit].life - damage
+            bullet.life = bullet.life * inventory[0].penetrationForce
+            const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
+            if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
+            point = (point+additionalPoint)|0
+            afterglow.point.push({number: additionalPoint, count: 30})
+            enemies[hit].damage = damage
+            enemies[hit].timer = damageTimerLimit
+          }
+        }
+      }
+    })
+  }
+}
 const magSizeInitial = 7
 const maxDamageInitial = 70
 let cartridgeInfo = {
@@ -425,17 +602,6 @@ const firingProcess = () => {
     const theta = (45 - Math.random() * 90) * (Math.PI / 180) // front 90 degrees
     dx = tmpDx * Math.cos(theta) - tmpDy * Math.sin(theta)
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
-  }
-  const setBullet = (life, x, y, dx, dy) => {
-    bullets.push({
-      life: life,
-      x: x,
-      y: y,
-      dx: dx,
-      dy: dy,
-      detectFlag: false,
-      detectID: -1
-    })
   }
   if (homingFlag) {
     const r =  size * 3
@@ -1039,170 +1205,6 @@ const drawEnemies = () => {
 }
 const damageTimerLimit = 30
 let degree = 5
-const bulletProcess = () => {
-  if (homingFlag) {
-    bullets.forEach((bullet, i) => {
-      bullet.life = bullet.life - 1
-      if (inventory[0].baseBulletLife < bullet.life) {
-        bullet.x = bullet.x - bullet.dx
-        bullet.y = bullet.y - bullet.dy
-        return
-      }
-      if (bullet.life < 0) {
-        bullets.splice(i, 1)
-        return
-      }
-      const distance = enemies.map(enemy => {
-        if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-      })
-      const index = distance.indexOf(Math.min(...distance))
-      if (index === -1) return
-      const width = bullet.x - enemies[index].x
-      const height = bullet.y - enemies[index].y
-      const length = Math.sqrt(width ** 2 + height ** 2)
-      const minTheta =  -degree * (Math.PI / 180)
-      const maxTheta = degree * (Math.PI / 180)
-      const bulletDegree = Math.atan2(bullet.dy, bullet.dx) * 180 / Math.PI + 180 + degree
-      const wishDegree = Math.atan2(height, width) * 180 / Math.PI + 180 + degree
-      if (wishDegree - degree < bulletDegree && bulletDegree < wishDegree + degree) { // inner
-        bullet.dx = width / length
-        bullet.dy = height / length
-      } else if (0) { // clockwork side
-        bullet.dx = bullet.dx * Math.cos(minTheta) - bullet.dy * Math.sin(minTheta)
-        bullet.dy = bullet.dx * Math.sin(minTheta) + bullet.dy * Math.cos(minTheta)
-      } else { // another clockwork side
-        bullet.dx = bullet.dx * Math.cos(maxTheta) - bullet.dy * Math.sin(maxTheta)
-        bullet.dy = bullet.dx * Math.sin(maxTheta) + bullet.dy * Math.cos(maxTheta)
-      }
-      bullet.x = bullet.x - bullet.dx * bulletSpeed
-      bullet.y = bullet.y - bullet.dy * bulletSpeed
-      if (length < radius + bulletRadius){
-        const damage = inventory[0].damage * bullet.life / inventory[0].baseBulletLife
-        enemies[index].life = enemies[index].life - damage
-        bullet.life = 0
-        const additionalPoint = (enemies[index].life <= 0) ? 100 : 10
-        if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
-        point = (point+additionalPoint)|0
-        afterglow.point.push({number: additionalPoint, count: 30})
-        enemies[index].damage = damage
-        enemies[index].timer = damageTimerLimit
-      }
-    })
-  } else {
-    bullets.forEach((bullet, i) => {
-      bullet.life = bullet.life - 1
-      if (bullet.life < 0) {
-        bullets.splice(i, 1)
-        return
-      }
-      let theta = key[action.combatReload].flag ?  -degree * (Math.PI / 180) :
-      key[action.change].flag ? degree * (Math.PI / 180) : 0
-      const oldDx = bullet.dx
-      const oldDy = bullet.dy
-      bullet.dx = oldDx * Math.cos(theta) - oldDy * Math.sin(theta)
-      bullet.dy = oldDx * Math.sin(theta) + oldDy * Math.cos(theta)
-      bullet.x = bullet.x - bullet.dx * bulletSpeed
-      bullet.y = bullet.y - bullet.dy * bulletSpeed
-      if (explosive2Flag) {
-        if (bullet.life === 1) {
-          const distance = enemies.map(enemy => {
-            if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-          })
-          distance.forEach((radius, index) => {
-            if (radius < explosiveRange) {
-              const damage = inventory[0].damage * (1 - radius / explosiveRange)
-              enemies[index].life = enemies[index].life - damage
-              const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
-              if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
-              point = (point+additionalPoint)|0
-              afterglow.point.push({number: additionalPoint, count: 30})
-              enemies[index].damage = damage
-              enemies[index].timer = damageTimerLimit
-              dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
-            }
-          })
-        } else if (bullet.prepareFlag && key[action.fire].isFirst()) bullet.life = 2
-        else if (key[action.fire].isFirst()) bullet.prepareFlag = true
-        return false
-      }
-      const hit = enemies.findIndex((enemy, index) => {
-        return index !== bullet.detectID && 0 < enemy.life &&
-        Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2) < radius + bulletRadius
-      })
-      if (explosive3Flag) {
-        if (bullet.life === 1) {
-          const distance = enemies.map(enemy => {
-            if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-          })
-          distance.forEach((radius, index) => {
-            if (radius < explosiveRange) {
-              const damage = inventory[0].damage * (1 - radius / explosiveRange)
-              enemies[index].life = enemies[index].life - damage
-              const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
-              if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
-              point = (point+additionalPoint)|0
-              afterglow.point.push({number: additionalPoint, count: 30})
-              enemies[index].damage = damage
-              enemies[index].timer = damageTimerLimit
-              dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
-            }
-          })
-        } else if (bullet.prepareFlag && key[action.fire].isFirst()) {
-          bullet.life = 2
-          return
-        }
-        else if (key[action.fire].isFirst()) bullet.prepareFlag = true
-        if (hit === -1) return
-        bullet.dx = 0
-        bullet.dy = 0
-        bullet.x = bullet.x - 1/(enemies[hit].x - bullet.x)
-        bullet.y = bullet.y - 1/(enemies[hit].y - bullet.y)
-        bullet.life = bullet.life + 1
-        return false
-      } else if (hit === -1) {
-        if (!explosive1Flag && !explosive2Flag && !explosive3Flag) bullet.detectFlag = false
-        return
-      } else {
-        if (!bullet.detectFlag && bullet.detectID !== hit) {
-          bullet.detectFlag = true
-          bullet.detectID = hit
-          let damage = inventory[0].damage * bullet.life / inventory[0].baseBulletLife
-          if (explosive1Flag) {
-            dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
-            bullet.dx = 0, bullet.dy = 0
-            if (typeof bullet.explosive1life !== 'number') {
-              bullet.explosive1life = bullet.life
-              const distance = enemies.map(enemy => {
-                if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-              })
-              distance.forEach((radius, index) => {
-                if (radius < explosiveRange) {
-                  damage = inventory[0].damage * (1 - radius / explosiveRange)
-                  enemies[index].life = enemies[index].life - damage
-                  const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
-                  if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
-                  point = (point+additionalPoint)|0
-                  afterglow.point.push({number: additionalPoint, count: 30})
-                  enemies[index].damage = damage
-                  enemies[index].timer = damageTimerLimit
-                }
-              })
-            }
-          } else {
-            enemies[hit].life = enemies[hit].life - damage
-            bullet.life = bullet.life * inventory[0].penetrationForce
-            const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
-            if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
-            point = (point+additionalPoint)|0
-            afterglow.point.push({number: additionalPoint, count: 30})
-            enemies[hit].damage = damage
-            enemies[hit].timer = damageTimerLimit
-          }
-        }
-      }
-    })
-  }
-}
 const drawBullets = () => {
   bullets.forEach(bullet => {
     if ((explosive1Flag || explosive2Flag || explosive3Flag) && bullet.detectFlag) return
@@ -2702,7 +2704,7 @@ const mainProcess = () => {
   else if (objects.length === 0) setStore()
   else storeProcess()
   if (0 < enemies.length) enemyProcess()
-  if (0 < bullets.length) bulletProcess()
+  if (0 < bullets.length) updateBullet()
   if (0 < dropItems.length) dropItemProcess()
   if (cloneFlag) cloneProcess()
   if (inventoryFlag) inventoryProcess()
