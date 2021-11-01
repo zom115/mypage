@@ -17,17 +17,18 @@ const isKeyFirst = list => {
 const version = 'v.0.8.8.1'
 const canvas = document.getElementById`canvas`
 canvas.addEventListener('mouseover', () => {
-  // document.draggable = false
-  // canvas.draggable = false
+  document.draggable = false
+  canvas.draggable = false
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
 let cursor = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mousemove', e => cursor = e, false)
-canvas.addEventListener('mousedown', (e) => {
-  console.log(e)
+let isFire = false
+canvas.addEventListener('mousedown', () => {
+  if (state === 'main') isFire = true
 }, false)
-let mouseup = {timeStamp: 0}
-canvas.addEventListener('mouseup', (e) => mouseup = e, false)
+let isMouseUp = false
+canvas.addEventListener('mouseup', e => isMouseUp = true, false)
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -793,6 +794,21 @@ const bomb = () => {
     enemy.timer = 30
   })
 }
+const mouseFiring = () => {
+  const theta = Math.atan2(
+    cursor.offsetY - canvas.offsetHeight / 2,
+    cursor.offsetX - canvas.offsetWidth / 2
+  )
+  const dx = Math.cos(theta)
+  const dy = Math.sin(theta)
+  setBullet(
+    inventory[0].bulletLife,
+    ownPosition.x,
+    ownPosition.y,
+    dx * inventory[0].bulletSpeed,
+    dy * inventory[0].bulletSpeed
+  )
+}
 const interfaceProcess = () => {
   if (key[action.pause].isFirst()) state = 'pause'
   if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
@@ -812,6 +828,10 @@ const interfaceProcess = () => {
     reloadProcess()
   } else if (0 < reload.time || reload.state !== 'done') reloadProcess()
   if (key[action.fire].flag) firingProcess()
+
+  if (isFire) mouseFiring()
+  isFire = false
+
   loadingProcess()
   if (key[action.change].isFirst()) magazineForword() // TODO: to consider
   if (dashCoolTimer() === 0 && key[action.dash].isFirst()) dashProcess()
@@ -2676,8 +2696,10 @@ let rowPosition = 0
 let keyPosition = -2
 
 const titleProcess = () => {
-  if (key[action.fire].isFirst() || (
-    globalTimestamp - intervalDiffTime <= mouseup.timeStamp && isInner(titleMenuWordArray[0]))) {
+  if (
+    key[action.fire].isFirst() || (
+    isMouseUp && isInner(titleMenuWordArray[0]))
+  ) {
     reset()
     if (manyAmmo()) {
       inventory[0].magazines = [99, inventory[0].magazineSize]
@@ -2686,16 +2708,21 @@ const titleProcess = () => {
     }
     state = 'main'
   }
-  if (key[action.slow].isFirst() || (
-    globalTimestamp - intervalDiffTime <= mouseup.timeStamp && isInner(titleMenuWordArray[1]))) {
+  if (
+    key[action.slow].isFirst() || (
+    isMouseUp && isInner(titleMenuWordArray[1]))
+  ) {
     input()
     state = 'keyLayout'
   }
-  if (key[action.change].isFirst() || (
-    globalTimestamp - intervalDiffTime <= mouseup.timeStamp && isInner(titleMenuWordArray[2]))) {
+  if (
+    key[action.change].isFirst() || (
+    isMouseUp && isInner(titleMenuWordArray[2]))
+  ) {
     mapMode = !mapMode
     setTitleMenuWord()
   }
+  isMouseUp = false
 }
 const mainProcess = () => {
   interfaceProcess()
