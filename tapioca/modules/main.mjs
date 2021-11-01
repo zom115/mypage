@@ -22,13 +22,7 @@ canvas.addEventListener('mouseover', () => {
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
 let cursor = {offsetX: 0, offsetY: 0}
-let flag = true
-canvas.addEventListener('mousemove', e => {
-  cursor = e
-  let rect = e.target.getBoundingClientRect()
-  // mouseCooldinateObject.x = e.clientX - rect.left
-  // mouseCooldinateObject.y = e.clientY - rect.top
-}, false)
+canvas.addEventListener('mousemove', e => cursor = e, false)
 canvas.addEventListener('mousedown', (e) => {
   console.log(e)
 }, false)
