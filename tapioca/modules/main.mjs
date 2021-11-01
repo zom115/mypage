@@ -2588,57 +2588,64 @@ const drawTitleScreen = () => {
     loadedMap['images/ROGOv1.2.png'],
     ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
 
+  const textHighlightOnCurosr = (text, offsetX, offsetY, h, s) => {
+    const word = {
+      text: text,
+      offsetX: offsetX,
+      offsetY: offsetY,
+      absoluteX: undefined,
+      absoluteY: undefined,
+      width: undefined,
+      height: undefined
+    }
+    const measure = context.measureText(word.text)
+    {
+      Object.assign(
+        word,
+        {absoluteX: word.offsetX - measure.actualBoundingBoxLeft},
+        {absoluteY: word.offsetY - measure.actualBoundingBoxAscent},
+        {width: measure.width},
+        {height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent}
+      )
+    }
+    const offset = {
+      x: cursor.offsetX - word.absoluteX,
+      y: cursor.offsetY - word.absoluteY
+    }
+    if (
+      0 <= offset.x && offset.x <= word.width &&
+      0 <= offset.y && offset.y <= word.height
+    ) {
+      context.fillStyle = `hsl(${h}, 50%, 75%)`
+      context.fillRect(word.absoluteX, word.absoluteY, word.width, word.height)
+    }
+
+    context.fillStyle = `hsl(${h}, 50%, 50%)`
+    // glow effect
+      // = (ss % 3 === 2)
+      //   ? `hsla(10, 50%, 40%, ${1 - (ms / 1e3) * 3 / 4})`
+      // : (ss % 3 === 1)
+      //   ? 'hsl(10, 50%, 40%)'
+      // : `hsla(10, 50%, 40%, ${.25 + (ms / 1e3) * 3 / 4})`
+
+    context.fillText(word.text, word.offsetX, word.offsetY)
+  }
+
   context.textAlign = 'center'
-  // context.textBaseline = 'middle'
+  context.textBaseline = 'middle'
   context.font = `${size}px sans-serif`
 
-  const word = {
-    text: `PRESS [${getKeyName(action.fire)}] TO START`,
-    absoluteX: canvas.offsetWidth / 2,
-    absoluteY: canvas.offsetHeight * 2 / 3,
-    offsetX: undefined,
-    offsetY: undefined,
-    width: undefined,
-    height: undefined
-  }
-  const measure = context.measureText(word.text)
-  Object.assign(
-    word,
-    {offsetX: word.absoluteX - measure.actualBoundingBoxLeft},
-    {offsetY: word.absoluteY - measure.actualBoundingBoxAscent},
-    {width: measure.width},
-    {height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent}
-  )
-  const offset = {
-    x: cursor.offsetX - word.offsetX,
-    y: cursor.offsetY - word.offsetY
-  }
-  if (
-    0 <= offset.x && offset.x <= word.width &&
-    0 <= offset.y && offset.y <= word.height
-  ) {
-    context.fillRect(word.offsetX, word.offsetY, word.width, word.height)
-  }
-
-  // glow effect
-  context.fillStyle
-    = (ss % 3 === 2)
-      ? `hsla(10, 50%, 40%, ${1 - (ms / 1e3) * 3 / 4})`
-    : (ss % 3 === 1)
-      ? 'hsl(10, 50%, 40%)'
-    : `hsla(10, 50%, 40%, ${.25 + (ms / 1e3) * 3 / 4})`
-
-  context.fillText(word.text, word.absoluteX, word.absoluteY)
-
-  context.fillStyle = 'hsla(210, 100%, 40%, .75)'
-  context.fillText(
+  const wordList = [
+    `PRESS [${getKeyName(action.fire)}] TO START`,
     `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`,
-    canvas.offsetWidth / 2, canvas.offsetHeight * 4 / 5
-  )
-  context.fillText(
-    `[${getKeyName(action.change)}]MAP: ${mapMode}`,
-    canvas.offsetWidth / 2 , canvas.offsetHeight *.9
-  )
+    `[${getKeyName(action.change)}]MAP: ${mapMode}`
+  ]
+  const hueList = [10, 210, 210]
+  for (let i = 0; i < wordList.length; i++) {
+    textHighlightOnCurosr(
+    wordList[i],
+      canvas.offsetWidth / 2, canvas.offsetHeight * (2 / 3 + i / 11), hueList[i])
+  }
   context.textAlign = 'right'
   context.fillStyle = (manyAmmo()) ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
   context.fillText(version, canvas.offsetWidth - size, canvas.offsetHeight - size)
