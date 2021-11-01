@@ -21,15 +21,15 @@ canvas.addEventListener('mouseover', () => {
   // canvas.draggable = false
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
-let testNum
+let cursor = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mousemove', e => {
-  testNum = e
+  cursor = e
   let rect = e.target.getBoundingClientRect()
   // mouseCooldinateObject.x = e.clientX - rect.left
   // mouseCooldinateObject.y = e.clientY - rect.top
 }, false)
-canvas.addEventListener('mousedown', () => {mouseFlag = true}, false)
-canvas.addEventListener('mouseup', () => {mouseFlag = false}, false)
+canvas.addEventListener('mousedown', () => {}, false)
+canvas.addEventListener('mouseup', () => {}, false)
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -2587,15 +2587,44 @@ const drawTitleScreen = () => {
   context.drawImage(
     loadedMap['images/ROGOv1.2.png'],
     ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
+
   context.textAlign = 'center'
+  // context.textBaseline = 'middle'
   context.font = `${size}px sans-serif`
-  context.fillStyle = (ss % 3 === 2) ? `hsla(10, 50%, 40%, ${1 - (ms / 1e3) * 3 / 4})`
-  : (ss % 3 === 1) ? 'hsl(10, 50%, 40%)'
-  : `hsla(10, 50%, 40%, ${.25 + (ms / 1e3) * 3 / 4})`
-  context.fillText(
-    `PRESS [${getKeyName(action.fire)}] TO START`,
-    canvas.offsetWidth / 2, canvas.offsetHeight * 2 / 3
+
+  const word = {
+    text: `PRESS [${getKeyName(action.fire)}] TO START`,
+    x: canvas.offsetWidth / 2,
+    y: canvas.offsetHeight * 2 / 3
+  }
+  const measure = context.measureText(word.text)
+  Object.assign(
+    measure,
+    {x: word.x - measure.actualBoundingBoxLeft},
+    {y: word.y - measure.actualBoundingBoxAscent},
+    {height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent}
   )
+  const offset = {
+    x: cursor.offsetX - measure.x,
+    y: cursor.offsetY - measure.y
+  }
+  if (
+    0 <= offset.x && offset.x <= measure.width &&
+    0 <= offset.y && offset.y <= measure.height
+  ) {
+    context.fillRect( measure.x, measure.y, measure.width, measure.height)
+  }
+
+  // glow effect
+  context.fillStyle
+    = (ss % 3 === 2)
+      ? `hsla(10, 50%, 40%, ${1 - (ms / 1e3) * 3 / 4})`
+    : (ss % 3 === 1)
+      ? 'hsl(10, 50%, 40%)'
+    : `hsla(10, 50%, 40%, ${.25 + (ms / 1e3) * 3 / 4})`
+
+  context.fillText(word.text, word.x, word.y)
+
   context.fillStyle = 'hsla(210, 100%, 40%, .75)'
   context.fillText(
     `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`,
@@ -3002,10 +3031,9 @@ const drawKeyLayout = () => {
 const drawDebug = () => {
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
-  let coordinate = (testNum != undefined) ? `${testNum.offsetX} ${testNum.offsetY}` : 'unknown'
   const dictionary = {
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': coordinate,
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1
   }
