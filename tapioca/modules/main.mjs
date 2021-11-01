@@ -2404,21 +2404,6 @@ const relativeX = (arg) => {
 const relativeY = (arg) => {
   return canvas.offsetHeight / 2 - ownPosition.y + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
 }
-const drawMain = () => {
-  drawField()
-  if (0 < objects.length) drawObjects()
-  if (0 < clonePosition.length) drawClone()
-  if (0 < bullets.length) drawBullets()
-  if (0 < enemies.length) drawEnemies()
-  if (0 < dropItems.length) drawDropItems()
-  drawMyself()
-  drawDirection()
-  drawIndicator()
-  if (inventoryFlag) drawInventory()
-  if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
-  if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
-  if (state === 'pause') drawPause()
-}
 const command = () => {
   let bool = false
   let counter = 0
@@ -2436,7 +2421,6 @@ const command = () => {
     return bool
   }
 }; const manyAmmo = command()
-const resetScreen = () => context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 const reset = () => {
   state = 'title'
   point = 500
@@ -2580,6 +2564,165 @@ const getKeyName = key => {
   if (key === ' ') return 'SPACE'
   else return key.toUpperCase() // can't work in turco
 }
+const swap = (get, set) => {
+  let before = Object.keys(action)[Object.values(action).indexOf(order[get])]
+  let after = Object.keys(action)[Object.values(action).indexOf(order[set])]
+  if(typeof before === 'string') action[before] = setStorage(before, order[set])
+  if(typeof after === 'string') action[after] = setStorage(after, order[get])
+}
+const order = [
+  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+  'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'shift', 'space'
+]
+const keyInput = () => {
+  let aft = -2
+  let bfr = aft
+  return () => {
+    bfr = aft
+    aft = (
+    key.q.isFirst()) ? 0 :
+    (key.w.isFirst()) ? 1 :
+    (key.e.isFirst()) ? 2 :
+    (key.r.isFirst()) ? 3 :
+    (key.t.isFirst()) ? 4 :
+    (key.y.isFirst()) ? 5 :
+    (key.u.isFirst()) ? 6 :
+    (key.i.isFirst()) ? 7 :
+    (key.o.isFirst()) ? 8 :
+    (key.p.isFirst()) ? 9 :
+    (key.a.isFirst()) ? 10 :
+    (key.s.isFirst()) ? 11 :
+    (key.d.isFirst()) ? 12 :
+    (key.f.isFirst()) ? 13 :
+    (key.g.isFirst()) ? 14 :
+    (key.h.isFirst()) ? 15 :
+    (key.j.isFirst()) ? 16 :
+    (key.k.isFirst()) ? 17 :
+    (key.l.isFirst()) ? 18 :
+    (key.z.isFirst()) ? 20 :
+    (key.x.isFirst()) ? 21 :
+    (key.c.isFirst()) ? 22 :
+    (key.v.isFirst()) ? 23 :
+    (key.b.isFirst()) ? 24 :
+    (key.n.isFirst()) ? 25 :
+    (key.m.isFirst()) ? 26 :
+    (key.Shift.isFirst()) ? 30 :
+    (key[' '].isFirst()) ? 31 : -2
+    if (aft === -2) aft = bfr
+    else if (bfr === aft) aft = -2
+    if (
+      aft === order.indexOf(action.up) || aft === order.indexOf(action.right) ||
+      aft === order.indexOf(action.down) || aft === order.indexOf(action.left)
+    ) aft = -2
+    if (bfr !== -2 && bfr !== aft) {
+      if (aft !== -2) {
+        swap(bfr, aft)
+        aft = -2
+      }
+    }
+    if (state === 'title') bfr = aft = -2
+    return aft
+  }
+}; const input = keyInput()
+const menuColumn = () => {
+  const array = [0, 1]
+  let num = array[0]
+  return () => {
+    if (key[action.down].isFirst()) {
+      if (num === array.slice(-1)[0]) num = array[0]
+      else num = (num+1)|0
+    } else if (key[action.up].isFirst()) {
+      if (num === array[0]) num = array.slice(-1)[0]
+      else num = (num-1)|0
+    }
+    return num
+  }
+}; const rotate = menuColumn()
+let rowPosition = 0
+let keyPosition = -2
+
+const titleProcess = () => {
+  if (key[action.fire].isFirst()) {
+    reset()
+    if (manyAmmo()) {
+      inventory[0].magazines = [99, inventory[0].magazineSize]
+      point = 999999
+      ammo = 99999
+    }
+    state = 'main'
+  }
+  if (key[action.slow].isFirst()) {
+    input()
+    state = 'keyLayout'
+  }
+  if (key[action.change].isFirst()) mapMode = !mapMode
+}
+const mainProcess = () => {
+  interfaceProcess()
+  if (!firearm.chamberFlag) slideProcess()
+  waveProcess()
+  if (mapMode && objects.length === 0) setMap()
+  else if (objects.length === 0) setStore()
+  else storeProcess()
+  if (0 < enemies.length) enemyProcess()
+  if (0 < bullets.length) bulletProcess()
+  if (0 < dropItems.length) dropItemProcess()
+  if (cloneFlag) cloneProcess()
+  if (inventoryFlag) inventoryProcess()
+  if (direction !== 0) direction = 0
+  if (angle !== 0) angle = 0
+  if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
+  else if (reviveFlag) {
+    cloneFlag = false
+    clonePosition = []
+    reviveFlag = false
+  }
+}
+const pauseProcess = () => {
+  if (key[action.pause].isFirst()) state = 'main'
+}
+const resultProcess = () => {
+  manyAmmo()
+  if (key[action.back].isFirst()) reset()
+}
+const keyLayoutProcess = () => {
+  rowPosition = rotate()
+  keyPosition = input()
+  if (keyPosition === order.indexOf('w') && holdTimeLimit <= key.w.holdtime &&
+    !(Object.values(action).some(x => x === 'w' || x === 'a'))) {
+    operationMode = setStorage('operation', 'WASD')
+    setOperation()
+  }
+  if (keyPosition === order.indexOf('e') && holdTimeLimit <= key.e.holdtime &&
+    !(Object.values(action).some(x => x === 'e' || x === 'f'))) {
+    operationMode = setStorage('operation', 'ESDF')
+    setOperation()
+  }
+  if (rowPosition === 0 && (key[action.left].isFirst() || key[action.right].isFirst())) {
+    reload.auto = (reload.auto === 'ON') ? setStorage('autoReload', 'OFF') :
+    setStorage('autoReload', 'ON')
+  }
+  if (rowPosition === 1 && (key[action.left].isFirst() || key[action.right].isFirst())) {
+    combatReload.auto = (combatReload.auto === 'ON') ? setStorage('autoCombatReload', 'OFF') :
+    setStorage('autoCombatReload', 'ON')
+  }
+  if (
+    keyPosition === order.indexOf(action.back) && holdTimeLimit <= key[action.back].holdtime
+  ) state = 'title'
+}
+const main = () => setInterval(() => {
+  frameCounter(internalFrameList)
+  intervalDiffTime = globalTimestamp - currentTime
+  if (100 < intervalDiffTime) intervalDiffTime = 0
+  currentTime = globalTimestamp
+  if (state === 'title') titleProcess()
+  else if (state === 'main') mainProcess()
+  else if (state === 'pause') pauseProcess()
+  else if (state === 'result') resultProcess()
+  else if (state === 'keyLayout') keyLayoutProcess()
+}, 0)
+
 const drawTitleScreen = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -2668,42 +2811,20 @@ const drawTitleScreen = () => {
   if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
 }
-const titleProcess = () => {
-  if (key[action.fire].isFirst()) {
-    reset()
-    if (manyAmmo()) {
-      inventory[0].magazines = [99, inventory[0].magazineSize]
-      point = 999999
-      ammo = 99999
-    }
-    state = 'main'
-  }
-  if (key[action.slow].isFirst()) {
-    input()
-    state = 'keyLayout'
-  }
-  if (key[action.change].isFirst()) mapMode = !mapMode
-}
-const mainProcess = () => {
-  interfaceProcess()
-  if (!firearm.chamberFlag) slideProcess()
-  waveProcess()
-  if (mapMode && objects.length === 0) setMap()
-  else if (objects.length === 0) setStore()
-  else storeProcess()
-  if (0 < enemies.length) enemyProcess()
-  if (0 < bullets.length) bulletProcess()
-  if (0 < dropItems.length) dropItemProcess()
-  if (cloneFlag) cloneProcess()
-  if (inventoryFlag) inventoryProcess()
-  if (direction !== 0) direction = 0
-  if (angle !== 0) angle = 0
-  if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
-  else if (reviveFlag) {
-    cloneFlag = false
-    clonePosition = []
-    reviveFlag = false
-  }
+const drawMain = () => {
+  drawField()
+  if (0 < objects.length) drawObjects()
+  if (0 < clonePosition.length) drawClone()
+  if (0 < bullets.length) drawBullets()
+  if (0 < enemies.length) drawEnemies()
+  if (0 < dropItems.length) drawDropItems()
+  drawMyself()
+  drawDirection()
+  drawIndicator()
+  if (inventoryFlag) drawInventory()
+  if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
+  if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
+  if (state === 'pause') drawPause()
 }
 const drawPause = () => {
   let nowTime = Date.now()
@@ -2717,9 +2838,6 @@ const drawPause = () => {
   context.textAlign = 'center'
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
   context.restore()
-}
-const pauseProcess = () => {
-  if (key[action.pause].isFirst()) state = 'main'
 }
 const drawResult = () => {
   context.font = '32px sans-serif'
@@ -2753,112 +2871,6 @@ const drawResult = () => {
   context.font = '32px sans-serif'
   context.fillStyle = 'hsl(300, 100%, 50%)'
   context.fillText('カットイン(仮)', size*5, canvas.offsetHeight / 2)
-}
-const resultProcess = () => {
-  manyAmmo()
-  if (key[action.back].isFirst()) reset()
-}
-const swap = (get, set) => {
-  let before = Object.keys(action)[Object.values(action).indexOf(order[get])]
-  let after = Object.keys(action)[Object.values(action).indexOf(order[set])]
-  if(typeof before === 'string') action[before] = setStorage(before, order[set])
-  if(typeof after === 'string') action[after] = setStorage(after, order[get])
-}
-const order = [
-  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
-  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
-  'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'shift', 'space'
-]
-const keyInput = () => {
-  let aft = -2
-  let bfr = aft
-  return () => {
-    bfr = aft
-    aft = (
-    key.q.isFirst()) ? 0 :
-    (key.w.isFirst()) ? 1 :
-    (key.e.isFirst()) ? 2 :
-    (key.r.isFirst()) ? 3 :
-    (key.t.isFirst()) ? 4 :
-    (key.y.isFirst()) ? 5 :
-    (key.u.isFirst()) ? 6 :
-    (key.i.isFirst()) ? 7 :
-    (key.o.isFirst()) ? 8 :
-    (key.p.isFirst()) ? 9 :
-    (key.a.isFirst()) ? 10 :
-    (key.s.isFirst()) ? 11 :
-    (key.d.isFirst()) ? 12 :
-    (key.f.isFirst()) ? 13 :
-    (key.g.isFirst()) ? 14 :
-    (key.h.isFirst()) ? 15 :
-    (key.j.isFirst()) ? 16 :
-    (key.k.isFirst()) ? 17 :
-    (key.l.isFirst()) ? 18 :
-    (key.z.isFirst()) ? 20 :
-    (key.x.isFirst()) ? 21 :
-    (key.c.isFirst()) ? 22 :
-    (key.v.isFirst()) ? 23 :
-    (key.b.isFirst()) ? 24 :
-    (key.n.isFirst()) ? 25 :
-    (key.m.isFirst()) ? 26 :
-    (key.Shift.isFirst()) ? 30 :
-    (key[' '].isFirst()) ? 31 : -2
-    if (aft === -2) aft = bfr
-    else if (bfr === aft) aft = -2
-    if (
-      aft === order.indexOf(action.up) || aft === order.indexOf(action.right) ||
-      aft === order.indexOf(action.down) || aft === order.indexOf(action.left)
-    ) aft = -2
-    if (bfr !== -2 && bfr !== aft) {
-      if (aft !== -2) {
-        swap(bfr, aft)
-        aft = -2
-      }
-    }
-    if (state === 'title') bfr = aft = -2
-    return aft
-  }
-}; const input = keyInput()
-const menuColumn = () => {
-  const array = [0, 1]
-  let num = array[0]
-  return () => {
-    if (key[action.down].isFirst()) {
-      if (num === array.slice(-1)[0]) num = array[0]
-      else num = (num+1)|0
-    } else if (key[action.up].isFirst()) {
-      if (num === array[0]) num = array.slice(-1)[0]
-      else num = (num-1)|0
-    }
-    return num
-  }
-}; const rotate = menuColumn()
-let rowPosition = 0
-let keyPosition = -2
-const keyLayoutProcess = () => {
-  rowPosition = rotate()
-  keyPosition = input()
-  if (keyPosition === order.indexOf('w') && holdTimeLimit <= key.w.holdtime &&
-    !(Object.values(action).some(x => x === 'w' || x === 'a'))) {
-    operationMode = setStorage('operation', 'WASD')
-    setOperation()
-  }
-  if (keyPosition === order.indexOf('e') && holdTimeLimit <= key.e.holdtime &&
-    !(Object.values(action).some(x => x === 'e' || x === 'f'))) {
-    operationMode = setStorage('operation', 'ESDF')
-    setOperation()
-  }
-  if (rowPosition === 0 && (key[action.left].isFirst() || key[action.right].isFirst())) {
-    reload.auto = (reload.auto === 'ON') ? setStorage('autoReload', 'OFF') :
-    setStorage('autoReload', 'ON')
-  }
-  if (rowPosition === 1 && (key[action.left].isFirst() || key[action.right].isFirst())) {
-    combatReload.auto = (combatReload.auto === 'ON') ? setStorage('autoCombatReload', 'OFF') :
-    setStorage('autoCombatReload', 'ON')
-  }
-  if (
-    keyPosition === order.indexOf(action.back) && holdTimeLimit <= key[action.back].holdtime
-  ) state = 'title'
 }
 const drawKeyLayout = () => {
   console.log('a')
@@ -3057,27 +3069,15 @@ const drawDebug = () => {
 const draw = () => {
   requestAnimationFrame(draw)
   frameCounter(animationFrameList)
-  resetScreen()
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (state === 'title') drawTitleScreen()
-  else if (state === 'main') drawMain()
-  else if (state === 'pause') {
-    drawMain()
-    drawPause()
-  } else if (state === 'keyLayout') drawKeyLayout()
-  if (state === 'result') drawResult()
+  else if (state !== 'keyLayout') drawMain()
+  if (state === 'pause') drawPause()
+  else if (state === 'result') drawResult()
+  else if (state === 'keyLayout') drawKeyLayout()
   drawDebug()
 }
-const loop = () => setInterval(() => {
-  frameCounter(internalFrameList)
-  intervalDiffTime = globalTimestamp - currentTime
-  if (100 < intervalDiffTime) intervalDiffTime = 0
-  currentTime = globalTimestamp
-  if (state === 'title') titleProcess()
-  else if (state === 'main') mainProcess()
-  else if (state === 'pause') pauseProcess()
-  else if (state === 'result') resultProcess()
-  else if (state === 'keyLayout') keyLayoutProcess()
-}, 0)
+
 const imagePathList = [
   'images/TP2F.png',
   'images/TP2U.png',
@@ -3134,7 +3134,7 @@ imagePathList.forEach(path => {
 const timerId = setInterval(() => { // loading monitoring
   if (loadedList.length === imagePathList.length) { // untrustworthy length in associative
     clearInterval(timerId)
-    loop()
+    main()
     draw()
   }
 }, 100)
