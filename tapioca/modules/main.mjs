@@ -2588,7 +2588,7 @@ const drawTitleScreen = () => {
     loadedMap['images/ROGOv1.2.png'],
     ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
 
-  const textHighlightOnCurosr = (text, offsetX, offsetY, h, s) => {
+  const textHighlightOnCurosr = (text, offsetX, offsetY, h) => {
     const word = {
       text: text,
       offsetX: offsetX,
