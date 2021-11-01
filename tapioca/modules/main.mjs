@@ -22,14 +22,18 @@ canvas.addEventListener('mouseover', () => {
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
 let cursor = {offsetX: 0, offsetY: 0}
+let flag = true
 canvas.addEventListener('mousemove', e => {
   cursor = e
   let rect = e.target.getBoundingClientRect()
   // mouseCooldinateObject.x = e.clientX - rect.left
   // mouseCooldinateObject.y = e.clientY - rect.top
 }, false)
-canvas.addEventListener('mousedown', () => {}, false)
-canvas.addEventListener('mouseup', () => {}, false)
+canvas.addEventListener('mousedown', (e) => {
+  console.log(e)
+}, false)
+let mouseup = {timeStamp: 0}
+canvas.addEventListener('mouseup', (e) => mouseup = e, false)
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -259,6 +263,41 @@ const setAngle = () => {
     action.lookLeft = setStorage('lookLeft', 'j')
   }
 }
+const getKeyName = key => {
+  if (key === ' ') return 'SPACE'
+  else return key.toUpperCase() // can't work in turco
+}
+let titleMenuWordArray = []
+const setTitleMenuWord = () => {
+  titleMenuWordArray = [
+    {text: `PRESS [${getKeyName(action.fire)}] TO START`, hue: 10},
+    {text: `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`, hue: 210},
+    {text: `[${getKeyName(action.change)}]MAP: ${mapMode}`, hue: 210}
+  ]
+  context.save()
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.font = `${size}px sans-serif`
+  titleMenuWordArray.forEach((v, i) => {
+    const property = {
+      offsetX: canvas.offsetWidth / 2,
+      offsetY: canvas.offsetHeight * (2 / 3 + i / 11)
+    }
+    const measure = context.measureText(v.text)
+    {
+      Object.assign(
+        titleMenuWordArray[i],
+        {offsetX: property.offsetX},
+        {offsetY: property.offsetY},
+        {absoluteX: property.offsetX - measure.actualBoundingBoxLeft},
+        {absoluteY: property.offsetY - measure.actualBoundingBoxAscent},
+        {width: measure.width},
+        {height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent}
+      )
+    }
+  })
+  context.restore()
+}
 document.addEventListener('DOMContentLoaded', () => {
   action = {
     fire: setStorageFirst('fire', ' '),
@@ -274,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   setOperation()
   setAngle()
+  setTitleMenuWord()
 })
 const slideProcess = () => {
   if (inventory[0].magazines[firearm.grip] <= 0 && slide.state === 'release') return
@@ -2560,10 +2600,6 @@ const reset = () => {
   defeatCount = 0
 }; reset()
 let mapMode = false
-const getKeyName = key => {
-  if (key === ' ') return 'SPACE'
-  else return key.toUpperCase() // can't work in turco
-}
 const swap = (get, set) => {
   let before = Object.keys(action)[Object.values(action).indexOf(order[get])]
   let after = Object.keys(action)[Object.values(action).indexOf(order[set])]
@@ -2722,7 +2758,6 @@ const main = () => setInterval(() => {
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
 }, 0)
-
 const drawTitleScreen = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -2731,64 +2766,30 @@ const drawTitleScreen = () => {
     loadedMap['images/ROGOv1.2.png'],
     ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
 
-  const textHighlightOnCurosr = (text, offsetX, offsetY, h) => {
-    const word = {
-      text: text,
-      offsetX: offsetX,
-      offsetY: offsetY,
-      absoluteX: undefined,
-      absoluteY: undefined,
-      width: undefined,
-      height: undefined
-    }
-    const measure = context.measureText(word.text)
-    {
-      Object.assign(
-        word,
-        {absoluteX: word.offsetX - measure.actualBoundingBoxLeft},
-        {absoluteY: word.offsetY - measure.actualBoundingBoxAscent},
-        {width: measure.width},
-        {height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent}
-      )
-    }
-    const offset = {
-      x: cursor.offsetX - word.absoluteX,
-      y: cursor.offsetY - word.absoluteY
-    }
-    if (
-      0 <= offset.x && offset.x <= word.width &&
-      0 <= offset.y && offset.y <= word.height
-    ) {
-      context.fillStyle = `hsl(${h}, 50%, 75%)`
-      context.fillRect(word.absoluteX, word.absoluteY, word.width, word.height)
-    }
-
-    context.fillStyle = `hsl(${h}, 50%, 50%)`
-    // glow effect
-      // = (ss % 3 === 2)
-      //   ? `hsla(10, 50%, 40%, ${1 - (ms / 1e3) * 3 / 4})`
-      // : (ss % 3 === 1)
-      //   ? 'hsl(10, 50%, 40%)'
-      // : `hsla(10, 50%, 40%, ${.25 + (ms / 1e3) * 3 / 4})`
-
-    context.fillText(word.text, word.offsetX, word.offsetY)
-  }
-
+  context.save()
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   context.font = `${size}px sans-serif`
 
-  const wordList = [
-    `PRESS [${getKeyName(action.fire)}] TO START`,
-    `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`,
-    `[${getKeyName(action.change)}]MAP: ${mapMode}`
-  ]
-  const hueList = [10, 210, 210]
-  for (let i = 0; i < wordList.length; i++) {
-    textHighlightOnCurosr(
-    wordList[i],
-      canvas.offsetWidth / 2, canvas.offsetHeight * (2 / 3 + i / 11), hueList[i])
-  }
+  titleMenuWordArray.forEach(v => {
+    const offset = {
+      x: cursor.offsetX - v.absoluteX,
+      y: cursor.offsetY - v.absoluteY
+    }
+    // text highlight
+    if (
+      0 <= offset.x && offset.x <= v.width &&
+      0 <= offset.y && offset.y <= v.height
+    ) {
+      context.fillStyle = `hsl(${v.hue}, 50%, 75%)`
+      context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
+    }
+    context.fillStyle = `hsl(${v.hue}, 50%, 50%)`
+    context.fillText(v.text, v.offsetX, v.offsetY)
+
+  })
+  context.restore()
+
   context.textAlign = 'right'
   context.fillStyle = (manyAmmo()) ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
   context.fillText(version, canvas.offsetWidth - size, canvas.offsetHeight - size)
