@@ -2679,7 +2679,8 @@ let rowPosition = 0
 let keyPosition = -2
 
 const titleProcess = () => {
-  if (key[action.fire].isFirst()) {
+  if (key[action.fire].isFirst() || (
+    globalTimestamp - intervalDiffTime <= mouseup.timeStamp && isInner(titleMenuWordArray[0]))) {
     reset()
     if (manyAmmo()) {
       inventory[0].magazines = [99, inventory[0].magazineSize]
@@ -2688,11 +2689,16 @@ const titleProcess = () => {
     }
     state = 'main'
   }
-  if (key[action.slow].isFirst()) {
+  if (key[action.slow].isFirst() || (
+    globalTimestamp - intervalDiffTime <= mouseup.timeStamp && isInner(titleMenuWordArray[1]))) {
     input()
     state = 'keyLayout'
   }
-  if (key[action.change].isFirst()) mapMode = !mapMode
+  if (key[action.change].isFirst() || (
+    globalTimestamp - intervalDiffTime <= mouseup.timeStamp && isInner(titleMenuWordArray[2]))) {
+    mapMode = !mapMode
+    setTitleMenuWord()
+  }
 }
 const mainProcess = () => {
   interfaceProcess()
@@ -2758,6 +2764,14 @@ const main = () => setInterval(() => {
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
 }, 0)
+const isInner = v => {
+  const offset = {
+    x: cursor.offsetX - v.absoluteX,
+    y: cursor.offsetY - v.absoluteY
+  }
+  return 0 <= offset.x && offset.x <= v.width &&
+  0 <= offset.y && offset.y <= v.height
+}
 const drawTitleScreen = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -2772,15 +2786,8 @@ const drawTitleScreen = () => {
   context.font = `${size}px sans-serif`
 
   titleMenuWordArray.forEach(v => {
-    const offset = {
-      x: cursor.offsetX - v.absoluteX,
-      y: cursor.offsetY - v.absoluteY
-    }
     // text highlight
-    if (
-      0 <= offset.x && offset.x <= v.width &&
-      0 <= offset.y && offset.y <= v.height
-    ) {
+    if (isInner(v)) {
       context.fillStyle = `hsl(${v.hue}, 50%, 75%)`
       context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
     }
