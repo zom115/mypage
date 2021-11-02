@@ -581,6 +581,51 @@ const directionCalc = arg => {
   }
   return {dx, dy}
 }
+const mouseFiring = () => {
+  if (
+    reload.auto === 'ON' &&
+    inventory[0].magazines[firearm.grip] <= 0 &&
+    reload.time === 0 &&
+    0 < inventory[0].magazines[setMoreThanMagazine()] &&
+    !firearm.chamberFlag &&
+    slide.state === 'release'
+  ) {
+    inventory[0].reloadSpeed = inventory[0].baseReloadSpeed * 1.5
+    reloadProcess()
+    return
+  }
+  if (!firearm.chamberFlag) return
+  const theta = Math.atan2(
+    cursor.offsetY - canvas.offsetHeight / 2,
+    cursor.offsetX - canvas.offsetWidth / 2
+  )
+  let dx = Math.cos(theta)
+  let dy = Math.sin(theta)
+  if (dx === 0 && dy === 0) return
+  if (reload.state !== 'done') { // random direction when incomplete reload
+    const tmpDx = dx
+    const tmpDy = dy
+    const theta = (45 - Math.random() * 90) * (Math.PI / 180) // front 90 degrees
+    dx = tmpDx * Math.cos(theta) - tmpDy * Math.sin(theta)
+    dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
+  }
+  setBullet(
+    inventory[0].bulletLife,
+    ownPosition.x,
+    ownPosition.y,
+    dx * inventory[0].bulletSpeed,
+    dy * inventory[0].bulletSpeed
+  )
+
+  { // recoil / blowback
+    differenceAddition(ownPosition, -dx * bulletRadius, -dy * bulletRadius)
+    recoilEffect.dx = dx * bulletRadius
+    recoilEffect.dy = dy * bulletRadius
+    afterglow.recoil = recoilEffect.flame
+  }
+
+  firearm.chamberFlag = false
+}
 const firingProcess = () => {
   if (
     reload.auto === 'ON' &&
@@ -605,6 +650,9 @@ const firingProcess = () => {
     dx = tmpDx * Math.cos(theta) - tmpDy * Math.sin(theta)
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
   }
+
+  // TODO: Homing?
+
   if (homingFlag) {
     const r =  size * 3
     const theta = (5 - Math.random() * 10) * (Math.PI / 180) // front 10 degrees
@@ -623,6 +671,9 @@ const firingProcess = () => {
       dx * inventory[0].bulletSpeed,
       dy * inventory[0].bulletSpeed
     )
+
+    // TODO: Clone?
+
     if (0 < clonePosition.length) {
       setBullet(
         inventory[0].bulletLife * clonePower,
@@ -793,21 +844,6 @@ const bomb = () => {
     enemy.life = 0
     enemy.timer = 30
   })
-}
-const mouseFiring = () => {
-  const theta = Math.atan2(
-    cursor.offsetY - canvas.offsetHeight / 2,
-    cursor.offsetX - canvas.offsetWidth / 2
-  )
-  const dx = Math.cos(theta)
-  const dy = Math.sin(theta)
-  setBullet(
-    inventory[0].bulletLife,
-    ownPosition.x,
-    ownPosition.y,
-    dx * inventory[0].bulletSpeed,
-    dy * inventory[0].bulletSpeed
-  )
 }
 const interfaceProcess = () => {
   if (key[action.pause].isFirst()) state = 'pause'
