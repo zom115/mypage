@@ -76,10 +76,6 @@ let debugMode = true
 let operationMode = setStorageFirst('operation', 'WASD')
 let angleMode = setStorageFirst('angle', 'IJKL')
 let state, point
-let inventoryFlag = false
-let inventorySize = 5
-let inventory = []
-let selectedIndex
 let cost = {
   dashDistance: 1000,
   dashDistanceIndex: 0,
@@ -178,19 +174,25 @@ let objects, currentDirection, ownStep
 let direction = 0
 let angle = 0
 let ownStepLimit = 50
-let dropItems
-let bullets
-const setBullet = (life, x, y, dx, dy, homingFlag) => {
-  bullets.push({
-    life: life,
-    x: x,
-    y: y,
-    dx: dx,
-    dy: dy,
-    detectFlag: false,
-    detectID: -1,
-    isHoming: homingFlag
-  })
+
+let inventory = []
+let inventorySize = 5
+let inventoryFlag = false
+let selectedIndex = 0
+let dropItems = []
+let bullets = []
+const Bullet = class {
+  constructor(life, x, y, dx, dy, isHoming) {
+    this.life = life
+    this.x = x
+    this.y = y
+    this.dx = dx
+    this.dy = dy
+    this.detectFlag = false
+    this.detectID = -1
+    this.isHoming = isHoming
+  }
+  update() {}
 }
 const updateBullet = () => {
   if (homingFlag) {
@@ -362,8 +364,6 @@ let cartridgeInfo = {
   life: 100,
   speed: 1
 }
-let enemies
-const enemyImageAmount = 3
 let ammo
 let firearm = {
   chamberFlag: false,
@@ -402,6 +402,9 @@ let combatReload = {
   weight: 4,
   auto: setStorageFirst('autoCombatReload', 'OFF')
 }
+
+let enemies
+const enemyImageAmount = 3
 let wave = {
   number: 0,
   delayTime: 0,
@@ -609,13 +612,20 @@ const mouseFiring = () => {
     dx = tmpDx * Math.cos(theta) - tmpDy * Math.sin(theta)
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
   }
-  setBullet(
+  bullets.push(new Bullet(
     inventory[0].bulletLife,
     ownPosition.x,
     ownPosition.y,
     dx * inventory[0].bulletSpeed,
     dy * inventory[0].bulletSpeed
-  )
+  ))
+  // setBullet(
+  //   inventory[0].bulletLife,
+  //   ownPosition.x,
+  //   ownPosition.y,
+  //   dx * inventory[0].bulletSpeed,
+  //   dy * inventory[0].bulletSpeed
+  // )
 
   /*
   { // recoil / blowback
@@ -658,15 +668,15 @@ const firingProcess = () => {
   if (homingFlag) {
     const r =  size * 3
     const theta = (5 - Math.random() * 10) * (Math.PI / 180) // front 10 degrees
-    setBullet(
+    bullets.push(
       inventory[0].bulletLife + prepareTime,
       ownPosition.x,
       ownPosition.y,
       r * (dx * Math.cos(theta) - dy * Math.sin(theta)) / prepareTime,
-      r * (dx * Math.sin(theta) + dy * Math.cos(theta)) / prepareTime,
+      r * (dx * Math.sin(theta) + dy * Math.cos(theta)) / prepareTime
     )
   } else {
-    setBullet(
+    bullets.push(
       inventory[0].bulletLife,
       ownPosition.x,
       ownPosition.y,
@@ -677,7 +687,7 @@ const firingProcess = () => {
     // TODO: Clone?
 
     if (0 < clonePosition.length) {
-      setBullet(
+      bullets.push(
         inventory[0].bulletLife * clonePower,
         clonePosition.reduce((pre, current) => {return pre + current.dx}, ownPosition.x),
         clonePosition.reduce((pre, current) => {return pre + current.dy}, ownPosition.y),
