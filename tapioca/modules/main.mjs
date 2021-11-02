@@ -827,7 +827,8 @@ const interfaceProcess = () => {
     inventory[0].reloadSpeed = inventory[0].baseReloadSpeed
     reloadProcess()
   } else if (0 < reload.time || reload.state !== 'done') reloadProcess()
-  if (key[action.fire].flag) firingProcess()
+
+  // if (key[action.fire].flag) firingProcess()
 
   if (isFire) mouseFiring()
   isFire = false
