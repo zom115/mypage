@@ -26,7 +26,7 @@ let loadedMap = []
 
 imagePathList.forEach(function (imagePath) {
   const img = new Image()
-  img.src = imagePath
+  img.src = '../tapioca/' + imagePath
   img.onload = function () {
     loadedList.push(imagePath)
     loadedMap[imagePath] = img
