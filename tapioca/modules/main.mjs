@@ -16,6 +16,7 @@ const isKeyFirst = list => {
 }
 const version = 'v.0.8.8.1'
 const canvas = document.getElementById`canvas`
+canvas.oncontextmenu = () => {return false}
 canvas.addEventListener('mouseover', () => {
   document.draggable = false
   canvas.draggable = false
