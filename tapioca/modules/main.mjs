@@ -617,12 +617,14 @@ const mouseFiring = () => {
     dy * inventory[0].bulletSpeed
   )
 
+  /*
   { // recoil / blowback
     differenceAddition(ownPosition, -dx * bulletRadius, -dy * bulletRadius)
     recoilEffect.dx = dx * bulletRadius
     recoilEffect.dy = dy * bulletRadius
     afterglow.recoil = recoilEffect.flame
   }
+  */
 
   firearm.chamberFlag = false
 }
