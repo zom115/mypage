@@ -1958,8 +1958,8 @@ const setStore = () => {
     constructor(dx, dy, w, h, Id) {
       this.x = offset.x + dx
       this.y = offset.y + dy
-      this.width = storeSize * w
-      this.height = storeSize * h
+      this.w = storeSize * w
+      this.h = storeSize * h
       this.Id = Id
     }
     draw () {
@@ -1967,7 +1967,7 @@ const setStore = () => {
   }
   objects.push(new Spot(-size * 7, size, 1, 1, 0))
   objects.push(new Spot(size * 4, size, 1, 1, 1))
-  objects.push(new Spot(-size * 3, -size * 10, 1.2, 1.2, 2))
+  objects.push(new Spot(-size * 3, -size * 10, 1.25, 1.25, 2))
 }
 const upgradeOne = () => {
   if (holdTimeLimit <= key[action.lookUp].holdtime && inventory[0].offensivePower <= ammo) {
@@ -2096,16 +2096,15 @@ const storeProcess = () => {
   })
 }
 const drawStore = () => {
-  let ratio
   context.font = `${size}px sans-serif`
-  objects.forEach((object,index) => { // only rectangle
+  objects.forEach(object => { // only rectangle
     // context.fillStyle = 'hsla(30, 100%, 70%)'
     if (
-      object.x < ownPosition.x - canvas.offsetWidth/2 - storeSize &&
+      object.x < ownPosition.x - canvas.offsetWidth/2 - object.w &&
       object.y < ownPosition.y - canvas.offsetHeight/2
     ) context.fillRect(0, 0, size, size) // left & top
-    else if (object.x < ownPosition.x - canvas.offsetWidth/2 - storeSize &&
-      ownPosition.y + canvas.offsetHeight/2 - storeSize < object.y)
+    else if (object.x < ownPosition.x - canvas.offsetWidth/2 - object.w &&
+      ownPosition.y + canvas.offsetHeight/2 - object.h < object.y)
     { // left & bottom
       context.fillRect(0, canvas.offsetHeight, size, size)
     } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
@@ -2114,316 +2113,20 @@ const drawStore = () => {
     } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
       ownPosition.y + canvas.offsetHeight/2 < object.y) { // right & bottom
       context.fillRect(canvas.offsetWidth - size, canvas.offsetHeight - size, size, size)
-    } else if (object.x < ownPosition.x - canvas.offsetWidth/2 - storeSize) { // out of left
-      context.fillRect(0, relativeY(object.y + storeSize/2 - size), size, size)
+    } else if (object.x < ownPosition.x - canvas.offsetWidth/2 - object.w) { // out of left
+      context.fillRect(0, relativeY(object.y + object.h/2 - size), size, size)
     } else if (ownPosition.x + canvas.offsetWidth/2 < object.x) { // out of right
-      context.fillRect(canvas.offsetWidth - size, relativeY(object.y + storeSize/2 - size), size, size)
-    } else if (object.y < ownPosition.y - canvas.offsetHeight/2 - storeSize) { // out of top
-      context.fillRect(relativeX(object.x + storeSize/2), 0, size, size)
+      context.fillRect(canvas.offsetWidth - size, relativeY(object.y + object.h/2 - size), size, size)
+    } else if (object.y < ownPosition.y - canvas.offsetHeight/2 - object.h) { // out of top
+      context.fillRect(relativeX(object.x + object.w/2), 0, size, size)
     } else if (ownPosition.y + canvas.offsetHeight/2 < object.y) { // out of bottom
-      context.fillRect(relativeX(object.x + storeSize/2), canvas.offsetHeight- size, size, size)
+      context.fillRect(relativeX(object.x + object.w/2), canvas.offsetHeight- size, size, size)
     } else {
       const imgStore =
         (object.Id === 0) ? 'images/st1v2.png' :
         (object.Id === 1) ? 'images/st2v1.png' : 'images/stv1.png'
       context.drawImage(loadedMap[imgStore], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
     }
-    const topColumn = (effect, expence, material, image) => {
-      context.save()
-      context.scale(3, 3)
-      if (material < expence) context.globalAlpha = .5
-      context.drawImage(
-        loadedMap[image],
-        ~~((relativeX(object.x - size * .5)/3)+.5),
-        ~~((relativeY(object.y - size * 6)/3)+.5)
-      )
-      context.restore()
-      context.fillStyle = (0 < effect) ?
-      `hsl(0, 50%, ${50 + 50 * effect / holdTimeLimit}%)` :
-      (expence <= material && key[action.lookUp].holdtime <= holdTimeLimit) ?
-      `hsl(0, 50%, ${50 + 50 * key[action.lookUp].holdtime / holdTimeLimit}%)` :
-      (material < expence) ? 'hsla(0, 50%, 50%, .4)' :'hsl(0, 50%, 50%)'
-      context.save()
-      context.textAlign = 'center'
-      context.fillText(
-        `[HOLD ${getKeyName(action.lookUp)}]`,
-        relativeX(object.x + size * 2.5), relativeY(object.y - size * 6.5)
-      )
-      const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
-      context.fillText(
-        `${expence} ${text}`,
-        relativeX(object.x + size * 2.5), relativeY(object.y - size * 2)
-      )
-      context.restore()
-      if ((expence <= material && key[action.lookUp].holdtime <= holdTimeLimit) || 0 < effect) {
-        ratio = (effect === 0) ? key[action.lookUp].holdtime / holdTimeLimit : 1
-        context.fillRect(
-          relativeX(object.x - size * 3.5),
-          relativeY(object.y - size * 3.5), ratio * size * 12, size / 2
-        )
-      }
-    }
-    const rightColumn = (effect, expence, material, image) => {
-      context.save()
-      context.scale(3, 3)
-      if (material < expence) context.globalAlpha = .5
-      context.drawImage(loadedMap[image],
-        ~~((relativeX(object.x+size * 6)/3)+.5),
-        ~~((relativeY(object.y + size * .5)/3)+.5)
-      )
-      context.restore()
-      context.fillStyle = (0 < effect) ?
-      `hsl(280, 50%, ${50 + 50 * effect/holdTimeLimit}%)` :
-      (expence <= material && key[action.lookRight].holdtime <= holdTimeLimit) ?
-      `hsl(280, 50%, ${50 + 50 * key[action.lookRight].holdtime / holdTimeLimit}%)` :
-      (material < expence) ? 'hsla(280, 50%, 50%, .4)' :'hsl(280, 50%, 50%)'
-      context.fillText(
-        `[HOLD ${getKeyName(action.lookRight)}]`,
-        relativeX(object.x+size * 6), relativeY(object.y)
-      )
-      const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
-      context.fillText(
-        `${expence} ${text}`,
-        relativeX(object.x+size * 6), relativeY(object.y+size * 4.5)
-      )
-      if ((expence <= material && key[action.lookRight].holdtime <= holdTimeLimit) || 0 < effect) {
-        ratio = (effect === 0) ? key[action.lookRight].holdtime / holdTimeLimit : 1
-        context.fillRect(
-          relativeX(object.x+size * 6), relativeY(object.y+size * 3.5),
-          ratio * size * 12, size / 2
-        )
-      }
-    }
-    const downColumn = (effect, expence, material, image) => {
-      context.save()
-      context.scale(3, 3)
-      if (material < expence) context.globalAlpha = .5
-      context.drawImage(loadedMap[image],
-        ~~((relativeX(object.x-size*.5)/3)+.5),
-        ~~((relativeY(object.y + size * 6)/3)+.5)
-      )
-      context.restore()
-      context.fillStyle = (0 < effect) ?
-      `hsl(340, 50%, ${50 + 50 * effect / holdTimeLimit}%)` :
-      (expence <= material && key[action.lookDown].holdtime <= holdTimeLimit) ?
-      `hsl(340, 50%, ${50 + 50 * key[action.lookDown].holdtime / holdTimeLimit}%)` :
-      (material < expence) ? 'hsla(340, 50%, 50%, .4)' :'hsl(340, 50%, 50%)'
-      context.save()
-      context.textAlign = 'center'
-      context.fillText(
-        `[HOLD ${getKeyName(action.lookDown)}]`,
-        relativeX(object.x + size * 2.5), relativeY(object.y+size * 5.5)
-      )
-      const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
-      context.fillText(
-        `${expence} ${text}`,
-        relativeX(object.x + size * 2.5), relativeY(object.y+size * 10)
-      )
-      context.restore()
-      if ((expence <= material && key[action.lookDown].holdtime <= holdTimeLimit) || 0 < effect) {
-        ratio = (effect === 0) ? key[action.lookDown].holdtime / holdTimeLimit : 1
-        context.fillRect(
-          relativeX(object.x - size * 3.5), relativeY(object.y+size * 8.5),
-          ratio * size * 12, size / 2
-        )
-      }
-    }
-    const leftColumn = (effect, expence, material, image) => {
-      context.save()
-      context.scale(3, 3)
-      if (material < expence) context.globalAlpha = .5
-      context.drawImage(
-        loadedMap[image],
-        ~~((relativeX(object.x-size * 7)/3)+.5),
-        ~~((relativeY(object.y + size * .5)/3)+.5)
-      )
-      context.restore()
-      context.fillStyle = (0 < effect) ?
-      `hsl(100, 50%, ${50 + 50 * effect/holdTimeLimit}%)` :
-      (expence <= material && key[action.lookLeft].holdtime <= holdTimeLimit) ?
-      `hsl(100, 50%, ${50 + 50 * key[action.lookLeft].holdtime / holdTimeLimit}%)` :
-      (material < expence) ? 'hsla(100, 50%, 50%, .4)' :'hsl(100, 50%, 50%)'
-      context.save()
-      context.textAlign = 'right'
-      context.fillText(
-        `[HOLD ${getKeyName(action.lookLeft)}]`,
-        relativeX(object.x-size * 1), relativeY(object.y)
-      )
-      const text = (material === ammo) ? 'TAPIOCA' : 'POINT'
-      context.fillText(
-        `${expence} ${text}`, relativeX(object.x-size * 1), relativeY(object.y+size * 4.5)
-      )
-      context.restore()
-      if ((
-        expence <= material &&
-        key[action.lookLeft].holdtime <= holdTimeLimit) ||
-        0 < effect
-      ) {
-        ratio = (effect === 0) ? key[action.lookLeft].holdtime / holdTimeLimit : 1
-        context.fillRect(
-          relativeX(object.x-size * 12), relativeY(object.y+size * 3.5),
-          ratio * size * 12, size / 2
-        )
-      }
-    }
-    if ((
-      object.x <= ownPosition.x && ownPosition.x <= object.x + object.width) &&
-      (object.y <= ownPosition.y && ownPosition.y <= object.y + object.height)
-    ) {
-      if (object.Id === 0) {
-        topColumn(afterglow.offensivePower, inventory[0].offensivePower, ammo, 'images/TASTEv1.jpg')
-        if (homingFlag) rightColumn(afterglow.homing, inventory[0].homing, ammo, 'images/Homingv1.jpg')
-        else rightColumn(afterglow.homing, inventory[0].homing, ammo, 'images/Homingv1.jpg')
-        downColumn(afterglow.slide, inventory[0].slide, point, 'images/EASY_TO_DRINKV1.jpg')
-        leftColumn(afterglow.bulletSpeed, inventory[0].bulletSpeedCost, point, 'images/TAPIOCA_SPEEDv1.png')
-      } else if (object.Id === 1) {
-        topColumn(afterglow.magazine, inventory[0].magazine, point, 'images/CUP_SIZEv1.png')
-        rightColumn(afterglow.magAmount, inventory[0].magAmount, point, 'images/CUP_AMOUNTv1.png')
-        downColumn(afterglow.loading, inventory[0].loading, point, 'images/COOKING_TIMEv1.png')
-      } else if (object.Id === 2) {
-        topColumn(afterglow.dashDamage, cost.dashDamage, ammo, 'images/JK34F.png')
-        context.fillText(
-          'DASH ATTACK DAMAGE +',
-          relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
-        )
-        rightColumn(afterglow.dashDistance, cost.dashDistance, point, 'images/JK34R.png')
-        context.fillText(
-          'DASH DISTANCE +',
-          relativeX(object.x + size * 6), relativeY(object.y + size * 3)
-        )
-        downColumn(afterglow.dashCooltime, cost.dashCooltime, point, 'images/JK34F.png')
-        context.fillText(
-          'DASH COOLTIME -',
-          relativeX(object.x - size * 2.5), relativeY(object.y + size * 8.5)
-        )
-        leftColumn(afterglow.dashSpeed, cost.dashDistance, point, 'images/JK34L.png')
-        context.fillText(
-          'DASH SPEED +',
-          relativeX(object.x-size * 9.5), relativeY(object.y + size * 3)
-        )
-      }
-      // else if (index === 3) {
-      //   topColumn(afterglow.bulletLife, inventory[0].bulletLifeCost, point, 'images/JK32F.png')
-      //   context.fillText(
-      //     'SHELF LIFE +', relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
-      //   )
-      //   if (!cloneFlag) {
-      //     rightColumn(afterglow.clone, cost.clone, point, 'images/JK33R.png')
-      //     context.fillText(
-      //       'TAPIOCA DRINK DUPLICATOR',
-      //       relativeX(object.x + size * 6), relativeY(object.y + size * 3)
-      //     )
-      //   }
-      //   downColumn(
-      //     afterglow.penetrationForce, inventory[0].penetrationForceCost, point,
-      //     'images/TAPIOCA_PENETRATEv1.png'
-      //   )
-      //   context.fillText(
-      //     'PENETRATION FORCE +',
-      //     relativeX(object.x + size * 2), relativeY(object.y + size * 8.5)
-      //   )
-      // } else if (index === 4) {
-      //   topColumn(afterglow.explosive1, inventory[0].explosive1, ammo, 'images/TP2F.png')
-      //   context.fillText(
-      //     'EXPLOSIVE TYPE I',
-      //     relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
-      //   )
-      //   rightColumn(afterglow.explosive2, inventory[0].explosive2, ammo, 'images/TP2F.png')
-      //   context.fillText(
-      //     'EXPLOSIVE TYPE II',
-      //     relativeX(object.x+size * 6), relativeY(object.y+size * 3)
-      //   )
-      //   downColumn(afterglow.explosive3, inventory[0].explosive3, ammo, 'images/TP2F.png')
-      //   context.fillText(
-      //     'EXPLOSIVE TYPE III',
-      //     relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
-      //   )
-      //   leftColumn(afterglow.explosiveRange, inventory[0].explosiveRange, point, 'images/TP2F.png')
-      //   context.fillText(
-      //     'EXPLOSIVE RANGE +',
-      //     relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
-      //   )
-      // } else if (index === 5) {
-      //   topColumn(afterglow.limitBreak, inventory[0].limitBreak, point, 'images/JK32F_O1.png')
-      //   context.fillText(
-      //     'RIMIT BREAK CHANCE',
-      //     relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
-      //   )
-      //   leftColumn(afterglow.reset, cost.reset, point, 'images/JK32F.png')
-      //   context.save()
-      //   context.textAlign = 'right'
-      //   context.fillText('RESET YOUR LIFE',
-      //     relativeX(object.x-size * 1), relativeY(object.y+size * 1.5)
-      //   )
-      //   context.restore()
-      //   context.fillStyle = 'hsl(0, 0%, 0%)'
-      //   if (0 < afterglow.limitBreakSuccess || 0 < afterglow.limitBreakFailed) {
-      //     context.font = `${size*2}px sans-serif`
-      //     context.fillText(
-      //       `x ${afterglow.limitBreakResult}`,
-      //       relativeX(object.x + size * 7), relativeY(object.y - size * .5)
-      //     )
-      //   }
-      //   if (0 < afterglow.limitBreakSuccess) {
-      //     context.font = `${size*1.5}px sans-serif`
-      //     context.fillText(
-      //       '至福・・・至福の雑用・・・!!',
-      //       relativeX(object.x - size * 8), relativeY(object.y + size * 11)
-      //     )
-      //     context.font = `${size*2}px sans-serif`
-      //     context.fillText(
-      //       'ただ突っ立っているだけ・・・・!!!',
-      //       relativeX(object.x - size * 6), relativeY(object.y + size * 7)
-      //     )
-      //   } else  if (0 < afterglow.limitBreakFailed) {
-      //     context.font = `${size}px sans-serif`
-      //     context.fillText(
-      //       'ぐにゃあっ．．', relativeX(object.x + size * 9), relativeY(object.y + size * 1)
-      //     )
-      //     context.font = `${size * 1.5}px sans-serif`
-      //     context.fillText(
-      //       '1050年地下行き………！',
-      //       relativeX(object.x - size * 5), relativeY(object.y + size * 8)
-      //     )
-      //     context.save()
-      //     context.scale(3, 3)
-      //     context.drawImage(
-      //       loadedMap['images/JK32F_O2.png'],
-      //       ~~((relativeX(object.x + size * 6)/3)+.5),
-      //       ~~((relativeY(object.y)/3)+.5)
-      //     )
-      //     context.restore()
-      //   } else {
-      //     context.font = `${size*2}px sans-serif`
-      //     context.fillText(
-      //       'ざわ．．．ざわ．．．',
-      //       relativeX(object.x) + size * 4, relativeY(object.y) - size * 9
-      //     )
-      //   }
-      // } else if (index === 6) {
-      //   topColumn(afterglow.explosive1, cost.reset, point, 'images/JK34F.png')
-      //   context.fillText(
-      //     'CLONE DASH TYPE I',
-      //     relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
-      //   )
-      //   rightColumn(afterglow.explosive2, cost.reset, point, 'images/JK34R.png')
-      //   context.fillText(
-      //     'CLONE DASH TYPE II',
-      //     relativeX(object.x+size * 6), relativeY(object.y+size * 3)
-      //   )
-      //   downColumn(afterglow.explosive3, cost.reset, point, 'images/JK34F.png')
-      //   context.fillText(
-      //     'CLONE DASH TYPE III',
-      //     relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
-      //   )
-      //   leftColumn(afterglow.explosiveRange, cost.reset, point, 'images/JK34L.png')
-      //   context.fillText(
-      //     'CLONE COME BUCK',
-      //     relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
-      //   )
-      // }
-    } else if (index === 5 && 0 < afterglow.limitBreakSuccess) afterglow.limitBreakSuccess = 0
-    else if (index === 5 && 0 < afterglow.limitBreakFailed) afterglow.limitBreakFailed = 0
   })
 }
 const drawObjects = () => {
