@@ -1955,19 +1955,22 @@ const setMap = () => {
 const setStore = () => {
   const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
   const Spot = class {
-    constructor(dx, dy, w, h, Id) {
+    constructor(dx, dy, w, h, Id, img) {
       this.x = offset.x + dx
       this.y = offset.y + dy
       this.w = storeSize * w
       this.h = storeSize * h
       this.Id = Id
+      this.img = img
     }
-    draw () {
+    process() {
+
     }
   }
-  objects.push(new Spot(-size * 7, size, 1, 1, 0))
-  objects.push(new Spot(size * 4, size, 1, 1, 1))
-  objects.push(new Spot(-size * 3, -size * 10, 1.25, 1.25, 2))
+  objects.push(new Spot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
+  objects.push(new Spot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
+  objects.push(new Spot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
+
 }
 const upgradeOne = () => {
   if (holdTimeLimit <= key[action.lookUp].holdtime && inventory[0].offensivePower <= ammo) {
@@ -2086,11 +2089,8 @@ const storeProcess = () => {
       (object.y <= ownPosition.y && ownPosition.y <= object.y + object.height)
     ) {
       if (object.Id === 0) {
-        upgradeLimitBreak()
       } else if (object.Id === 1) {
-        upgradeOne()
       } else if (object.Id === 2) {
-        upgradeDash()
       }
     }
   })
@@ -2122,10 +2122,7 @@ const drawStore = () => {
     } else if (ownPosition.y + canvas.offsetHeight/2 < object.y) { // out of bottom
       context.fillRect(relativeX(object.x + object.w/2), canvas.offsetHeight- size, size, size)
     } else {
-      const imgStore =
-        (object.Id === 0) ? 'images/st1v2.png' :
-        (object.Id === 1) ? 'images/st2v1.png' : 'images/stv1.png'
-      context.drawImage(loadedMap[imgStore], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
+      context.drawImage(loadedMap[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
     }
   })
 }
