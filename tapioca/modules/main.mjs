@@ -25,11 +25,34 @@ canvas.addEventListener('mouseover', () => {
 let cursor = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mousemove', e => cursor = e, false)
 let isFire = false
-canvas.addEventListener('mousedown', () => {
+let mouseDownPos = {offsetX: 0, offsetY: 0}
+canvas.addEventListener('mousedown', e => {
+  mouseDownPos = e
   if (state === 'main') isFire = true
 }, false)
-let isMouseUp = false
-canvas.addEventListener('mouseup', e => isMouseUp = true, false)
+let mouseUpPos = {offsetX: 0, offsetY: 0}
+let mouseUpState = false
+let isMouseUp = () => {
+  let bool = mouseUpState
+  mouseUpState = false
+  return bool
+}
+canvas.addEventListener('mouseup', e => {
+  mouseUpPos = e
+  mouseUpState = true
+}, false)
+canvas.addEventListener('click', () => {}, false)
+const isInner = (box, pos) => {
+  const offset = {
+    x: pos.offsetX - box.absoluteX,
+    y: pos.offsetY - box.absoluteY
+  }
+  return 0 <= offset.x && offset.x <= box.width &&
+  0 <= offset.y && offset.y <= box.height
+}
+const button = box => {
+  return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isMouseUp()
+}
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -1964,7 +1987,6 @@ const setStore = () => {
       this.img = img
     }
     process() {
-
     }
   }
   objects.push(new Spot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
@@ -2085,12 +2107,15 @@ const upgradeClone = ()  => {
 const storeProcess = () => {
   objects.forEach(object => {
     if ((
-      object.x <= ownPosition.x && ownPosition.x <= object.x + object.width) &&
-      (object.y <= ownPosition.y && ownPosition.y <= object.y + object.height)
+      object.x <= ownPosition.x && ownPosition.x <= object.x + object.w) && (
+      object.y <= ownPosition.y && ownPosition.y <= object.y + object.h)
     ) {
       if (object.Id === 0) {
       } else if (object.Id === 1) {
       } else if (object.Id === 2) {
+        if (canvas.addEventListener('click', () => {return true})) {
+          location = locationList[1]
+        }
       }
     }
   })
@@ -2379,10 +2404,7 @@ let rowPosition = 0
 let keyPosition = -2
 
 const titleProcess = () => {
-  if (
-    key[action.fire].isFirst() || (
-    isMouseUp && isInner(titleMenuWordArray[0]))
-  ) {
+  if (key[action.fire].isFirst() || button(titleMenuWordArray[0])) {
     reset()
     if (manyAmmo()) {
       inventory[0].magazines = [99, inventory[0].magazineSize]
@@ -2391,21 +2413,14 @@ const titleProcess = () => {
     }
     state = 'main'
   }
-  if (
-    key[action.slow].isFirst() || (
-    isMouseUp && isInner(titleMenuWordArray[1]))
-  ) {
+  if (key[action.slow].isFirst() || button(titleMenuWordArray[1])) {
     input()
     state = 'keyLayout'
   }
-  if (
-    key[action.change].isFirst() || (
-    isMouseUp && isInner(titleMenuWordArray[2]))
-  ) {
+  if (key[action.change].isFirst() || button(titleMenuWordArray[2])) {
     mapMode = !mapMode
     setTitleMenuWord()
   }
-  isMouseUp = false
 }
 const combatProcess = () => {
   if (!firearm.chamberFlag) slideProcess()
@@ -2476,14 +2491,6 @@ const main = () => setInterval(() => {
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
 }, 0)
-const isInner = v => {
-  const offset = {
-    x: cursor.offsetX - v.absoluteX,
-    y: cursor.offsetY - v.absoluteY
-  }
-  return 0 <= offset.x && offset.x <= v.width &&
-  0 <= offset.y && offset.y <= v.height
-}
 const drawTitleScreen = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -2499,7 +2506,7 @@ const drawTitleScreen = () => {
 
   titleMenuWordArray.forEach(v => {
     // text highlight
-    if (isInner(v)) {
+    if (isInner(v, cursor)) {
       context.fillStyle = `hsl(${v.hue}, 50%, 75%)`
       context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
     }
@@ -2775,13 +2782,16 @@ const drawKeyLayout = () => {
 const drawDebug = () => {
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
-  const num = bullets.length ? bullets[0].life|0 : 1
+  const num = bullets.length ? bullets[0].life|0 : 0
   const dictionary = {
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
-    bulletLife: num
+    bulletLife: num,
+    a: isInner(titleMenuWordArray[2], mouseDownPos),
+    b: isInner(titleMenuWordArray[2], mouseUpPos),
+    c: isMouseUp(),
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
