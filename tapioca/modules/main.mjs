@@ -2098,7 +2098,7 @@ const storeProcess = () => {
 const drawStore = () => {
   context.font = `${size}px sans-serif`
   objects.forEach(object => { // only rectangle
-    // context.fillStyle = 'hsla(30, 100%, 70%)'
+    context.fillStyle = 'hsla(30, 100%, 70%)'
     if (
       object.x < ownPosition.x - canvas.offsetWidth/2 - object.w &&
       object.y < ownPosition.y - canvas.offsetHeight/2
