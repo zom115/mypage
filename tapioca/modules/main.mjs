@@ -76,7 +76,10 @@ const setStorage = (key, value) => {
 let debugMode = true
 let operationMode = setStorageFirst('operation', 'WASD')
 let angleMode = setStorageFirst('angle', 'IJKL')
-let state, point
+let state = ''
+let locationList = ['bazaar', 'dungeon']
+let location = locationList[0]
+let point = 0
 let cost = {
   dashDistance: 1000,
   dashDistanceIndex: 0,
@@ -1951,51 +1954,20 @@ const setMap = () => {
 }
 const setStore = () => {
   const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
-  const storeImageAmount = 2
-  objects.push({
-    x: offset.x - size * 2 - size * 1, y: offset.y - size * 2 - size * 6,
-    width: storeSize, height: storeSize, ID: 0
-  })
-  objects.push({
-    x: offset.x - size * 2 + size * 0, y: offset.y - size * 2 + size * 6,
-    width: storeSize, height: storeSize, ID: 1
-  })
-  objects.push({
-    x: offset.x - size * 2 - size * 12, y: offset.y - size * 2 + size * 8,
-    width: storeSize, height: storeSize, ID: ~~(Math.random() * storeImageAmount)
-  })
-  objects.push({
-    x: offset.x - size * 2 + size * 11, y: offset.y - size * 2 - size * 8,
-    width: storeSize, height: storeSize, ID: ~~(Math.random() * storeImageAmount)
-  })
-  objects.push({
-    x: offset.x - size * 2 - size * 13, y: offset.y - size * 2 - size * 4,
-    width: storeSize, height: storeSize, ID: ~~(Math.random() * storeImageAmount)
-  })
-  objects.push({
-    x: offset.x - size * 2 + size * 12, y: offset.y - size * 2 + size * 4,
-    width: storeSize, height: storeSize, ID: ~~(Math.random() * storeImageAmount)
-  })
-  objects.push({
-    x: offset.x - size * 3 + size * 5, y: offset.y - size * 3 - size * 17,
-    width: size * 6, height: size * 6, ID: 2
-  })
-  objects.push({
-    x: offset.x - size * 20, y: offset.y - size * 20,
-    width: size * 39, height: size, ID: 3
-  })
-  objects.push({
-    x: offset.x + size * 19, y: offset.y - size * 20,
-    width: size, height: size * 39, ID: 3
-  })
-  objects.push({
-    x: offset.x - size * 20, y: offset.y - size * 19,
-    width: size, height: size * 39, ID: 3
-  })
-  objects.push({
-    x: offset.x - size * 19, y: offset.y + size * 19,
-    width: size * 39, height: size, ID: 3
-  })
+  const Spot = class {
+    constructor(dx, dy, w, h, Id) {
+      this.x = offset.x + dx
+      this.y = offset.y + dy
+      this.width = storeSize * w
+      this.height = storeSize * h
+      this.Id = Id
+    }
+    draw () {
+    }
+  }
+  objects.push(new Spot(-size * 7, size, 1, 1, 0))
+  objects.push(new Spot(size * 4, size, 1, 1, 1))
+  objects.push(new Spot(-size * 3, -size * 10, 1.2, 1.2, 2))
 }
 const upgradeOne = () => {
   if (holdTimeLimit <= key[action.lookUp].holdtime && inventory[0].offensivePower <= ammo) {
@@ -2108,24 +2080,17 @@ const upgradeClone = ()  => {
   ) afterglow.explosiveRange = (afterglow.explosiveRange-1)|0
 }
 const storeProcess = () => {
-  objects.forEach((object,index) => {
+  objects.forEach(object => {
     if ((
       object.x <= ownPosition.x && ownPosition.x <= object.x + object.width) &&
       (object.y <= ownPosition.y && ownPosition.y <= object.y + object.height)
     ) {
-      if (index === 0) {
-        upgradeOne()
-      } else if (index === 1) {
-      } else if (index === 2) {
-        upgradeDash()
-      } else if (index === 3) {
-        upgradeTest()
-      } else if (index === 4) {
-        upgradeExplosive()
-      } else if (index === 5) {
+      if (object.Id === 0) {
         upgradeLimitBreak()
-      } else if (index === 6) {
-        upgradeClone()
+      } else if (object.Id === 1) {
+        upgradeOne()
+      } else if (object.Id === 2) {
+        upgradeDash()
       }
     }
   })
@@ -2134,68 +2099,35 @@ const drawStore = () => {
   let ratio
   context.font = `${size}px sans-serif`
   objects.forEach((object,index) => { // only rectangle
-    if (object.ID === 3) {
-      context.fillStyle = 'hsla(0, 0%, 50%, .5)'
-      context.fillRect(relativeX(object.x), relativeY(object.y), object.width, object.height)
-      return
-    }
-    context.fillStyle = 'hsla(30, 100%, 70%)'
+    // context.fillStyle = 'hsla(30, 100%, 70%)'
     if (
       object.x < ownPosition.x - canvas.offsetWidth/2 - storeSize &&
       object.y < ownPosition.y - canvas.offsetHeight/2
     ) context.fillRect(0, 0, size, size) // left & top
     else if (object.x < ownPosition.x - canvas.offsetWidth/2 - storeSize &&
-      ownPosition.y + canvas.offsetHeight/2 - storeSize < object.y) { // left & bottom
-        context.fillRect(0, canvas.offsetHeight, size, size)
-      } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
-        object.y < ownPosition.y - canvas.offsetHeight/2) { // right & top
-          context.fillRect(canvas.offsetWidth - size, 0, size, size)
-        } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
-          ownPosition.y + canvas.offsetHeight/2 < object.y) { // right & bottom
-            context.fillRect(canvas.offsetWidth - size, canvas.offsetHeight - size, size, size)
-          } else if (object.x < ownPosition.x - canvas.offsetWidth/2 - storeSize) { // out of left
-            context.fillRect(0, relativeY(object.y + storeSize/2 - size), size, size)
-          } else if (ownPosition.x + canvas.offsetWidth/2 < object.x) { // out of right
-            context.fillRect(canvas.offsetWidth - size, relativeY(object.y + storeSize/2 - size), size, size)
-          } else if (object.y < ownPosition.y - canvas.offsetHeight/2 - storeSize) { // out of top
-            context.fillRect(relativeX(object.x + storeSize/2), 0, size, size)
-          } else if (ownPosition.y + canvas.offsetHeight/2 < object.y) { // out of bottom
-            context.fillRect(
-              relativeX(object.x + storeSize/2), canvas.offsetHeight- size, size, size
-            )
+      ownPosition.y + canvas.offsetHeight/2 - storeSize < object.y)
+    { // left & bottom
+      context.fillRect(0, canvas.offsetHeight, size, size)
+    } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
+      object.y < ownPosition.y - canvas.offsetHeight/2) { // right & top
+      context.fillRect(canvas.offsetWidth - size, 0, size, size)
+    } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
+      ownPosition.y + canvas.offsetHeight/2 < object.y) { // right & bottom
+      context.fillRect(canvas.offsetWidth - size, canvas.offsetHeight - size, size, size)
+    } else if (object.x < ownPosition.x - canvas.offsetWidth/2 - storeSize) { // out of left
+      context.fillRect(0, relativeY(object.y + storeSize/2 - size), size, size)
+    } else if (ownPosition.x + canvas.offsetWidth/2 < object.x) { // out of right
+      context.fillRect(canvas.offsetWidth - size, relativeY(object.y + storeSize/2 - size), size, size)
+    } else if (object.y < ownPosition.y - canvas.offsetHeight/2 - storeSize) { // out of top
+      context.fillRect(relativeX(object.x + storeSize/2), 0, size, size)
+    } else if (ownPosition.y + canvas.offsetHeight/2 < object.y) { // out of bottom
+      context.fillRect(relativeX(object.x + storeSize/2), canvas.offsetHeight- size, size, size)
     } else {
-      context.save()
-      const imgStore = (object.ID === 0) ? 'images/st1v2.png' :
-      (object.ID === 1) ? 'images/st2v1.png' : 'images/stv1.png'
-      if (index === 6) {
-        context.scale(1, 1)
-        context.drawImage(loadedMap[imgStore], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
-      } else {
-        context.scale(1.5, 1.5)
-        context.drawImage(loadedMap[imgStore],
-          ~~((relativeX(object.x) / 1.5)+.5),
-          ~~((relativeY(object.y) / 1.5)+.5)
-        )
-      }
-      context.restore()
+      const imgStore =
+        (object.Id === 0) ? 'images/st1v2.png' :
+        (object.Id === 1) ? 'images/st2v1.png' : 'images/stv1.png'
+      context.drawImage(loadedMap[imgStore], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
     }
-    context.save()
-    context.font = `${size * .5}px sans-serif`
-    context.fillStyle = 'hsl(0, 100%, 100%)'
-    if (index === 0) context.fillText('一号店', relativeX(object.x), relativeY(object.y))
-    else if (index === 1) context.fillText('二号店', relativeX(object.x), relativeY(object.y))
-    else if (index === 2) {
-      context.fillText('DASH STORE', relativeX(object.x), relativeY(object.y))
-    } else if (index === 3) {
-      context.fillText('BULLET TE-STORE', relativeX(object.x), relativeY(object.y))
-    } else if (index === 4) {
-      context.fillText('EXPLOSIVE TE-STORE', relativeX(object.x), relativeY(object.y))
-    } else if (index === 5) {
-      context.fillText('沼 設置店', relativeX(object.x), relativeY(object.y))
-    } else if (index === 6) {
-      context.fillText('CLONE DASH', relativeX(object.x), relativeY(object.y))
-    }
-    context.restore()
     const topColumn = (effect, expence, material, image) => {
       context.save()
       context.scale(3, 3)
@@ -2338,17 +2270,17 @@ const drawStore = () => {
       object.x <= ownPosition.x && ownPosition.x <= object.x + object.width) &&
       (object.y <= ownPosition.y && ownPosition.y <= object.y + object.height)
     ) {
-      if (index === 0) {
+      if (object.Id === 0) {
         topColumn(afterglow.offensivePower, inventory[0].offensivePower, ammo, 'images/TASTEv1.jpg')
         if (homingFlag) rightColumn(afterglow.homing, inventory[0].homing, ammo, 'images/Homingv1.jpg')
         else rightColumn(afterglow.homing, inventory[0].homing, ammo, 'images/Homingv1.jpg')
         downColumn(afterglow.slide, inventory[0].slide, point, 'images/EASY_TO_DRINKV1.jpg')
         leftColumn(afterglow.bulletSpeed, inventory[0].bulletSpeedCost, point, 'images/TAPIOCA_SPEEDv1.png')
-      } else if (index === 1) {
+      } else if (object.Id === 1) {
         topColumn(afterglow.magazine, inventory[0].magazine, point, 'images/CUP_SIZEv1.png')
         rightColumn(afterglow.magAmount, inventory[0].magAmount, point, 'images/CUP_AMOUNTv1.png')
         downColumn(afterglow.loading, inventory[0].loading, point, 'images/COOKING_TIMEv1.png')
-      } else if (index === 2) {
+      } else if (object.Id === 2) {
         topColumn(afterglow.dashDamage, cost.dashDamage, ammo, 'images/JK34F.png')
         context.fillText(
           'DASH ATTACK DAMAGE +',
@@ -2369,126 +2301,127 @@ const drawStore = () => {
           'DASH SPEED +',
           relativeX(object.x-size * 9.5), relativeY(object.y + size * 3)
         )
-      } else if (index === 3) {
-        topColumn(afterglow.bulletLife, inventory[0].bulletLifeCost, point, 'images/JK32F.png')
-        context.fillText(
-          'SHELF LIFE +', relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
-        )
-        if (!cloneFlag) {
-          rightColumn(afterglow.clone, cost.clone, point, 'images/JK33R.png')
-          context.fillText(
-            'TAPIOCA DRINK DUPLICATOR',
-            relativeX(object.x + size * 6), relativeY(object.y + size * 3)
-          )
-        }
-        downColumn(
-          afterglow.penetrationForce, inventory[0].penetrationForceCost, point,
-          'images/TAPIOCA_PENETRATEv1.png'
-        )
-        context.fillText(
-          'PENETRATION FORCE +',
-          relativeX(object.x + size * 2), relativeY(object.y + size * 8.5)
-        )
-      } else if (index === 4) {
-        topColumn(afterglow.explosive1, inventory[0].explosive1, ammo, 'images/TP2F.png')
-        context.fillText(
-          'EXPLOSIVE TYPE I',
-          relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
-        )
-        rightColumn(afterglow.explosive2, inventory[0].explosive2, ammo, 'images/TP2F.png')
-        context.fillText(
-          'EXPLOSIVE TYPE II',
-          relativeX(object.x+size * 6), relativeY(object.y+size * 3)
-        )
-        downColumn(afterglow.explosive3, inventory[0].explosive3, ammo, 'images/TP2F.png')
-        context.fillText(
-          'EXPLOSIVE TYPE III',
-          relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
-        )
-        leftColumn(afterglow.explosiveRange, inventory[0].explosiveRange, point, 'images/TP2F.png')
-        context.fillText(
-          'EXPLOSIVE RANGE +',
-          relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
-        )
-      } else if (index === 5) {
-        topColumn(afterglow.limitBreak, inventory[0].limitBreak, point, 'images/JK32F_O1.png')
-        context.fillText(
-          'RIMIT BREAK CHANCE',
-          relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
-        )
-        leftColumn(afterglow.reset, cost.reset, point, 'images/JK32F.png')
-        context.save()
-        context.textAlign = 'right'
-        context.fillText('RESET YOUR LIFE',
-          relativeX(object.x-size * 1), relativeY(object.y+size * 1.5)
-        )
-        context.restore()
-        context.fillStyle = 'hsl(0, 0%, 0%)'
-        if (0 < afterglow.limitBreakSuccess || 0 < afterglow.limitBreakFailed) {
-          context.font = `${size*2}px sans-serif`
-          context.fillText(
-            `x ${afterglow.limitBreakResult}`,
-            relativeX(object.x + size * 7), relativeY(object.y - size * .5)
-          )
-        }
-        if (0 < afterglow.limitBreakSuccess) {
-          context.font = `${size*1.5}px sans-serif`
-          context.fillText(
-            '至福・・・至福の雑用・・・!!',
-            relativeX(object.x - size * 8), relativeY(object.y + size * 11)
-          )
-          context.font = `${size*2}px sans-serif`
-          context.fillText(
-            'ただ突っ立っているだけ・・・・!!!',
-            relativeX(object.x - size * 6), relativeY(object.y + size * 7)
-          )
-        } else  if (0 < afterglow.limitBreakFailed) {
-          context.font = `${size}px sans-serif`
-          context.fillText(
-            'ぐにゃあっ．．', relativeX(object.x + size * 9), relativeY(object.y + size * 1)
-          )
-          context.font = `${size * 1.5}px sans-serif`
-          context.fillText(
-            '1050年地下行き………！',
-            relativeX(object.x - size * 5), relativeY(object.y + size * 8)
-          )
-          context.save()
-          context.scale(3, 3)
-          context.drawImage(
-            loadedMap['images/JK32F_O2.png'],
-            ~~((relativeX(object.x + size * 6)/3)+.5),
-            ~~((relativeY(object.y)/3)+.5)
-          )
-          context.restore()
-        } else {
-          context.font = `${size*2}px sans-serif`
-          context.fillText(
-            'ざわ．．．ざわ．．．',
-            relativeX(object.x) + size * 4, relativeY(object.y) - size * 9
-          )
-        }
-      } else if (index === 6) {
-        topColumn(afterglow.explosive1, cost.reset, point, 'images/JK34F.png')
-        context.fillText(
-          'CLONE DASH TYPE I',
-          relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
-        )
-        rightColumn(afterglow.explosive2, cost.reset, point, 'images/JK34R.png')
-        context.fillText(
-          'CLONE DASH TYPE II',
-          relativeX(object.x+size * 6), relativeY(object.y+size * 3)
-        )
-        downColumn(afterglow.explosive3, cost.reset, point, 'images/JK34F.png')
-        context.fillText(
-          'CLONE DASH TYPE III',
-          relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
-        )
-        leftColumn(afterglow.explosiveRange, cost.reset, point, 'images/JK34L.png')
-        context.fillText(
-          'CLONE COME BUCK',
-          relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
-        )
       }
+      // else if (index === 3) {
+      //   topColumn(afterglow.bulletLife, inventory[0].bulletLifeCost, point, 'images/JK32F.png')
+      //   context.fillText(
+      //     'SHELF LIFE +', relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
+      //   )
+      //   if (!cloneFlag) {
+      //     rightColumn(afterglow.clone, cost.clone, point, 'images/JK33R.png')
+      //     context.fillText(
+      //       'TAPIOCA DRINK DUPLICATOR',
+      //       relativeX(object.x + size * 6), relativeY(object.y + size * 3)
+      //     )
+      //   }
+      //   downColumn(
+      //     afterglow.penetrationForce, inventory[0].penetrationForceCost, point,
+      //     'images/TAPIOCA_PENETRATEv1.png'
+      //   )
+      //   context.fillText(
+      //     'PENETRATION FORCE +',
+      //     relativeX(object.x + size * 2), relativeY(object.y + size * 8.5)
+      //   )
+      // } else if (index === 4) {
+      //   topColumn(afterglow.explosive1, inventory[0].explosive1, ammo, 'images/TP2F.png')
+      //   context.fillText(
+      //     'EXPLOSIVE TYPE I',
+      //     relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
+      //   )
+      //   rightColumn(afterglow.explosive2, inventory[0].explosive2, ammo, 'images/TP2F.png')
+      //   context.fillText(
+      //     'EXPLOSIVE TYPE II',
+      //     relativeX(object.x+size * 6), relativeY(object.y+size * 3)
+      //   )
+      //   downColumn(afterglow.explosive3, inventory[0].explosive3, ammo, 'images/TP2F.png')
+      //   context.fillText(
+      //     'EXPLOSIVE TYPE III',
+      //     relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
+      //   )
+      //   leftColumn(afterglow.explosiveRange, inventory[0].explosiveRange, point, 'images/TP2F.png')
+      //   context.fillText(
+      //     'EXPLOSIVE RANGE +',
+      //     relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
+      //   )
+      // } else if (index === 5) {
+      //   topColumn(afterglow.limitBreak, inventory[0].limitBreak, point, 'images/JK32F_O1.png')
+      //   context.fillText(
+      //     'RIMIT BREAK CHANCE',
+      //     relativeX(object.x + size * 2), relativeY(object.y - size * 3.5)
+      //   )
+      //   leftColumn(afterglow.reset, cost.reset, point, 'images/JK32F.png')
+      //   context.save()
+      //   context.textAlign = 'right'
+      //   context.fillText('RESET YOUR LIFE',
+      //     relativeX(object.x-size * 1), relativeY(object.y+size * 1.5)
+      //   )
+      //   context.restore()
+      //   context.fillStyle = 'hsl(0, 0%, 0%)'
+      //   if (0 < afterglow.limitBreakSuccess || 0 < afterglow.limitBreakFailed) {
+      //     context.font = `${size*2}px sans-serif`
+      //     context.fillText(
+      //       `x ${afterglow.limitBreakResult}`,
+      //       relativeX(object.x + size * 7), relativeY(object.y - size * .5)
+      //     )
+      //   }
+      //   if (0 < afterglow.limitBreakSuccess) {
+      //     context.font = `${size*1.5}px sans-serif`
+      //     context.fillText(
+      //       '至福・・・至福の雑用・・・!!',
+      //       relativeX(object.x - size * 8), relativeY(object.y + size * 11)
+      //     )
+      //     context.font = `${size*2}px sans-serif`
+      //     context.fillText(
+      //       'ただ突っ立っているだけ・・・・!!!',
+      //       relativeX(object.x - size * 6), relativeY(object.y + size * 7)
+      //     )
+      //   } else  if (0 < afterglow.limitBreakFailed) {
+      //     context.font = `${size}px sans-serif`
+      //     context.fillText(
+      //       'ぐにゃあっ．．', relativeX(object.x + size * 9), relativeY(object.y + size * 1)
+      //     )
+      //     context.font = `${size * 1.5}px sans-serif`
+      //     context.fillText(
+      //       '1050年地下行き………！',
+      //       relativeX(object.x - size * 5), relativeY(object.y + size * 8)
+      //     )
+      //     context.save()
+      //     context.scale(3, 3)
+      //     context.drawImage(
+      //       loadedMap['images/JK32F_O2.png'],
+      //       ~~((relativeX(object.x + size * 6)/3)+.5),
+      //       ~~((relativeY(object.y)/3)+.5)
+      //     )
+      //     context.restore()
+      //   } else {
+      //     context.font = `${size*2}px sans-serif`
+      //     context.fillText(
+      //       'ざわ．．．ざわ．．．',
+      //       relativeX(object.x) + size * 4, relativeY(object.y) - size * 9
+      //     )
+      //   }
+      // } else if (index === 6) {
+      //   topColumn(afterglow.explosive1, cost.reset, point, 'images/JK34F.png')
+      //   context.fillText(
+      //     'CLONE DASH TYPE I',
+      //     relativeX(object.x - size * 4), relativeY(object.y - size * 3.5)
+      //   )
+      //   rightColumn(afterglow.explosive2, cost.reset, point, 'images/JK34R.png')
+      //   context.fillText(
+      //     'CLONE DASH TYPE II',
+      //     relativeX(object.x+size * 6), relativeY(object.y+size * 3)
+      //   )
+      //   downColumn(afterglow.explosive3, cost.reset, point, 'images/JK34F.png')
+      //   context.fillText(
+      //     'CLONE DASH TYPE III',
+      //     relativeX(object.x+size * 2.5), relativeY(object.y+size * 8.5)
+      //   )
+      //   leftColumn(afterglow.explosiveRange, cost.reset, point, 'images/JK34L.png')
+      //   context.fillText(
+      //     'CLONE COME BUCK',
+      //     relativeX(object.x-size * 9.5), relativeY(object.y+size * 3)
+      //   )
+      // }
     } else if (index === 5 && 0 < afterglow.limitBreakSuccess) afterglow.limitBreakSuccess = 0
     else if (index === 5 && 0 < afterglow.limitBreakFailed) afterglow.limitBreakFailed = 0
   })
@@ -2527,6 +2460,11 @@ const command = () => {
 }; const manyAmmo = command()
 const reset = () => {
   state = 'title'
+  location = locationList[0]
+  objects = []
+  setStore()
+  // if (mapMode) setMap()
+
   point = 500
   ownPosition.x = canvas.offsetWidth / 2
   ownPosition.y = canvas.offsetHeight / 2
@@ -2546,7 +2484,6 @@ const reset = () => {
   currentDirection = 4
   ownStep = 0
   dropItems = []
-  objects = []
   bullets = []
   enemies = []
   cost = {
@@ -2770,30 +2707,31 @@ const titleProcess = () => {
   }
   isMouseUp = false
 }
-const mainProcess = () => {
-  interfaceProcess()
+const combatProcess = () => {
   if (!firearm.chamberFlag) slideProcess()
   waveProcess()
-  if (mapMode && objects.length === 0) setMap()
-  else if (objects.length === 0) setStore()
-  else storeProcess()
   if (0 < enemies.length) enemyProcess()
   bullets.forEach((bullet, i) => {
     bullet.update()
     if (bullet.life < 0) bullets.splice(i, 1)
   })
-  // if (0 < bullets.length) updateBullet()
   if (0 < dropItems.length) dropItemProcess()
   if (cloneFlag) cloneProcess()
-  if (inventoryFlag) inventoryProcess()
-  if (direction !== 0) direction = 0
-  if (angle !== 0) angle = 0
   if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
   else if (reviveFlag) {
     cloneFlag = false
     clonePosition = []
     reviveFlag = false
   }
+}
+const mainProcess = () => {
+  interfaceProcess()
+  if (direction !== 0) direction = 0
+  if (angle !== 0) angle = 0
+  if (inventoryFlag) inventoryProcess()
+
+  if (location === locationList[0]) storeProcess()
+  else if (location === locationList[1]) combatProcess()
 }
 const pauseProcess = () => {
   if (key[action.pause].isFirst()) state = 'main'
