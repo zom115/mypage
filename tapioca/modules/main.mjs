@@ -2568,17 +2568,26 @@ const drawTitleScreen = () => {
 const drawWeaponSlot = () => {
   let box = []
   for (let i = 0; i < 3; i++) {
-    box.push({x: size * (.75 + 2 * i), y: size * .5, w: size * 1.5, h: size * 1.5})
+    box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
   }
   context.save()
   for (let i = 0; i < 3; i++) {
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
-    context.fillRect(box[i].x, box[i].y, box[i].w, box[i].h)
+    context.fillRect(box[i].absoluteX, box[i].absoluteY, box[i].width, box[i].height)
     if (i < inventory.length) {
       context.fillStyle= 'hsl(0, 0%, 100%)'
       context.textAlign = 'center'
       context.font = `${size * .75}px sans-serif`
-      context.fillText(inventory[i].category, box[i].x + size * .75, box[i].y + size, size * 1.25)
+      context.fillText(inventory[i].category, box[i].absoluteX + size * .75, box[i].absoluteY + size, size * 1.25)
+    }
+  }
+  for (let i = 0; i < 3; i++) {
+    if (i < inventory.length) {
+      if (isInner(box[i], cursor)) {
+        context.fillStyle= 'hsl(0, 0%, 100%)'
+        context.textAlign = 'left'
+        context.fillText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
+      }
     }
   }
   context.restore()
