@@ -1077,6 +1077,7 @@ const setWeapon = i => {
   enemies[i] = {
     type: 'weapon',
     name: `# ${wave.number}`,
+    category: 'SMG',
     baseDamage: baseDamage,
     damage: damage,
     slideSpeed: slideSpeed,
@@ -2268,6 +2269,7 @@ const reset = () => {
   inventoryFlag = false
   inventory = [{
     name: 'INITIAL',
+    category: 'HG',
     baseDamage: maxDamageInitial,
     damage: maxDamageInitial,
     slideSpeed: slide.weight,
@@ -2569,9 +2571,15 @@ const drawWeaponSlot = () => {
     box.push({x: size * (.75 + 2 * i), y: size * .5, w: size * 1.5, h: size * 1.5})
   }
   context.save()
-  context.fillStyle= 'hsla(210, 100%, 75%, .4)'
   for (let i = 0; i < 3; i++) {
+    context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(box[i].x, box[i].y, box[i].w, box[i].h)
+    if (i < inventory.length) {
+      context.fillStyle= 'hsl(0, 0%, 100%)'
+      context.textAlign = 'center'
+      context.font = `${size * .75}px sans-serif`
+      context.fillText(inventory[i].category, box[i].x + size * .75, box[i].y + size)
+    }
   }
   context.restore()
 }
