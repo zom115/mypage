@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dash: setStorageFirst('dash', 'n'),
     back: setStorageFirst('back', 'b'),
     change: setStorageFirst('change', 'm'),
-    inventory: setStorageFirst('inventory', 'u'),
+    inventory: setStorageFirst('inventory', 'e'),
     pause: setStorageFirst('pause', 'p'),
     debug: setStorageFirst('debug', 'g')
   }
@@ -2563,6 +2563,18 @@ const drawTitleScreen = () => {
   if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
 }
+const drawWeaponSlot = () => {
+  let box = []
+  for (let i = 0; i < 3; i++) {
+    box.push({x: size * (.75 + 2 * i), y: size * .5, w: size * 1.5, h: size * 1.5})
+  }
+  context.save()
+  context.fillStyle= 'hsla(210, 100%, 75%, .4)'
+  for (let i = 0; i < 3; i++) {
+    context.fillRect(box[i].x, box[i].y, box[i].w, box[i].h)
+  }
+  context.restore()
+}
 const drawMain = () => {
   drawField()
   if (0 < objects.length) drawObjects()
@@ -2573,6 +2585,7 @@ const drawMain = () => {
   drawMyself()
   drawDirection()
   drawIndicator()
+  drawWeaponSlot()
   if (inventoryFlag) drawInventory()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
