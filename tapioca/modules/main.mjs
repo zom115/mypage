@@ -1986,12 +1986,47 @@ const setStore = () => {
       this.Id = Id
       this.img = img
     }
+    process() {}
+    draw() {}
+  }
+  const box = {
+    absoluteX: canvas.offsetWidth / 2 - 50,
+    absoluteY: 100,
+    width: 100,
+    height: 40,
+    text: 'START'
+  }
+  class StartSpot extends Spot {
     process() {
+      if ((
+        this.x <= ownPosition.x && ownPosition.x <= this.x + this.w) && (
+        this.y <= ownPosition.y && ownPosition.y <= this.y + this.h)
+      ) {
+        if (button(box)) {
+          location = locationList[1]
+          objects = []
+        }
+      }
+    }
+    draw() {
+      if ((
+        this.x <= ownPosition.x && ownPosition.x <= this.x + this.w) && (
+        this.y <= ownPosition.y && ownPosition.y <= this.y + this.h)
+      ) {
+        context.save()
+        context.fillStyle = 'hsl(30, 100%, 70%)'
+        context.fillRect(box.absoluteX - 10, box.absoluteY, box.width + 20, box.height)
+        context.textAlign = 'left'
+        context.textBaseline = 'top'
+        context.fillStyle = 'hsl(210, 100%, 70%)'
+        context.fillText(box.text, box.absoluteX, box.absoluteY)
+        context.restore()
+      }
     }
   }
   objects.push(new Spot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
   objects.push(new Spot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
-  objects.push(new Spot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
+  objects.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
 
 }
 const upgradeOne = () => {
@@ -2106,18 +2141,7 @@ const upgradeClone = ()  => {
 }
 const storeProcess = () => {
   objects.forEach(object => {
-    if ((
-      object.x <= ownPosition.x && ownPosition.x <= object.x + object.w) && (
-      object.y <= ownPosition.y && ownPosition.y <= object.y + object.h)
-    ) {
-      if (object.Id === 0) {
-      } else if (object.Id === 1) {
-      } else if (object.Id === 2) {
-        if (canvas.addEventListener('click', () => {return true})) {
-          location = locationList[1]
-        }
-      }
-    }
+    object.process()
   })
 }
 const drawStore = () => {
@@ -2149,6 +2173,7 @@ const drawStore = () => {
     } else {
       context.drawImage(loadedMap[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
     }
+    object.draw()
   })
 }
 const drawObjects = () => {
