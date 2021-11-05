@@ -2578,7 +2578,7 @@ const drawWeaponSlot = () => {
       context.fillStyle= 'hsl(0, 0%, 100%)'
       context.textAlign = 'center'
       context.font = `${size * .75}px sans-serif`
-      context.fillText(inventory[i].category, box[i].x + size * .75, box[i].y + size)
+      context.fillText(inventory[i].category, box[i].x + size * .75, box[i].y + size, size * 1.25)
     }
   }
   context.restore()
