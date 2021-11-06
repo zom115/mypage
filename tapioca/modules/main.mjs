@@ -1614,42 +1614,29 @@ const drawWeaponDetail = (box, i) => {
     })
   }
 }
-const drawWeaponSlot = () => {
+const drawSlot = () => {
   let box = []
   for (let i = 0; i < slotSize; i++) {
     box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
   }
-  context.save()
-  for (let i = 0; i < slotSize; i++) {
-    context.fillStyle= 'hsla(210, 100%, 75%, .4)'
-    context.fillRect(box[i].absoluteX, box[i].absoluteY, box[i].width, box[i].height)
-    drawWeaponCategory(box[i], i)
-  }
-  for (let i = 0; i < slotSize; i++) {
-    drawWeaponDetail(box[i], i)
-  }
-  context.restore()
-}
-const drawInventorySlot = () => {
-  let box = [] // Draw weapon slot
-  for (let i = 0; i < 2; i++) {
-    for (let j = 0; j < 5; j++) {
-      box.push({absoluteX: size * (.75 + 2 * j), absoluteY: size * (2.75 + 2 * i), width: size * 1.5, height: size * 1.5})    }
+  if (inventoryFlag) {
+    const columnSize = 5
+    for (let i = 0; i < Math.ceil(inventorySize / columnSize); i++) {
+      for (let j = 0; j < columnSize; j++) {
+        box.push({
+          absoluteX: size * (.75 + 2 * j), absoluteY: size * (2.75 + 2 * i), width: size * 1.5, height: size * 1.5})}
+    }
   }
   context.save()
   box.forEach((v, i) => {
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-    drawWeaponCategory(v, i + slotSize)
+    drawWeaponCategory(v, i)
   })
   box.forEach((v, i) => {
-    drawWeaponDetail(v, i + slotSize)
+    drawWeaponDetail(v, i)
   })
   context.restore()
-}
-const drawItemSlot = () => {
-  if (inventoryFlag) drawInventorySlot()
-  drawWeaponSlot()
 }
 const inventoryProcess = () => {
   if (0 < key[action.inventory]) {
@@ -2473,7 +2460,7 @@ const drawMain = () => {
   drawMyself()
   drawDirection()
   drawIndicator()
-  drawItemSlot()
+  drawSlot()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
   if (state === 'pause') drawPause()
