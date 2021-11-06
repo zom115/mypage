@@ -1594,120 +1594,73 @@ const drawIndicator = () => {
   c = {x: size, y: canvas.offsetHeight - size}
   drawText(size * 1.5, 'left', wave.number, c)
 }
-const drawInventory = () => {
-  context.save()
-  // context.strokeStyle = 'hsla(120, 100%, 25%, .4)'
-  const c = {
-    x: canvas.offsetWidth * 3 / 4,
-    y: canvas.offsetHeight / 2
-  }
-  let rectSize = size * 4
-  const viewPosition = [
-    {x: 0, y: 0},
-    {x: 0, y: -(rectSize + size * .5)},
-    {x: rectSize + size * .5, y: 0},
-    {x: 0, y: (rectSize + size * .5)},
-    {x: -(rectSize + size * .5), y: 0}
-  ]
-  context.fillStyle = 'hsla(180, 100%, 50%, .2)'
-  context.fillRect(size, size, canvas.offsetWidth/2 - size * 2, canvas.offsetHeight - size * 2)
-  viewPosition.forEach((value, index) => {
-    if (index === 0) return
-    context.beginPath()
-    const radius = (index === selectedIndex) ? rectSize / 1.6 : rectSize / 2
-    context.arc(c.x + value.x, c.y + value.y, radius, Math.PI * 2, false)
-    context.lineWidth = (index === selectedIndex) ? 4 : 1
-    context.fill()
-  })
-  context.font = `${size}px sans-serif`
-  context.fillStyle = 'hsla(0, 0%, 0%, .6)'
-  c.x = c.x - size * 2.5 + size * 2.5
-  c.y = c.y - size * 2.5 + size * 1.8
+const drawWeaponCategory = (box, i) => {
+  context.fillStyle= 'hsl(0, 0%, 100%)'
   context.textAlign = 'center'
-  const w = rectSize - size
-  inventory.forEach((value, index) => {
-    if (index === 0) return
-    context.fillStyle = `hsla(0, 0%, 0%, ${.6 - .4 * (afterglow.inventory / 60)})`
-    context.fillText(
-      value.name, c.x + viewPosition[index].x, c.y + viewPosition[index].y + size * .2, w
-    )
-    context.fillText(
-      value.damage.toFixed(0),
-      c.x + viewPosition[index].x,
-      c.y + viewPosition[index].y + size * 2,
-      w
-    )
-  })
-  const columnHeight = []
-  for (let i = 0; i < 8; i++) columnHeight.push(size * 12 + size * i)
-  const columnName = [
-    'NAME', 'DAMAGE', 'RANGE', 'FIRE RATE', 'P.P.',
-    'RELOAD SPEED', 'MAG. SIZE', 'LOADING SPEED'
-  ]
-  const equipedList = [
-    inventory[0].name,
-    inventory[0].damage.toFixed(0),
-    `${inventory[0].bulletLife.toFixed(0)}*${inventory[0].bulletSpeed.toFixed(2)}`,
-    inventory[0].slideSpeed.toFixed(2),
-    inventory[0].penetrationForce.toFixed(2),
-    inventory[0].reloadSpeed.toFixed(2),
-    `${inventory[0].magazineSize}*${inventory[0].magazines.length}`,
-    inventory[0].loadingSpeed.toFixed(2)
-  ]
-  columnName.forEach((value,index) => {
+  context.font = `${size * .75}px sans-serif`
+  context.fillText(inventory[i].category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
+}
+const drawWeaponDetail = (box, i) => {
+  if (isInner(box, cursor)) {
+    const strokeText = (text, x, y, maxWidth) => {
+      context.strokeText(text, x, y, maxWidth)
+      context.fillText(text, x, y, maxWidth)
+    }
     context.font = `${size*.75}px sans-serif`
     context.textAlign = 'left'
-    context.fillText(value, size, columnHeight[index], w)
-    context.textAlign = 'right'
-    context.fillText(equipedList[index], size * 8, columnHeight[index], w)
-  })
-  const drawStatus = i => {
-    context.fillText(inventory[i].name, c.x, columnHeight[0], w)
-    context.fillText(inventory[i].damage.toFixed(0), c.x, columnHeight[1], w)
-    context.fillText(
-      `${inventory[i].bulletLife.toFixed(0)}*${inventory[i].bulletSpeed.toFixed(2)}`,
-      c.x, columnHeight[2], w
-    )
-    context.fillText(inventory[i].slideSpeed.toFixed(2), c.x, columnHeight[4], w)
-    context.fillText(inventory[i].penetrationForce.toFixed(2), c.x, columnHeight[3], w)
-    context.fillText(inventory[i].reloadSpeed.toFixed(2), c.x, columnHeight[5], w)
-    context.fillText(
-      `${inventory[i].magazineSize}*${inventory[i].magazines.length}`,
-      c.x, columnHeight[6], w
-    )
-    context.fillText(inventory[i].loadingSpeed.toFixed(2), c.x, columnHeight[7], w)
-  }
-  const drawArrow = arg => context.drawImage(
-    loadedMap['images/arrowUp.png'], size * 12, columnHeight[arg] - size * .85
-  )
-  const compare = () => {
-    context.drawImage(loadedMap['images/arrowRight.png'], size * 12, columnHeight[0] - size * .85)
-    if (inventory[0].damage < inventory[1].damage) {
-      context.drawImage(loadedMap['images/arrowUp.png'], size * 12, columnHeight[selectedIndex] - size * .85)
+    context.fillStyle = 'hsla(0, 0%, 0%, .6)'
+    context.strokeStyle = 'hsl(0, 0%, 100%)'
+    strokeText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
+    if (!inventoryFlag) return
+    let num = 3 <= i && inventoryFlag ? i + 3 : i
+    const dictionary = {
+      DAMAGE: inventory[num].damage.toFixed(0),
+      'MAG. SIZE': `${inventory[num].magazineSize} * ${inventory[num].magazines.length}`
     }
-    if (
-      inventory[0].bulletLife * inventory[0].bulletSpeed <
-      inventory[selectedIndex].bulletLife * inventory[selectedIndex].bulletSpeed
-    ) drawArrow(2)
-    if (inventory[0].penetrationForce < inventory[selectedIndex].penetrationForce) drawArrow(3)
-    if (inventory[selectedIndex].slideSpeed < inventory[0].slideSpeed) drawArrow(4)
-    if (inventory[selectedIndex].reloadSpeed < inventory[0].reloadSpeed) drawArrow(5)
-    if (
-      inventory[0].magazineSize * inventory[0].magazines.length <
-      inventory[selectedIndex].magazineSize * inventory[selectedIndex].magazines.length
-    ) drawArrow(6)
-    if (inventory[selectedIndex].loadingSpeed < inventory[0].loadingSpeed) drawArrow(7)
+    Object.keys(dictionary).forEach((v, i) => {
+      strokeText(v, cursor.offsetX + size, cursor.offsetY + size * (2 + i), size * 3)
+      strokeText(dictionary[v], cursor.offsetX + size * 5, cursor.offsetY + size * (2 + i), size * 3)
+    })
   }
-  context.font = `${size}px sans-serif`
-  context.textAlign = 'right'
-  c.x = size * 6
-  if (selectedIndex + 1 <= inventory.length && 0 < selectedIndex) {
-    c.x = size * 12
-    drawStatus(selectedIndex)
-    c.x = size * 7
-    compare()
+
+}
+const drawWeaponSlot = () => {
+  let box = []
+  for (let i = 0; i < 3; i++) {
+    box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
+  }
+  context.save()
+  for (let i = 0; i < 3; i++) {
+    context.fillStyle= 'hsla(210, 100%, 75%, .4)'
+    context.fillRect(box[i].absoluteX, box[i].absoluteY, box[i].width, box[i].height)
+    if (i < inventory.length) {
+      drawWeaponCategory(box[i], i)
+    }
+  }
+  for (let i = 0; i < 3; i++) {
+    if (i < inventory.length) {
+      drawWeaponDetail(box[i], i)
+    }
   }
   context.restore()
+}
+const drawInventorySlot = () => {
+  let box = [] // Draw weapon slot
+  for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 2; j++) {
+      box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * (2.75 + 2 * j), width: size * 1.5, height: size * 1.5})    }
+  }
+  context.save()
+  box.forEach((v, i) => {
+    context.fillStyle= 'hsla(210, 100%, 75%, .4)'
+    context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
+    if (i + 3 < inventory.length) drawWeaponCategory(v, i + 3)
+  })
+  context.restore()
+}
+const drawItemSlot = () => {
+  if (inventoryFlag) drawInventorySlot()
+  drawWeaponSlot()
 }
 const inventoryProcess = () => {
   if (0 < key[action.inventory]) {
@@ -2311,6 +2264,94 @@ const reset = () => {
     explosive3: 60,
     explosiveRange: 2000,
     explosiveRangeIndex: 0
+  },{
+    name: 'INITIAL',
+    category: 'HG',
+    baseDamage: maxDamageInitial,
+    damage: maxDamageInitial,
+    slideSpeed: slide.weight,
+    bulletSpeed: cartridgeInfo.speed,
+    baseBulletLife: cartridgeInfo.life,
+    bulletLife: cartridgeInfo.life,
+    baseReloadSpeed: reload.weight,
+    reloadSpeed: reload.weight,
+    magazineSize: magSizeInitial,
+    magazines: Array(2).fill(magSizeInitial),
+    loadingSpeed: loading. weight,
+    penetrationForce: 0,
+
+    offensivePower: 25,
+    opLog: 25,
+    opIndex: 0,
+    limitBreak: 4000,
+    limitBreakIndex: 0,
+    magazine: 250,
+    magIndex: 0,
+    loading: 1000,
+    loadingLog: 500,
+    loadingIndex: 0,
+    penetration: 3000,
+    penetrationForceCost: 1000,
+    pfIndex: 0,
+    homing: 2000,
+    slide: 1000,
+    slideIndex: 0,
+    magAmount: 1500,
+    magAmountIndex: 0,
+    ammoIndex: 0,
+    bulletSpeedCost: 750,
+    bulletSpeedIndex: 0,
+    bulletLifeCost: 750,
+    bulletLifeIndex: 0,
+    explosive1: 80,
+    explosive2: 100,
+    explosive3: 60,
+    explosiveRange: 2000,
+    explosiveRangeIndex: 0
+  },{
+    name: 'INITIAL',
+    category: 'HG',
+    baseDamage: maxDamageInitial,
+    damage: maxDamageInitial,
+    slideSpeed: slide.weight,
+    bulletSpeed: cartridgeInfo.speed,
+    baseBulletLife: cartridgeInfo.life,
+    bulletLife: cartridgeInfo.life,
+    baseReloadSpeed: reload.weight,
+    reloadSpeed: reload.weight,
+    magazineSize: magSizeInitial,
+    magazines: Array(2).fill(magSizeInitial),
+    loadingSpeed: loading. weight,
+    penetrationForce: 0,
+
+    offensivePower: 25,
+    opLog: 25,
+    opIndex: 0,
+    limitBreak: 4000,
+    limitBreakIndex: 0,
+    magazine: 250,
+    magIndex: 0,
+    loading: 1000,
+    loadingLog: 500,
+    loadingIndex: 0,
+    penetration: 3000,
+    penetrationForceCost: 1000,
+    pfIndex: 0,
+    homing: 2000,
+    slide: 1000,
+    slideIndex: 0,
+    magAmount: 1500,
+    magAmountIndex: 0,
+    ammoIndex: 0,
+    bulletSpeedCost: 750,
+    bulletSpeedIndex: 0,
+    bulletLifeCost: 750,
+    bulletLifeIndex: 0,
+    explosive1: 80,
+    explosive2: 100,
+    explosive3: 60,
+    explosiveRange: 2000,
+    explosiveRangeIndex: 0
   }]
   selectedIndex = 0
   firearm = {
@@ -2565,33 +2606,6 @@ const drawTitleScreen = () => {
   if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
 }
-const drawWeaponSlot = () => {
-  let box = []
-  for (let i = 0; i < 3; i++) {
-    box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
-  }
-  context.save()
-  for (let i = 0; i < 3; i++) {
-    context.fillStyle= 'hsla(210, 100%, 75%, .4)'
-    context.fillRect(box[i].absoluteX, box[i].absoluteY, box[i].width, box[i].height)
-    if (i < inventory.length) {
-      context.fillStyle= 'hsl(0, 0%, 100%)'
-      context.textAlign = 'center'
-      context.font = `${size * .75}px sans-serif`
-      context.fillText(inventory[i].category, box[i].absoluteX + size * .75, box[i].absoluteY + size, size * 1.25)
-    }
-  }
-  for (let i = 0; i < 3; i++) {
-    if (i < inventory.length) {
-      if (isInner(box[i], cursor)) {
-        context.fillStyle= 'hsl(0, 0%, 100%)'
-        context.textAlign = 'left'
-        context.fillText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
-      }
-    }
-  }
-  context.restore()
-}
 const drawMain = () => {
   drawField()
   if (0 < objects.length) drawObjects()
@@ -2602,8 +2616,7 @@ const drawMain = () => {
   drawMyself()
   drawDirection()
   drawIndicator()
-  drawWeaponSlot()
-  if (inventoryFlag) drawInventory()
+  drawItemSlot()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
   if (state === 'pause') drawPause()
