@@ -505,12 +505,14 @@ const setTitleMenuWord = () => {
     {
       Object.assign(
         titleMenuWordArray[i],
-        {offsetX: property.offsetX},
-        {offsetY: property.offsetY},
-        {absoluteX: property.offsetX - measure.actualBoundingBoxLeft},
-        {absoluteY: property.offsetY - measure.actualBoundingBoxAscent},
-        {width: measure.width},
-        {height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent}
+        {
+          offsetX: property.offsetX,
+          offsetY: property.offsetY,
+          absoluteX: property.offsetX - measure.actualBoundingBoxLeft,
+          absoluteY: property.offsetY - measure.actualBoundingBoxAscent,
+          width: measure.width,
+          height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+        }
       )
     }
   })
