@@ -1593,7 +1593,7 @@ const drawWeaponCategory = (box, i) => {
   context.fillText(inventory[i].category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
 }
 const drawWeaponDetail = (box, i) => {
-  if (isInner(box, cursor)) {
+  if (inventory[i].category !== '' && isInner(box, cursor)) {
     const strokeText = (text, x, y, maxWidth) => {
       context.strokeText(text, x, y, maxWidth)
       context.fillText(text, x, y, maxWidth)
@@ -1613,7 +1613,6 @@ const drawWeaponDetail = (box, i) => {
       strokeText(dictionary[v], cursor.offsetX + size * 5, cursor.offsetY + size * (2 + i), size * 3)
     })
   }
-
 }
 const drawWeaponSlot = () => {
   let box = []
@@ -1624,14 +1623,10 @@ const drawWeaponSlot = () => {
   for (let i = 0; i < slotSize; i++) {
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(box[i].absoluteX, box[i].absoluteY, box[i].width, box[i].height)
-    if (i < inventory.length) {
-      drawWeaponCategory(box[i], i)
-    }
+    drawWeaponCategory(box[i], i)
   }
   for (let i = 0; i < slotSize; i++) {
-    if (i < inventory.length) {
-      drawWeaponDetail(box[i], i)
-    }
+    drawWeaponDetail(box[i], i)
   }
   context.restore()
 }
@@ -1645,10 +1640,10 @@ const drawInventorySlot = () => {
   box.forEach((v, i) => {
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-    if (i + slotSize < inventory.length) drawWeaponCategory(v, i + slotSize)
+    drawWeaponCategory(v, i + slotSize)
   })
   box.forEach((v, i) => {
-    if (i + slotSize < inventory.length) drawWeaponDetail(v, i + slotSize)
+    drawWeaponDetail(v, i + slotSize)
   })
   context.restore()
 }
@@ -2192,63 +2187,29 @@ const reset = () => {
     limit: 150
   }
   inventoryFlag = false
-  inventory = [
-    new Weapon(
-      'INITIAL',
-      'HG',
-      maxDamageInitial,
-      maxDamageInitial,
-      slide.weight,
-      cartridgeInfo.speed,
-      cartridgeInfo.life,
-      cartridgeInfo.life,
-      reload.weight,
-      reload.weight,
-      magSizeInitial,
-      Array(2).fill(magSizeInitial),
-      loading. weight,
-      0,
+  inventory = []
+  for (let i = 0; i < slotSize + inventorySize; i++) {
+    inventory.push({category: ''})
+  }
+  inventory[0] = new Weapon(
+    'INITIAL',
+    'HG',
+    maxDamageInitial,
+    maxDamageInitial,
+    slide.weight,
+    cartridgeInfo.speed,
+    cartridgeInfo.life,
+    cartridgeInfo.life,
+    reload.weight,
+    reload.weight,
+    magSizeInitial,
+    Array(2).fill(magSizeInitial),
+    loading. weight,
+    0,
 
-      4000,
-      0
-    ), new Weapon(
-      'INITIAL',
-      'HG',
-      maxDamageInitial,
-      maxDamageInitial,
-      slide.weight,
-      cartridgeInfo.speed,
-      cartridgeInfo.life,
-      cartridgeInfo.life,
-      reload.weight,
-      reload.weight,
-      magSizeInitial,
-      Array(2).fill(magSizeInitial),
-      loading. weight,
-      0,
-
-      4000,
-      0
-    ), new Weapon(
-      'INITIAL',
-      'HG',
-      maxDamageInitial,
-      maxDamageInitial,
-      slide.weight,
-      cartridgeInfo.speed,
-      cartridgeInfo.life,
-      cartridgeInfo.life,
-      reload.weight,
-      reload.weight,
-      magSizeInitial,
-      Array(2).fill(magSizeInitial),
-      loading. weight,
-      0,
-
-      4000,
-      0
-    )
-  ]
+    4000,
+    0
+  )
   selectedIndex = 0
   firearm = {
     chamberFlag: false,
