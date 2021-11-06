@@ -1612,10 +1612,9 @@ const drawWeaponDetail = (box, i) => {
     context.strokeStyle = 'hsl(0, 0%, 100%)'
     strokeText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
     if (!inventoryFlag) return
-    let num = 3 <= i && inventoryFlag ? i + 3 : i
     const dictionary = {
-      DAMAGE: inventory[num].damage.toFixed(0),
-      'MAG. SIZE': `${inventory[num].magazineSize} * ${inventory[num].magazines.length}`
+      DAMAGE: inventory[i].damage.toFixed(0),
+      'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
     }
     Object.keys(dictionary).forEach((v, i) => {
       strokeText(v, cursor.offsetX + size, cursor.offsetY + size * (2 + i), size * 3)
@@ -1655,6 +1654,9 @@ const drawInventorySlot = () => {
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
     if (i + 3 < inventory.length) drawWeaponCategory(v, i + 3)
+  })
+  box.forEach((v, i) => {
+    if (i + 3 < inventory.length) drawWeaponDetail(v, i + 3)
   })
   context.restore()
 }
