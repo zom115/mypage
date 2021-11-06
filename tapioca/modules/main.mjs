@@ -135,16 +135,12 @@ let afterglow = {
   recoil: 0,
   round: 0,
   dashGauge: 0,
-  offensivePower: 0,
   limitBreakResult: 0,
   limitBreakSuccess: 0,
   limitBreakFailed: 0,
-  magazine: 0,
   loading: 0,
-  penetrationForce: 0,
   homing: 0,
   slide: 0,
-  magAmount: 0,
   bulletSpeed: 0,
   bulletLife: 0,
   slow: 0,
@@ -1091,42 +1087,8 @@ const setWeapon = i => {
     loadingSpeed: loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25),
     penetrationForce: Math.random(),
 
-    offensivePower: 25,
-    opLog: 25,
-    opIndex: 0,
     limitBreak: 4000,
-    limitBreakIndex: 0,
-    magazine: 250,
-    magIndex: 0,
-    loading: 1000,
-    loadingLog: 500,
-    loadingIndex: 0,
-    penetration: 3000,
-    penetrationForceCost: 1000,
-    pfIndex: 0,
-    homing: 2000,
-    slide: 1000,
-    slideIndex: 0,
-    magAmount: 1500,
-    magAmountIndex: 0,
-    ammoIndex: 0,
-    bulletSpeedCost: 750,
-    bulletSpeedIndex: 0,
-    bulletLifeCost: 750,
-    bulletLifeIndex: 0,
-    dashDistance: 1000,
-    dashDistanceIndex: 0,
-    dashSpeed: 1000,
-    dashSpeedIndex: 0,
-    dashCooltime: 1000,
-    dashCooltimeIndex: 0,
-    dashDamage: 50,
-    dashDamageIndex: 0,
-    explosive1: 80,
-    explosive2: 100,
-    explosive3: 60,
-    explosiveRange: 2000,
-    explosiveRangeIndex: 0
+    limitBreakIndex: 0
   }
 }
 const enemyProcess = () => {
@@ -1985,18 +1947,6 @@ const setStore = () => {
   objects.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
 
 }
-const upgradeOne = () => {
-  if (holdTimeLimit <= key[action.lookUp].holdtime && inventory[0].offensivePower <= ammo) {
-    inventory[0].opIndex = (inventory[0].opIndex+1)|0
-    inventory[0].damage = inventory[0].damage + maxDamageInitial * (1 / inventory[0].opIndex)
-    ammo = (ammo - inventory[0].offensivePower)|0
-    inventory[0].offensivePower = (inventory[0].offensivePower + inventory[0].opLog)|0
-    inventory[0].opLog = (inventory[0].offensivePower - inventory[0].opLog)|0
-    afterglow.offensivePower = holdTimeLimit
-  } else if (
-    0 < afterglow.offensivePower
-  ) afterglow.offensivePower = (afterglow.offensivePower-1)|0
-}
 const upgradeDash =() => {
   if (holdTimeLimit <= key[action.lookUp].holdtime && cost.dashDamage <= ammo) {
     cost.dashDamageIndex = (cost.dashDamageIndex+1)|0
@@ -2057,16 +2007,6 @@ const upgradeLimitBreak = () => {
     afterglow.limitBreakSuccess = afterglow.limitBreakSuccess - .1
   } else if (0 < afterglow.limitBreakFailed) {
     afterglow.limitBreakFailed = afterglow.limitBreakFailed - .1
-  }
-  if (holdTimeLimit <= key[action.lookLeft].holdtime && inventory[0].reset <= point) {
-    inventory[0].opIndex = 0
-    inventory[0].offensivePower = 25
-    inventory[0].opLog = 25
-    inventory[0].damage = maxDamageInitial
-    afterglow.offensivePower = holdTimeLimit
-    afterglow.reset = holdTimeLimit
-  } else if (0 < afterglow.reset) {
-    afterglow.reset = (afterglow.reset-1)|0
   }
 }
 const upgradeClone = ()  => {
@@ -2238,34 +2178,8 @@ const reset = () => {
     loadingSpeed: loading. weight,
     penetrationForce: 0,
 
-    offensivePower: 25,
-    opLog: 25,
-    opIndex: 0,
     limitBreak: 4000,
-    limitBreakIndex: 0,
-    magazine: 250,
-    magIndex: 0,
-    loading: 1000,
-    loadingLog: 500,
-    loadingIndex: 0,
-    penetration: 3000,
-    penetrationForceCost: 1000,
-    pfIndex: 0,
-    homing: 2000,
-    slide: 1000,
-    slideIndex: 0,
-    magAmount: 1500,
-    magAmountIndex: 0,
-    ammoIndex: 0,
-    bulletSpeedCost: 750,
-    bulletSpeedIndex: 0,
-    bulletLifeCost: 750,
-    bulletLifeIndex: 0,
-    explosive1: 80,
-    explosive2: 100,
-    explosive3: 60,
-    explosiveRange: 2000,
-    explosiveRangeIndex: 0
+    limitBreakIndex: 0
   },{
     name: 'INITIAL',
     category: 'HG',
@@ -2282,34 +2196,8 @@ const reset = () => {
     loadingSpeed: loading. weight,
     penetrationForce: 0,
 
-    offensivePower: 25,
-    opLog: 25,
-    opIndex: 0,
     limitBreak: 4000,
-    limitBreakIndex: 0,
-    magazine: 250,
-    magIndex: 0,
-    loading: 1000,
-    loadingLog: 500,
-    loadingIndex: 0,
-    penetration: 3000,
-    penetrationForceCost: 1000,
-    pfIndex: 0,
-    homing: 2000,
-    slide: 1000,
-    slideIndex: 0,
-    magAmount: 1500,
-    magAmountIndex: 0,
-    ammoIndex: 0,
-    bulletSpeedCost: 750,
-    bulletSpeedIndex: 0,
-    bulletLifeCost: 750,
-    bulletLifeIndex: 0,
-    explosive1: 80,
-    explosive2: 100,
-    explosive3: 60,
-    explosiveRange: 2000,
-    explosiveRangeIndex: 0
+    limitBreakIndex: 0
   },{
     name: 'INITIAL',
     category: 'HG',
@@ -2326,34 +2214,8 @@ const reset = () => {
     loadingSpeed: loading. weight,
     penetrationForce: 0,
 
-    offensivePower: 25,
-    opLog: 25,
-    opIndex: 0,
     limitBreak: 4000,
-    limitBreakIndex: 0,
-    magazine: 250,
-    magIndex: 0,
-    loading: 1000,
-    loadingLog: 500,
-    loadingIndex: 0,
-    penetration: 3000,
-    penetrationForceCost: 1000,
-    pfIndex: 0,
-    homing: 2000,
-    slide: 1000,
-    slideIndex: 0,
-    magAmount: 1500,
-    magAmountIndex: 0,
-    ammoIndex: 0,
-    bulletSpeedCost: 750,
-    bulletSpeedIndex: 0,
-    bulletLifeCost: 750,
-    bulletLifeIndex: 0,
-    explosive1: 80,
-    explosive2: 100,
-    explosive3: 60,
-    explosiveRange: 2000,
-    explosiveRangeIndex: 0
+    limitBreakIndex: 0
   }]
   selectedIndex = 0
   firearm = {
