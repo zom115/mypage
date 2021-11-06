@@ -1617,18 +1617,18 @@ const drawWeaponDetail = (box, i) => {
 }
 const drawWeaponSlot = () => {
   let box = []
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < slotSize; i++) {
     box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
   }
   context.save()
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < slotSize; i++) {
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(box[i].absoluteX, box[i].absoluteY, box[i].width, box[i].height)
     if (i < inventory.length) {
       drawWeaponCategory(box[i], i)
     }
   }
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < slotSize; i++) {
     if (i < inventory.length) {
       drawWeaponDetail(box[i], i)
     }
@@ -1645,10 +1645,10 @@ const drawInventorySlot = () => {
   box.forEach((v, i) => {
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-    if (i + 3 < inventory.length) drawWeaponCategory(v, i + 3)
+    if (i + slotSize < inventory.length) drawWeaponCategory(v, i + slotSize)
   })
   box.forEach((v, i) => {
-    if (i + 3 < inventory.length) drawWeaponDetail(v, i + 3)
+    if (i + slotSize < inventory.length) drawWeaponDetail(v, i + slotSize)
   })
   context.restore()
 }
