@@ -222,7 +222,8 @@ const Weapon = class {
   }
 }
 let inventory = []
-let inventorySize = 5
+let slotSize = 3
+let inventorySize = 10
 let inventoryFlag = false
 let selectedIndex = 0
 let dropItems = []
@@ -1324,7 +1325,7 @@ const dropItemProcess = () => {
     const distance = Math.sqrt(width ** 2 + height ** 2)
     let multiple = (
       item.type === 'weapon' || item.type === 'droppedWeapon') &&
-      inventorySize <= inventory.length ? 0 : .5 + 160 / (distance) // : size / 512
+      slotSize + inventorySize <= inventory.length ? 0 : .5 + 160 / (distance) // : size / 512
     if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
     else {
       item.x = item.x + width / distance * multiple
@@ -1346,7 +1347,7 @@ const dropItemProcess = () => {
     } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
       if (
         item.unavailableTime <= 0 && distance < minImgRadius * 2 &&
-        inventory.length < inventorySize
+        inventory.length < slotSize + inventorySize
       ) {
         delete item.type,
         delete item.unavailableTime,
