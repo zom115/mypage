@@ -1646,9 +1646,9 @@ const drawWeaponSlot = () => {
 }
 const drawInventorySlot = () => {
   let box = [] // Draw weapon slot
-  for (let i = 0; i < 5; i++) {
-    for (let j = 0; j < 2; j++) {
-      box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * (2.75 + 2 * j), width: size * 1.5, height: size * 1.5})    }
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 5; j++) {
+      box.push({absoluteX: size * (.75 + 2 * j), absoluteY: size * (2.75 + 2 * i), width: size * 1.5, height: size * 1.5})    }
   }
   context.save()
   box.forEach((v, i) => {
