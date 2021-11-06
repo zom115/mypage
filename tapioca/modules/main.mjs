@@ -198,6 +198,29 @@ let direction = 0
 let angle = 0
 let ownStepLimit = 50
 
+const Weapon = class {
+  constructor(
+    name, category, baseDamage, damage, slideSpeed, bulletSpeed, baseBulletLife, bulletLife, baseReloadSpeed,
+    reloadSpeed, magazineSize, magazines, loadingSpeed, penetrationForce, limitBreak, limitBreakIndex
+  ) {
+    this.name = name
+    this.category = category
+    this.baseDamage = baseDamage
+    this.damage = damage
+    this.slideSpeed = slideSpeed
+    this.bulletSpeed = bulletSpeed
+    this.baseBulletLife = baseBulletLife
+    this.bulletLife = bulletLife
+    this.baseReloadSpeed= baseReloadSpeed
+    this.reloadSpeed = reloadSpeed
+    this.magazineSize = magazineSize
+    this.magazines = magazines
+    this.loadingSpeed = loadingSpeed
+    this.penetrationForce = penetrationForce
+    this.limitBreak = limitBreak
+    this.limitBreakIndex = limitBreakIndex
+  }
+}
 let inventory = []
 let inventorySize = 5
 let inventoryFlag = false
@@ -1057,39 +1080,43 @@ const drawField = () => {
   }
 }
 const setWeapon = i => {
-  const magazineSize = 1 + ~~(Math.random() * (magSizeInitial + wave.number))
-  // the smaller the bigger
-  const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
-  const slideSpeed = slide.weight * (.75 + magSizeRatio + Math.random() * .25)
-  const additionalDamage =  (1 < slideSpeed) ? slideSpeed - 1 : 0
   const baseDamage = maxDamageInitial * (
     .5 + Math.random() * (.5 + Math.random() * wave.number * .5)
   )
+  const magazineSize = 1 + ~~(Math.random() * (magSizeInitial + wave.number))
+  const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
+  const additionalDamage =  (1 < slideSpeed) ? slideSpeed - 1 : 0
   const damage = baseDamage + maxDamageInitial * (
       Math.random() * (wave.number * additionalDamage)
     ) * (1 + magSizeRatio)
+  const slideSpeed = slide.weight * (.75 + magSizeRatio + Math.random() * .25)
+  const bulletSpeed = cartridgeInfo.speed * (.5 + Math.random() * 1.5)
   const bulletLife = cartridgeInfo.life * (.5 + Math.random() * .5)
   const reloadSpeed = reload.weight * (.25 + (1 - magSizeRatio) / 2 + Math.random() * .25)
-  enemies[i] = {
-    type: 'weapon',
-    name: `# ${wave.number}`,
-    category: 'SMG',
-    baseDamage: baseDamage,
-    damage: damage,
-    slideSpeed: slideSpeed,
-    bulletSpeed: cartridgeInfo.speed * (.5 + Math.random() * 1.5),
-    baseBulletLife: bulletLife,
-    bulletLife: bulletLife,
-    baseReloadSpeed: reloadSpeed,
-    reloadSpeed: reloadSpeed,
-    magazineSize: magazineSize,
-    magazines: Array(1 + ~~(Math.random() * (2 + ~~(wave.number/10)))).fill(magazineSize),
-    loadingSpeed: loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25),
-    penetrationForce: Math.random(),
-
-    limitBreak: 4000,
-    limitBreakIndex: 0
-  }
+  // the smaller the bigger
+  const magazines = Array(1 + ~~(Math.random() * (2 + ~~(wave.number/10)))).fill(magazineSize)
+  const loadingSpeed = loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25)
+  const penetrationForce = Math.random()
+  const weapon = new Weapon(
+    `# ${wave.number}`,
+    'SMG',
+    baseDamage,
+    damage,
+    slideSpeed,
+    bulletSpeed,
+    bulletLife,
+    bulletLife,
+    reloadSpeed,
+    reloadSpeed,
+    magazineSize,
+    magazines,
+    loadingSpeed,
+    penetrationForce,
+    4000,
+    0
+  )
+  Object.assign(weapon, {type: 'weapon'})
+  enemies[i] = weapon
 }
 const enemyProcess = () => {
   enemies.forEach((enemy, index) => {
@@ -2162,61 +2189,63 @@ const reset = () => {
     limit: 150
   }
   inventoryFlag = false
-  inventory = [{
-    name: 'INITIAL',
-    category: 'HG',
-    baseDamage: maxDamageInitial,
-    damage: maxDamageInitial,
-    slideSpeed: slide.weight,
-    bulletSpeed: cartridgeInfo.speed,
-    baseBulletLife: cartridgeInfo.life,
-    bulletLife: cartridgeInfo.life,
-    baseReloadSpeed: reload.weight,
-    reloadSpeed: reload.weight,
-    magazineSize: magSizeInitial,
-    magazines: Array(2).fill(magSizeInitial),
-    loadingSpeed: loading. weight,
-    penetrationForce: 0,
+  inventory = [
+    new Weapon(
+      'INITIAL',
+      'HG',
+      maxDamageInitial,
+      maxDamageInitial,
+      slide.weight,
+      cartridgeInfo.speed,
+      cartridgeInfo.life,
+      cartridgeInfo.life,
+      reload.weight,
+      reload.weight,
+      magSizeInitial,
+      Array(2).fill(magSizeInitial),
+      loading. weight,
+      0,
 
-    limitBreak: 4000,
-    limitBreakIndex: 0
-  },{
-    name: 'INITIAL',
-    category: 'HG',
-    baseDamage: maxDamageInitial,
-    damage: maxDamageInitial,
-    slideSpeed: slide.weight,
-    bulletSpeed: cartridgeInfo.speed,
-    baseBulletLife: cartridgeInfo.life,
-    bulletLife: cartridgeInfo.life,
-    baseReloadSpeed: reload.weight,
-    reloadSpeed: reload.weight,
-    magazineSize: magSizeInitial,
-    magazines: Array(2).fill(magSizeInitial),
-    loadingSpeed: loading. weight,
-    penetrationForce: 0,
+      4000,
+      0
+    ), new Weapon(
+      'INITIAL',
+      'HG',
+      maxDamageInitial,
+      maxDamageInitial,
+      slide.weight,
+      cartridgeInfo.speed,
+      cartridgeInfo.life,
+      cartridgeInfo.life,
+      reload.weight,
+      reload.weight,
+      magSizeInitial,
+      Array(2).fill(magSizeInitial),
+      loading. weight,
+      0,
 
-    limitBreak: 4000,
-    limitBreakIndex: 0
-  },{
-    name: 'INITIAL',
-    category: 'HG',
-    baseDamage: maxDamageInitial,
-    damage: maxDamageInitial,
-    slideSpeed: slide.weight,
-    bulletSpeed: cartridgeInfo.speed,
-    baseBulletLife: cartridgeInfo.life,
-    bulletLife: cartridgeInfo.life,
-    baseReloadSpeed: reload.weight,
-    reloadSpeed: reload.weight,
-    magazineSize: magSizeInitial,
-    magazines: Array(2).fill(magSizeInitial),
-    loadingSpeed: loading. weight,
-    penetrationForce: 0,
+      4000,
+      0
+    ), new Weapon(
+      'INITIAL',
+      'HG',
+      maxDamageInitial,
+      maxDamageInitial,
+      slide.weight,
+      cartridgeInfo.speed,
+      cartridgeInfo.life,
+      cartridgeInfo.life,
+      reload.weight,
+      reload.weight,
+      magSizeInitial,
+      Array(2).fill(magSizeInitial),
+      loading. weight,
+      0,
 
-    limitBreak: 4000,
-    limitBreakIndex: 0
-  }]
+      4000,
+      0
+    )
+  ]
   selectedIndex = 0
   firearm = {
     chamberFlag: false,
