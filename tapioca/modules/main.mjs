@@ -558,6 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dash: setStorageFirst('dash', 'n'),
     back: setStorageFirst('back', 'b'),
     change: setStorageFirst('change', 'm'),
+    primary: setStorageFirst('primary', '1'),
+    secondary: setStorageFirst('secondary', '2'),
+    tertiary: setStorageFirst('tertiary', '3'),
     inventory: setStorageFirst('inventory', 'e'),
     pause: setStorageFirst('pause', 'p'),
     debug: setStorageFirst('debug', 'g')
