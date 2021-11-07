@@ -241,14 +241,16 @@ let selectedIndex = 0
 let dropItems = []
 let bullets = []
 const Bullet = class {
-  constructor(life, x, y, dx, dy, isHoming) {
+  constructor(life, x, y, dx, dy, penetrationForce, isHoming) {
     this.life = life
+    this.baseLife = life
     this.x = x
     this.y = y
     this.dx = dx
     this.dy = dy
     this.detectFlag = false
     this.detectID = -1
+    this.penetrationForce = penetrationForce
     this.isHoming = isHoming
   }
   update() {
@@ -258,7 +260,7 @@ const Bullet = class {
     if (homingFlag) {
       bullets.forEach((bullet, i) => {
         bullet.life = bullet.life - 1
-        if (inventory[0].baseBulletLife < bullet.life) {
+        if (this.baseLife < bullet.life) {
           bullet.x = bullet.x - bullet.dx
           bullet.y = bullet.y - bullet.dy
           return
@@ -292,7 +294,7 @@ const Bullet = class {
         bullet.x = bullet.x - bullet.dx * bulletSpeed
         bullet.y = bullet.y - bullet.dy * bulletSpeed
         if (length < radius + bulletRadius){
-          const damage = inventory[0].damage * bullet.life / inventory[0].baseBulletLife
+          const damage = inventory[0].damage * bullet.life / this.baseLife
           enemies[index].life = enemies[index].life - damage
           bullet.life = 0
           const additionalPoint = (enemies[index].life <= 0) ? 100 : 10
@@ -376,7 +378,7 @@ const Bullet = class {
           if (!bullet.detectFlag && bullet.detectID !== hit) {
             bullet.detectFlag = true
             bullet.detectID = hit
-            let damage = inventory[0].damage * bullet.life / inventory[0].baseBulletLife
+            let damage = inventory[0].damage * bullet.life / this.baseLife
             if (explosive1Flag) {
               dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
               bullet.dx = 0, bullet.dy = 0
@@ -400,7 +402,7 @@ const Bullet = class {
               }
             } else {
               enemies[hit].life = enemies[hit].life - damage
-              bullet.life = bullet.life * inventory[0].penetrationForce
+              bullet.life = bullet.life * this.penetrationForce
               const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
               if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
               point = (point+additionalPoint)|0
@@ -690,7 +692,8 @@ const mouseFiring = () => {
     ownPosition.x,
     ownPosition.y,
     dx * inventory[0].bulletSpeed,
-    dy * inventory[0].bulletSpeed
+    dy * inventory[0].bulletSpeed,
+    inventory[0].penetrationForce
   ))
   // setBullet(
   //   inventory[0].bulletLife,
@@ -1322,7 +1325,7 @@ let degree = 5
 const drawBullets = () => {
   bullets.forEach(bullet => {
     if ((explosive1Flag || explosive2Flag || explosive3Flag) && bullet.detectFlag) return
-    context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / inventory[0].baseBulletLife})`
+    context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / bullet.baseLife})`
     context.beginPath()
     context.arc(relativeX(bullet.x), relativeY(bullet.y), bulletRadius, 0, Math.PI * 2, false)
     context.fill()
