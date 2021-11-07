@@ -949,18 +949,20 @@ const interfaceProcess = () => {
   if (key[action.left].flag) direction = (direction+8)|0
   if (0 < angle) currentDirection = angle
   else if (direction !== 0) currentDirection = direction
-  if (key[action.reload].isFirst() && reload.time === 0 && reload.state === 'done') {
-    inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
-    reloadProcess()
-  } else if (0 < reload.time || reload.state !== 'done') reloadProcess()
+  if (inventory[selectSlot].category !== '') {
+    if (key[action.reload].isFirst() && reload.time === 0 && reload.state === 'done') {
+      inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
+      reloadProcess()
+    } else if (0 < reload.time || reload.state !== 'done') reloadProcess()
+  }
 
   // if (key[action.fire].flag) firingProcess()
 
-  if (isFire) mouseFiring()
+  if (inventory[selectSlot].category !== '' && isFire) mouseFiring()
   isFire = false
 
-  loadingProcess()
-  if (key[action.change].isFirst()) magazineForword() // TODO: to consider
+  if (inventory[selectSlot].category !== '') loadingProcess()
+  if (inventory[selectSlot].category !== '' && key[action.change].isFirst()) magazineForword() // TODO: to consider
   if (dashCoolTimer() === 0 && key[action.dash].isFirst()) dashProcess()
   if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed) moving()
   if (key[action.debug].isFirst()) debugMode = !debugMode
@@ -1370,7 +1372,7 @@ const dropItemProcess = () => {
         dropItems.splice(index, 1)
       }
     } else if (item.type === 'magazine') {
-      if (item.unavailableTime <= 0 && distance < minImgRadius * 2) {
+      if (inventory[selectSlot].category !== '' && item.unavailableTime <= 0 && distance < minImgRadius * 2) {
         for (let i = 0; i < inventory[selectSlot].magazines.length + 1; i=(i+1)|0) {
           if (inventory[selectSlot].magazines[i] === -1) return inventory[selectSlot].magazines[i] = item.amount
           if (i === inventory[selectSlot].magazines.length + 1) inventory[selectSlot].magazines.push(item.amount)
@@ -1503,107 +1505,109 @@ const drawIndicator = () => {
     })
     context.font = `${size}px sans-serif`
   }
-  const cartridges = inventory[selectSlot].magazines[firearm.grip]
-  context.fillStyle = (cartridges < inventory[selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
-  (cartridges < inventory[selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
-  context.save()
-  const inChamber = (firearm.chamberFlag) ? 1 : 0
-  context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - size * 3)
-  context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
-  context.fillText(ammo, c.x, c.y)
-  context.restore()
-  const cartridgeSize = 1 / (inventory[selectSlot].magazineSize + 1)
-  const yOffset = canvas.offsetHeight - size
-  const yHeight = size * 4
-  c.x = canvas.offsetWidth - size * 5.25
-  c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-  if (0 < afterglow.reload) context.fillStyle = 'hsla(0, 100%, 100%, .7)'
-  context.fillRect(c.x, c.y, -size / 4, -inChamber * cartridgeSize * yHeight) // chamber
-  const releaseTime = reload.release * inventory[selectSlot].reloadSpeed
-  const putAwayTime = reload.putAway * inventory[selectSlot].reloadSpeed
-  const takeOutTime = reload.takeOut * inventory[selectSlot].reloadSpeed
-  const unreleaseTime = reload.unrelease * inventory[selectSlot].reloadSpeed
-  let ratio = (reload.state === 'release' && reload.time <= releaseTime) ?
-  1 - reload.time / releaseTime : // 1
-  (reload.state === 'unrelease' && reload.time <= unreleaseTime) ? // 2
-  reload.time / unreleaseTime : 1
-  if (reload.state === 'done' || reload.state === 'release' || reload.state === 'unrelease') {
-    c.y = yOffset - (ratio - 1) * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-    if (slide.state !== 'release' && slide.time === 0) { // slide gauge
-      context.fillRect(c.x - size * 5 / 16, c.y, size / 16, -yHeight) // full
-    } else if (slide.state === 'pullBack') {
-      context.fillRect(
-        c.x - size * 5 / 16,
-        c.y,
-        size / 16,
-        -(1 - slide.time / (slide.stop * inventory[selectSlot].slideSpeed)) * yHeight
-      )
-    } else if (slide.state === 'release') {
-      context.fillRect(
-        c.x - size * 5 / 16,
-        c.y,
-        size / 16,
-        - (slide.time / (slide.done * inventory[selectSlot].slideSpeed)) * yHeight
-      )
-    }
-  }
-  ratio = (reload.state === 'release') ? 1 - reload.time / releaseTime :
-  (reload.state === 'putAway') ? reload.time / putAwayTime :
-  (reload.state === 'takeOut') ? 1 - reload.time / takeOutTime :
-  (reload.state === 'unrelease') ? reload.time / unreleaseTime : 1
-  inventory[selectSlot].magazines.forEach((magazine, index) => {
-    if (magazine !== -1) {
-      context.fillStyle = (0 < afterglow.reload && index === firearm.grip) ?
-      'hsla(0, 100%, 100%, .7)' :
-      (magazine < inventory[selectSlot].magazineSize * .1) ?
-      'hsla(0, 100%, 60%, .7)' :
-      (magazine < inventory[selectSlot].magazineSize * .3) ?
-      'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
-      if (
-        index === firearm.grip && !(reload.state === 'putAway' || reload.state === 'takeOut')
-      ) c.x = canvas.offsetWidth - size * 5.25
-      else c.x = canvas.offsetWidth - size * (6.25 + index)
-      if (index === firearm.grip) {
-        c.y = yOffset - ratio * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-      } else c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-      context.fillRect(c.x, c.y, -size / 4, magazine * cartridgeSize * yHeight) // cartridges
-      context.fillRect( // magazine stop
-        c.x + size / 16,
-        c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
-        -size * 3 / 8, size / 16
-      )
-      if (
-        index === firearm.grip &&
-        (reload.state === 'putAway' || reload.state === 'takeOut') ||
-        index !== firearm.grip
-      ) {
-        context.fillRect( // left width bar
-          c.x - size / 4,
-          c.y, -size / 16,
-          inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-        )
-      }
-      if ((
-        index === setOtherMagazine() || inventory[selectSlot].magazines.length === 1) &&
-        (loading.time !== 0 || magazine.magazines !== inventory[selectSlot].magazineSize)
-      ) {
-        context.fillRect( // loading gauge
-          c.x,
-          c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
-          size / 16,
-          (-loading.time / (loading.done * inventory[selectSlot].loadingSpeed))
-          * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-        )
-      } else {
-        context.fillRect( // filled
-          c.x,
+  if (inventory[selectSlot].category !== '') {
+    const cartridges = inventory[selectSlot].magazines[firearm.grip]
+    context.fillStyle = (cartridges < inventory[selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
+    (cartridges < inventory[selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
+    context.save()
+    const inChamber = (firearm.chamberFlag) ? 1 : 0
+    context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - size * 3)
+    context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
+    context.fillText(ammo, c.x, c.y)
+    context.restore()
+    const cartridgeSize = 1 / (inventory[selectSlot].magazineSize + 1)
+    const yOffset = canvas.offsetHeight - size
+    const yHeight = size * 4
+    c.x = canvas.offsetWidth - size * 5.25
+    c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+    if (0 < afterglow.reload) context.fillStyle = 'hsla(0, 100%, 100%, .7)'
+    context.fillRect(c.x, c.y, -size / 4, -inChamber * cartridgeSize * yHeight) // chamber
+    const releaseTime = reload.release * inventory[selectSlot].reloadSpeed
+    const putAwayTime = reload.putAway * inventory[selectSlot].reloadSpeed
+    const takeOutTime = reload.takeOut * inventory[selectSlot].reloadSpeed
+    const unreleaseTime = reload.unrelease * inventory[selectSlot].reloadSpeed
+    let ratio = (reload.state === 'release' && reload.time <= releaseTime) ?
+    1 - reload.time / releaseTime : // 1
+    (reload.state === 'unrelease' && reload.time <= unreleaseTime) ? // 2
+    reload.time / unreleaseTime : 1
+    if (reload.state === 'done' || reload.state === 'release' || reload.state === 'unrelease') {
+      c.y = yOffset - (ratio - 1) * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+      if (slide.state !== 'release' && slide.time === 0) { // slide gauge
+        context.fillRect(c.x - size * 5 / 16, c.y, size / 16, -yHeight) // full
+      } else if (slide.state === 'pullBack') {
+        context.fillRect(
+          c.x - size * 5 / 16,
           c.y,
           size / 16,
-          inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+          -(1 - slide.time / (slide.stop * inventory[selectSlot].slideSpeed)) * yHeight
+        )
+      } else if (slide.state === 'release') {
+        context.fillRect(
+          c.x - size * 5 / 16,
+          c.y,
+          size / 16,
+          - (slide.time / (slide.done * inventory[selectSlot].slideSpeed)) * yHeight
         )
       }
     }
-  })
+    ratio = (reload.state === 'release') ? 1 - reload.time / releaseTime :
+    (reload.state === 'putAway') ? reload.time / putAwayTime :
+    (reload.state === 'takeOut') ? 1 - reload.time / takeOutTime :
+    (reload.state === 'unrelease') ? reload.time / unreleaseTime : 1
+    inventory[selectSlot].magazines.forEach((magazine, index) => {
+      if (magazine !== -1) {
+        context.fillStyle = (0 < afterglow.reload && index === firearm.grip) ?
+        'hsla(0, 100%, 100%, .7)' :
+        (magazine < inventory[selectSlot].magazineSize * .1) ?
+        'hsla(0, 100%, 60%, .7)' :
+        (magazine < inventory[selectSlot].magazineSize * .3) ?
+        'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
+        if (
+          index === firearm.grip && !(reload.state === 'putAway' || reload.state === 'takeOut')
+        ) c.x = canvas.offsetWidth - size * 5.25
+        else c.x = canvas.offsetWidth - size * (6.25 + index)
+        if (index === firearm.grip) {
+          c.y = yOffset - ratio * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+        } else c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+        context.fillRect(c.x, c.y, -size / 4, magazine * cartridgeSize * yHeight) // cartridges
+        context.fillRect( // magazine stop
+          c.x + size / 16,
+          c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
+          -size * 3 / 8, size / 16
+        )
+        if (
+          index === firearm.grip &&
+          (reload.state === 'putAway' || reload.state === 'takeOut') ||
+          index !== firearm.grip
+        ) {
+          context.fillRect( // left width bar
+            c.x - size / 4,
+            c.y, -size / 16,
+            inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+          )
+        }
+        if ((
+          index === setOtherMagazine() || inventory[selectSlot].magazines.length === 1) &&
+          (loading.time !== 0 || magazine.magazines !== inventory[selectSlot].magazineSize)
+        ) {
+          context.fillRect( // loading gauge
+            c.x,
+            c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
+            size / 16,
+            (-loading.time / (loading.done * inventory[selectSlot].loadingSpeed))
+            * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+          )
+        } else {
+          context.fillRect( // filled
+            c.x,
+            c.y,
+            size / 16,
+            inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+          )
+        }
+      }
+    })
+  }
   context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)' :
   (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)' :
   'hsla(210, 100%, 50%, .7)' // dash guage
@@ -2362,7 +2366,7 @@ const titleProcess = () => {
   }
 }
 const combatProcess = () => {
-  if (!firearm.chamberFlag) slideProcess()
+  if (inventory[selectSlot].category !== '' && !firearm.chamberFlag) slideProcess()
   waveProcess()
   if (0 < enemies.length) enemyProcess()
   bullets.forEach((bullet, i) => {
