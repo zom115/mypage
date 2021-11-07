@@ -1613,11 +1613,11 @@ const drawIndicator = () => {
   c = {x: size, y: canvas.offsetHeight - size}
   drawText(size * 1.5, 'left', wave.number, c)
 }
-const drawWeaponCategory = (box, i) => {
+const drawWeaponCategory = (box, object) => {
   context.fillStyle= 'hsl(0, 0%, 100%)'
   context.textAlign = 'center'
   context.font = `${size * .75}px sans-serif`
-  context.fillText(inventory[i].category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
+  context.fillText(object.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
 }
 const drawWeaponDetail = (box, i) => {
   if (inventory[i].category !== '' && isInner(box, cursor)) {
@@ -1643,11 +1643,16 @@ const drawWeaponDetail = (box, i) => {
 }
 const drawSlot = () => {
   context.save()
+  const box = {
+    absoluteX: cursor.offsetX,
+    absoluteY: cursor.offsetY
+  }
+  drawWeaponCategory(box, holdSlot)
   inventorySlotBox.forEach((v, i) => {
     if (slotSize - 1 < i && !inventoryFlag) return
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-    drawWeaponCategory(v, i)
+    drawWeaponCategory(v, inventory[i])
   })
   inventorySlotBox.forEach((v, i) => {
     if (slotSize - 1 < i && !inventoryFlag) return
