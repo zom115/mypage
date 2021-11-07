@@ -1114,7 +1114,7 @@ const drawField = () => {
     }
   }
 }
-const setWeapon = i => {
+const setWeapon = i => { // TODO: Lottery
   const baseDamage = maxDamageInitial * (
     .5 + Math.random() * (.5 + Math.random() * wave.number * .5)
   )
@@ -1355,6 +1355,7 @@ const dropItemProcess = () => {
     const width = ownPosition.x - item.x
     const height = ownPosition.y - item.y
     const distance = Math.sqrt(width ** 2 + height ** 2)
+    const blankInventorySlot = inventory.findIndex(v => v.category === '')
     let multiple = (
       item.type === 'weapon' || item.type === 'droppedWeapon') &&
       slotSize + inventorySize <= inventory.length ? 0 : .5 + 160 / (distance) // : size / 512
@@ -1379,14 +1380,14 @@ const dropItemProcess = () => {
     } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
       if (
         item.unavailableTime <= 0 && distance < minImgRadius * 2 &&
-        inventory.length < slotSize + inventorySize
+        blankInventorySlot < slotSize + inventorySize
       ) {
         delete item.type,
         delete item.unavailableTime,
         delete item.x,
         delete item.y
         if (item.time) delete item.time
-        inventory.push(dropItems.splice(index, 1)[0])
+        inventory[blankInventorySlot] = dropItems.splice(index, 1)[0]
       }
     }
   })
