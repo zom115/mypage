@@ -940,6 +940,9 @@ const bomb = () => {
 }
 const interfaceProcess = () => {
   if (key[action.pause].isFirst()) state = 'pause'
+  if (key[action.primary].isFirst()) selectSlot = 0
+  if (key[action.secondary].isFirst()) selectSlot = 1
+  if (key[action.tertiary].isFirst()) selectSlot = 2
   if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
   if (key[action.lookUp].flag) angle = (angle+1)|0
@@ -2729,10 +2732,11 @@ const drawDebug = () => {
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
   const dictionary = {
+    internalFps: internalFrameList.length - 1,
+    screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    internalFps: internalFrameList.length - 1,
-    screenFps: animationFrameList.length - 1
+    slot: selectSlot
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
