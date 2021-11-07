@@ -1650,6 +1650,7 @@ const drawSlot = () => {
     drawWeaponCategory(v, i)
   })
   inventorySlotBox.forEach((v, i) => {
+    if (slotSize - 1 < i && !inventoryFlag) return
     drawWeaponDetail(v, i)
   })
   context.restore()
