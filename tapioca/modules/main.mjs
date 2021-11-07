@@ -1120,11 +1120,11 @@ const setWeapon = i => {
   )
   const magazineSize = 1 + ~~(Math.random() * (magSizeInitial + wave.number))
   const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
+  const slideSpeed = slide.weight * (.75 + magSizeRatio + Math.random() * .25)
   const additionalDamage =  (1 < slideSpeed) ? slideSpeed - 1 : 0
   const damage = baseDamage + maxDamageInitial * (
       Math.random() * (wave.number * additionalDamage)
     ) * (1 + magSizeRatio)
-  const slideSpeed = slide.weight * (.75 + magSizeRatio + Math.random() * .25)
   const bulletSpeed = cartridgeInfo.speed * (.5 + Math.random() * 1.5)
   const bulletLife = cartridgeInfo.life * (.5 + Math.random() * .5)
   const reloadSpeed = reload.weight * (.25 + (1 - magSizeRatio) / 2 + Math.random() * .25)
