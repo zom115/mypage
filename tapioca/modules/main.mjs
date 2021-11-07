@@ -237,20 +237,21 @@ let inventory = []
 let slotSize = 3
 let inventorySize = 10
 let inventoryFlag = false
-let selectedIndex = 0
+let selectSlot = 0
 let dropItems = []
 let bullets = []
 const Bullet = class {
-  constructor(life, x, y, dx, dy, penetrationForce, isHoming) {
-    this.life = life
-    this.baseLife = life
+  constructor(x, y, dx, dy, life, damage, penetrationForce, isHoming) {
     this.x = x
     this.y = y
     this.dx = dx
     this.dy = dy
+    this.life = life
+    this.baseLife = life
+    this.damage = damage
+    this.penetrationForce = penetrationForce
     this.detectFlag = false
     this.detectID = -1
-    this.penetrationForce = penetrationForce
     this.isHoming = isHoming
   }
   update() {
@@ -294,7 +295,7 @@ const Bullet = class {
         bullet.x = bullet.x - bullet.dx * bulletSpeed
         bullet.y = bullet.y - bullet.dy * bulletSpeed
         if (length < radius + bulletRadius){
-          const damage = inventory[0].damage * bullet.life / this.baseLife
+          const damage = this.damage * bullet.life / this.baseLife
           enemies[index].life = enemies[index].life - damage
           bullet.life = 0
           const additionalPoint = (enemies[index].life <= 0) ? 100 : 10
@@ -322,7 +323,7 @@ const Bullet = class {
             })
             distance.forEach((radius, index) => {
               if (radius < explosiveRange) {
-                const damage = inventory[0].damage * (1 - radius / explosiveRange)
+                const damage = this.damage * (1 - radius / explosiveRange)
                 enemies[index].life = enemies[index].life - damage
                 const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
                 if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
@@ -348,7 +349,7 @@ const Bullet = class {
             })
             distance.forEach((radius, index) => {
               if (radius < explosiveRange) {
-                const damage = inventory[0].damage * (1 - radius / explosiveRange)
+                const damage = this.damage * (1 - radius / explosiveRange)
                 enemies[index].life = enemies[index].life - damage
                 const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
                 if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
@@ -378,7 +379,7 @@ const Bullet = class {
           if (!bullet.detectFlag && bullet.detectID !== hit) {
             bullet.detectFlag = true
             bullet.detectID = hit
-            let damage = inventory[0].damage * bullet.life / this.baseLife
+            let damage = this.damage * bullet.life / this.baseLife
             if (explosive1Flag) {
               dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
               bullet.dx = 0, bullet.dy = 0
@@ -389,7 +390,7 @@ const Bullet = class {
                 })
                 distance.forEach((radius, index) => {
                   if (radius < explosiveRange) {
-                    damage = inventory[0].damage * (1 - radius / explosiveRange)
+                    damage = this.damage * (1 - radius / explosiveRange)
                     enemies[index].life = enemies[index].life - damage
                     const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
                     if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
@@ -688,11 +689,12 @@ const mouseFiring = () => {
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
   }
   bullets.push(new Bullet(
-    inventory[0].bulletLife,
     ownPosition.x,
     ownPosition.y,
     dx * inventory[0].bulletSpeed,
     dy * inventory[0].bulletSpeed,
+    inventory[0].bulletLife,
+    inventory[0].damage,
     inventory[0].penetrationForce
   ))
   // setBullet(
@@ -1680,7 +1682,6 @@ const inventoryProcess = () => {
     if (downButton(v)) {
       [holdSlot, inventory[i]] = [inventory[i], holdSlot]
       firearm.grip = 0
-      selectedIndex = 0
       afterglow.inventory = 60
     }
   })
@@ -2222,7 +2223,7 @@ const reset = () => {
     4000,
     0
   )
-  selectedIndex = 0
+  selectSlot = 0
   firearm = {
     chamberFlag: false,
     gripFlag: false,
