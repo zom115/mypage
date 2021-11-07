@@ -1667,14 +1667,12 @@ const inventoryProcess = () => {
     }
     return
   }
-
   inventorySlotBox.forEach((v, i) => {
     if (downButton(v)) {
       [holdSlot, inventory[i]] = [inventory[i], holdSlot]
-      // firearm.grip = 0
-      // selectedIndex = 0
-      // afterglow.inventory = 60
-
+      firearm.grip = 0
+      selectedIndex = 0
+      afterglow.inventory = 60
     }
   })
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
