@@ -1676,37 +1676,6 @@ const inventoryProcess = () => {
       }
     })
   }
-  // if (0 < key[action.inventory]) {
-  //   selectedIndex = 0
-  //   afterglow.inventory = 0
-  //   return
-  // }
-
-  // const dropPosition = [
-  //   {x: 0, y: 0},
-  //   {x: 0, y: -size * 5.5},
-  //   {x: size * 5.5, y: 0},
-  //   {x: 0, y: size * 5.5},
-  //   {x: -size * 5.5, y: 0}
-  // ]
-  const swapArray = (pressedKey, num) => {
-    [inventory[0], inventory[num]] = [inventory[num], inventory[0]]
-    if (num + 1 <= inventory.length && isKeyFirst(pressedKey) && afterglow.inventory === 0) {
-    // if (key[action.slow].flag) {
-    //   inventory[num].type = 'droppedWeapon'
-    //   inventory[num].unavailableTime = 30
-    //   inventory[num].x = ownPosition.x + dropPosition[num].x
-    //   inventory[num].y = ownPosition.y + dropPosition[num].y
-    //   inventory[num].life = 600
-    //   dropItems.push(inventory.splice(num, 1)[0])
-    // } else {
-      // }
-    }
-  }
-  // if (selectedBuffer === 1 || key[action.slow].flag) swapArray(keyMap.lookUp, 1)
-  // if (selectedBuffer === 2 || key[action.slow].flag) swapArray(keyMap.lookRight, 2)
-  // if (selectedBuffer === 3 || key[action.slow].flag) swapArray(keyMap.lookDown, 3)
-  // if (selectedBuffer === 4 || key[action.slow].flag) swapArray(keyMap.lookLeft, 4)
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
