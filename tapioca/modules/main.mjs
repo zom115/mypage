@@ -1661,21 +1661,18 @@ const inventoryProcess = () => {
     return
   }
 
-  if (holdIndex < 0) { // get holdIndex
-    inventorySlotBox.forEach((v, i) => {
-      if (downButton(v)) holdIndex = i
-    })
-  } else { // set weapon
-    inventorySlotBox.forEach((v, i) => {
-      if (holdIndex !== i && button(v)) {
+  inventorySlotBox.forEach((v, i) => {
+    if (downButton(v)) {
+      if (holdIndex < 0) holdIndex = i // get holdIndex
+      else {
         [inventory[holdIndex], inventory[i]] = [inventory[i], inventory[holdIndex]]
         holdIndex = -1
         firearm.grip = 0
         selectedIndex = 0
         afterglow.inventory = 60
       }
-    })
-  }
+    }
+  })
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
