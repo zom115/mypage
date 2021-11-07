@@ -562,6 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     secondary: setStorageFirst('secondary', '2'),
     tertiary: setStorageFirst('tertiary', '3'),
     rotateSlot: setStorageFirst('rotateSlot', 'q'),
+    revarseRotateSlot: setStorageFirst('revarseRotateSlot', 'Q'),
     inventory: setStorageFirst('inventory', 'e'),
     pause: setStorageFirst('pause', 'p'),
     debug: setStorageFirst('debug', 'g')
@@ -946,6 +947,9 @@ const interfaceProcess = () => {
   if (key[action.tertiary].isFirst()) selectSlot = 2
   if (key[action.rotateSlot].isFirst()) {
     selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
+  }
+  if (key[action.revarseRotateSlot].isFirst()) {
+    selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
   }
   if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
