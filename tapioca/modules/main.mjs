@@ -1654,23 +1654,27 @@ const drawSlot = () => {
   })
   context.restore()
 }
-let holdIndex = -1
+let holdSlot = {category: ''}
 const inventoryProcess = () => {
   if (!inventoryFlag) {
-    holdIndex = -1
+    if (holdSlot.category !== '') {
+      inventory.forEach((v, i) => {
+        if (v.category === '') {
+          [holdSlot, inventory[i]] = [inventory[i], holdSlot]
+          return
+        }
+      })
+    }
     return
   }
 
   inventorySlotBox.forEach((v, i) => {
     if (downButton(v)) {
-      if (holdIndex < 0) holdIndex = i // get holdIndex
-      else {
-        [inventory[holdIndex], inventory[i]] = [inventory[i], inventory[holdIndex]]
-        holdIndex = -1
-        firearm.grip = 0
-        selectedIndex = 0
-        afterglow.inventory = 60
-      }
+      [holdSlot, inventory[i]] = [inventory[i], holdSlot]
+      // firearm.grip = 0
+      // selectedIndex = 0
+      // afterglow.inventory = 60
+
     }
   })
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
@@ -2712,8 +2716,7 @@ const drawDebug = () => {
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
     internalFps: internalFrameList.length - 1,
-    screenFps: animationFrameList.length - 1,
-    hold: holdIndex,
+    screenFps: animationFrameList.length - 1
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
