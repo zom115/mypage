@@ -561,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     primary: setStorageFirst('primary', '1'),
     secondary: setStorageFirst('secondary', '2'),
     tertiary: setStorageFirst('tertiary', '3'),
+    ratateSlot: setStorageFirst('rotateSlot', 'q'),
     inventory: setStorageFirst('inventory', 'e'),
     pause: setStorageFirst('pause', 'p'),
     debug: setStorageFirst('debug', 'g')
