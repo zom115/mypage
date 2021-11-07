@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     primary: setStorageFirst('primary', '1'),
     secondary: setStorageFirst('secondary', '2'),
     tertiary: setStorageFirst('tertiary', '3'),
-    ratateSlot: setStorageFirst('rotateSlot', 'q'),
+    rotateSlot: setStorageFirst('rotateSlot', 'q'),
     inventory: setStorageFirst('inventory', 'e'),
     pause: setStorageFirst('pause', 'p'),
     debug: setStorageFirst('debug', 'g')
@@ -944,6 +944,7 @@ const interfaceProcess = () => {
   if (key[action.primary].isFirst()) selectSlot = 0
   if (key[action.secondary].isFirst()) selectSlot = 1
   if (key[action.tertiary].isFirst()) selectSlot = 2
+  // if (key[action.rotateSlot].isFirst()) selectSlot = 2
   if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
   if (key[action.lookUp].flag) angle = (angle+1)|0
