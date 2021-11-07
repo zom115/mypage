@@ -26,17 +26,18 @@ let cursor = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mousemove', e => cursor = e, false)
 let isFire = false
 let mouseDownPos = {offsetX: 0, offsetY: 0}
-canvas.addEventListener('mousedown', e => {
-  mouseDownPos = e
-  if (state === 'main') isFire = true
-}, false)
-let mouseUpPos = {offsetX: 0, offsetY: 0}
-let mouseUpState = false
 let isMouseUp = () => {
   let bool = mouseUpState
   mouseUpState = false
   return bool
 }
+canvas.addEventListener('mousedown', e => {
+  mouseDownPos = e
+  mouseUpState = false
+  if (state === 'main') isFire = true
+}, false)
+let mouseUpPos = {offsetX: 0, offsetY: 0}
+let mouseUpState = false
 canvas.addEventListener('mouseup', e => {
   mouseUpPos = e
   mouseUpState = true
@@ -1646,6 +1647,9 @@ let holdIndex = 0
 const inventoryProcess = () => {
   if (!inventoryFlag) return
 
+  inventorySlotBox.forEach((v, i) => {
+    if (button(v)) {console.log(i)}
+  })
   // if (0 < key[action.inventory]) {
   //   selectedIndex = 0
   //   afterglow.inventory = 0
