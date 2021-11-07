@@ -26,6 +26,13 @@ let cursor = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mousemove', e => cursor = e, false)
 let isFire = false
 let mouseDownPos = {offsetX: 0, offsetY: 0}
+let mouseDownState = false
+let isMouseDown = () => {
+  let bool = mouseDownState
+  mouseDownState = false
+  return bool
+}
+let mouseUpState = false
 let isMouseUp = () => {
   let bool = mouseUpState
   mouseUpState = false
@@ -33,13 +40,14 @@ let isMouseUp = () => {
 }
 canvas.addEventListener('mousedown', e => {
   mouseDownPos = e
+  mouseDownState = true
   mouseUpState = false
   if (state === 'main') isFire = true
 }, false)
 let mouseUpPos = {offsetX: 0, offsetY: 0}
-let mouseUpState = false
 canvas.addEventListener('mouseup', e => {
   mouseUpPos = e
+  mouseDownState = false
   mouseUpState = true
 }, false)
 canvas.addEventListener('click', () => {}, false)
@@ -50,6 +58,9 @@ const isInner = (box, pos) => {
   }
   return 0 <= offset.x && offset.x <= box.width &&
   0 <= offset.y && offset.y <= box.height
+}
+const downButton = box => {
+  return isInner(box, mouseDownPos) && isMouseDown()
 }
 const button = box => {
   return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isMouseUp()
@@ -1643,13 +1654,28 @@ const drawSlot = () => {
   })
   context.restore()
 }
-let holdIndex = 0
+let holdIndex = -1
 const inventoryProcess = () => {
-  if (!inventoryFlag) return
+  if (!inventoryFlag) {
+    holdIndex = -1
+    return
+  }
 
-  inventorySlotBox.forEach((v, i) => {
-    if (button(v)) {console.log(i)}
-  })
+  if (holdIndex < 0) { // get holdIndex
+    inventorySlotBox.forEach((v, i) => {
+      if (downButton(v)) holdIndex = i
+    })
+  } else { // set weapon
+    inventorySlotBox.forEach((v, i) => {
+      if (holdIndex !== i && button(v)) {
+        [inventory[holdIndex], inventory[i]] = [inventory[i], inventory[holdIndex]]
+        holdIndex = -1
+        firearm.grip = 0
+        selectedIndex = 0
+        afterglow.inventory = 60
+      }
+    })
+  }
   // if (0 < key[action.inventory]) {
   //   selectedIndex = 0
   //   afterglow.inventory = 0
@@ -1663,11 +1689,6 @@ const inventoryProcess = () => {
   //   {x: 0, y: size * 5.5},
   //   {x: -size * 5.5, y: 0}
   // ]
-  const selectedBuffer = selectedIndex
-  selectedIndex = (isKeyFirst(keyMap.lookUp)) ? 1 :
-  (isKeyFirst(keyMap.lookRight)) ? 2 :
-  (isKeyFirst(keyMap.lookDown)) ? 3 :
-  (isKeyFirst(keyMap.lookLeft)) ? 4 : selectedIndex
   const swapArray = (pressedKey, num) => {
     [inventory[0], inventory[num]] = [inventory[num], inventory[0]]
     if (num + 1 <= inventory.length && isKeyFirst(pressedKey) && afterglow.inventory === 0) {
@@ -1681,14 +1702,11 @@ const inventoryProcess = () => {
     // } else {
       // }
     }
-    afterglow.inventory = 60
-    firearm.grip = 0
-    selectedIndex = 0
   }
-  if (selectedBuffer === 1 || key[action.slow].flag) swapArray(keyMap.lookUp, 1)
-  if (selectedBuffer === 2 || key[action.slow].flag) swapArray(keyMap.lookRight, 2)
-  if (selectedBuffer === 3 || key[action.slow].flag) swapArray(keyMap.lookDown, 3)
-  if (selectedBuffer === 4 || key[action.slow].flag) swapArray(keyMap.lookLeft, 4)
+  // if (selectedBuffer === 1 || key[action.slow].flag) swapArray(keyMap.lookUp, 1)
+  // if (selectedBuffer === 2 || key[action.slow].flag) swapArray(keyMap.lookRight, 2)
+  // if (selectedBuffer === 3 || key[action.slow].flag) swapArray(keyMap.lookDown, 3)
+  // if (selectedBuffer === 4 || key[action.slow].flag) swapArray(keyMap.lookLeft, 4)
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
@@ -2192,6 +2210,25 @@ const reset = () => {
   inventory[0] = new Weapon(
     'INITIAL',
     'HG',
+    maxDamageInitial,
+    maxDamageInitial,
+    slide.weight,
+    cartridgeInfo.speed,
+    cartridgeInfo.life,
+    cartridgeInfo.life,
+    reload.weight,
+    reload.weight,
+    magSizeInitial,
+    Array(2).fill(magSizeInitial),
+    loading. weight,
+    0,
+
+    4000,
+    0
+  )
+  inventory[4] = new Weapon(
+    'てすと',
+    '(仮)',
     maxDamageInitial,
     maxDamageInitial,
     slide.weight,
