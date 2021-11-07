@@ -486,6 +486,8 @@ const getKeyName = key => {
   if (key === ' ') return 'SPACE'
   else return key.toUpperCase() // can't work in turco
 }
+
+// for display
 let titleMenuWordArray = []
 const setTitleMenuWord = () => {
   titleMenuWordArray = [
@@ -519,6 +521,19 @@ const setTitleMenuWord = () => {
   })
   context.restore()
 }
+let inventorySlotBox = []
+{
+  for (let i = 0; i < slotSize; i++) {
+    inventorySlotBox.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
+  }
+  const columnSize = 5
+  for (let i = 0; i < Math.ceil(inventorySize / columnSize); i++) {
+    for (let j = 0; j < columnSize; j++) {
+      inventorySlotBox.push({
+        absoluteX: size * (.75 + 2 * j), absoluteY: size * (2.75 + 2 * i), width: size * 1.5, height: size * 1.5})}
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   action = {
     fire: setStorageFirst('fire', ' '),
@@ -1615,64 +1630,56 @@ const drawWeaponDetail = (box, i) => {
   }
 }
 const drawSlot = () => {
-  let box = []
-  for (let i = 0; i < slotSize; i++) {
-    box.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
-  }
-  if (inventoryFlag) {
-    const columnSize = 5
-    for (let i = 0; i < Math.ceil(inventorySize / columnSize); i++) {
-      for (let j = 0; j < columnSize; j++) {
-        box.push({
-          absoluteX: size * (.75 + 2 * j), absoluteY: size * (2.75 + 2 * i), width: size * 1.5, height: size * 1.5})}
-    }
-  }
   context.save()
-  box.forEach((v, i) => {
+  inventorySlotBox.forEach((v, i) => {
+    if (slotSize - 1 < i && !inventoryFlag) return
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
     drawWeaponCategory(v, i)
   })
-  box.forEach((v, i) => {
+  inventorySlotBox.forEach((v, i) => {
     drawWeaponDetail(v, i)
   })
   context.restore()
 }
+let holdIndex = 0
 const inventoryProcess = () => {
-  if (0 < key[action.inventory]) {
-    selectedIndex = 0
-    afterglow.inventory = 0
-    return
-  }
-  const dropPosition = [
-    {x: 0, y: 0},
-    {x: 0, y: -size * 5.5},
-    {x: size * 5.5, y: 0},
-    {x: 0, y: size * 5.5},
-    {x: -size * 5.5, y: 0}
-  ]
+  if (!inventoryFlag) return
+
+  // if (0 < key[action.inventory]) {
+  //   selectedIndex = 0
+  //   afterglow.inventory = 0
+  //   return
+  // }
+
+  // const dropPosition = [
+  //   {x: 0, y: 0},
+  //   {x: 0, y: -size * 5.5},
+  //   {x: size * 5.5, y: 0},
+  //   {x: 0, y: size * 5.5},
+  //   {x: -size * 5.5, y: 0}
+  // ]
   const selectedBuffer = selectedIndex
   selectedIndex = (isKeyFirst(keyMap.lookUp)) ? 1 :
   (isKeyFirst(keyMap.lookRight)) ? 2 :
   (isKeyFirst(keyMap.lookDown)) ? 3 :
   (isKeyFirst(keyMap.lookLeft)) ? 4 : selectedIndex
   const swapArray = (pressedKey, num) => {
-    console.log(pressedKey)
+    [inventory[0], inventory[num]] = [inventory[num], inventory[0]]
     if (num + 1 <= inventory.length && isKeyFirst(pressedKey) && afterglow.inventory === 0) {
-      if (key[action.slow].flag) {
-        inventory[num].type = 'droppedWeapon'
-        inventory[num].unavailableTime = 30
-        inventory[num].x = ownPosition.x + dropPosition[num].x
-        inventory[num].y = ownPosition.y + dropPosition[num].y
-        inventory[num].life = 600
-        dropItems.push(inventory.splice(num, 1)[0])
-      } else {
-        [inventory[0], inventory[num]] = [inventory[num], inventory[0]]
-      }
-      afterglow.inventory = 60
-      firearm.grip = 0
-      selectedIndex = 0
+    // if (key[action.slow].flag) {
+    //   inventory[num].type = 'droppedWeapon'
+    //   inventory[num].unavailableTime = 30
+    //   inventory[num].x = ownPosition.x + dropPosition[num].x
+    //   inventory[num].y = ownPosition.y + dropPosition[num].y
+    //   inventory[num].life = 600
+    //   dropItems.push(inventory.splice(num, 1)[0])
+    // } else {
+      // }
     }
+    afterglow.inventory = 60
+    firearm.grip = 0
+    selectedIndex = 0
   }
   if (selectedBuffer === 1 || key[action.slow].flag) swapArray(keyMap.lookUp, 1)
   if (selectedBuffer === 2 || key[action.slow].flag) swapArray(keyMap.lookRight, 2)
@@ -2355,7 +2362,7 @@ const mainProcess = () => {
   interfaceProcess()
   if (direction !== 0) direction = 0
   if (angle !== 0) angle = 0
-  if (inventoryFlag) inventoryProcess()
+  inventoryProcess()
 
   if (location === locationList[0]) storeProcess()
   else if (location === locationList[1]) combatProcess()
@@ -2694,16 +2701,12 @@ const drawKeyLayout = () => {
 const drawDebug = () => {
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
-  const num = bullets.length ? bullets[0].life|0 : 0
   const dictionary = {
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
-    bulletLife: num,
-    a: isInner(titleMenuWordArray[2], mouseDownPos),
-    b: isInner(titleMenuWordArray[2], mouseUpPos),
-    c: isMouseUp(),
+    hold: holdIndex,
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
