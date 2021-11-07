@@ -1668,6 +1668,10 @@ const drawSlot = () => {
     if (slotSize - 1 < i && !inventoryFlag) return
     context.fillStyle= 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
+    if (i === selectSlot) {
+
+      context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
+    }
     drawWeaponCategory(v, inventory[i])
   })
   inventorySlotBox.forEach((v, i) => {
