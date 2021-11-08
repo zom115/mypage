@@ -2505,7 +2505,7 @@ const drawMain = () => {
   if (0 < dropItems.length) drawDropItems()
   drawMyself()
   drawDirection()
-  drawIndicator()
+  if (location === locationList[1]) drawIndicator()
   drawSlot()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
@@ -2740,6 +2740,7 @@ const drawKeyLayout = () => {
 const drawDebug = () => {
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
+  context.fillStyle = 'hsl(0, 0%, 50%)'
   const dictionary = {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
