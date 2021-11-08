@@ -972,7 +972,7 @@ const interfaceProcess = () => {
 
   // if (key[action.fire].flag) firingProcess()
 
-  if (inventory[selectSlot].category !== '' && isFire) mouseFiring()
+  if (inventory[selectSlot].category !== '' && !inventoryFlag && isFire) mouseFiring()
   isFire = false
 
   if (inventory[selectSlot].category !== '') loadingProcess()
