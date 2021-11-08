@@ -466,12 +466,12 @@ let enemies
 const enemyImageAmount = 3
 let wave = {
   number: 0,
-  enemySpawnInterval: 0,
-  enemySpawnIntervalLimit: 0,
+  enemySpawnInterval: 0, // ms
+  enemySpawnIntervalLimit: 0, // ms
   enemyCount: 0,
   enemyLimit: 0,
-  roundInterval: 0,
-  roundIntervalLimit: 120,
+  roundInterval: 0, // ms
+  roundIntervalLimit: 2000, // ms
   enemyHitPoint: 0
 }
 let defeatCount
@@ -1629,11 +1629,11 @@ const drawIndicator = () => {
   c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
   context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
   context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
-  context.fillStyle = (0 < afterglow.round) ? // round number
-  `hsla(0, 100%, 30%, ${(1 - afterglow.round / wave.roundIntervalLimit)*.7})` :
-  (wave.roundInterval === 0) ? 'hsla(0, 100%, 30%, .7)' :
-  `hsla(0, 100%, 30%, ${(wave.roundInterval / wave.roundIntervalLimit)*.7})`
-  if (0 < afterglow.round) afterglow.round = (afterglow.round-1)|0
+  context.fillStyle =  // round number
+    0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
+    0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
+    'hsla(0, 100%, 30%, .7)'
+  if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
   c = {x: size, y: canvas.offsetHeight - size}
   drawText(size * 1.5, 'left', wave.number, c)
 }
@@ -1711,6 +1711,9 @@ const inventoryProcess = () => {
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
+  wave.roundInterval = 0
+  afterglow.round = intervalDiffTime
+
   wave.number = (wave.number+1)|0
   wave.enemySpawnInterval = 0
   wave.enemySpawnIntervalLimit = (wave.number === 1) ? 120 :
@@ -1736,56 +1739,50 @@ const setWave = () => {
   (wave.number === 2) ? 250 :
   (wave.number === 1) ? 150 : wave.enemyHitPoint * 1.1
 }
+const setEnemy = () => {
+  const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
+  const a = ~~(Math.random() * 360 + 1)
+  const setEnemySpeed = () => {
+    return (wave.number === 16) ? .95 + Math.random() * .05 : // pre
+    (wave.number === 15) ? .9 + Math.random() * .1 :
+    (wave.number === 14) ? .85 + Math.random() * .15 :
+    (wave.number === 13) ? .8 + Math.random() * .2 :
+    (wave.number === 12) ? .75 + Math.random() * .25 :
+    (wave.number === 11) ? .75 + Math.random() * .2 :
+    (wave.number === 10) ? .75 + Math.random() * .15 :
+    (wave.number === 9) ? .7 + Math.random() * .25 :
+    (wave.number === 8) ? .7 + Math.random() * .2 :
+    (wave.number === 7) ? .7 + Math.random() * .15 :
+    (wave.number === 6) ? .65 + Math.random() * .2 :
+    (wave.number === 5) ? .65 + Math.random() * .15 :
+    (wave.number === 4) ? .65 + Math.random() * .1 :
+    (wave.number === 3) ? .6 + Math.random() * .15 :
+    (wave.number === 2) ? .6 + Math.random() * .1 :
+    (wave.number === 1) ? .6 + Math.random() * .05 : 1
+  }
+  enemies.push({
+    life: wave.enemyHitPoint+.5|0,
+    x: ownPosition.x + r * Math.cos(a * (Math.PI / 180)),
+    y: ownPosition.y + r * Math.sin(a * (Math.PI / 180)),
+    speed: setEnemySpeed(),
+    step: 0,
+    stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
+    imageID: ~~(Math.random() * enemyImageAmount)
+  })
+  if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
+}
 const waveProcess = () => {
-  if (0 < wave.roundInterval) {
-    wave.roundInterval = (wave.roundInterval-1)|0
-    if (1 < wave.roundInterval) return
-    else if (1 === wave.roundInterval) {
-      afterglow.round = wave.roundIntervalLimit
-      setWave()
-    }
-  }
-  if (wave.enemyCount < wave.enemyLimit) wave.enemySpawnInterval = (wave.enemySpawnInterval+1)|0
-  else if (enemies.length === 0) wave.roundInterval = wave.roundIntervalLimit
-  else return
-  const setEnemy = () => {
-    const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
-    const a = ~~(Math.random() * 360 + 1)
-    const setEnemySpeed = () => {
-      return (wave.number === 16) ? .95 + Math.random() * .05 : // pre
-      (wave.number === 15) ? .9 + Math.random() * .1 :
-      (wave.number === 14) ? .85 + Math.random() * .15 :
-      (wave.number === 13) ? .8 + Math.random() * .2 :
-      (wave.number === 12) ? .75 + Math.random() * .25 :
-      (wave.number === 11) ? .75 + Math.random() * .2 :
-      (wave.number === 10) ? .75 + Math.random() * .15 :
-      (wave.number === 9) ? .7 + Math.random() * .25 :
-      (wave.number === 8) ? .7 + Math.random() * .2 :
-      (wave.number === 7) ? .7 + Math.random() * .15 :
-      (wave.number === 6) ? .65 + Math.random() * .2 :
-      (wave.number === 5) ? .65 + Math.random() * .15 :
-      (wave.number === 4) ? .65 + Math.random() * .1 :
-      (wave.number === 3) ? .6 + Math.random() * .15 :
-      (wave.number === 2) ? .6 + Math.random() * .1 :
-      (wave.number === 1) ? .6 + Math.random() * .05 : 1
-    }
-    enemies.push({
-      life: wave.enemyHitPoint+.5|0,
-      x: ownPosition.x + r * Math.cos(a * (Math.PI / 180)),
-      y: ownPosition.y + r * Math.sin(a * (Math.PI / 180)),
-      speed: setEnemySpeed(),
-      step: 0,
-      stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
-      imageID: ~~(Math.random() * enemyImageAmount)
-    })
-    if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
-  }
-  if (wave.enemySpawnIntervalLimit <= wave.enemySpawnInterval) {
-    if (enemies.length <= 24) {
-      wave.enemyCount = (wave.enemyCount+1)|0
+  if (wave.enemyCount < wave.enemyLimit) {
+    if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
+      wave.enemySpawnInterval += intervalDiffTime
+    } else if (enemies.length <= 24) { // && wave.enemySpawnIntervalLimit <= wave.enemySpawnInterval
+      wave.enemySpawnInterval = 0
+      wave.enemyCount += 1
       setEnemy()
     }
-    wave.enemySpawnInterval = 0
+  } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
+    wave.roundInterval += intervalDiffTime
+    if (wave.roundIntervalLimit <= wave.roundInterval) setWave()
   }
 }
 const setMap = () => {
@@ -2275,7 +2272,7 @@ const reset = () => {
   combatReload.magFlag = false
   combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
   afterglow.point = []
-  afterglow.round = wave.roundIntervalLimit
+  afterglow.round = 0
   wave.number = 0
   wave.enemySpawnInterval = 0
   wave.enemySpawnIntervalLimit = 0
