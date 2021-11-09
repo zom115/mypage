@@ -2040,8 +2040,10 @@ const setStore = () => {
         this.y <= ownPosition.y && ownPosition.y <= this.y + this.h)
       ) {
         context.save()
-        context.fillStyle = 'hsl(30, 100%, 70%)'
-        context.fillRect(box.absoluteX - 10, box.absoluteY, box.width + 20, box.height)
+        if (isInner(box, cursor)) {
+          context.fillStyle = 'hsl(30, 100%, 70%)'
+          context.fillRect(box.absoluteX - 10, box.absoluteY, box.width + 20, box.height)
+        }
         context.textAlign = 'left'
         context.textBaseline = 'top'
         context.fillStyle = 'hsl(210, 100%, 70%)'
