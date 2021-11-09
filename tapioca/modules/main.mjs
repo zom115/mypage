@@ -519,6 +519,14 @@ let portalConfirmBox = [{
   width: 0,
   height: 0,
   text: 'No(Continue)'
+}, {
+  offsetX: canvas.offsetWidth / 2,
+  offsetY: canvas.offsetHeight * 2 / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Yes'
 }
 ]
 context.save()
@@ -1813,13 +1821,16 @@ const portalProcess = () => {
     portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
   ) {
     if (button(portalConfirmBox[0])) {
-      portalFlag = false
       location = locationList[0]
       objects = []
       setStore()
     }
-    if (button(portalConfirmBox[1])) {
+    if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) {
       portalFlag = false
+      portalCooldinate.x = 0
+      portalCooldinate.y = 0
+      location = locationList[1]
+      objects = []
       setWave()
     }
   }
@@ -1990,7 +2001,7 @@ const setMap = () => {
   objects.push({x: offset.x - l*(251-468), y: offset.y - l*(435-190), width: l*21, height: l*29})
 }
 const setStore = () => {
-  const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
+  const offset = {x: ownPosition.x, y: ownPosition.y}
   const Spot = class {
     constructor(dx, dy, w, h, Id, img) {
       this.x = offset.x + dx
@@ -2460,8 +2471,10 @@ const mainProcess = () => {
   if (angle !== 0) angle = 0
   inventoryProcess()
 
-  if (location === locationList[0]) storeProcess()
-  else if (location === locationList[1]) combatProcess()
+  if (location === locationList[0]) {
+    storeProcess()
+    if (portalFlag) portalProcess()
+  } else if (location === locationList[1]) combatProcess()
 }
 const pauseProcess = () => {
   if (key[action.pause].isFirst()) state = 'main'
@@ -2613,8 +2626,14 @@ const drawPortal = () => {
     context.textAlign = 'center'
     context.fillStyle = ' hsl(30, 100%, 50%)'
     context.font = `${size}px sans-serif`
-    context.fillText('Return to Base?', canvas.offsetWidth / 2, canvas.offsetHeight / 5)
-    portalConfirmBox.forEach(v => {
+    if (location === locationList[0]) {
+      context.fillText(`Continue to round ${wave.number + 1}`, canvas.offsetWidth / 2, canvas.offsetHeight * 3 / 8)
+    } else { // location === locationList[1]
+      context.fillText('Return to Base?', canvas.offsetWidth / 2, canvas.offsetHeight / 5)
+    }
+    portalConfirmBox.forEach((v, i) => {
+      if (location === locationList[0] && (i !== 2)) return
+      if (location === locationList[1] && (i === 2)) return
       if (isInner(v, cursor)) {
         context.fillStyle = 'hsl(30, 100%, 70%)'
         context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
