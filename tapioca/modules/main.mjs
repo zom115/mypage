@@ -212,11 +212,12 @@ let ownStepLimit = 50
 
 const Weapon = class {
   constructor(
-    name, category, baseDamage, damage, slideSpeed, bulletSpeed, baseBulletLife, bulletLife, baseReloadSpeed,
+    name, category, mode, baseDamage, damage, slideSpeed, bulletSpeed, baseBulletLife, bulletLife, baseReloadSpeed,
     reloadSpeed, magazineSize, magazines, loadingSpeed, penetrationForce, limitBreak, limitBreakIndex
   ) {
     this.name = name
     this.category = category
+    this.mode = mode
     this.baseDamage = baseDamage
     this.damage = damage
     this.slideSpeed = slideSpeed
@@ -1189,6 +1190,7 @@ const setWeapon = i => { // TODO: Lottery
   const weapon = new Weapon(
     `# ${wave.number}`,
     'SMG',
+    'SEMI',
     baseDamage,
     damage,
     slideSpeed,
@@ -2280,6 +2282,7 @@ const reset = () => {
   inventory[selectSlot] = new Weapon(
     'INITIAL',
     'HG',
+    'SEMI',
     maxDamageInitial,
     maxDamageInitial,
     slide.weight,
@@ -2299,6 +2302,7 @@ const reset = () => {
   inventory[4] = new Weapon(
     'てすと',
     '(仮)',
+    'SEMI',
     maxDamageInitial,
     maxDamageInitial,
     slide.weight,
