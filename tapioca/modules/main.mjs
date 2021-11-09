@@ -1847,8 +1847,7 @@ const waveProcess = () => {
   } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
     wave.roundInterval += intervalDiffTime
     if (wave.roundIntervalLimit <= wave.roundInterval) {
-      // if (wave.number % 5 === 0) portalProcess()
-      if (wave.number === 2) portalProcess()
+      if (wave.number % 5 === 0) portalProcess()
       else setWave()
     }
   }
