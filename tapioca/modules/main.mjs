@@ -1695,6 +1695,7 @@ const drawWeaponDetail = (box, i) => {
     strokeText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
     if (!inventoryFlag) return
     const dictionary = {
+      MODE: inventory[i].mode,
       DAMAGE: inventory[i].damage.toFixed(0),
       'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
     }
