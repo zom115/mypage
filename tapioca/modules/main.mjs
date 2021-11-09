@@ -503,6 +503,36 @@ const getKeyName = key => {
 }
 
 // for display
+let portalConfirmBox = [{
+  offsetX: canvas.offsetWidth * 1 / 3,
+  offsetY: canvas.offsetHeight * 2 / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Yes'
+}, {
+  offsetX: canvas.offsetWidth * 2 / 3,
+  offsetY: canvas.offsetHeight * 2 / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'No(Continue)'
+}
+]
+context.save()
+context.textAlign = 'center'
+context.textBaseline = 'middle'
+context.font = `${size}px sans-serif`
+portalConfirmBox.forEach(v => {
+  const measure = context.measureText(v.text)
+  v.absoluteX = v.offsetX - measure.actualBoundingBoxLeft,
+  v.absoluteY = v.offsetY - measure.actualBoundingBoxAscent,
+  v.width = measure.width
+  v.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+})
+context.restore()
 let titleMenuWordArray = []
 const setTitleMenuWord = () => {
   titleMenuWordArray = [
@@ -972,7 +1002,7 @@ const interfaceProcess = () => {
 
   // if (key[action.fire].flag) firingProcess()
 
-  if (inventory[selectSlot].category !== '' && !inventoryFlag && isFire) mouseFiring()
+  if (inventory[selectSlot].category !== '' && isFire && !inventoryFlag && !portalFlag) mouseFiring()
   isFire = false
 
   if (inventory[selectSlot].category !== '') loadingProcess()
@@ -1771,6 +1801,29 @@ const setEnemy = () => {
   })
   if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
 }
+let portalFlag = false
+const portalProcess = () => {
+  if (!portalFlag) {
+    portalFlag = true
+    portalCooldinate.x = ownPosition.x|0
+    portalCooldinate.y = (ownPosition.y - size * 3)|0
+  }
+  if (
+    portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
+    portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
+  ) {
+    if (button(portalConfirmBox[0])) {
+      portalFlag = false
+      location = locationList[0]
+      objects = []
+      setStore()
+    }
+    if (button(portalConfirmBox[1])) {
+      portalFlag = false
+      setWave()
+    }
+  }
+}
 const waveProcess = () => {
   if (wave.enemyCount < wave.enemyLimit) {
     if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
@@ -1782,7 +1835,11 @@ const waveProcess = () => {
     }
   } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
     wave.roundInterval += intervalDiffTime
-    if (wave.roundIntervalLimit <= wave.roundInterval) setWave()
+    if (wave.roundIntervalLimit <= wave.roundInterval) {
+      // if (wave.number % 5 === 0) portalProcess()
+      if (wave.number === 1) portalProcess()
+      else setWave()
+    }
   }
 }
 const setMap = () => {
@@ -2495,9 +2552,85 @@ const drawTitleScreen = () => {
   if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y + size/16
   if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
+
+}
+let portalCooldinate = {x: 0, y: 0}
+let portalParticleTime = 0
+let portalParticle = []
+const drawPortal = () => {
+  const particle = class {
+    constructor(x, y, w, h, dx, dy, life, lightness) {
+      this.x = x
+      this.y = y
+      this.w = w
+      this.h = h
+      this.dx = dx
+      this.dy = dy
+      this.presetLife = life
+      this.life = life
+      this.lightness = lightness
+    }
+    lifeCycle(i) {
+      this.life -= intervalDiffTime
+      if (this.life <= 0) portalParticle.splice(i, 1)
+    }
+    setColor() {
+      const ms = 75
+      const alpha =
+        this.presetLife - ms < this.life ? (this.presetLife - this.life) / ms :
+        this.life < ms ? this.life / ms : 1
+      return `hsla(180, 100%, ${this.lightness}%, ${alpha})`
+    }
+  }
+  portalParticleTime += intervalDiffTime
+  const interval = 100 // ms
+  if (interval <= portalParticleTime) {
+    portalParticleTime -= interval + Math.random()
+    portalParticle.push(new particle(
+      portalCooldinate.x + (Math.random() - .5) * size, portalCooldinate.y + (Math.random() / 2 - .75) * size,
+      1, size / 2, 0, -.15,
+      600 + Math.random() * 300, 80 + Math.random() * 20))
+  }
+  context.fillStyle =
+    `hsl(180, 100%, ${85 + ((1 + Math.sin(globalTimestamp / 600)) / 2) * 15}%)`
+  context.beginPath()
+  context.ellipse(
+    relativeX(portalCooldinate.x), relativeY(portalCooldinate.y), size * .7, size * .3, 0, 0, 2 * Math.PI, false)
+  context.fill()
+  portalParticle.forEach((v, i) => {
+    v.lifeCycle(i)
+    context.fillStyle = v.setColor()
+    context.fillRect(relativeX(v.x), relativeY(v.y), v.w, v.h)
+    v.x += v.dx
+    v.y += v.dy
+  })
+
+  if (
+    portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
+    portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
+  ) {
+    context.save()
+    context.textAlign = 'center'
+    context.fillStyle = ' hsl(30, 100%, 50%)'
+    context.font = `${size}px sans-serif`
+    context.fillText('Return to Base?', canvas.offsetWidth / 2, canvas.offsetHeight / 5)
+    portalConfirmBox.forEach(v => {
+      if (isInner(v, cursor)) {
+        context.fillStyle = 'hsl(30, 100%, 70%)'
+        context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
+      }
+      context.textAlign = 'center'
+      context.textBaseline = 'middle'
+      context.font = `${size}px sans-serif`
+      context.fillStyle = 'hsl(210, 100%, 70%)'
+      context.fillText(v.text, v.offsetX, v.offsetY)
+    })
+    context.restore()
+  }
 }
 const drawMain = () => {
   drawField()
+  if (portalFlag) drawPortal()
   if (0 < objects.length) drawObjects()
   if (0 < clonePosition.length) drawClone()
   if (0 < bullets.length) drawBullets()
