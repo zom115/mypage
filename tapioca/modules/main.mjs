@@ -208,6 +208,7 @@ let direction = 0
 let angle = 0
 let ownStepLimit = 50
 
+let weaponModeList = ['MANUAL', 'SEMI', 'AUTO', 'BURST']
 const Weapon = class {
   constructor(
     name, category, mode, baseDamage, damage, slideSpeed, bulletSpeed, baseBulletLife, bulletLife, baseReloadSpeed,
@@ -704,7 +705,7 @@ const directionCalc = arg => {
   return {dx, dy}
 }
 const mouseFiring = () => {
-  if (inventory[selectSlot].mode === 'SEMI') inventory[selectSlot].disconnector = true
+  if (inventory[selectSlot].mode === weaponModeList[1]) inventory[selectSlot].disconnector = true
   if (
     reload.auto === 'ON' &&
     inventory[selectSlot].magazines[firearm.grip] <= 0 &&
@@ -1015,7 +1016,7 @@ const interfaceProcess = () => {
     if (mouseDownState && !inventoryFlag && !portalFlag && !inventory[selectSlot].disconnector) {
       mouseFiring()
     }
-    if (inventory[selectSlot].mode === 'SEMI' && !mouseDownState) {
+    if (inventory[selectSlot].mode === weaponModeList[1] && !mouseDownState) {
       inventory[selectSlot].disconnector = false
     }
     loadingProcess()
@@ -1195,7 +1196,7 @@ const setWeapon = i => { // TODO: Lottery
   const weapon = new Weapon(
     `# ${wave.number}`,
     'SMG',
-    'SEMI',
+    weaponModeList[1],
     baseDamage,
     damage,
     slideSpeed,
@@ -2288,7 +2289,7 @@ const reset = () => {
   inventory[selectSlot] = new Weapon(
     'INITIAL',
     'HG',
-    'SEMI',
+    weaponModeList[1],
     maxDamageInitial,
     maxDamageInitial,
     slide.weight,
@@ -2308,7 +2309,7 @@ const reset = () => {
   inventory[4] = new Weapon(
     'てすと',
     '(仮)',
-    'AUTO',
+    weaponModeList[2],
     maxDamageInitial,
     maxDamageInitial,
     slide.weight,
