@@ -1671,7 +1671,6 @@ const drawIndicator = () => {
     0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
     0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
     'hsla(0, 100%, 30%, .7)'
-  if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
   c = {x: size, y: canvas.offsetHeight - size}
   drawText(size * 1.5, 'left', wave.number, c)
 }
@@ -2466,6 +2465,7 @@ const combatProcess = () => {
     clonePosition = []
     reviveFlag = false
   }
+  if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
 }
 const mainProcess = () => {
   interfaceProcess()
@@ -2659,7 +2659,7 @@ const drawMain = () => {
   if (0 < dropItems.length) drawDropItems()
   drawMyself()
   drawDirection()
-  if (location === locationList[1]) drawIndicator()
+  drawIndicator()
   drawSlot()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
