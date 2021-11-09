@@ -24,7 +24,6 @@ canvas.addEventListener('mouseover', () => {
 }, false)
 let cursor = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mousemove', e => cursor = e, false)
-let isFire = false
 let mouseDownPos = {offsetX: 0, offsetY: 0}
 let mouseDownState = false
 let isMouseDown = () => {
@@ -42,7 +41,6 @@ canvas.addEventListener('mousedown', e => {
   mouseDownPos = e
   mouseDownState = true
   mouseUpState = false
-  if (state === 'main') isFire = true
 }, false)
 let mouseUpPos = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mouseup', e => {
@@ -232,6 +230,7 @@ const Weapon = class {
     this.penetrationForce = penetrationForce
     this.limitBreak = limitBreak
     this.limitBreakIndex = limitBreakIndex
+    this.disconnector = false
   }
 }
 let inventory = []
@@ -705,6 +704,7 @@ const directionCalc = arg => {
   return {dx, dy}
 }
 const mouseFiring = () => {
+  if (inventory[selectSlot].mode === 'SEMI') inventory[selectSlot].disconnector = true
   if (
     reload.auto === 'ON' &&
     inventory[selectSlot].magazines[firearm.grip] <= 0 &&
@@ -1011,11 +1011,16 @@ const interfaceProcess = () => {
 
   // if (key[action.fire].flag) firingProcess()
 
-  if (inventory[selectSlot].category !== '' && isFire && !inventoryFlag && !portalFlag) mouseFiring()
-  isFire = false
-
-  if (inventory[selectSlot].category !== '') loadingProcess()
-  if (inventory[selectSlot].category !== '' && key[action.change].isFirst()) magazineForword() // TODO: to consider
+  if (inventory[selectSlot].category !== '') {
+    if (mouseDownState && !inventoryFlag && !portalFlag && !inventory[selectSlot].disconnector) {
+      mouseFiring()
+    }
+    if (inventory[selectSlot].mode === 'SEMI' && !mouseDownState) {
+      inventory[selectSlot].disconnector = false
+    }
+    loadingProcess()
+    if (key[action.change].isFirst()) magazineForword() // TODO: to consider
+  }
   if (dashCoolTimer() === 0 && key[action.dash].isFirst()) dashProcess()
   if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed) moving()
   if (key[action.debug].isFirst()) debugMode = !debugMode
@@ -2303,7 +2308,7 @@ const reset = () => {
   inventory[4] = new Weapon(
     'てすと',
     '(仮)',
-    'SEMI',
+    'AUTO',
     maxDamageInitial,
     maxDamageInitial,
     slide.weight,
@@ -2907,7 +2912,7 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    slot: selectSlot
+    state: mouseDownState
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
