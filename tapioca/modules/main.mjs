@@ -1848,7 +1848,7 @@ const waveProcess = () => {
     wave.roundInterval += intervalDiffTime
     if (wave.roundIntervalLimit <= wave.roundInterval) {
       // if (wave.number % 5 === 0) portalProcess()
-      if (wave.number === 1) portalProcess()
+      if (wave.number === 2) portalProcess()
       else setWave()
     }
   }
@@ -2030,6 +2030,9 @@ const setStore = () => {
         if (button(box)) {
           location = locationList[1]
           objects = []
+          portalFlag = false
+          wave.number = 0
+          setWave()
         }
       }
     }
