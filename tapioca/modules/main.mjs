@@ -209,19 +209,21 @@ let angle = 0
 let ownStepLimit = 50
 
 let weaponModeList = ['MANUAL', 'SEMI', 'AUTO', 'BURST']
+let weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
 const Weapon = class {
   constructor(
-    name, category, mode, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
+    name, category, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
     magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, limitBreak, limitBreakIndex
   ) {
     this.name = name
     this.category = category
     this.mode = mode
+    this.rarity = rarity
     this.damage = damage
     this.slideSpeed = slideSpeed
     this.bulletSpeed = bulletSpeed
     this.bulletLife = bulletLife
-    this.baseReloadSpeed= reloadSpeed
+    this.baseReloadSpeed = reloadSpeed
     this.reloadSpeed = reloadSpeed
     this.magazineSize = magazineSize
     this.magazines = magazines
@@ -1186,9 +1188,13 @@ const drawField = () => {
     }
   }
 }
-const setWeapon = i => { // TODO: Lottery
-  // 70 * (.5 + 0-1 *(.5 + 0-1 * round * .5))
-  const baseDamage =
+const setWeapon = i => {
+  // TODO: Lottery
+  // Rarity
+  // Category
+  // Mode
+  // Mag size
+  const baseDamage = // 70 * (.5 + 0-1 * (.5 + 0-1 * round * .5))
     maxDamageInitial * (.5 + Math.random() * (.5 + Math.random() * wave.number * .5))
   const magazineSize = 1 + ~~(Math.random() * (magSizeInitial + wave.number))
   const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
@@ -1208,6 +1214,7 @@ const setWeapon = i => { // TODO: Lottery
     `# ${wave.number}`,
     'SMG',
     weaponModeList[1],
+    weaponRarityList[0],
     damage,
     slideSpeed,
     bulletSpeed,
@@ -2300,6 +2307,7 @@ const reset = () => {
     'INITIAL',
     'HG',
     weaponModeList[1],
+    weaponRarityList[0],
     maxDamageInitial,
     slide.weight,
     cartridgeInfo.speed,
@@ -2318,6 +2326,7 @@ const reset = () => {
     'てすと',
     '(仮)',
     weaponModeList[3],
+    weaponRarityList[0],
     maxDamageInitial,
     slide.weight,
     cartridgeInfo.speed,
@@ -2918,9 +2927,7 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    state: inventory[selectSlot].round,
-    disco: inventory[selectSlot].disconnector
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
