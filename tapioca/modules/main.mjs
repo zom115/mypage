@@ -1018,7 +1018,7 @@ const weaponProcess = () => {
     inventory[selectSlot].disconnector = false
     inventory[selectSlot].round = 0
   }
-  loadingProcess()
+  // loadingProcess()
   if (key[action.change].isFirst()) magazineForword() // TODO: to consider
 }
 const interfaceProcess = () => {
@@ -1280,19 +1280,20 @@ const enemyProcess = () => {
         if (enemy.imageID === enemyImageAmount) {
           enemies[index] = setWeapon()
           // setWeapon(index)
+          enemies[index].unavailableTime = 30
+          enemies[index].x = c.x
+          enemies[index].y = c.y
+          dropItems.push(enemies.splice(index, 1)[0])
         } else {
-          const waveWeight = (wave.number <= 4) ? 2 : 1
-          enemies[index] = {
-            type: 'cartridge',
-            life: 630,
-            dissapearTime: 660,
-            amount: waveWeight * wave.number
-          }
+          enemies.splice(index, 1)
+          // const waveWeight = (wave.number <= 4) ? 2 : 1
+          // enemies[index] = {
+          //   type: 'cartridge',
+          //   life: 630,
+          //   dissapearTime: 660,
+          //   amount: waveWeight * wave.number
+          // }
         }
-        enemies[index].unavailableTime = 30
-        enemies[index].x = c.x
-        enemies[index].y = c.y
-        dropItems.push(enemies.splice(index, 1)[0])
       } return
     }
     const width = ownPosition.x - enemy.x
