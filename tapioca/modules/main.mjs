@@ -210,9 +210,9 @@ let ownStepLimit = 50
 
 let weaponModeList = ['MANUAL', 'SEMI', 'AUTO', 'BURST']
 const Weapon = class {
-  constructor(
+  constructor( // TODO: Remove 'base' arguments
     name, category, mode, baseDamage, damage, slideSpeed, bulletSpeed, baseBulletLife, bulletLife, baseReloadSpeed,
-    reloadSpeed, magazineSize, magazines, loadingSpeed, penetrationForce, limitBreak, limitBreakIndex
+    reloadSpeed, magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, limitBreak, limitBreakIndex
   ) {
     this.name = name
     this.category = category
@@ -229,6 +229,8 @@ const Weapon = class {
     this.magazines = magazines
     this.loadingSpeed = loadingSpeed
     this.penetrationForce = penetrationForce
+    this.round = 0
+    this.roundLimit = roundLimit
     this.limitBreak = limitBreak
     this.limitBreakIndex = limitBreakIndex
     this.disconnector = false
@@ -705,7 +707,6 @@ const directionCalc = arg => {
   return {dx, dy}
 }
 const mouseFiring = () => {
-  if (inventory[selectSlot].mode === weaponModeList[1]) inventory[selectSlot].disconnector = true
   if (
     reload.auto === 'ON' &&
     inventory[selectSlot].magazines[firearm.grip] <= 0 &&
@@ -760,6 +761,7 @@ const mouseFiring = () => {
   */
 
   firearm.chamberFlag = false
+  if (inventory[selectSlot].mode === weaponModeList[3]) inventory[selectSlot].round += 1
 }
 const firingProcess = () => {
   if (
@@ -866,6 +868,9 @@ const reloadProcess = () => {
     }
   } else return
   reload.time = 0
+  if (inventory[selectSlot].mode === weaponModeList[3] && !mouseDownState) {
+    inventory[selectSlot].round = 0
+  }
 }
 const loadingProcess = () => {
   if (slide.state !== 'done' && firearm.chamberFlag) return
@@ -1013,12 +1018,29 @@ const interfaceProcess = () => {
   // if (key[action.fire].flag) firingProcess()
 
   if (inventory[selectSlot].category !== '') {
-    if (mouseDownState && !inventoryFlag && !portalFlag && !inventory[selectSlot].disconnector) {
+    if (((
+      mouseDownState && !inventoryFlag && !portalFlag) || (
+      inventory[selectSlot].mode === weaponModeList[3] && 0 < inventory[selectSlot].round)) &&
+      !inventory[selectSlot].disconnector
+    ) {
       mouseFiring()
     }
     if (inventory[selectSlot].mode === weaponModeList[1] && !mouseDownState) {
       inventory[selectSlot].disconnector = false
     }
+    if (
+      inventory[selectSlot].mode === weaponModeList[3] &&
+      inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
+      !mouseDownState
+    ) {
+      inventory[selectSlot].disconnector = false
+      inventory[selectSlot].round = 0
+    }
+    if (
+      inventory[selectSlot].mode === weaponModeList[1] || (
+      inventory[selectSlot].mode === weaponModeList[3] &&
+      inventory[selectSlot].round === inventory[selectSlot].roundLimit)
+    ) inventory[selectSlot].disconnector = true
     loadingProcess()
     if (key[action.change].isFirst()) magazineForword() // TODO: to consider
   }
@@ -1209,6 +1231,7 @@ const setWeapon = i => { // TODO: Lottery
     magazines,
     loadingSpeed,
     penetrationForce,
+    0,
     4000,
     0
   )
@@ -2302,6 +2325,7 @@ const reset = () => {
     Array(2).fill(magSizeInitial),
     loading. weight,
     0,
+    0,
 
     4000,
     0
@@ -2309,7 +2333,7 @@ const reset = () => {
   inventory[4] = new Weapon(
     'てすと',
     '(仮)',
-    weaponModeList[2],
+    weaponModeList[3],
     maxDamageInitial,
     maxDamageInitial,
     slide.weight,
@@ -2322,6 +2346,7 @@ const reset = () => {
     Array(2).fill(magSizeInitial),
     loading. weight,
     0,
+    3,
 
     4000,
     0
@@ -2913,7 +2938,8 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    state: mouseDownState
+    state: inventory[selectSlot].round,
+    disco: inventory[selectSlot].disconnector
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
