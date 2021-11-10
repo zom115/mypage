@@ -208,7 +208,7 @@ let direction = 0
 let angle = 0
 let ownStepLimit = 50
 
-const weaponModeList = ['MANUAL', 'SEMI', 'AUTO', 'BURST']
+const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
 const weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
 const weaponRatiryColorList = [
   'hsl(0, 0%, 100%)',
@@ -763,10 +763,10 @@ const mouseFiring = () => {
   */
 
   firearm.chamberFlag = false
-  if (inventory[selectSlot].mode === weaponModeList[3]) inventory[selectSlot].round += 1
+  if (inventory[selectSlot].mode === weaponModeList[2]) inventory[selectSlot].round += 1
   if (
     inventory[selectSlot].mode === weaponModeList[1] || (
-    inventory[selectSlot].mode === weaponModeList[3] &&
+    inventory[selectSlot].mode === weaponModeList[2] &&
     inventory[selectSlot].round === inventory[selectSlot].roundLimit)
   ) inventory[selectSlot].disconnector = true
 }
@@ -875,7 +875,7 @@ const reloadProcess = () => {
     }
   } else return
   reload.time = 0
-  if (inventory[selectSlot].mode === weaponModeList[3] && !mouseDownState) {
+  if (inventory[selectSlot].mode === weaponModeList[2] && !mouseDownState) {
     inventory[selectSlot].round = 0
   }
 }
@@ -1002,7 +1002,7 @@ const weaponProcess = () => {
 
   if (((
     mouseDownState && !inventoryFlag && !portalFlag) || (
-    inventory[selectSlot].mode === weaponModeList[3] && 0 < inventory[selectSlot].round)) &&
+    inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
     !inventory[selectSlot].disconnector
   ) {
     mouseFiring()
@@ -1011,7 +1011,7 @@ const weaponProcess = () => {
     inventory[selectSlot].disconnector = false
   }
   if (
-    inventory[selectSlot].mode === weaponModeList[3] &&
+    inventory[selectSlot].mode === weaponModeList[2] &&
     inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
     !mouseDownState
   ) {
@@ -1197,37 +1197,64 @@ const drawField = () => {
   }
 }
 const setWeapon = () => {
-  // TODO: Lottery
-  const rarity =
-    Math.random() < .5 ? weaponRarityList[0] : // 1 / 2
-    Math.random() < .5 ? weaponRarityList[1] : // 1 / 4
-    Math.random() < .5 ? weaponRarityList[2] : // 1 / 8
-    Math.random() < .5 ? weaponRarityList[3] : // 1 / 16
-    weaponRarityList[0] // 1 / 16
-  // Category
-  // Mode
-  // Mag size
-  const baseDamage = // 70 * (.5 + 0-1 * (.5 + 0-1 * round * .5))
-    maxDamageInitial * (.5 + Math.random() * (.5 + Math.random() * wave.number * .5))
-  const magazineSize = 1 + ~~(Math.random() * (magSizeInitial + wave.number))
+  let rarityIndex = 0
+  const roundRistrict =
+    wave.number < 6 ? 3 :
+    wave.number < 11 ? 2 :
+    wave.number < 16 ? 1 : 0
+  for (let i = 0; i < weaponRarityList.length - (1 + roundRistrict); i++) {
+    if (.5 < Math.random()) rarityIndex += 1
+  }
+  const categoryList = ['HG', 'SMG', 'AR']
+  let categoryIndex = 0
+  for (let i = 0; i < 2; i++) {
+    if (.5 < Math.random()) categoryIndex += 1
+  }
+  let modeIndex = 1 // TODO: incomplete manual mode
+  for (let i = 0; i < 2; i++) {
+    if (.5 < Math.random()) modeIndex += 1
+  }
+  const HgMinmagazine = 5
+  const HgExtendMag = 15
+  const SmgMinMag = 15
+  const SmgExtendMag = 20
+  const ArMinmagazine = 10
+  const ArExtendMag = 40
+  const magazineSize =
+    categoryIndex === 0 ? (HgMinmagazine + HgExtendMag * Math.random())|0 : // max 20
+    categoryIndex === 1 ? (SmgMinMag + SmgExtendMag * Math.random())|0 : // max 35
+    (ArMinmagazine + ArExtendMag * Math.random())|0 // max 50
+  const HgBaseDamage = 70
+  const SmgBaseDamage = 100
+  const ArBaseDamage = 140
+  const rarityMultiple = [
+    1 + Math.random() * .25, // Common
+    1 + Math.random() * .5, // Uncommon
+    1 + Math.random() * .75, // Rare
+    1 + Math.random() // Epic
+  ]
+  // TODO: Low mag(like revolver) bonus
+  // TODO: Semi auto(like FN FAL) bonus
+  const damage =
+    categoryIndex === 0 ? (HgBaseDamage * rarityMultiple[rarityIndex])|0 :
+    categoryIndex === 1 ? (SmgBaseDamage * rarityMultiple[rarityIndex])|0 :
+    (ArBaseDamage * rarityMultiple[rarityIndex])|0
+
   const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
   const slideSpeed = slide.weight * (.75 + magSizeRatio + Math.random() * .25)
-  const additionalDamage =  (1 < slideSpeed) ? slideSpeed - 1 : 0
-  const damage = baseDamage + maxDamageInitial * (
-      Math.random() * (wave.number * additionalDamage)
-    ) * (1 + magSizeRatio)
   const bulletSpeed = cartridgeInfo.speed * (.5 + Math.random() * 1.5)
   const bulletLife = cartridgeInfo.life * (.5 + Math.random() * .5)
   const reloadSpeed = reload.weight * (.25 + (1 - magSizeRatio) / 2 + Math.random() * .25)
   // the smaller the bigger
-  const magazines = Array(1 + ~~(Math.random() * (2 + ~~(wave.number/10)))).fill(magazineSize)
+  const magazines = Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
   const loadingSpeed = loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25)
   const penetrationForce = Math.random()
+  const roundLimit = modeIndex === 2 ? (2 + 3 * Math.random())|0 : 0
   const weapon = new Weapon(
     `# ${wave.number}`,
-    'SMG',
-    weaponModeList[1],
-    rarity,
+    categoryList[categoryIndex],
+    weaponModeList[modeIndex],
+    weaponRarityList[rarityIndex],
     damage,
     slideSpeed,
     bulletSpeed,
@@ -1237,7 +1264,7 @@ const setWeapon = () => {
     magazines,
     loadingSpeed,
     penetrationForce,
-    0,
+    roundLimit,
     4000,
     0
   )
@@ -1731,7 +1758,7 @@ const drawWeaponDetail = (box, i) => {
     strokeText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
     if (!inventoryFlag) return
     const dictionary = {
-      MODE: inventory[i].mode === weaponModeList[3] ? `${inventory[i].roundLimit}-R ${inventory[i].mode}` :
+      MODE: inventory[i].mode === weaponModeList[2] ? `${inventory[i].roundLimit}-R ${inventory[i].mode}` :
         inventory[i].mode,
       DAMAGE: inventory[i].damage.toFixed(0),
       'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
@@ -2318,7 +2345,7 @@ const reset = () => {
     inventory.push({category: ''})
   }
   inventory[selectSlot] = new Weapon(
-    'INITIAL',
+    'T1911',
     'HG',
     weaponModeList[1],
     weaponRarityList[0],
@@ -2328,29 +2355,10 @@ const reset = () => {
     cartridgeInfo.life,
     reload.weight,
     magSizeInitial,
-    Array(2).fill(magSizeInitial),
-    loading. weight,
+    Array(5).fill(magSizeInitial),
+    loading.weight,
     0,
     0,
-
-    4000,
-    0
-  )
-  inventory[1] = new Weapon(
-    'てすと',
-    'SMG',
-    weaponModeList[3],
-    weaponRarityList[2],
-    maxDamageInitial,
-    slide.weight,
-    cartridgeInfo.speed,
-    cartridgeInfo.life,
-    reload.weight,
-    magSizeInitial,
-    Array(2).fill(magSizeInitial),
-    loading. weight,
-    0,
-    3,
 
     4000,
     0
