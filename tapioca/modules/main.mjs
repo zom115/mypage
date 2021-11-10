@@ -1195,9 +1195,14 @@ const drawField = () => {
     }
   }
 }
-const setWeapon = i => {
+const setWeapon = () => {
   // TODO: Lottery
-  // Rarity
+  const rarity =
+    Math.random() < .5 ? weaponRarityList[0] : // 1 / 2
+    Math.random() < .5 ? weaponRarityList[1] : // 1 / 4
+    Math.random() < .5 ? weaponRarityList[2] : // 1 / 8
+    Math.random() < .5 ? weaponRarityList[3] : // 1 / 16
+    weaponRarityList[0] // 1 / 16
   // Category
   // Mode
   // Mag size
@@ -1221,7 +1226,7 @@ const setWeapon = i => {
     `# ${wave.number}`,
     'SMG',
     weaponModeList[1],
-    weaponRarityList[0],
+    rarity,
     damage,
     slideSpeed,
     bulletSpeed,
@@ -1236,7 +1241,7 @@ const setWeapon = i => {
     0
   )
   Object.assign(weapon, {type: 'weapon'})
-  enemies[i] = weapon
+  return weapon
 }
 const enemyProcess = () => {
   enemies.forEach((enemy, index) => {
@@ -1245,7 +1250,8 @@ const enemyProcess = () => {
       if (enemy.timer <= 0) {
         const c = {x: enemy.x, y: enemy.y}
         if (enemy.imageID === enemyImageAmount) {
-          setWeapon(index)
+          enemies[index] = setWeapon()
+          // setWeapon(index)
         } else {
           const waveWeight = (wave.number <= 4) ? 2 : 1
           enemies[index] = {
