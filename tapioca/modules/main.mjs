@@ -743,13 +743,6 @@ const mouseFiring = () => {
     inventory[selectSlot].damage,
     inventory[selectSlot].penetrationForce
   ))
-  // setBullet(
-  //   inventory[selectSlot].bulletLife,
-  //   ownPosition.x,
-  //   ownPosition.y,
-  //   dx * inventory[selectSlot].bulletSpeed,
-  //   dy * inventory[selectSlot].bulletSpeed
-  // )
 
   /*
   { // recoil / blowback
