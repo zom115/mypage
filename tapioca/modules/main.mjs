@@ -715,6 +715,7 @@ const directionCalc = arg => {
   return {dx, dy}
 }
 const mouseFiring = () => {
+  console.log('hello')
   if (
     reload.auto === 'ON' &&
     inventory[selectSlot].magazines[firearm.grip] <= 0 &&
@@ -763,6 +764,11 @@ const mouseFiring = () => {
 
   firearm.chamberFlag = false
   if (inventory[selectSlot].mode === weaponModeList[3]) inventory[selectSlot].round += 1
+  if (
+    inventory[selectSlot].mode === weaponModeList[1] || (
+    inventory[selectSlot].mode === weaponModeList[3] &&
+    inventory[selectSlot].round === inventory[selectSlot].roundLimit)
+  ) inventory[selectSlot].disconnector = true
 }
 const firingProcess = () => {
   if (
@@ -1012,11 +1018,6 @@ const weaponProcess = () => {
     inventory[selectSlot].disconnector = false
     inventory[selectSlot].round = 0
   }
-  if (
-    inventory[selectSlot].mode === weaponModeList[1] || (
-    inventory[selectSlot].mode === weaponModeList[3] &&
-    inventory[selectSlot].round === inventory[selectSlot].roundLimit)
-  ) inventory[selectSlot].disconnector = true
   loadingProcess()
   if (key[action.change].isFirst()) magazineForword() // TODO: to consider
 }
@@ -2940,7 +2941,8 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
+    dis: inventory[selectSlot].disconnector
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
