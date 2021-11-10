@@ -978,6 +978,40 @@ const bomb = () => {
     enemy.timer = 30
   })
 }
+const weaponProcess = () => {
+  if (key[action.reload].isFirst() && reload.time === 0 && reload.state === 'done') {
+    inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
+    reloadProcess()
+  } else if (0 < reload.time || reload.state !== 'done') reloadProcess()
+
+  // if (key[action.fire].flag) firingProcess()
+
+  if (((
+    mouseDownState && !inventoryFlag && !portalFlag) || (
+    inventory[selectSlot].mode === weaponModeList[3] && 0 < inventory[selectSlot].round)) &&
+    !inventory[selectSlot].disconnector
+  ) {
+    mouseFiring()
+  }
+  if (inventory[selectSlot].mode === weaponModeList[1] && !mouseDownState) {
+    inventory[selectSlot].disconnector = false
+  }
+  if (
+    inventory[selectSlot].mode === weaponModeList[3] &&
+    inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
+    !mouseDownState
+  ) {
+    inventory[selectSlot].disconnector = false
+    inventory[selectSlot].round = 0
+  }
+  if (
+    inventory[selectSlot].mode === weaponModeList[1] || (
+    inventory[selectSlot].mode === weaponModeList[3] &&
+    inventory[selectSlot].round === inventory[selectSlot].roundLimit)
+  ) inventory[selectSlot].disconnector = true
+  loadingProcess()
+  if (key[action.change].isFirst()) magazineForword() // TODO: to consider
+}
 const interfaceProcess = () => {
   if (key[action.pause].isFirst()) state = 'pause'
   if (key[action.primary].isFirst()) selectSlot = 0
@@ -986,9 +1020,7 @@ const interfaceProcess = () => {
   if (key[action.rotateSlot].isFirst()) {
     selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
   }
-  if (key[action.revarseRotateSlot].isFirst()) {
-    selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
-  }
+  if (key[action.revarseRotateSlot].isFirst()) selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
   if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
   if (key[action.lookUp].flag) angle = (angle+1)|0
@@ -1001,42 +1033,7 @@ const interfaceProcess = () => {
   if (key[action.left].flag) direction = (direction+8)|0
   if (0 < angle) currentDirection = angle
   else if (direction !== 0) currentDirection = direction
-  if (inventory[selectSlot].category !== '') {
-    if (key[action.reload].isFirst() && reload.time === 0 && reload.state === 'done') {
-      inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
-      reloadProcess()
-    } else if (0 < reload.time || reload.state !== 'done') reloadProcess()
-  }
-
-  // if (key[action.fire].flag) firingProcess()
-
-  if (inventory[selectSlot].category !== '') {
-    if (((
-      mouseDownState && !inventoryFlag && !portalFlag) || (
-      inventory[selectSlot].mode === weaponModeList[3] && 0 < inventory[selectSlot].round)) &&
-      !inventory[selectSlot].disconnector
-    ) {
-      mouseFiring()
-    }
-    if (inventory[selectSlot].mode === weaponModeList[1] && !mouseDownState) {
-      inventory[selectSlot].disconnector = false
-    }
-    if (
-      inventory[selectSlot].mode === weaponModeList[3] &&
-      inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
-      !mouseDownState
-    ) {
-      inventory[selectSlot].disconnector = false
-      inventory[selectSlot].round = 0
-    }
-    if (
-      inventory[selectSlot].mode === weaponModeList[1] || (
-      inventory[selectSlot].mode === weaponModeList[3] &&
-      inventory[selectSlot].round === inventory[selectSlot].roundLimit)
-    ) inventory[selectSlot].disconnector = true
-    loadingProcess()
-    if (key[action.change].isFirst()) magazineForword() // TODO: to consider
-  }
+  if (inventory[selectSlot].category !== '') weaponProcess()
   if (dashCoolTimer() === 0 && key[action.dash].isFirst()) dashProcess()
   if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed) moving()
   if (key[action.debug].isFirst()) debugMode = !debugMode
