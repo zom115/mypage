@@ -3003,6 +3003,11 @@ imagePathList.forEach(path => {
   }
 })
 const timerId = setInterval(() => { // loading monitoring
+  context.save()
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+  context.restore()
   if (loadedList.length === imagePathList.length) { // untrustworthy length in associative
     clearInterval(timerId)
     main()
