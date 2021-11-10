@@ -208,8 +208,15 @@ let direction = 0
 let angle = 0
 let ownStepLimit = 50
 
-let weaponModeList = ['MANUAL', 'SEMI', 'AUTO', 'BURST']
-let weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
+const weaponModeList = ['MANUAL', 'SEMI', 'AUTO', 'BURST']
+const weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
+const weaponRatiryColorList = [
+  'hsl(0, 0%, 100%)',
+  'hsl(120, 100%, 75%)',
+  'hsl(210, 100%, 50%)',
+  'hsl(270, 100%, 50%)',
+  'hsl(30, 100%, 50%)',
+]
 const Weapon = class {
   constructor(
     name, category, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
@@ -1698,11 +1705,11 @@ const drawIndicator = () => {
   c = {x: size, y: canvas.offsetHeight - size}
   drawText(size * 1.5, 'left', wave.number, c)
 }
-const drawWeaponCategory = (box, object) => {
-  context.fillStyle= 'hsl(0, 0%, 100%)'
+const drawWeaponCategory = (box, weapon) => {
+  context.fillStyle= weaponRatiryColorList[weaponRarityList.indexOf(weapon.rarity)]
   context.textAlign = 'center'
   context.font = `${size * .75}px sans-serif`
-  context.fillText(object.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
+  context.fillText(weapon.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
 }
 const drawWeaponDetail = (box, i) => {
   if (inventory[i].category !== '' && isInner(box, cursor)) {
@@ -2322,11 +2329,11 @@ const reset = () => {
     4000,
     0
   )
-  inventory[4] = new Weapon(
+  inventory[1] = new Weapon(
     'てすと',
-    '(仮)',
+    'SMG',
     weaponModeList[3],
-    weaponRarityList[0],
+    weaponRarityList[2],
     maxDamageInitial,
     slide.weight,
     cartridgeInfo.speed,
