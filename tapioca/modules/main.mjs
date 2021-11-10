@@ -210,30 +210,29 @@ let ownStepLimit = 50
 
 let weaponModeList = ['MANUAL', 'SEMI', 'AUTO', 'BURST']
 const Weapon = class {
-  constructor( // TODO: Remove 'base' arguments
-    name, category, mode, baseDamage, damage, slideSpeed, bulletSpeed, baseBulletLife, bulletLife, baseReloadSpeed,
-    reloadSpeed, magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, limitBreak, limitBreakIndex
+  constructor(
+    name, category, mode, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
+    magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, limitBreak, limitBreakIndex
   ) {
     this.name = name
     this.category = category
     this.mode = mode
-    this.baseDamage = baseDamage
     this.damage = damage
     this.slideSpeed = slideSpeed
     this.bulletSpeed = bulletSpeed
-    this.baseBulletLife = baseBulletLife
     this.bulletLife = bulletLife
-    this.baseReloadSpeed= baseReloadSpeed
+    this.baseReloadSpeed= reloadSpeed
     this.reloadSpeed = reloadSpeed
     this.magazineSize = magazineSize
     this.magazines = magazines
     this.loadingSpeed = loadingSpeed
     this.penetrationForce = penetrationForce
+    this.disconnector = false
     this.round = 0
     this.roundLimit = roundLimit
+
     this.limitBreak = limitBreak
     this.limitBreakIndex = limitBreakIndex
-    this.disconnector = false
   }
 }
 let inventory = []
@@ -1188,9 +1187,9 @@ const drawField = () => {
   }
 }
 const setWeapon = i => { // TODO: Lottery
-  const baseDamage = maxDamageInitial * (
-    .5 + Math.random() * (.5 + Math.random() * wave.number * .5)
-  )
+  // 70 * (.5 + 0-1 *(.5 + 0-1 * round * .5))
+  const baseDamage =
+    maxDamageInitial * (.5 + Math.random() * (.5 + Math.random() * wave.number * .5))
   const magazineSize = 1 + ~~(Math.random() * (magSizeInitial + wave.number))
   const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
   const slideSpeed = slide.weight * (.75 + magSizeRatio + Math.random() * .25)
@@ -1209,13 +1208,10 @@ const setWeapon = i => { // TODO: Lottery
     `# ${wave.number}`,
     'SMG',
     weaponModeList[1],
-    baseDamage,
     damage,
     slideSpeed,
     bulletSpeed,
     bulletLife,
-    bulletLife,
-    reloadSpeed,
     reloadSpeed,
     magazineSize,
     magazines,
@@ -2305,12 +2301,9 @@ const reset = () => {
     'HG',
     weaponModeList[1],
     maxDamageInitial,
-    maxDamageInitial,
     slide.weight,
     cartridgeInfo.speed,
     cartridgeInfo.life,
-    cartridgeInfo.life,
-    reload.weight,
     reload.weight,
     magSizeInitial,
     Array(2).fill(magSizeInitial),
@@ -2326,12 +2319,9 @@ const reset = () => {
     '(仮)',
     weaponModeList[3],
     maxDamageInitial,
-    maxDamageInitial,
     slide.weight,
     cartridgeInfo.speed,
     cartridgeInfo.life,
-    cartridgeInfo.life,
-    reload.weight,
     reload.weight,
     magSizeInitial,
     Array(2).fill(magSizeInitial),
