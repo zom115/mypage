@@ -1930,6 +1930,7 @@ const portalProcess = () => {
     }
     if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) { // Continue
       portalFlag = false
+      storage.setItem('portalFlag', portalFlag)
       portalCooldinate.x = 0
       portalCooldinate.y = 0
       location = locationList[1]
@@ -2135,6 +2136,7 @@ const setStore = () => {
           location = locationList[1]
           objects = []
           portalFlag = false
+          storage.setItem('portalFlag', portalFlag)
           wave.number = 0
           setWave()
         }
