@@ -1839,6 +1839,9 @@ const inventoryProcess = () => {
       afterglow.inventory = 60
     }
   })
+  if (holdSlot.category !== '' && downButton(removeWeaponSlot)) {
+    holdSlot = {category: ''}
+  }
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
