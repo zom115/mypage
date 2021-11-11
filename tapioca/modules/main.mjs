@@ -146,6 +146,7 @@ let recoilEffect = {
   dy: 0
 }
 let afterglow = {
+  save: 0,
   point: [],
   inventory: 0,
   recoil: 0,
@@ -1931,6 +1932,7 @@ const portalProcess = () => {
     if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) { // Continue
       portalFlag = false
       storage.setItem('portalFlag', portalFlag)
+      afterglow.save = 1000
       portalCooldinate.x = 0
       portalCooldinate.y = 0
       location = locationList[1]
@@ -2137,6 +2139,7 @@ const setStore = () => {
           objects = []
           portalFlag = false
           storage.setItem('portalFlag', portalFlag)
+          afterglow.save = 1000
           wave.number = 0
           setWave()
         }
@@ -2176,6 +2179,7 @@ const setStore = () => {
         storage.setItem('point', JSON.stringify(point))
         storage.setItem('portalFlag', JSON.stringify(portalFlag))
         storage.setItem('waveNumber', JSON.stringify(wave.number))
+        afterglow.save = 1000
       }
     }
     draw() {
@@ -2768,6 +2772,31 @@ const drawPortal = () => {
     context.restore()
   }
 }
+const drawSaveCompleted = () => {
+  const ratio = afterglow.save / 1000
+  context.save()
+  context.font = `${size / 2}px sans-serif`
+  context.textAlign = 'center'
+  context.textBaseline = 'bottom'
+  context.fillStyle = `hsla(0, 0%, 100%, ${ratio})`
+  const box = {
+    offsetX: canvas.offsetWidth / 2,
+    offsetY: canvas.offsetHeight - (1.5 - ratio) * size,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: 'Save complete.'
+  }
+  const measure = context.measureText(box.text)
+  box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft,
+  box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent,
+  box.width = measure.width
+  box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+  context.fillText(box.text, box.offsetX, box.offsetY)
+  context.restore()
+  afterglow.save -= intervalDiffTime
+}
 const drawMain = () => {
   drawField()
   if (portalFlag) drawPortal()
@@ -2780,6 +2809,7 @@ const drawMain = () => {
   drawDirection()
   drawIndicator()
   drawSlot()
+  if (0 <= afterglow.save) drawSaveCompleted()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
   if (state === 'pause') drawPause()
