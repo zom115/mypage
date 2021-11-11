@@ -1733,13 +1733,13 @@ const drawIndicator = () => {
       }
     })
   }
-  context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)' :
-  (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)' :
-  'hsla(210, 100%, 50%, .7)' // dash guage
-  if (0 < afterglow.dashGauge) afterglow.dashGauge = (afterglow.dashGauge-1)|0
-  c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
-  context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
-  context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
+  // context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)' :
+  // (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)' :
+  // 'hsla(210, 100%, 50%, .7)' // dash guage
+  // if (0 < afterglow.dashGauge) afterglow.dashGauge = (afterglow.dashGauge-1)|0
+  // c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
+  // context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
+  // context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
   context.fillStyle =  // round number
     0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
     0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
