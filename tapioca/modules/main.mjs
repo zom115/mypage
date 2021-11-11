@@ -1917,12 +1917,13 @@ const portalProcess = () => {
     portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
     portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
   ) {
-    if (button(portalConfirmBox[0])) {
+    if (button(portalConfirmBox[0])) { // Return to Base
+      portalCooldinate.y += size * 3
       location = locationList[0]
       objects = []
       setStore()
     }
-    if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) {
+    if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) { // Continue
       portalFlag = false
       portalCooldinate.x = 0
       portalCooldinate.y = 0
