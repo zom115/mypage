@@ -590,6 +590,12 @@ let inventorySlotBox = []
         absoluteX: size * (.75 + 2 * j), absoluteY: size * (2.75 + 2 * i), width: size * 1.5, height: size * 1.5})}
   }
 }
+let removeWeaponSlot = {
+  absoluteX: size * .75,
+  absoluteY: size * (.5 + 1.5 + .75 + 2 * 2), // offset + inventory row
+  width: size * 1.5,
+  height: size * 1.5
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   action = {
@@ -1753,12 +1759,12 @@ const drawWeaponCategory = (box, weapon) => {
   context.font = `${size * .75}px sans-serif`
   context.fillText(weapon.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
 }
+const strokeText = (text, x, y, maxWidth) => {
+  context.strokeText(text, x, y, maxWidth)
+  context.fillText(text, x, y, maxWidth)
+}
 const drawWeaponDetail = (box, i) => {
   if (inventory[i].category !== '' && isInner(box, cursor)) {
-    const strokeText = (text, x, y, maxWidth) => {
-      context.strokeText(text, x, y, maxWidth)
-      context.fillText(text, x, y, maxWidth)
-    }
     context.font = `${size*.75}px sans-serif`
     context.textAlign = 'left'
     context.fillStyle = 'hsla(0, 0%, 0%, .6)'
@@ -1786,7 +1792,7 @@ const drawSlot = () => {
   drawWeaponCategory(box, holdSlot)
   inventorySlotBox.forEach((v, i) => {
     if (slotSize - 1 < i && !inventoryFlag) return
-    context.fillStyle= 'hsla(210, 100%, 75%, .4)'
+    context.fillStyle = 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
     if (i === selectSlot) {
 
@@ -1798,6 +1804,19 @@ const drawSlot = () => {
     if (slotSize - 1 < i && !inventoryFlag) return
     drawWeaponDetail(v, i)
   })
+  if (inventoryFlag) {
+    context.fillStyle = 'hsla(0, 100%, 50%, .2)'
+    context.fillRect(
+      removeWeaponSlot.absoluteX, removeWeaponSlot.absoluteY, removeWeaponSlot.width, removeWeaponSlot.height)
+    const isTutorialTooltip = true // TODO: include to settings
+    if (isTutorialTooltip && isInner(removeWeaponSlot, cursor)) {
+      context.font = `${size*.75}px sans-serif`
+      context.textAlign = 'left'
+      context.fillStyle = 'hsla(0, 0%, 0%, .6)'
+      context.strokeStyle = 'hsl(0, 0%, 100%)'
+      strokeText('Remove when drop to here', cursor.offsetX + size, cursor.offsetY)
+    }
+  }
   context.restore()
 }
 let holdSlot = {category: ''}
