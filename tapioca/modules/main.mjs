@@ -1637,8 +1637,8 @@ const drawIndicator = () => {
     context.save()
     const inChamber = (inventory[selectSlot].chamber) ? 1 : 0
     context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - size * 3)
-    context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
-    context.fillText(ammo, c.x, c.y)
+    // context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
+    // context.fillText(ammo, c.x, c.y)
     context.restore()
     const cartridgeSize = 1 / (inventory[selectSlot].magazineSize + 1)
     const yOffset = canvas.offsetHeight - size
