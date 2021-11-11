@@ -249,7 +249,6 @@ const Weapon = class {
     this.slideDone = 7
     this.slideState = 'done'
 
-
     this.reloadTime = 1,
     this.reloadRelease = 10,
     this.reloadPutAway = 15,
@@ -1231,6 +1230,8 @@ const setWeapon = () => {
     categoryIndex === 0 ? (HgMinmagazine + HgExtendMag * Math.random())|0 : // max 20
     categoryIndex === 1 ? (SmgMinMag + SmgExtendMag * Math.random())|0 : // max 35
     (ArMinmagazine + ArExtendMag * Math.random())|0 // max 50
+  const magazines = Array(10).fill(magazineSize, 0, 5).fill(0, 5, 10)
+  // Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
   const HgBaseDamage = 70
   const SmgBaseDamage = 100
   const ArBaseDamage = 140
@@ -1253,7 +1254,6 @@ const setWeapon = () => {
   const bulletLife = cartridgeInfo.life * (.5 + Math.random() * .5)
   const reloadSpeed = .25 + (1 - magSizeRatio) / 2 + Math.random() * .25
   // the smaller the bigger
-  const magazines = Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
   const loadingSpeed = loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25)
   const penetrationForce = Math.random()
   const roundLimit = modeIndex === 2 ? (2 + 3 * Math.random())|0 : 0
@@ -2363,7 +2363,7 @@ const reset = () => {
     cartridgeInfo.life,
     1,
     magSizeInitial,
-    Array(5).fill(magSizeInitial),
+    Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
     loading.weight,
     0,
     0,
