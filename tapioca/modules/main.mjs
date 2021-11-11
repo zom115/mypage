@@ -2171,9 +2171,9 @@ const setStore = () => {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
       if (isInner(this, offset) && button(saveBox, cursor)) {
         storage.setItem('inventoryArray', JSON.stringify(inventory))
-        storage.setItem('point', point)
-        storage.setItem('portalFlag', portalFlag)
-        storage.setItem('waveNumber', wave.number)
+        storage.setItem('point', JSON.stringify(point))
+        storage.setItem('portalFlag', JSON.stringify(portalFlag))
+        storage.setItem('waveNumber', JSON.stringify(wave.number))
       }
     }
     draw() {
@@ -2361,10 +2361,10 @@ const reset = () => {
   setStore()
   // if (mapMode) setMap()
 
-  const temporaryPoint = storage.getItem('point')
+  const temporaryPoint = JSON.parse(storage.getItem('point'))
   point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
 
-  const temporaryPortalFlag = storage.getItem('portalFlag')
+  const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
   portalFlag = temporaryPortalFlag ? true : false
   if (portalFlag) {
     portalCooldinate.x = ownPosition.x|0
@@ -2461,8 +2461,8 @@ const reset = () => {
   combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
   afterglow.point = []
   afterglow.round = 0
-  const temporaryWaveNumber = storage.getItem('waveNumber')
-  wave.number = temporaryWaveNumber ? temporaryWaveNumber : 0
+  const temporaryWaveNumber = JSON.parse(storage.getItem('waveNumber'))
+  wave.number = temporaryWaveNumber ? temporaryWaveNumber - 1 : 0
   wave.enemySpawnInterval = 0
   wave.enemySpawnIntervalLimit = 0
   wave.enemyCount = 0
