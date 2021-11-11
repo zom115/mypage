@@ -1774,6 +1774,17 @@ const drawWeaponCategory = (box, weapon) => {
   context.textAlign = 'center'
   context.font = `${size * .75}px sans-serif`
   context.fillText(weapon.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
+  if (weapon.category !== '') {
+    let totalAmmo = 0
+    totalAmmo += weapon.chamber ? 1 : 0
+    totalAmmo += weapon.magazines.reduce((p, c) => p + c)
+    let ratio = totalAmmo / (weapon.magazineSize * weapon.magazines.length + 1)
+    context.fillStyle =
+      ratio < .1 ? 'hsl(0, 100%, 60%)' :
+      ratio < .3 ? 'hsl(60, 100%, 70%)' : 'hsl(210, 100%, 50%)'
+    if (ratio === 0) ratio = 1
+    context.fillRect(box.absoluteX + size / 16, box.absoluteY + size * 1.4, size * 1.4 * ratio, size / 16)
+  }
 }
 const strokeText = (text, x, y, maxWidth) => {
   context.strokeText(text, x, y, maxWidth)
@@ -1811,7 +1822,6 @@ const drawSlot = () => {
     context.fillStyle = 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
     if (i === selectSlot) {
-
       context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
     }
     drawWeaponCategory(v, inventory[i])
