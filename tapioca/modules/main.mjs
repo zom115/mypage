@@ -514,6 +514,18 @@ const getKeyName = key => {
 }
 
 // for display
+const setAbsoluteBox = (box) => {
+  context.save()
+  context.font = `${size}px sans-serif`
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  const measure = context.measureText(box.text)
+  box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft,
+  box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent,
+  box.width = measure.width
+  box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+  context.restore()
+}
 let portalConfirmBox = [{
   offsetX: canvas.offsetWidth * 1 / 3,
   offsetY: canvas.offsetHeight * 2 / 5,
@@ -538,23 +550,19 @@ let portalConfirmBox = [{
   width: 0,
   height: 0,
   text: 'Yes'
-}
-]
-
-const setAbsoluteBox = (box) => {
-  context.save()
-  context.font = `${size}px sans-serif`
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  const measure = context.measureText(box.text)
-  box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft,
-  box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent,
-  box.width = measure.width
-  box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
-  context.restore()
-}
+}]
 portalConfirmBox.forEach(v => setAbsoluteBox(v))
 let titleMenuWordArray = []
+let resultBackBox = {
+  offsetX: canvas.offsetWidth / 2,
+  offsetY: canvas.offsetHeight * 7 / 8,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Rerutn to base'
+}
+setAbsoluteBox(resultBackBox)
 const setTitleMenuWord = () => {
   titleMenuWordArray = [
     {text: `PRESS [${getKeyName(action.fire)}] TO START`, hue: 10},
@@ -1062,7 +1070,7 @@ const interfaceProcess = () => {
   if (key[action.left].flag) direction = (direction+8)|0
   if (0 < angle) currentDirection = angle
   else if (direction !== 0) currentDirection = direction
-  if (inventory[selectSlot].category !== '') weaponProcess()
+  if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess()
   if (dashCoolTimer() === 0 && key[action.dash].isFirst()) dashProcess()
   if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed) moving()
   if (key[action.debug].isFirst()) debugMode = !debugMode
@@ -2607,9 +2615,35 @@ const mainProcess = () => {
 const pauseProcess = () => {
   if (key[action.pause].isFirst()) state = 'main'
 }
+let resultFlag = false
 const resultProcess = () => {
   manyAmmo()
-  if (key[action.back].isFirst()) reset()
+  if (!resultFlag) {
+    storage.setItem('inventoryArray', JSON.stringify(inventory))
+    point = (point / 100)|0
+    point *= 10
+    storage.setItem('point', point)
+    afterglow.save = 1000
+    resultFlag = true
+  }
+  if (button(resultBackBox)) {
+    state = 'main'
+    location = locationList[0]
+    dropItems = []
+    bullets = []
+    enemies = []
+    objects = []
+    setStore()
+    wave.number = 0
+    wave.enemySpawnInterval = 0
+    wave.enemySpawnIntervalLimit = 0
+    wave.enemyCount = 0
+    wave.enemyLimit = 0
+    setWave()
+    wave.roundInterval = 0
+    defeatCount = 0
+
+  }
 }
 const keyLayoutProcess = () => {
   rowPosition = rotate()
@@ -2837,10 +2871,16 @@ const drawResult = () => {
   context.fillText(
     `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
   )
-  context.fillText(
-    `BACK TO TITLE[${getKeyName(action.back)}]`,
-    canvas.offsetWidth / 2, canvas.offsetHeight * 7/ 8
-  )
+  context.save()
+  if (isInner(resultBackBox, cursor)) {
+    context.fillStyle = 'hsl(30, 100%, 70%)'
+    context.fillRect(resultBackBox.absoluteX, resultBackBox.absoluteY, resultBackBox.width, resultBackBox.height)
+  }
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.fillStyle = 'hsl(210, 100%, 70%)'
+  context.fillText(resultBackBox.text, resultBackBox.offsetX, resultBackBox.offsetY)
+  context.restore()
   context.fillStyle = 'hsla(30, 100%, 50%, .5)'
   context.fillRect(
     canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
@@ -2856,9 +2896,9 @@ const drawResult = () => {
     ~~((canvas.offsetHeight / 6 - loadedMap[imgCutin].height / 2)+.5)
   )
   context.restore()
-  context.font = '32px sans-serif'
-  context.fillStyle = 'hsl(300, 100%, 50%)'
-  context.fillText('カットイン(仮)', size*5, canvas.offsetHeight / 2)
+  // context.font = '32px sans-serif'
+  // context.fillStyle = 'hsl(300, 100%, 50%)'
+  // context.fillText('カットイン(仮)', size*5, canvas.offsetHeight / 2)
 }
 const drawKeyLayout = () => {
   console.log('a')
