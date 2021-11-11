@@ -533,18 +533,20 @@ let portalConfirmBox = [{
   text: 'Yes'
 }
 ]
-context.save()
-context.textAlign = 'center'
-context.textBaseline = 'middle'
-context.font = `${size}px sans-serif`
-portalConfirmBox.forEach(v => {
-  const measure = context.measureText(v.text)
-  v.absoluteX = v.offsetX - measure.actualBoundingBoxLeft,
-  v.absoluteY = v.offsetY - measure.actualBoundingBoxAscent,
-  v.width = measure.width
-  v.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
-})
-context.restore()
+
+const setAbsoluteBox = (box) => {
+  context.save()
+  context.font = `${size}px sans-serif`
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  const measure = context.measureText(box.text)
+  box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft,
+  box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent,
+  box.width = measure.width
+  box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+  context.restore()
+}
+portalConfirmBox.forEach(v => setAbsoluteBox(v))
 let titleMenuWordArray = []
 const setTitleMenuWord = () => {
   titleMenuWordArray = [
@@ -727,7 +729,6 @@ const directionCalc = arg => {
   return {dx, dy}
 }
 const mouseFiring = () => {
-  console.log('hello')
   if (
     inventory[selectSlot].reloadAuto === 'ON' &&
     inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
@@ -2096,13 +2097,17 @@ const setMap = () => {
   objects.push({x: offset.x - l*(251-468), y: offset.y - l*(435-190), width: l*21, height: l*29})
 }
 const setStore = () => {
-  const offset = {x: ownPosition.x, y: ownPosition.y}
+  const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
   const Spot = class {
     constructor(dx, dy, w, h, Id, img) {
-      this.x = offset.x + dx
-      this.y = offset.y + dy
+      this.x = offset.offsetX + dx // TODO: integrate x and absoluteX
+      this.y = offset.offsetY + dy
+      this.absoluteX = offset.offsetX + dx
+      this.absoluteY = offset.offsetY + dy
       this.w = storeSize * w
       this.h = storeSize * h
+      this.width = storeSize * w
+      this.height = storeSize * h
       this.Id = Id
       this.img = img
     }
@@ -2118,10 +2123,8 @@ const setStore = () => {
   }
   class StartSpot extends Spot {
     process() {
-      if ((
-        this.x <= ownPosition.x && ownPosition.x <= this.x + this.w) && (
-        this.y <= ownPosition.y && ownPosition.y <= this.y + this.h)
-      ) {
+      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y} // TODO: integrate x and absoluteX
+      if (isInner(this, offset)) {
         if (button(box)) {
           location = locationList[1]
           objects = []
@@ -2132,10 +2135,8 @@ const setStore = () => {
       }
     }
     draw() {
-      if ((
-        this.x <= ownPosition.x && ownPosition.x <= this.x + this.w) && (
-        this.y <= ownPosition.y && ownPosition.y <= this.y + this.h)
-      ) {
+      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+      if (isInner(this, offset)) {
         context.save()
         if (isInner(box, cursor)) {
           context.fillStyle = 'hsl(30, 100%, 70%)'
@@ -2149,10 +2150,43 @@ const setStore = () => {
       }
     }
   }
-  objects.push(new Spot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
+  const saveBox = {
+    offsetX: canvas.offsetWidth / 2,
+    offsetY: canvas.offsetHeight / 4,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: 'SAVE'
+  }
+  setAbsoluteBox(saveBox)
+  class SaveSpot extends Spot {
+    process() {
+      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+      if (isInner(this, offset) && button(saveBox, cursor)) {
+        storage.setItem('inventoryArray', JSON.stringify(inventory))
+      }
+    }
+    draw() {
+      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+      if (isInner(this, offset)) {
+        context.save()
+        if (isInner(saveBox, cursor)) {
+          context.fillStyle = 'hsl(30, 100%, 70%)'
+          context.fillRect(saveBox.absoluteX, saveBox.absoluteY, saveBox.width, saveBox.height)
+        }
+        context.font = `${size}px sans-serif`
+        context.textAlign = 'center'
+        context.textBaseline = 'middle'
+        context.fillStyle = 'hsl(210, 100%, 70%)'
+        context.fillText(saveBox.text, saveBox.offsetX, saveBox.offsetY)
+        context.restore()
+      }
+    }
+  }
+  objects.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
   objects.push(new Spot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
   objects.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
-
 }
 const upgradeDash =() => {
   if (holdTimeLimit <= key[action.lookUp].holdtime && cost.dashDamage <= ammo) {
@@ -2370,29 +2404,32 @@ const reset = () => {
   }
   selectSlot = 0
   inventoryFlag = false
-  inventory = []
-  for (let i = 0; i < slotSize + inventorySize; i++) {
-    inventory.push({category: ''})
-  }
-  inventory[selectSlot] = new Weapon(
-    'T1911',
-    'HG',
-    weaponModeList[1],
-    weaponRarityList[0],
-    maxDamageInitial,
-    1,
-    cartridgeInfo.speed,
-    cartridgeInfo.life,
-    1,
-    magSizeInitial,
-    Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
-    loading.weight,
-    0,
-    0,
+  inventory = JSON.parse(storage.getItem('inventoryArray'))
+  if (!inventory || inventory.every(v => v.category === '')) {
+    inventory = []
+    for (let i = 0; i < slotSize + inventorySize; i++) {
+      inventory.push({category: ''})
+    }
+    inventory[selectSlot] = new Weapon(
+      'T1911',
+      'HG',
+      weaponModeList[1],
+      weaponRarityList[0],
+      maxDamageInitial,
+      1,
+      cartridgeInfo.speed,
+      cartridgeInfo.life,
+      1,
+      magSizeInitial,
+      Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
+      loading.weight,
+      0,
+      0,
 
-    4000,
-    0
-  )
+      4000,
+      0
+    )
+  }
   ammo = 24
   loading = {
     time: 0,
