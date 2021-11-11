@@ -2165,6 +2165,7 @@ const setStore = () => {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
       if (isInner(this, offset) && button(saveBox, cursor)) {
         storage.setItem('inventoryArray', JSON.stringify(inventory))
+        storage.setItem('point', point)
       }
     }
     draw() {
@@ -2352,7 +2353,8 @@ const reset = () => {
   setStore()
   // if (mapMode) setMap()
 
-  point = 500
+  const temporaryPoint = storage.getItem('point')
+  point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
   ownPosition.x = canvas.offsetWidth / 2
   ownPosition.y = canvas.offsetHeight / 2
   clonePosition = []
