@@ -1641,9 +1641,9 @@ const drawIndicator = () => {
     // context.fillText(ammo, c.x, c.y)
     context.restore()
     const cartridgeSize = 1 / (inventory[selectSlot].magazineSize + 1)
-    const yOffset = canvas.offsetHeight - size
-    const yHeight = size * 4
-    c.x = canvas.offsetWidth - size * 5.25
+    const yOffset = canvas.offsetHeight - size * .75
+    const yHeight = size * 3
+    c.x = canvas.offsetWidth - size * .75
     c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
     if (0 < afterglow.reload) context.fillStyle = 'hsla(0, 100%, 100%, .7)'
     context.fillRect(c.x, c.y, -size / 4, -inChamber * cartridgeSize * yHeight) // chamber
@@ -1689,8 +1689,8 @@ const drawIndicator = () => {
         'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
         if (
           index === inventory[selectSlot].grip && !(inventory[selectSlot].reloadState === 'putAway' || inventory[selectSlot].reloadState === 'takeOut')
-        ) c.x = canvas.offsetWidth - size * 5.25
-        else c.x = canvas.offsetWidth - size * (6.25 + index)
+        ) c.x = canvas.offsetWidth - size * .75
+        else c.x = canvas.offsetWidth - size * (1.75 + index)
         if (index === inventory[selectSlot].grip) {
           c.y = yOffset - ratio * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
         } else c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
