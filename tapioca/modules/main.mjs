@@ -112,7 +112,13 @@ let angleMode = setStorageFirst('angle', 'IJKL')
 let state = ''
 let locationList = ['bazaar', 'dungeon']
 let location = locationList[0]
+
 let point = 0
+let portalFlag = false
+let portalCooldinate = {x: 0, y: 0}
+let portalParticleTime = 0
+let portalParticle = []
+
 let cost = {
   dashDistance: 1000,
   dashDistanceIndex: 0,
@@ -1906,7 +1912,6 @@ const setEnemy = () => {
   })
   if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
 }
-let portalFlag = false
 const portalProcess = () => {
   if (!portalFlag) {
     portalFlag = true
@@ -2167,6 +2172,8 @@ const setStore = () => {
       if (isInner(this, offset) && button(saveBox, cursor)) {
         storage.setItem('inventoryArray', JSON.stringify(inventory))
         storage.setItem('point', point)
+        storage.setItem('portalFlag', portalFlag)
+        storage.setItem('waveNumber', wave.number)
       }
     }
     draw() {
@@ -2356,6 +2363,14 @@ const reset = () => {
 
   const temporaryPoint = storage.getItem('point')
   point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
+
+  const temporaryPortalFlag = storage.getItem('portalFlag')
+  portalFlag = temporaryPortalFlag ? true : false
+  if (portalFlag) {
+    portalCooldinate.x = ownPosition.x|0
+    portalCooldinate.y = (ownPosition.y + size * 3)|0
+  }
+
   ownPosition.x = canvas.offsetWidth / 2
   ownPosition.y = canvas.offsetHeight / 2
   clonePosition = []
@@ -2446,7 +2461,8 @@ const reset = () => {
   combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
   afterglow.point = []
   afterglow.round = 0
-  wave.number = 0
+  const temporaryWaveNumber = storage.getItem('waveNumber')
+  wave.number = temporaryWaveNumber ? temporaryWaveNumber : 0
   wave.enemySpawnInterval = 0
   wave.enemySpawnIntervalLimit = 0
   wave.enemyCount = 0
@@ -2673,9 +2689,6 @@ const drawTitleScreen = () => {
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
 
 }
-let portalCooldinate = {x: 0, y: 0}
-let portalParticleTime = 0
-let portalParticle = []
 const drawPortal = () => {
   const particle = class {
     constructor(x, y, w, h, dx, dy, life, lightness) {
