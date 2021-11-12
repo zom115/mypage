@@ -1224,6 +1224,7 @@ const drawField = () => {
     }
   }
 }
+const categoryList = ['HG', 'SMG', 'AR']
 const setWeapon = () => {
   let rarityIndex = 0
   const roundRistrict =
@@ -1233,7 +1234,6 @@ const setWeapon = () => {
   for (let i = 0; i < weaponRarityList.length - (1 + roundRistrict); i++) {
     if (.5 < Math.random()) rarityIndex += 1
   }
-  const categoryList = ['HG', 'SMG', 'AR']
   let categoryIndex = 0
   for (let i = 0; i < 2; i++) {
     if (.5 < Math.random()) categoryIndex += 1
@@ -2179,6 +2179,82 @@ const setStore = () => {
       }
     }
   }
+  let shopSlot = {category: ''}
+  const slotBox = {
+    absoluteX: canvas.offsetWidth / 2 - size * 1.5 / 2,
+    absoluteY: canvas.offsetHeight / 2 - size * 6,
+    width: size * 1.5,
+    height: size * 1.5
+  }
+  const fillAmmoBox = {
+    offsetX: canvas.offsetWidth * 3 / 4,
+    offsetY: canvas.offsetHeight / 4,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: 'Buy ammo'
+  }
+  setAbsoluteBox(fillAmmoBox)
+  class ShopSpot extends Spot {
+    process() {
+      if (button(slotBox)) {
+        [holdSlot, shopSlot] = [shopSlot, holdSlot]
+      }
+      if (shopSlot.category !== '') {
+        let cost = 0
+        cost =
+          shopSlot.category === categoryList[0] ? 250 :
+          shopSlot.category === categoryList[1] ? 500 :
+          750 // shopSlot.category === categoryList[2]
+        cost *=
+          shopSlot.rarity === weaponRarityList[0] ? 1 :
+          shopSlot.rarity === weaponRarityList[1] ? 2 :
+          shopSlot.rarity === weaponRarityList[2] ? 3 :
+          4 // shopSlot.rarity === weaponRarityList[3]
+        if (cost <= point && button(fillAmmoBox)) {
+          point -= cost
+          shopSlot.magazines.fill(shopSlot.magazineSize)
+        }
+      }
+    }
+    draw() {
+      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+      let cost = 0
+      if (shopSlot.category !== '') {
+        cost =
+          shopSlot.category === categoryList[0] ? 250 :
+          shopSlot.category === categoryList[1] ? 500 :
+          750 // shopSlot.category === categoryList[2]
+        cost *=
+          shopSlot.rarity === weaponRarityList[0] ? 1 :
+          shopSlot.rarity === weaponRarityList[1] ? 2 :
+          shopSlot.rarity === weaponRarityList[2] ? 3 :
+          4 // shopSlot.rarity === weaponRarityList[3]
+      }
+      const ammoAlpha = shopSlot.category !== '' && cost <= point ? 1 : .4
+      if (isInner(this, offset)) {
+        context.save()
+        context.fillStyle = 'hsla(30, 100%, 70%, .5)'
+        context.fillRect(slotBox.absoluteX, slotBox.absoluteY, slotBox.width, slotBox.height)
+        if (shopSlot.category !== '' && isInner(fillAmmoBox, cursor)) {
+          context.fillStyle = 'hsl(30, 100%, 70%)'
+          context.fillRect(fillAmmoBox.absoluteX, fillAmmoBox.absoluteY, fillAmmoBox.width, fillAmmoBox.height)
+        }
+        context.font = `${size}px sans-serif`
+        context.textAlign = 'center'
+        context.textBaseline = 'middle'
+        context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
+        context.fillText(fillAmmoBox.text, fillAmmoBox.offsetX, fillAmmoBox.offsetY)
+        if (cost !== 0) {
+          context.font = `${size * .75}px sans-serif`
+          context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size)
+        }
+        context.restore()
+      }
+      drawWeaponCategory(slotBox, shopSlot)
+    }
+  }
   const saveBox = {
     offsetX: canvas.offsetWidth / 2,
     offsetY: canvas.offsetHeight / 4,
@@ -2218,7 +2294,7 @@ const setStore = () => {
     }
   }
   objects.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
-  objects.push(new Spot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
+  objects.push(new ShopSpot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
   objects.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
 }
 const upgradeDash =() => {
