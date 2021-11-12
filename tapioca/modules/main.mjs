@@ -2231,6 +2231,7 @@ const setStore = () => {
           shopSlot.limitBreakIndex += 1
           storage.setItem('inventoryArray', JSON.stringify(inventory))
           afterglow.save = 1000
+          afterglow.limitBreakSuccess += 2000
         }
       }
       if (0 < afterglow.limitBreakSuccess) afterglow.limitBreakSuccess -= intervalDiffTime
@@ -2291,6 +2292,16 @@ const setStore = () => {
             `Cost: ${shopSlot.limitBreak * shopSlot.limitBreakIndex}`,
             limitBreakBox.offsetX,
             limitBreakBox.offsetY + size)
+        }
+        if (0 < afterglow.limitBreakSuccess) {
+          const ratio = afterglow.limitBreakSuccess / 2000
+          context.font = `${size * (1 + afterglow.limitBreakResult)}px sans-serif`
+          context.strokeStyle = `hsla(0, 100%, 0%, ${ratio})`
+          context.fillStyle = `hsla(60, 100%, 70%, ${ratio})`
+          strokeText(
+            'x' + afterglow.limitBreakResult.toPrecision(3),
+            canvas.offsetWidth / 2,
+            canvas.offsetHeight * 3 / 4)
         }
         context.restore()
       }
