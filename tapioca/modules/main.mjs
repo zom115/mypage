@@ -63,6 +63,12 @@ const downButton = box => {
 const button = box => {
   return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isMouseUp()
 }
+let wheelEvent = {deltaY: 0, isFirst: false}
+canvas.addEventListener('wheel', e => {
+  e.preventDefault()
+  wheelEvent = e
+  wheelEvent.isFirst = true
+}, false)
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -1054,10 +1060,18 @@ const interfaceProcess = () => {
   if (key[action.primary].isFirst()) selectSlot = 0
   if (key[action.secondary].isFirst()) selectSlot = 1
   if (key[action.tertiary].isFirst()) selectSlot = 2
-  if (key[action.rotateSlot].isFirst()) {
+  if (
+    key[action.rotateSlot].isFirst() || (wheelEvent.isFirst && 0 < wheelEvent.deltaY)
+  ) {
     selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
+    console.log('a')
   }
-  if (key[action.revarseRotateSlot].isFirst()) selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
+  if (
+    key[action.revarseRotateSlot].isFirst() || (wheelEvent.isFirst && wheelEvent.deltaY < 0)
+  ) {
+    selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
+    console.log('b')
+  }
   if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
   if (key[action.lookUp].flag) angle = (angle+1)|0
@@ -2798,6 +2812,9 @@ const keyLayoutProcess = () => {
     keyPosition === order.indexOf(action.back) && holdTimeLimit <= key[action.back].holdtime
   ) state = 'title'
 }
+const resetKeyState = () => {
+  wheelEvent.isFirst = false
+}
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
   intervalDiffTime = globalTimestamp - currentTime
@@ -2808,6 +2825,7 @@ const main = () => setInterval(() => {
   else if (state === 'pause') pauseProcess()
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
+  resetKeyState()
 }, 0)
 const drawTitleScreen = () => {
   let nowTime = Date.now()
@@ -3216,8 +3234,7 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    dis: inventory[selectSlot].disconnector
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
