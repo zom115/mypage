@@ -2196,11 +2196,19 @@ const setStore = () => {
     text: 'Buy ammo'
   }
   setAbsoluteBox(fillAmmoBox)
+  const limitBreakBox = {
+    offsetX: canvas.offsetWidth * 3 / 4,
+    offsetY: canvas.offsetHeight / 2,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: 'Limit break (x0.01 - x2)'
+  }
+  setAbsoluteBox(limitBreakBox)
   class ShopSpot extends Spot {
     process() {
-      if (button(slotBox)) {
-        [holdSlot, shopSlot] = [shopSlot, holdSlot]
-      }
+      if (button(slotBox)) [holdSlot, shopSlot] = [shopSlot, holdSlot]
       if (shopSlot.category !== '') {
         let cost = 0
         cost =
@@ -2216,27 +2224,39 @@ const setStore = () => {
           point -= cost
           shopSlot.magazines.fill(shopSlot.magazineSize)
         }
+        if (shopSlot.limitBreak * shopSlot.limitBreakIndex <= point && button(limitBreakBox)) {
+          afterglow.limitBreakResult = .01 + Math.random() * 1.99
+          shopSlot.damage = (shopSlot.damage * afterglow.limitBreakResult)|0
+          point -= shopSlot.limitBreak * shopSlot.limitBreakIndex
+          shopSlot.limitBreakIndex += 1
+          storage.setItem('inventoryArray', JSON.stringify(inventory))
+          afterglow.save = 1000
+        }
       }
+      if (0 < afterglow.limitBreakSuccess) afterglow.limitBreakSuccess -= intervalDiffTime
+      if (0 < afterglow.limitBreakFailed) afterglow.limitBreakFailed -= intervalDiffTime
+
     }
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      let cost = 0
-      if (shopSlot.category !== '') {
-        cost =
-          shopSlot.category === categoryList[0] ? 250 :
-          shopSlot.category === categoryList[1] ? 500 :
-          750 // shopSlot.category === categoryList[2]
-        cost *=
-          shopSlot.rarity === weaponRarityList[0] ? 1 :
-          shopSlot.rarity === weaponRarityList[1] ? 2 :
-          shopSlot.rarity === weaponRarityList[2] ? 3 :
-          4 // shopSlot.rarity === weaponRarityList[3]
-      }
-      const ammoAlpha = shopSlot.category !== '' && cost <= point ? 1 : .4
       if (isInner(this, offset)) {
+        let cost = 0
+        if (shopSlot.category !== '') {
+          cost =
+            shopSlot.category === categoryList[0] ? 250 :
+            shopSlot.category === categoryList[1] ? 500 :
+            750 // shopSlot.category === categoryList[2]
+          cost *=
+            shopSlot.rarity === weaponRarityList[0] ? 1 :
+            shopSlot.rarity === weaponRarityList[1] ? 2 :
+            shopSlot.rarity === weaponRarityList[2] ? 3 :
+            4 // shopSlot.rarity === weaponRarityList[3]
+        }
+        const ammoAlpha = shopSlot.category !== '' && cost <= point ? 1 : .4
         context.save()
         context.fillStyle = 'hsla(30, 100%, 70%, .5)'
         context.fillRect(slotBox.absoluteX, slotBox.absoluteY, slotBox.width, slotBox.height)
+
         if (shopSlot.category !== '' && isInner(fillAmmoBox, cursor)) {
           context.fillStyle = 'hsl(30, 100%, 70%)'
           context.fillRect(fillAmmoBox.absoluteX, fillAmmoBox.absoluteY, fillAmmoBox.width, fillAmmoBox.height)
@@ -2249,6 +2269,28 @@ const setStore = () => {
         if (cost !== 0) {
           context.font = `${size * .75}px sans-serif`
           context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size)
+        }
+
+        if (
+          shopSlot.category !== '' &&
+          shopSlot.limitBreak * shopSlot.limitBreakIndex <= point &&
+          isInner(limitBreakBox, cursor)
+        ) {
+          context.fillStyle = 'hsl(30, 100%, 70%)'
+          context.fillRect(
+            limitBreakBox.absoluteX, limitBreakBox.absoluteY, limitBreakBox.width, limitBreakBox.height)
+        }
+        const limitBreakAlpha =
+          shopSlot.category !== '' && shopSlot.limitBreak * shopSlot.limitBreakIndex <= point ? 1 : .4
+        context.fillStyle = `hsla(210, 100%, 70%, ${limitBreakAlpha})`
+        context.font = `${size}px sans-serif`
+        context.fillText(limitBreakBox.text, limitBreakBox.offsetX, limitBreakBox.offsetY)
+        if (shopSlot.category !== '') {
+          context.font = `${size * .75}px sans-serif`
+          context.fillText(
+            `Cost: ${shopSlot.limitBreak * shopSlot.limitBreakIndex}`,
+            limitBreakBox.offsetX,
+            limitBreakBox.offsetY + size)
         }
         context.restore()
       }
@@ -2344,20 +2386,6 @@ const upgradeTest = () => {
     cost.clone = (cost.clone * 2)|0
     afterglow.clone = holdTimeLimit
   } else if (0 < afterglow.clone) afterglow.clone = (afterglow.clone-1)|0
-}
-const upgradeLimitBreak = () => {
-  if (holdTimeLimit <= key[action.lookUp].holdtime && inventory[selectSlot].limitBreak <= point) {
-    afterglow.limitBreakResult = .1 + Math.random() * 1.9
-    inventory[selectSlot].damage = inventory[selectSlot].damage * afterglow.limitBreakResult
-    point = (point - inventory[selectSlot].limitBreak)|0
-    inventory[selectSlot].limitBreakIndex = (inventory[selectSlot].limitBreakIndex+1)|0
-    if (1 < afterglow.limitBreakResult) afterglow.limitBreakSuccess = holdTimeLimit
-    else afterglow.limitBreakFailed = holdTimeLimit
-  } else if (0 < afterglow.limitBreakSuccess) {
-    afterglow.limitBreakSuccess = afterglow.limitBreakSuccess - .1
-  } else if (0 < afterglow.limitBreakFailed) {
-    afterglow.limitBreakFailed = afterglow.limitBreakFailed - .1
-  }
 }
 const upgradeClone = ()  => {
   if (holdTimeLimit <= key[action.lookUp].holdtime) {
