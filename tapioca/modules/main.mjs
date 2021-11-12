@@ -2179,7 +2179,6 @@ const setStore = () => {
       }
     }
   }
-  let shopSlot = {category: ''}
   const slotBox = {
     absoluteX: canvas.offsetWidth / 2 - size * 1.5 / 2,
     absoluteY: canvas.offsetHeight / 2 - size * 6,
@@ -2208,27 +2207,26 @@ const setStore = () => {
   setAbsoluteBox(limitBreakBox)
   class ShopSpot extends Spot {
     process() {
-      if (button(slotBox)) [holdSlot, shopSlot] = [shopSlot, holdSlot]
-      if (shopSlot.category !== '') {
+      if (inventory[selectSlot].category !== '') {
         let cost = 0
         cost =
-          shopSlot.category === categoryList[0] ? 250 :
-          shopSlot.category === categoryList[1] ? 500 :
-          750 // shopSlot.category === categoryList[2]
+          inventory[selectSlot].category === categoryList[0] ? 250 :
+          inventory[selectSlot].category === categoryList[1] ? 500 :
+          750 // inventory[selectSlot].category === categoryList[2]
         cost *=
-          shopSlot.rarity === weaponRarityList[0] ? 1 :
-          shopSlot.rarity === weaponRarityList[1] ? 2 :
-          shopSlot.rarity === weaponRarityList[2] ? 3 :
-          4 // shopSlot.rarity === weaponRarityList[3]
+          inventory[selectSlot].rarity === weaponRarityList[0] ? 1 :
+          inventory[selectSlot].rarity === weaponRarityList[1] ? 2 :
+          inventory[selectSlot].rarity === weaponRarityList[2] ? 3 :
+          4 // inventory[selectSlot].rarity === weaponRarityList[3]
         if (cost <= point && button(fillAmmoBox)) {
           point -= cost
-          shopSlot.magazines.fill(shopSlot.magazineSize)
+          inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
         }
-        if (shopSlot.limitBreak * shopSlot.limitBreakIndex <= point && button(limitBreakBox)) {
+        if (inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point && button(limitBreakBox)) {
           afterglow.limitBreakResult = .01 + Math.random() * 1.99
-          shopSlot.damage = (shopSlot.damage * afterglow.limitBreakResult)|0
-          point -= shopSlot.limitBreak * shopSlot.limitBreakIndex
-          shopSlot.limitBreakIndex += 1
+          inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
+          point -= inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex
+          inventory[selectSlot].limitBreakIndex += 1
           storage.setItem('inventoryArray', JSON.stringify(inventory))
           afterglow.save = 1000
           afterglow.limitBreakSuccess += 2000
@@ -2242,23 +2240,29 @@ const setStore = () => {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
       if (isInner(this, offset)) {
         let cost = 0
-        if (shopSlot.category !== '') {
+        if (inventory[selectSlot].category !== '') {
           cost =
-            shopSlot.category === categoryList[0] ? 250 :
-            shopSlot.category === categoryList[1] ? 500 :
-            750 // shopSlot.category === categoryList[2]
+            inventory[selectSlot].category === categoryList[0] ? 250 :
+            inventory[selectSlot].category === categoryList[1] ? 500 :
+            750 // inventory[selectSlot].category === categoryList[2]
           cost *=
-            shopSlot.rarity === weaponRarityList[0] ? 1 :
-            shopSlot.rarity === weaponRarityList[1] ? 2 :
-            shopSlot.rarity === weaponRarityList[2] ? 3 :
-            4 // shopSlot.rarity === weaponRarityList[3]
+            inventory[selectSlot].rarity === weaponRarityList[0] ? 1 :
+            inventory[selectSlot].rarity === weaponRarityList[1] ? 2 :
+            inventory[selectSlot].rarity === weaponRarityList[2] ? 3 :
+            4 // inventory[selectSlot].rarity === weaponRarityList[3]
         }
-        const ammoAlpha = shopSlot.category !== '' && cost <= point ? 1 : .4
+        const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
         context.save()
-        context.fillStyle = 'hsla(30, 100%, 70%, .5)'
-        context.fillRect(slotBox.absoluteX, slotBox.absoluteY, slotBox.width, slotBox.height)
+        if (inventory[selectSlot].category !== '') {
+          context.fillStyle = 'hsla(300, 100%, 70%, .5)'
+          context.fillRect(
+            inventorySlotBox[selectSlot].absoluteX,
+            inventorySlotBox[selectSlot].absoluteY,
+            inventorySlotBox[selectSlot].width,
+            inventorySlotBox[selectSlot].height)
+        }
 
-        if (shopSlot.category !== '' && cost <= point && isInner(fillAmmoBox, cursor)) {
+        if (inventory[selectSlot].category !== '' && cost <= point && isInner(fillAmmoBox, cursor)) {
           context.fillStyle = 'hsl(30, 100%, 70%)'
           context.fillRect(fillAmmoBox.absoluteX, fillAmmoBox.absoluteY, fillAmmoBox.width, fillAmmoBox.height)
         }
@@ -2273,8 +2277,8 @@ const setStore = () => {
         }
 
         if (
-          shopSlot.category !== '' &&
-          shopSlot.limitBreak * shopSlot.limitBreakIndex <= point &&
+          inventory[selectSlot].category !== '' &&
+          inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point &&
           isInner(limitBreakBox, cursor)
         ) {
           context.fillStyle = 'hsl(30, 100%, 70%)'
@@ -2282,14 +2286,14 @@ const setStore = () => {
             limitBreakBox.absoluteX, limitBreakBox.absoluteY, limitBreakBox.width, limitBreakBox.height)
         }
         const limitBreakAlpha =
-          shopSlot.category !== '' && shopSlot.limitBreak * shopSlot.limitBreakIndex <= point ? 1 : .4
+          inventory[selectSlot].category !== '' && inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point ? 1 : .4
         context.fillStyle = `hsla(210, 100%, 70%, ${limitBreakAlpha})`
         context.font = `${size}px sans-serif`
         context.fillText(limitBreakBox.text, limitBreakBox.offsetX, limitBreakBox.offsetY)
-        if (shopSlot.category !== '') {
+        if (inventory[selectSlot].category !== '') {
           context.font = `${size * .75}px sans-serif`
           context.fillText(
-            `Cost: ${shopSlot.limitBreak * shopSlot.limitBreakIndex}`,
+            `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
             limitBreakBox.offsetX,
             limitBreakBox.offsetY + size)
         }
@@ -2305,7 +2309,6 @@ const setStore = () => {
         }
         context.restore()
       }
-      drawWeaponCategory(slotBox, shopSlot)
     }
   }
   const saveBox = {
