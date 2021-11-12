@@ -1064,13 +1064,11 @@ const interfaceProcess = () => {
     key[action.rotateSlot].isFirst() || (wheelEvent.isFirst && 0 < wheelEvent.deltaY)
   ) {
     selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
-    console.log('a')
   }
   if (
     key[action.revarseRotateSlot].isFirst() || (wheelEvent.isFirst && wheelEvent.deltaY < 0)
   ) {
     selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
-    console.log('b')
   }
   if (key[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
@@ -3047,7 +3045,6 @@ const drawResult = () => {
   // context.fillText('カットイン(仮)', size*5, canvas.offsetHeight / 2)
 }
 const drawKeyLayout = () => {
-  console.log('a')
   // resetScreen()
   const nowTime = Date.now()
   const ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
