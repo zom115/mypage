@@ -2257,7 +2257,7 @@ const setStore = () => {
         context.fillStyle = 'hsla(30, 100%, 70%, .5)'
         context.fillRect(slotBox.absoluteX, slotBox.absoluteY, slotBox.width, slotBox.height)
 
-        if (shopSlot.category !== '' && isInner(fillAmmoBox, cursor)) {
+        if (shopSlot.category !== '' && cost <= point && isInner(fillAmmoBox, cursor)) {
           context.fillStyle = 'hsl(30, 100%, 70%)'
           context.fillRect(fillAmmoBox.absoluteX, fillAmmoBox.absoluteY, fillAmmoBox.width, fillAmmoBox.height)
         }
