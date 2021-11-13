@@ -1811,6 +1811,7 @@ const drawWeaponDetail = (box, i) => {
       MODE: inventory[i].mode === weaponModeList[2] ? `${inventory[i].roundLimit}-R ${inventory[i].mode}` :
         inventory[i].mode,
       DAMAGE: inventory[i].damage.toFixed(0),
+      'P. FORCE': inventory[i].penetrationForce.toFixed(2),
       'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
     }
     Object.keys(dictionary).forEach((v, i) => {
