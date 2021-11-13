@@ -275,7 +275,7 @@ const Weapon = class {
   }
 }
 let inventory = []
-let slotSize = 3
+let mainSlotSize = 3
 let inventorySize = 10
 let inventoryFlag = false
 let selectSlot = 0
@@ -603,7 +603,7 @@ const setTitleMenuWord = () => {
 }
 let inventorySlotBox = []
 {
-  for (let i = 0; i < slotSize; i++) {
+  for (let i = 0; i < mainSlotSize; i++) {
     inventorySlotBox.push({absoluteX: size * (.75 + 2 * i), absoluteY: size * .5, width: size * 1.5, height: size * 1.5})
   }
   const columnSize = 5
@@ -1061,14 +1061,14 @@ const interfaceProcess = () => {
   if (code[action.secondary].isFirst()) selectSlot = 1
   if (code[action.tertiary].isFirst()) selectSlot = 2
   if (code[action.rotateSlot].isFirst()) {
-    if (code[action.shift].flag) selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
-    else selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
+    if (code[action.shift].flag) selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
+    else selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
   }
   if (wheelEvent.isFirst && 0 < wheelEvent.deltaY) {
-    selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
+    selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
   }
   if (wheelEvent.isFirst && wheelEvent.deltaY < 0) {
-    selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
+    selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
   }
   if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
   speedAdjust()
@@ -1519,7 +1519,7 @@ const dropItemProcess = () => {
     const blankInventorySlot = inventory.findIndex(v => v.category === '')
     let multiple = (
       item.type === 'weapon' || item.type === 'droppedWeapon') &&
-      slotSize + inventorySize <= inventory.length ? 0 : .5 + 160 / (distance) // : size / 512
+      mainSlotSize + inventorySize <= inventory.length ? 0 : .5 + 160 / (distance) // : size / 512
     if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
     else {
       item.x = item.x + width / distance * multiple
@@ -1541,7 +1541,7 @@ const dropItemProcess = () => {
     } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
       if (
         item.unavailableTime <= 0 && distance < minImgRadius * 2 &&
-        blankInventorySlot < slotSize + inventorySize
+        blankInventorySlot < mainSlotSize + inventorySize
       ) {
         delete item.type,
         delete item.unavailableTime,
@@ -1830,7 +1830,7 @@ const drawSlot = () => {
   }
   drawWeaponCategory(box, holdSlot)
   inventorySlotBox.forEach((v, i) => {
-    if (slotSize - 1 < i && !inventoryFlag) return
+    if (mainSlotSize - 1 < i && !inventoryFlag) return
     context.fillStyle = 'hsla(210, 100%, 75%, .4)'
     context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
     if (i === selectSlot) {
@@ -1839,7 +1839,7 @@ const drawSlot = () => {
     drawWeaponCategory(v, inventory[i])
   })
   inventorySlotBox.forEach((v, i) => {
-    if (slotSize - 1 < i && !inventoryFlag) return
+    if (mainSlotSize - 1 < i && !inventoryFlag) return
     drawWeaponDetail(v, i)
   })
   if (inventoryFlag) {
@@ -1873,8 +1873,8 @@ const inventoryProcess = () => {
     if (downButton(v)) {
       if (code[action.shift].flag) {
         let a = -1
-        if (i < slotSize) a = inventory.findIndex((v, index) => slotSize <= index && v.category === '')
-        else  a = inventory.findIndex((v, index) => index < slotSize && v.category === '')
+        if (i < mainSlotSize) a = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
+        else  a = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
         if (a !== -1) [inventory[i], inventory[a]] = [inventory[a], inventory[i]]
       } else {
         [holdSlot, inventory[i]] = [inventory[i], holdSlot]
@@ -2585,7 +2585,7 @@ const reset = () => {
   inventory = JSON.parse(storage.getItem('inventoryArray'))
   if (!inventory || inventory.every(v => v.category === '')) {
     inventory = []
-    for (let i = 0; i < slotSize + inventorySize; i++) {
+    for (let i = 0; i < mainSlotSize + inventorySize; i++) {
       inventory.push({category: ''})
     }
     inventory[selectSlot] = new Weapon(
