@@ -29,30 +29,21 @@ canvas.addEventListener('mousemove', e => {
   cursor.offsetY = JSON.parse(JSON.stringify(e.offsetY))
 }, false)
 let mouseDownPos = {offsetX: 0, offsetY: 0}
-let mouseDownState = false
-let isMouseDown = () => {
-  let bool = mouseDownState
-  mouseDownState = false
-  return bool
-}
-let mouseUpState = false
-let isMouseUp = () => {
-  let bool = mouseUpState
-  mouseUpState = false
-  return bool
-}
+let isMouseDownFirst = false
+let isMouseDown = false
+let isMouseUpFirst = false
 canvas.addEventListener('mousedown', e => {
   mouseDownPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
   mouseDownPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
-  mouseDownState = true
-  mouseUpState = false
+  isMouseDownFirst = true
+  isMouseDown = true
 }, false)
 let mouseUpPos = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mouseup', e => {
   mouseUpPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
   mouseUpPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
-  mouseDownState = false
-  mouseUpState = true
+  isMouseUpFirst = true
+  isMouseDown = false
 }, false)
 canvas.addEventListener('click', () => {}, false)
 const isInner = (box, pos) => {
@@ -64,10 +55,10 @@ const isInner = (box, pos) => {
   0 <= offset.y && offset.y <= box.height
 }
 const downButton = box => {
-  return isInner(box, mouseDownPos) && isMouseDown()
+  return isInner(box, mouseDownPos) && isMouseDownFirst
 }
 const button = box => {
-  return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isMouseUp()
+  return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isMouseUpFirst
 }
 let wheelEvent = {deltaY: 0, isFirst: false}
 canvas.addEventListener('wheel', e => {
@@ -915,7 +906,7 @@ const reloadProcess = () => {
     }
   } else return
   inventory[selectSlot].reloadTime = 0
-  if (inventory[selectSlot].mode === weaponModeList[2] && !mouseDownState) {
+  if (inventory[selectSlot].mode === weaponModeList[2] && !isMouseDown) {
     inventory[selectSlot].round = 0
   }
 }
@@ -1041,19 +1032,19 @@ const weaponProcess = () => {
   // if (key[action.fire].flag) firingProcess()
 
   if (((
-    mouseDownState && !inventoryFlag && !portalFlag) || (
+    isMouseDown && !inventoryFlag && !portalFlag) || (
     inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
     !inventory[selectSlot].disconnector
   ) {
     mouseFiring()
   }
-  if (inventory[selectSlot].mode === weaponModeList[1] && !mouseDownState) {
+  if (inventory[selectSlot].mode === weaponModeList[1] && !isMouseDown) {
     inventory[selectSlot].disconnector = false
   }
   if (
     inventory[selectSlot].mode === weaponModeList[2] &&
     inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
-    !mouseDownState
+    !isMouseDown
   ) {
     inventory[selectSlot].disconnector = false
     inventory[selectSlot].round = 0
@@ -2824,6 +2815,8 @@ const keyLayoutProcess = () => {
   ) state = 'title'
 }
 const resetKeyState = () => {
+  isMouseDownFirst = false
+  isMouseUpFirst = false
   wheelEvent.isFirst = false
 }
 const main = () => setInterval(() => {
