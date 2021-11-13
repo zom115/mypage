@@ -1872,10 +1872,11 @@ const inventoryProcess = () => {
   inventorySlotBox.forEach((v, i) => {
     if (downButton(v)) {
       if (code[action.shift].flag) {
-        let a = -1
-        if (i < mainSlotSize) a = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
-        else  a = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
-        if (a !== -1) [inventory[i], inventory[a]] = [inventory[a], inventory[i]]
+        let findIndex = -1
+        if (i < mainSlotSize) {
+          findIndex = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
+        } else  findIndex = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
+        if (findIndex !== -1) [inventory[i], inventory[findIndex]] = [inventory[findIndex], inventory[i]]
       } else {
         [holdSlot, inventory[i]] = [inventory[i], holdSlot]
         inventory[selectSlot].grip = 0
