@@ -626,6 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reload: setStorageFirst('reload', 'KeyR'),
     combatReload: setStorageFirst('combatReload', 'KeyC'),
     slow: setStorageFirst('slow', 'ShiftLeft'),
+    shift: setStorageFirst('shift', 'ShiftLeft'),
     dash: setStorageFirst('dash', 'KeyN'),
     back: setStorageFirst('back', 'KeyB'),
     change: setStorageFirst('change', 'KeyM'),
@@ -633,7 +634,6 @@ document.addEventListener('DOMContentLoaded', () => {
     secondary: setStorageFirst('secondary', 'Digit2'),
     tertiary: setStorageFirst('tertiary', 'Digit3'),
     rotateSlot: setStorageFirst('rotateSlot', 'KeyQ'),
-    revarseRotateSlot: setStorageFirst('revarseRotateSlot', 'KeyQ'),
     inventory: setStorageFirst('inventory', 'KeyE'),
     pause: setStorageFirst('pause', 'KeyP'),
     debug: setStorageFirst('debug', 'KeyG')
@@ -1060,14 +1060,14 @@ const interfaceProcess = () => {
   if (code[action.primary].isFirst()) selectSlot = 0
   if (code[action.secondary].isFirst()) selectSlot = 1
   if (code[action.tertiary].isFirst()) selectSlot = 2
-  if (
-    code[action.rotateSlot].isFirst() || (wheelEvent.isFirst && 0 < wheelEvent.deltaY)
-  ) {
+  if (code[action.rotateSlot].isFirst()) {
+    if (code[action.shift].flag) selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
+    else selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
+  }
+  if (wheelEvent.isFirst && 0 < wheelEvent.deltaY) {
     selectSlot += selectSlot < slotSize - 1 ? 1 : -(slotSize - 1)
   }
-  if (
-    code[action.revarseRotateSlot].isFirst() || (wheelEvent.isFirst && wheelEvent.deltaY < 0)
-  ) {
+  if (wheelEvent.isFirst && wheelEvent.deltaY < 0) {
     selectSlot -= 0 < selectSlot ? 1 : -(slotSize - 1)
   }
   if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
