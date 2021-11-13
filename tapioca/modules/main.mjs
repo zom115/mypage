@@ -2775,7 +2775,7 @@ const resultProcess = () => {
     storage.setItem('inventoryArray', JSON.stringify(inventory))
     point = (point / 100)|0
     point *= 10
-    storage.setItem('point', point)
+    storage.setItem('point', JSON.stringify(point))
     afterglow.save = 1000
     resultFlag = true
   }
