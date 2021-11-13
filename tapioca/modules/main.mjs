@@ -23,7 +23,11 @@ canvas.addEventListener('mouseover', () => {
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
 let cursor = {offsetX: 0, offsetY: 0}
-canvas.addEventListener('mousemove', e => cursor = e, false)
+canvas.addEventListener('mousemove', e => {
+  // cursor = e
+  cursor.offsetX = JSON.parse(JSON.stringify(e.offsetX))
+  cursor.offsetY = JSON.parse(JSON.stringify(e.offsetY))
+}, false)
 let mouseDownPos = {offsetX: 0, offsetY: 0}
 let mouseDownState = false
 let isMouseDown = () => {
@@ -38,13 +42,15 @@ let isMouseUp = () => {
   return bool
 }
 canvas.addEventListener('mousedown', e => {
-  mouseDownPos = e
+  mouseDownPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
+  mouseDownPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
   mouseDownState = true
   mouseUpState = false
 }, false)
 let mouseUpPos = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mouseup', e => {
-  mouseUpPos = e
+  mouseUpPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
+  mouseUpPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
   mouseDownState = false
   mouseUpState = true
 }, false)
