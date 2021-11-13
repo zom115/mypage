@@ -1864,7 +1864,6 @@ const inventoryProcess = () => {
       inventory.forEach((v, i) => {
         if (v.category === '') {
           [holdSlot, inventory[i]] = [inventory[i], holdSlot]
-          return
         }
       })
     }
@@ -1872,9 +1871,16 @@ const inventoryProcess = () => {
   }
   inventorySlotBox.forEach((v, i) => {
     if (downButton(v)) {
-      [holdSlot, inventory[i]] = [inventory[i], holdSlot]
-      inventory[selectSlot].grip = 0
-      afterglow.inventory = 60
+      if (code[action.shift].flag) {
+        let a = -1
+        if (i < slotSize) a = inventory.findIndex((v, index) => slotSize <= index && v.category === '')
+        else  a = inventory.findIndex((v, index) => index < slotSize && v.category === '')
+        if (a !== -1) [inventory[i], inventory[a]] = [inventory[a], inventory[i]]
+      } else {
+        [holdSlot, inventory[i]] = [inventory[i], holdSlot]
+        inventory[selectSlot].grip = 0
+        // afterglow.inventory = 60
+      }
     }
   })
   if (holdSlot.category !== '' && downButton(removeWeaponSlot)) {
@@ -3232,7 +3238,8 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
+    index: inventory.findIndex((v, i) => {v.category === ''})
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
