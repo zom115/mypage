@@ -1282,15 +1282,15 @@ const setWeapon = () => {
   if (modeList.length - 1 < modeIndex) modeIndex -= 1
   console.log(modeList, modeIndex)
   const HgMinmagazine = 5
-  const HgExtendMag = 15
+  const HgExtendMag = 28
   const SmgMinMag = 15
-  const SmgExtendMag = 20
+  const SmgExtendMag = 35
   const ArMinmagazine = 10
-  const ArExtendMag = 40
+  const ArExtendMag = 65
   const magazineSize =
-    categoryIndex === 0 ? (HgMinmagazine + HgExtendMag * Math.random())|0 : // max 20
-    categoryIndex === 1 ? (SmgMinMag + SmgExtendMag * Math.random())|0 : // max 35
-    (ArMinmagazine + ArExtendMag * Math.random())|0 // max 50
+    categoryIndex === 0 ? (HgMinmagazine + HgExtendMag * Math.random())|0 : // max 33
+    categoryIndex === 1 ? (SmgMinMag + SmgExtendMag * Math.random())|0 : // max 50
+    (ArMinmagazine + ArExtendMag * Math.random())|0 // max 75
   const magazines = Array(10).fill(magazineSize, 0, 5).fill(0, 5, 10)
   // Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
   const HgBaseDamage = 70
