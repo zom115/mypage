@@ -16,33 +16,37 @@ const isKeyFirst = list => {
 }
 const version = 'v.0.8.8.1'
 const canvas = document.getElementById`canvas`
+
+let cursor = {offsetX: 0, offsetY: 0}
+let mouseDownPos = {offsetX: 0, offsetY: 0}
+let isLeftMouseDownFirst = false
+let isLeftMouseDown = false
+let isLeftMouseUpFirst = false
+let mouseUpPos = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mouseover', () => {
   document.draggable = false
   canvas.draggable = false
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
-let cursor = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mousemove', e => {
-  // cursor = e
   cursor.offsetX = JSON.parse(JSON.stringify(e.offsetX))
   cursor.offsetY = JSON.parse(JSON.stringify(e.offsetY))
 }, false)
-let mouseDownPos = {offsetX: 0, offsetY: 0}
-let isMouseDownFirst = false
-let isMouseDown = false
-let isMouseUpFirst = false
 canvas.addEventListener('mousedown', e => {
   mouseDownPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
   mouseDownPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
-  isMouseDownFirst = true
-  isMouseDown = true
+  if (e.button === 0) {
+    isLeftMouseDownFirst = true
+    isLeftMouseDown = true
+  }
 }, false)
-let mouseUpPos = {offsetX: 0, offsetY: 0}
 canvas.addEventListener('mouseup', e => {
   mouseUpPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
   mouseUpPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
-  isMouseUpFirst = true
-  isMouseDown = false
+  if (e.button === 0) {
+    isLeftMouseUpFirst = true
+    isLeftMouseDown = false
+  }
 }, false)
 canvas.addEventListener('click', () => {}, false)
 const isInner = (box, pos) => {
@@ -54,20 +58,23 @@ const isInner = (box, pos) => {
   0 <= offset.y && offset.y <= box.height
 }
 const downButton = box => {
-  return isInner(box, mouseDownPos) && isMouseDownFirst
+  return isInner(box, mouseDownPos) && isLeftMouseDownFirst
 }
 const button = box => {
-  return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isMouseUpFirst
+  return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isLeftMouseUpFirst
 }
+
 let wheelEvent = {deltaY: 0, isFirst: false}
 canvas.addEventListener('wheel', e => {
   e.preventDefault()
   wheelEvent = e
   wheelEvent.isFirst = true
 }, false)
+
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault()
 })
+
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
@@ -910,7 +917,7 @@ const reloadProcess = () => {
     }
   } else return
   inventory[selectSlot].reloadTime = 0
-  if (inventory[selectSlot].mode === weaponModeList[2] && !isMouseDown) {
+  if (inventory[selectSlot].mode === weaponModeList[2] && !isLeftMouseDown) {
     inventory[selectSlot].round = 0
   }
 }
@@ -1040,19 +1047,19 @@ const weaponProcess = () => {
   // if (key[action.fire].flag) firingProcess()
 
   if (((
-    isMouseDown && !inventoryFlag && !portalFlag) || (
+    isLeftMouseDown && !inventoryFlag && !portalFlag) || (
     inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
     !inventory[selectSlot].disconnector
   ) {
     mouseFiring()
   }
-  if (inventory[selectSlot].mode === weaponModeList[1] && !isMouseDown) {
+  if (inventory[selectSlot].mode === weaponModeList[1] && !isLeftMouseDown) {
     inventory[selectSlot].disconnector = false
   }
   if (
     inventory[selectSlot].mode === weaponModeList[2] &&
     inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
-    !isMouseDown
+    !isLeftMouseDown
   ) {
     inventory[selectSlot].disconnector = false
     inventory[selectSlot].round = 0
@@ -2881,8 +2888,8 @@ const keyLayoutProcess = () => {
   ) state = 'title'
 }
 const resetKeyState = () => {
-  isMouseDownFirst = false
-  isMouseUpFirst = false
+  isLeftMouseDownFirst = false
+  isLeftMouseUpFirst = false
   wheelEvent.isFirst = false
 }
 const main = () => setInterval(() => {
