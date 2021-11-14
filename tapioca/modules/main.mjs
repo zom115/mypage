@@ -1660,7 +1660,7 @@ const drawText = (fontSize, align, content, coordinate) => {
   context.fillText(content, coordinate.x, coordinate.y)
 }
 const drawIndicator = () => {
-  let c = {x: canvas.offsetWidth - size, y: canvas.offsetHeight - size}
+  let c = {x: canvas.offsetWidth - size / 2, y: canvas.offsetHeight - size}
   context.save()
   context.font = `${size * .5}px sans-serif`
   context.fillStyle = 'hsl(330, 100%, 50%)'
@@ -1696,6 +1696,19 @@ const drawIndicator = () => {
     const cartridges = inventory[selectSlot].magazines[inventory[selectSlot].grip]
     context.fillStyle = (cartridges < inventory[selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
     (cartridges < inventory[selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
+    context.save()
+    if (inventory[selectSlot].modeList.length !== 1) inventory[selectSlot].modeList.forEach((v, i) => {
+      context.fillStyle = 'hsla(210, 100%, 50%, .7)'
+      if (inventory[selectSlot].mode === v) {
+        context.fillRect(c.x - size * .8, c.y - size * (9.7 - i), size / 6, size * .65)
+      }
+      const text =
+        v === weaponModeList[1] ? '1' : // SEMI AUTO
+        v === weaponModeList[2] ? inventory[selectSlot].roundLimit : // BURST
+        v === weaponModeList[3] ? 'F' : '' // FULL AUTO
+        context.fillText(text, c.x, c.y - size * (9 - i))
+    })
+    context.restore()
     context.save()
     const inChamber = (inventory[selectSlot].chamber) ? 1 : 0
     context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - size * 3)
