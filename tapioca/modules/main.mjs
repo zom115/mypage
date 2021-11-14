@@ -33,6 +33,7 @@ canvas.addEventListener('mousemove', e => {
   cursor.offsetY = JSON.parse(JSON.stringify(e.offsetY))
 }, false)
 canvas.addEventListener('mousedown', e => {
+  e.preventDefault()
   mouseDownPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
   mouseDownPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
   if (e.button === 0) {
