@@ -16,7 +16,6 @@ const isKeyFirst = list => {
 }
 const version = 'v.0.8.8.1'
 const canvas = document.getElementById`canvas`
-canvas.oncontextmenu = () => {return false}
 canvas.addEventListener('mouseover', () => {
   document.draggable = false
   canvas.draggable = false
@@ -66,6 +65,9 @@ canvas.addEventListener('wheel', e => {
   wheelEvent = e
   wheelEvent.isFirst = true
 }, false)
+canvas.addEventListener('contextmenu', e => {
+  e.preventDefault()
+})
 const DOM = {
   operation: document.getElementById`operation`,
   lookUp: document.getElementById`lookUp`,
