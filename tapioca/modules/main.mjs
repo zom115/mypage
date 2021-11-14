@@ -1715,7 +1715,7 @@ const drawIndicator = () => {
     context.fillStyle = (cartridges < inventory[selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
     (cartridges < inventory[selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
     context.save()
-    if (inventory[selectSlot].modeList.length !== 1) inventory[selectSlot].modeList.forEach((v, i) => {
+    inventory[selectSlot].modeList.forEach((v, i) => {
       context.fillStyle = 'hsla(210, 100%, 50%, .7)'
       if (inventory[selectSlot].mode === v) {
         context.fillRect(c.x - size * .8, c.y - size * (9.7 - i), size / 6, size * .65)
