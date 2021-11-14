@@ -1275,9 +1275,7 @@ const setWeapon = () => {
     modeList.push(weaponModeList[3])
   }
   if (modeList.length === 0) modeList.push(weaponModeList[1])
-  if (categoryIndex === 2 && modeList.length === 3
-    //  && Math.random() < .5
-     ) { // like AK-47
+  if (categoryIndex === 2 && modeList.length === 3 && Math.random() < .5) { // like AK-47
     modeList.push(...modeList.splice(1, 1))
   }
   let modeIndex = Math.floor(modeList.length * Math.random())
