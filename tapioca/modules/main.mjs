@@ -229,11 +229,12 @@ const weaponRatiryColorList = [
 ]
 const Weapon = class {
   constructor(
-    name, category, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
+    name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
     magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, limitBreak, limitBreakIndex
   ) {
     this.name = name
     this.category = category
+    this.modeList = modeList
     this.mode = mode
     this.rarity = rarity
     this.damage = damage
@@ -1247,10 +1248,41 @@ const setWeapon = () => {
   for (let i = 0; i < 2; i++) {
     if (.5 < Math.random()) categoryIndex += 1
   }
-  let modeIndex = 1 // TODO: incomplete manual mode
-  for (let i = 0; i < 2; i++) {
-    if (.5 < Math.random()) modeIndex += 1
+  let modeList = [] // TODO: incomplete manual mode
+  // type:: SEMI : BURST : FULL AUTO
+  // HG:: 9 : 2 : 6
+  // SMG:: 5 : 4 : 8
+  // AR:: 7 : 3 : 7
+  if ((
+    categoryIndex === 0 && Math.random() < .9) || (
+    categoryIndex === 1 && Math.random() < .5) || (
+    categoryIndex === 2 && Math.random() < .7)
+  ) {
+    modeList.push(weaponModeList[1])
   }
+  if ((
+    categoryIndex === 0 && Math.random() < .5) || (
+    categoryIndex === 1 && Math.random() < .4) || (
+    categoryIndex === 2 && Math.random() < .8)
+  ) {
+    modeList.push(weaponModeList[2])
+  }
+  if ((
+    categoryIndex === 0 && Math.random() < .7) || (
+    categoryIndex === 1 && Math.random() < .3) || (
+    categoryIndex === 2 && Math.random() < .7)
+  ) {
+    modeList.push(weaponModeList[3])
+  }
+  if (modeList.length === 0) modeList.push(weaponModeList[1])
+  if (categoryIndex === 2 && modeList.length === 3
+    //  && Math.random() < .5
+     ) { // like AK-47
+    modeList.push(...modeList.splice(1, 1))
+  }
+  let modeIndex = Math.floor(modeList.length * Math.random())
+  if (modeList.length - 1 < modeIndex) modeIndex -= 1
+  console.log(modeList, modeIndex)
   const HgMinmagazine = 5
   const HgExtendMag = 15
   const SmgMinMag = 15
@@ -1287,11 +1319,12 @@ const setWeapon = () => {
   // the smaller the bigger
   const loadingSpeed = loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25)
   const penetrationForce = Math.random()
-  const roundLimit = modeIndex === 2 ? (2 + 3 * Math.random())|0 : 0
+  const roundLimit = modeList.some(v => {return v === weaponModeList[2]}) ? (2 + 3 * Math.random())|0 : 0
   const weapon = new Weapon(
     `# ${wave.number}`,
     categoryList[categoryIndex],
-    weaponModeList[modeIndex],
+    modeList,
+    modeList[modeIndex],
     weaponRarityList[rarityIndex],
     damage,
     slideSpeed,
@@ -2590,6 +2623,7 @@ const reset = () => {
     inventory[selectSlot] = new Weapon(
       'T1911',
       'HG',
+      [weaponModeList[1]],
       weaponModeList[1],
       weaponRarityList[0],
       maxDamageInitial,
