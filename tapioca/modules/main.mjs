@@ -625,6 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
     combatReload: setStorageFirst('combatReload', 'KeyC'),
     slow: setStorageFirst('slow', 'ShiftLeft'),
     shift: setStorageFirst('shift', 'ShiftLeft'),
+    modeSelect: setStorageFirst('modeSelect', 'KeyB'),
     dash: setStorageFirst('dash', 'KeyN'),
     back: setStorageFirst('back', 'KeyB'),
     change: setStorageFirst('change', 'KeyM'),
@@ -1025,7 +1026,11 @@ const bomb = () => {
   })
 }
 const weaponProcess = () => {
-  if (code[action.reload].isFirst() && inventory[selectSlot].reloadTime === 0 && inventory[selectSlot].reloadState === 'done') {
+  if (
+    code[action.reload].isFirst() &&
+    inventory[selectSlot].reloadTime === 0 &&
+    inventory[selectSlot].reloadState === 'done'
+  ) {
     inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
     reloadProcess()
   } else if (0 < inventory[selectSlot].reloadTime || inventory[selectSlot].reloadState !== 'done') reloadProcess()
@@ -1052,6 +1057,20 @@ const weaponProcess = () => {
   }
   // loadingProcess()
   if (code[action.change].isFirst()) magazineForword() // TODO: to consider
+
+  if (code[action.modeSelect].isFirst()) {
+    if (code[action.shift].flag) {
+      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) - 1
+      inventory[selectSlot].mode =
+        n < 0 ? inventory[selectSlot].modeList[inventory[selectSlot].modeList.length - 1] :
+        inventory[selectSlot].modeList[n]
+    } else {
+      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) + 1
+      inventory[selectSlot].mode =
+        n < inventory[selectSlot].modeList.length ? inventory[selectSlot].modeList[n] :
+        inventory[selectSlot].modeList[0]
+    }
+  }
 }
 const interfaceProcess = () => {
   if (code[action.pause].isFirst()) state = 'pause'
@@ -1280,7 +1299,6 @@ const setWeapon = () => {
   }
   let modeIndex = Math.floor(modeList.length * Math.random())
   if (modeList.length - 1 < modeIndex) modeIndex -= 1
-  console.log(modeList, modeIndex)
   const HgMinmagazine = 5
   const HgExtendMag = 28
   const SmgMinMag = 15
