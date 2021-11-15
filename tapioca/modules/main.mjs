@@ -292,11 +292,11 @@ let selectSlot = 0
 let dropItems = []
 let bullets = []
 const Bullet = class {
-  constructor(x, y, dx, dy, life, damage, penetrationForce, isHoming) {
+  constructor(x, y, radius, theta, life, damage, penetrationForce, isHoming) {
     this.x = x
     this.y = y
-    this.dx = dx
-    this.dy = dy
+    this.radius = radius
+    this.theta = theta
     this.life = life
     this.baseLife = life
     this.damage = damage
@@ -307,8 +307,10 @@ const Bullet = class {
   }
   update() {
     this.life -= intervalDiffTime
-    this.x += this.dx * bulletSpeed
-    this.y += this.dy * bulletSpeed
+    this.x += this.radius * Math.cos(this.theta) * intervalDiffTime
+    this.y += this.radius * Math.sin(this.theta) * intervalDiffTime
+    // this.x += this.dx * bulletSpeed
+    // this.y += this.dy * bulletSpeed
     if (homingFlag) {
       bullets.forEach((bullet, i) => {
         bullet.life = bullet.life - 1
@@ -774,6 +776,7 @@ const mouseFiring = () => {
     return
   }
   if (!inventory[selectSlot].chamber) return
+  /*
   const theta = Math.atan2(
     cursor.offsetY - canvas.offsetHeight / 2,
     cursor.offsetX - canvas.offsetWidth / 2
@@ -788,11 +791,17 @@ const mouseFiring = () => {
     dx = tmpDx * Math.cos(theta) - tmpDy * Math.sin(theta)
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
   }
+  */
+  const randomError = 0 // TODO: for effective range
+  const theta =
+    Math.atan2(
+      cursor.offsetY - canvas.offsetHeight / 2,
+      cursor.offsetX - canvas.offsetWidth / 2) + randomError
   bullets.push(new Bullet(
     ownPosition.x,
     ownPosition.y,
-    dx * inventory[selectSlot].bulletSpeed,
-    dy * inventory[selectSlot].bulletSpeed,
+    inventory[selectSlot].bulletSpeed,
+    theta,
     inventory[selectSlot].bulletLife,
     inventory[selectSlot].damage,
     inventory[selectSlot].penetrationForce
