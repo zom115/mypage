@@ -21,8 +21,8 @@ let cursor = {offsetX: 0, offsetY: 0}
 let mouseDownPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseDownFirst = false
 let isLeftMouseDown = false
-let isLeftMouseUpFirst = false
 let mouseUpPos = {offsetX: 0, offsetY: 0}
+let isLeftMouseUpFirst = false
 canvas.addEventListener('mouseover', () => {
   document.draggable = false
   canvas.draggable = false
@@ -93,8 +93,8 @@ const DOM = {
 }
 const context = canvas.getContext`2d`
 context.imageSmoothingEnabled =
-context.msImageSmoothingEnabled =
-context.webkitImageSmoothingEnabled = false
+  context.msImageSmoothingEnabled =
+  context.webkitImageSmoothingEnabled = false
 const storage = localStorage
 document.getElementById('clear').addEventListener('click', () => {
   storage.clear()
@@ -192,6 +192,7 @@ let afterglow = {
 }
 const flashTimeLimit = 5
 const ownPosition = {x: 0, y: 0}
+const ownState = {dx: 0, dy: 0}
 let clonePosition = []
 let cloneFlag = false
 let clonePower = .8
@@ -1022,10 +1023,51 @@ const speedAdjust = () => {
     else if (ownSpeed.max < ownSpeed.current) {} else cloneSpeed = ownSpeed.current
   } else cloneSpeed = ownSpeed.current
 }
+const setDirection = arg => {
+  let dx = 0, dy = 0
+  /*
+    6 4 12
+    2 0 8
+    3 1 9
+  */
+  if (arg === 1) dy = -1
+  else if (arg === 3) {
+    dx = 1 / Math.SQRT2
+    dy = -1 / Math.SQRT2
+  } else if (arg === 2) dx = 1
+  else if (arg === 6) {
+    dx = 1 / Math.SQRT2
+    dy = 1 / Math.SQRT2
+  } else if (arg === 4) dy = 1
+  else if (arg === 12) {
+    dx = -1 / Math.SQRT2
+    dy = 1 / Math.SQRT2
+  } else if (arg === 8) dx = -1
+  else if (arg === 9) {
+    dx = -1 / Math.SQRT2
+    dy = -1 / Math.SQRT2
+  }
+  return {dx, dy}
+}
 const moving = () => {
-  let {dx, dy} = (ownSpeed.max < ownSpeed.current) ? directionCalc(currentDirection) :
-  directionCalc(direction)
-  differenceAddition(ownPosition, dx * ownSpeed.current, dy * ownSpeed.current)
+  let {dx, dy} =
+  // directionCalc(currentDirection)
+  // :
+  setDirection(direction)
+  console.log(dx, dy)
+  const multiple = 1 / 100
+  ownState.dx += dx * multiple * intervalDiffTime
+  ownState.dy += dy * multiple * intervalDiffTime
+  ownPosition.x += ownState.dx
+  ownPosition.y += ownState.dy
+  // differenceAddition(ownPosition, dx * ownSpeed.current, dy * ownSpeed.current)
+  const brake = .95
+  if (Math.abs(ownState.dx) < 1e-2) ownState.dx = 0
+  else ownState.dx *= brake
+  if (Math.abs(ownState.dy) < 1e-2) ownState.dy = 0
+  else ownState.dy *= brake
+
+  /*
   if (cloneFlag) {
     if (code[action.slow].flag) {
       clonePosition.unshift({dx: dx * cloneSpeed, dy: dy * cloneSpeed})
@@ -1040,6 +1082,7 @@ const moving = () => {
       clonePosition.push({dx: dx * cloneSpeed, dy: dy * cloneSpeed})
     }
   }
+  */
 }
 const bomb = () => {
   enemies.forEach(enemy => {
@@ -1123,7 +1166,8 @@ const interfaceProcess = () => {
   else if (direction !== 0) currentDirection = direction
   if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess()
   if (dashCoolTimer() === 0 && code[action.dash].isFirst()) dashProcess()
-  if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed) moving()
+  // if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed)
+  moving()
   if (code[action.debug].isFirst()) debugMode = !debugMode
   if (manyAmmo() && code[action.back].isFirst()) bomb()
 }
@@ -3349,8 +3393,7 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    index: inventory.findIndex((v, i) => {v.category === ''})
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
