@@ -1441,10 +1441,10 @@ const setWeapon = () => {
   // Expected effective range is halves the probability of hitting the target
   // (Actual range) / 10 [m]
   const effectiveRange =
-    categoryIndex === 0 ? 2.5 + 2.5 * Math.random() : // HG: 2.5 - 5
-    categoryIndex === 1 ? 5 + 15 * Math.random() : // SMG: 5 - 20
-    categoryIndex === 2 ? 30 + 30 * Math.random() : // AR: 30 - 60
-    categoryIndex === 5 ? 1 + 3 * Math.random() : 10 // SG: 1 - 4
+    categoryIndex === 0 ? 2.5 + 17.5 * Math.random() : // HG: 2.5 - 20
+    categoryIndex === 1 ? 5 + 20 * Math.random() : // SMG: 5 - 25
+    categoryIndex === 2 ? 15 + 30 * Math.random() : // AR: 15 - 45
+    categoryIndex === 5 ? 2 + 8 * Math.random() : 10 // SG: 2 - 10
   const recoilCoefficient =
     categoryIndex === 0 ? .1 + .5 * Math.random() : // HG: .1 - .6
     categoryIndex === 1 ? .2 + 1.3 * Math.random() : // SMG: .2 - 1.5
