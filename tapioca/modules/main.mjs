@@ -240,7 +240,8 @@ const weaponRatiryColorList = [
 const Weapon = class {
   constructor(
     name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
-    magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, limitBreak, limitBreakIndex
+    magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange,
+    limitBreak, limitBreakIndex
   ) {
     this.name = name
     this.category = category
@@ -260,6 +261,7 @@ const Weapon = class {
     this.disconnector = false
     this.round = 0
     this.roundLimit = roundLimit
+    this.effectiveRange = effectiveRange
 
     this.chamber = false
     this.gripFlag = false
@@ -1362,6 +1364,7 @@ const setWeapon = () => {
     loadingSpeed,
     penetrationForce,
     roundLimit,
+    20,
     4000,
     0
   )
@@ -2675,6 +2678,7 @@ const reset = () => {
       loading.weight,
       0,
       0,
+      10,
 
       4000,
       0
