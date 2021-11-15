@@ -1351,7 +1351,7 @@ const setWeapon = () => {
     if (.5 < Math.random()) rarityIndex += 1
   }
   let categoryIndex = 0
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     if (.5 < Math.random()) categoryIndex += 1
   }
   if (categoryIndex === 3) categoryIndex = 5
