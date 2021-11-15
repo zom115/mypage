@@ -240,11 +240,12 @@ const weaponRatiryColorList = [
   'hsl(270, 100%, 50%)',
   'hsl(30, 100%, 50%)',
 ]
+const categoryList = ['HG', 'SMG', 'AR', 'DMR', 'SR', 'SG']
 const Weapon = class {
   constructor(
     name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
     magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange, recoilCoefficient,
-    limitBreak, limitBreakIndex
+    gaugeNumber, limitBreak, limitBreakIndex
   ) {
     this.name = name
     this.category = category
@@ -265,6 +266,7 @@ const Weapon = class {
     this.round = 0
     this.roundLimit = roundLimit
     this.effectiveRange = effectiveRange
+    this.gaugeNumber = gaugeNumber
 
     this.chamber = false
     this.gripFlag = false
@@ -797,23 +799,27 @@ const mouseFiring = () => {
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
   }
   */
-  const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
-  const randomError =
-    degreeRange * (Math.random() - .5) * (
-    1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
-  const theta =
-    Math.atan2(
-      cursor.offsetY - canvas.offsetHeight / 2,
-      cursor.offsetX - canvas.offsetWidth / 2) + randomError
-  bullets.push(new Bullet(
-    ownPosition.x,
-    ownPosition.y,
-    inventory[selectSlot].bulletSpeed,
-    theta,
-    inventory[selectSlot].bulletLife,
-    inventory[selectSlot].damage,
-    inventory[selectSlot].penetrationForce
-  ))
+  console.log(inventory[selectSlot].gaugeNumber)
+  const shotBullet = () => {
+    const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
+    const randomError =
+      degreeRange * (Math.random() - .5) * (
+      1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
+    const theta =
+      Math.atan2(
+        cursor.offsetY - canvas.offsetHeight / 2,
+        cursor.offsetX - canvas.offsetWidth / 2) + randomError
+    bullets.push(new Bullet(
+      ownPosition.x,
+      ownPosition.y,
+      inventory[selectSlot].bulletSpeed,
+      theta,
+      inventory[selectSlot].bulletLife,
+      inventory[selectSlot].damage,
+      inventory[selectSlot].penetrationForce
+    ))
+  }
+  for (let i = 0; i < inventory[selectSlot].gaugeNumber; i++) shotBullet()
 
   /*
   { // recoil / blowback
@@ -1336,7 +1342,6 @@ const drawField = () => {
     }
   }
 }
-const categoryList = ['HG', 'SMG', 'AR']
 const setWeapon = () => {
   let rarityIndex = 0
   const roundRistrict =
@@ -1347,32 +1352,39 @@ const setWeapon = () => {
     if (.5 < Math.random()) rarityIndex += 1
   }
   let categoryIndex = 0
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 4; i++) {
     if (.5 < Math.random()) categoryIndex += 1
   }
+  if (categoryIndex === 3) categoryIndex = 5
   let modeList = [] // TODO: incomplete manual mode
   // type:: SEMI : BURST : FULL AUTO
   // HG:: 9 : 2 : 6
   // SMG:: 5 : 4 : 8
   // AR:: 7 : 3 : 7
+  // DMR
+  // SR
+  // SG:: 5 : 3 : 3
   if ((
     categoryIndex === 0 && Math.random() < .9) || (
     categoryIndex === 1 && Math.random() < .5) || (
-    categoryIndex === 2 && Math.random() < .7)
+    categoryIndex === 2 && Math.random() < .7) || (
+    categoryIndex === 5 && Math.random() < .5)
   ) {
     modeList.push(weaponModeList[1])
   }
   if ((
     categoryIndex === 0 && Math.random() < .5) || (
     categoryIndex === 1 && Math.random() < .4) || (
-    categoryIndex === 2 && Math.random() < .8)
+    categoryIndex === 2 && Math.random() < .8) || (
+    categoryIndex === 5 && Math.random() < .3)
   ) {
     modeList.push(weaponModeList[2])
   }
   if ((
     categoryIndex === 0 && Math.random() < .7) || (
     categoryIndex === 1 && Math.random() < .3) || (
-    categoryIndex === 2 && Math.random() < .7)
+    categoryIndex === 2 && Math.random() < .7) || (
+    categoryIndex === 5 && Math.random() < .3)
   ) {
     modeList.push(weaponModeList[3])
   }
@@ -1388,15 +1400,21 @@ const setWeapon = () => {
   const SmgExtendMag = 35
   const ArMinmagazine = 10
   const ArExtendMag = 65
+  const SgMinmagazine = 2
+  const SgExtendMag = 30
   const magazineSize =
     categoryIndex === 0 ? (HgMinmagazine + HgExtendMag * Math.random())|0 : // max 33
     categoryIndex === 1 ? (SmgMinMag + SmgExtendMag * Math.random())|0 : // max 50
-    (ArMinmagazine + ArExtendMag * Math.random())|0 // max 75
+    categoryIndex === 2 ? (ArMinmagazine + ArExtendMag * Math.random())|0 : // max 75
+    categoryIndex === 5 ? (SgMinmagazine + SgExtendMag * Math.random())|0 : // max 32
+    // TODO: slug barrels
+    0
   const magazines = Array(10).fill(magazineSize, 0, 5).fill(0, 5, 10)
   // Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
   const HgBaseDamage = 70
   const SmgBaseDamage = 100
   const ArBaseDamage = 140
+  const SgBaseDamage = 20
   const rarityMultiple = [
     1 + Math.random() * .25, // Common
     1 + Math.random() * .5, // Uncommon
@@ -1408,7 +1426,8 @@ const setWeapon = () => {
   const damage =
     categoryIndex === 0 ? (HgBaseDamage * rarityMultiple[rarityIndex])|0 :
     categoryIndex === 1 ? (SmgBaseDamage * rarityMultiple[rarityIndex])|0 :
-    (ArBaseDamage * rarityMultiple[rarityIndex])|0
+    categoryIndex === 2 ? (ArBaseDamage * rarityMultiple[rarityIndex])|0 :
+    categoryIndex === 5 ? (ArBaseDamage * rarityMultiple[rarityIndex])|0 : 0
 
   const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
   const slideSpeed = .75 + magSizeRatio + Math.random() * .25
@@ -1425,11 +1444,14 @@ const setWeapon = () => {
   const effectiveRange =
     categoryIndex === 0 ? 2.5 + 2.5 * Math.random() : // HG: 2.5 - 5
     categoryIndex === 1 ? 5 + 15 * Math.random() : // SMG: 5 - 20
-    categoryIndex === 2 ? 30 + 30 * Math.random() : 10 // AR: 30 - 60
+    categoryIndex === 2 ? 30 + 30 * Math.random() : // AR: 30 - 60
+    categoryIndex === 5 ? 1 + 3 * Math.random() : 10 // SG: 1 - 4
   const recoilCoefficient =
     categoryIndex === 0 ? .1 + .5 * Math.random() : // HG: .1 - .6
     categoryIndex === 1 ? .2 + 1.3 * Math.random() : // SMG: .2 - 1.5
-    categoryIndex === 2 ? 1 + 2 * Math.random() : 10 // AR: 1 - 3
+    categoryIndex === 2 ? 1 + 2 * Math.random() : // AR: 1 - 3
+    categoryIndex === 5 ? .3 + .2 * Math.random() : 10 // SR: .3 - .5
+  const gaugeNumber = categoryIndex === 5 ? 1 + 19 * Math.random()|0 : 1
   const weapon = new Weapon(
     `# ${wave.number}`,
     categoryList[categoryIndex],
@@ -1448,6 +1470,7 @@ const setWeapon = () => {
     roundLimit,
     effectiveRange,
     recoilCoefficient,
+    gaugeNumber,
 
     4000,
     0
@@ -2788,6 +2811,7 @@ const reset = () => {
       0,
       10,
       .2,
+      1,
 
       4000,
       0
