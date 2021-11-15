@@ -1358,6 +1358,13 @@ const setWeapon = () => {
   const loadingSpeed = loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25)
   const penetrationForce = Math.random()
   const roundLimit = modeList.some(v => {return v === weaponModeList[2]}) ? (2 + 3 * Math.random())|0 : 0
+
+  // Expected effective range is halves the probability of hitting the target
+  // (Actual range) / 10 [m]
+  const effectiveRange =
+    categoryIndex === 0 ? 2.5 + 2.5 * Math.random() : // HG: 2.5 - 5
+    categoryIndex === 1 ? 5 + 15 * Math.random() : // SMG: 5 - 20
+    categoryIndex === 2 ? 30 + 30 * Math.random() : 10 // AR: 30 - 60
   const weapon = new Weapon(
     `# ${wave.number}`,
     categoryList[categoryIndex],
@@ -1374,7 +1381,7 @@ const setWeapon = () => {
     loadingSpeed,
     penetrationForce,
     roundLimit,
-    20,
+    effectiveRange,
     4000,
     0
   )
