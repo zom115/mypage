@@ -243,7 +243,7 @@ const weaponRatiryColorList = [
 const Weapon = class {
   constructor(
     name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
-    magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange,
+    magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange, recoilCoefficient,
     limitBreak, limitBreakIndex
   ) {
     this.name = name
@@ -283,8 +283,15 @@ const Weapon = class {
     this.reloadState = 'done',
     this.reloadAuto = setStorageFirst('autoReload', 'ON')
 
+    this.recoilEffect = 0
+    this.recoilCoefficient = recoilCoefficient
+    this.recoilMultiple = .99 // TODO: to consider
+
     this.limitBreak = limitBreak
     this.limitBreakIndex = limitBreakIndex
+  }
+  update = () => {
+    this.recoilEffect *= this.recoilMultiple
   }
 }
 let inventory = []
@@ -794,7 +801,7 @@ const mouseFiring = () => {
   }
   */
   const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
-  const randomError = degreeRange * (Math.random() - .5)
+  const randomError = degreeRange * (Math.random() - .5) * (1 + inventory[selectSlot].recoilEffect)
   const theta =
     Math.atan2(
       cursor.offsetY - canvas.offsetHeight / 2,
@@ -825,6 +832,7 @@ const mouseFiring = () => {
     inventory[selectSlot].mode === weaponModeList[2] &&
     inventory[selectSlot].round === inventory[selectSlot].roundLimit)
   ) inventory[selectSlot].disconnector = true
+  inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient
 }
 const firingProcess = () => {
   if (
@@ -1408,6 +1416,10 @@ const setWeapon = () => {
     categoryIndex === 0 ? 2.5 + 2.5 * Math.random() : // HG: 2.5 - 5
     categoryIndex === 1 ? 5 + 15 * Math.random() : // SMG: 5 - 20
     categoryIndex === 2 ? 30 + 30 * Math.random() : 10 // AR: 30 - 60
+  const recoilCoefficient =
+    categoryIndex === 0 ? .1 + .5 * Math.random() : // HG: .1 - .6
+    categoryIndex === 1 ? .2 + 1.3 * Math.random() : // SMG: .2 - 1.5
+    categoryIndex === 2 ? 1 + 2 * Math.random() : 10 // AR: 1 - 3
   const weapon = new Weapon(
     `# ${wave.number}`,
     categoryList[categoryIndex],
@@ -1425,6 +1437,8 @@ const setWeapon = () => {
     penetrationForce,
     roundLimit,
     effectiveRange,
+    recoilCoefficient,
+
     4000,
     0
   )
@@ -2000,7 +2014,8 @@ const drawAim = () => { // Expected effective range
   }
   const radius =
     Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
-  let aimRadius = targetWidth * radius / inventory[selectSlot].effectiveRange
+  let aimRadius =
+    (targetWidth * radius / inventory[selectSlot].effectiveRange) * (1 + inventory[selectSlot].recoilEffect)
   context.save()
   context.strokeStyle = 'hsl(0, 0%, 100%)'
   context.beginPath()
@@ -2010,6 +2025,9 @@ const drawAim = () => { // Expected effective range
 }
 let holdSlot = {category: ''}
 const inventoryProcess = () => {
+  inventory.forEach(v => {
+    if(v.category !== '') v.update()
+  })
   if (!inventoryFlag) {
     if (holdSlot.category !== '') {
       inventory.forEach((v, i) => {
@@ -2038,6 +2056,7 @@ const inventoryProcess = () => {
   if (holdSlot.category !== '' && downButton(removeWeaponSlot)) {
     holdSlot = {category: ''}
   }
+
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
@@ -2757,6 +2776,7 @@ const reset = () => {
       0,
       0,
       10,
+      .2,
 
       4000,
       0
@@ -3395,7 +3415,10 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
+    a: inventory[selectSlot].recoilEffect,
+    b: inventory[selectSlot].recoilCoefficient
+
   }
   Object.keys(dictionary).forEach((v, i) => {
     context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
