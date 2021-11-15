@@ -1426,7 +1426,7 @@ const setWeapon = () => {
     categoryIndex === 0 ? (HgBaseDamage * rarityMultiple[rarityIndex])|0 :
     categoryIndex === 1 ? (SmgBaseDamage * rarityMultiple[rarityIndex])|0 :
     categoryIndex === 2 ? (ArBaseDamage * rarityMultiple[rarityIndex])|0 :
-    categoryIndex === 5 ? (ArBaseDamage * rarityMultiple[rarityIndex])|0 : 0
+    categoryIndex === 5 ? (SgBaseDamage * rarityMultiple[rarityIndex])|0 : 0
 
   const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
   const slideSpeed = .75 + magSizeRatio + Math.random() * .25
