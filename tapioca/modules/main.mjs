@@ -2100,30 +2100,36 @@ const setWave = () => {
   wave.roundInterval = 0
   afterglow.round = intervalDiffTime
 
-  wave.number = (wave.number+1)|0
+  wave.number += 1
   wave.enemySpawnInterval = 0
-  wave.enemySpawnIntervalLimit = (wave.number === 1) ? 120 :
-  (wave.enemySpawnIntervalLimit < 4.8) ? 4.8 : wave.enemySpawnIntervalLimit * .95
+  wave.enemySpawnIntervalLimit =
+    wave.enemySpawnIntervalLimit === 0 ? 500 :
+    wave.enemySpawnIntervalLimit < 100 ? 100 :
+    wave.enemySpawnIntervalLimit * .95
   wave.enemyCount = 0
-  wave.enemyLimit = (wave.number === 9) ? 31 : // unconfirmed
-  (wave.number === 8) ? 29 : // same on top
-  (wave.number === 7) ? 28 : // same on top
-  (wave.number === 6) ? 27 : // same on top
-  (wave.number === 5) ? 24 :
-  (wave.number === 4) ? 18 :
-  (wave.number === 3) ? 13 :
-  (wave.number === 2) ? 8 :
-  (wave.number === 1) ? 6 :
-  (.0842 * wave.number ** 2 + .1954 * wave.number + 22.05)+.5|0
-  wave.enemyHitPoint = (wave.number === 9) ? 950 :
-  (wave.number === 8) ? 850 :
-  (wave.number === 7) ? 750 :
-  (wave.number === 6) ? 650 :
-  (wave.number === 5) ? 550 :
-  (wave.number === 4) ? 450 :
-  (wave.number === 3) ? 350 :
-  (wave.number === 2) ? 250 :
-  (wave.number === 1) ? 150 : wave.enemyHitPoint * 1.1
+  wave.enemyLimit =
+    wave.number === 1 ? 6 :
+    wave.number === 2 ? 8 :
+    wave.number === 3 ? 13 :
+    wave.number === 4 ? 18 :
+    wave.number === 5 ? 24 :
+    wave.number === 6 ? 27 : // unconfirmed
+    wave.number === 7 ? 28 : // same on top
+    wave.number === 8 ? 29 : // same on top
+    wave.number === 9 ? 31 : // same on top
+    .0842 * wave.number ** 2 + .1954 * wave.number + 22.05 +.5|0
+  wave.enemyHitPoint =
+    wave.number === 1 ? 150 :
+    wave.number === 2 ? 250 :
+    wave.number === 3 ? 350 :
+    wave.number === 4 ? 450 :
+    wave.number === 5 ? 550 :
+    wave.number === 6 ? 650 :
+    wave.number === 7 ? 750 :
+    wave.number === 8 ? 850 :
+    wave.number === 9 ? 950 :
+    wave.enemyHitPoint === 0 ? 950 * (1.1 ** (wave.number - 10)) :
+    wave.enemyHitPoint * 1.1
 }
 const setEnemy = () => {
   const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
