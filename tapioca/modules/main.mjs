@@ -1673,60 +1673,64 @@ const dropItemProcess = () => {
 }
 const drawDropItems = () => {
   dropItems.forEach(item => {
-    if (item.type === 'cartridge') {
-      context.fillStyle = `hsla(0, 0%, 25%, ${item.life / item.dissapearTime})`
+    const testSize = size / 3
+    if (item.type === 'weapon') {
+      context.fillStyle =
+        item.rarity === weaponRarityList[0] ? weaponRatiryColorList[0] :
+        item.rarity === weaponRarityList[1] ? weaponRatiryColorList[1] :
+        item.rarity === weaponRarityList[2] ? weaponRatiryColorList[2] :
+        item.rarity === weaponRarityList[3] ? weaponRatiryColorList[3] : weaponRatiryColorList[4]
       context.beginPath()
       if ( // left & top
-        item.x < ownPosition.x - canvas.offsetWidth / 2 + bulletRadius / 2 &&
-        item.y < ownPosition.y - canvas.offsetHeight / 2 + bulletRadius / 2
+        item.x < ownPosition.x - canvas.offsetWidth / 2 + testSize / 2 &&
+        item.y < ownPosition.y - canvas.offsetHeight / 2 + testSize / 2
       ) context.arc(
-        bulletRadius / 2, bulletRadius / 2, bulletRadius / 2, 0 / 2, Math.PI * 2, false
+        testSize / 2, testSize / 2, testSize / 2, 0 / 2, Math.PI * 2, false
       )
       else if ( // left & bottom
-        item.x < ownPosition.x - canvas.offsetWidth / 2 + bulletRadius / 2 &&
-        ownPosition.y + canvas.offsetHeight / 2 - bulletRadius / 2 < item.y
+        item.x < ownPosition.x - canvas.offsetWidth / 2 + testSize / 2 &&
+        ownPosition.y + canvas.offsetHeight / 2 - testSize / 2 < item.y
       ) context.arc(
-        bulletRadius / 2, canvas.offsetHeight - bulletRadius / 2,
-        bulletRadius / 2, 0, Math.PI * 2, false
+        testSize / 2, canvas.offsetHeight - testSize / 2,
+        testSize / 2, 0, Math.PI * 2, false
       )
       else if ( // right & top
-        ownPosition.x + canvas.offsetWidth/2 - bulletRadius / 2 < item.x &&
-        item.y < ownPosition.y - canvas.offsetHeight/2 + bulletRadius / 2
+        ownPosition.x + canvas.offsetWidth/2 - testSize / 2 < item.x &&
+        item.y < ownPosition.y - canvas.offsetHeight/2 + testSize / 2
       ) context.arc(
-        canvas.offsetWidth - bulletRadius / 2, bulletRadius / 2,
-        bulletRadius / 2, 0, Math.PI * 2, false
+        canvas.offsetWidth - testSize / 2, testSize / 2,
+        testSize / 2, 0, Math.PI * 2, false
       )
       else if ( // right & bottom
-        ownPosition.x + canvas.offsetWidth/2 - bulletRadius / 2 < item.x &&
-        ownPosition.y + canvas.offsetHeight/2 - bulletRadius / 2 < item.y
+        ownPosition.x + canvas.offsetWidth/2 - testSize / 2 < item.x &&
+        ownPosition.y + canvas.offsetHeight/2 - testSize / 2 < item.y
       ) context.arc(
-        canvas.offsetWidth - bulletRadius / 2,
-        canvas.offsetHeight - bulletRadius / 2,
-        bulletRadius / 2, 0, Math.PI * 2, false
+        canvas.offsetWidth - testSize / 2,
+        canvas.offsetHeight - testSize / 2,
+        testSize / 2, 0, Math.PI * 2, false
       )
-      else if (item.x < ownPosition.x - canvas.offsetWidth/2 + bulletRadius / 2) { // out of left
+      else if (item.x < ownPosition.x - canvas.offsetWidth/2 + testSize / 2) { // out of left
         context.arc(
-          bulletRadius / 2, relativeY(item.y), bulletRadius / 2, 0, Math.PI * 2, false
+          testSize / 2, relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
         )
-      } else if (ownPosition.x + canvas.offsetWidth / 2 + bulletRadius / 2 < item.x) { // out of right
+      } else if (ownPosition.x + canvas.offsetWidth / 2 + testSize / 2 < item.x) { // out of right
         context.arc(
-          canvas.offsetWidth - bulletRadius / 2, relativeY(item.y),
-          bulletRadius / 2, 0, Math.PI * 2, false
+          canvas.offsetWidth - testSize / 2, relativeY(item.y),
+          testSize / 2, 0, Math.PI * 2, false
         )
-      } else if (item.y < ownPosition.y - canvas.offsetHeight / 2 + bulletRadius / 2) { // out of top
+      } else if (item.y < ownPosition.y - canvas.offsetHeight / 2 + testSize / 2) { // out of top
         context.arc(
-          relativeX(item.x), bulletRadius / 2,
-          bulletRadius / 2, 0, Math.PI * 2, false
+          relativeX(item.x), testSize / 2,
+          testSize / 2, 0, Math.PI * 2, false
         )
-      } else if (ownPosition.y + canvas.offsetHeight / 2 + bulletRadius / 2 < item.y) { // out of bottom
+      } else if (ownPosition.y + canvas.offsetHeight / 2 + testSize / 2 < item.y) { // out of bottom
         context.arc(
-          relativeX(item.x), canvas.offsetHeight - bulletRadius  + bulletRadius / 2,
-          bulletRadius / 2, 0, Math.PI * 2, false
+          relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
+          testSize / 2, 0, Math.PI * 2, false
         )
       } else {
-
+        context.arc(relativeX(item.x), relativeY(item.y), testSize, 0, Math.PI * 2, false)
       }
-      context.arc(relativeX(item.x), relativeY(item.y), bulletRadius, 0, Math.PI * 2, false)
       context.fill()
     } else if (item.type === 'magazine') {
       context.fillStyle = 'hsl(120, 100%, 20%)'
@@ -1736,7 +1740,7 @@ const drawDropItems = () => {
       context.beginPath()
       context.arc(relativeX(item.x), relativeY(item.y), explosiveRange, 0, Math.PI * 2, false)
       context.fill()
-    } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
+    } else if (item.type === 'droppedWeapon') {
       context.fillStyle = (item.type === 'droppedWeapon') ?
       `hsla(180, 100%, 30%, ${item.life/600})` :
       'hsl(180, 100%, 40%)'
