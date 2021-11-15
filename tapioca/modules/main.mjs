@@ -1939,6 +1939,22 @@ const drawSlot = () => {
   }
   context.restore()
 }
+const targetWidth = .7 // [m] = [cm]
+const drawAim = () => { // Expected effective range
+  const screenOwnPos = {
+    x: canvas.offsetWidth / 2,
+    y: canvas.offsetHeight / 2
+  }
+  const radius =
+    Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
+  let aimRadius = targetWidth * radius / inventory[selectSlot].effectiveRange
+  context.save()
+  context.strokeStyle = 'hsl(0, 0%, 100%)'
+  context.beginPath()
+  context.arc(cursor.offsetX, cursor.offsetY, aimRadius * 20, 0, Math.PI * 2)
+  context.stroke()
+  context.restore()
+}
 let holdSlot = {category: ''}
 const inventoryProcess = () => {
   if (!inventoryFlag) {
@@ -3081,6 +3097,7 @@ const drawMain = () => {
   drawDirection()
   drawIndicator()
   drawSlot()
+  if (inventory[selectSlot].category !== '') drawAim()
   if (0 <= afterglow.save) drawSaveCompleted()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
