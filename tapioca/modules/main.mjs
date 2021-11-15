@@ -148,6 +148,8 @@ const size = 32
 const radius = size / 2
 const bulletRadius = size / 6
 const storeSize = size * 4.5
+
+const targetWidth = .7 // Unit: [m], for effective range
 const bulletSpeed = size / 8
 const minImgRadius = size / 4
 const holdTimeLimit = 14 * 60
@@ -309,8 +311,6 @@ const Bullet = class {
     this.life -= intervalDiffTime
     this.x += this.radius * Math.cos(this.theta) * intervalDiffTime
     this.y += this.radius * Math.sin(this.theta) * intervalDiffTime
-    // this.x += this.dx * bulletSpeed
-    // this.y += this.dy * bulletSpeed
     if (homingFlag) {
       bullets.forEach((bullet, i) => {
         bullet.life = bullet.life - 1
@@ -792,7 +792,8 @@ const mouseFiring = () => {
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
   }
   */
-  const randomError = 0 // TODO: for effective range
+  const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
+  const randomError = degreeRange * (Math.random() - .5)
   const theta =
     Math.atan2(
       cursor.offsetY - canvas.offsetHeight / 2,
@@ -1939,7 +1940,6 @@ const drawSlot = () => {
   }
   context.restore()
 }
-const targetWidth = .7 // [m] = [cm]
 const drawAim = () => { // Expected effective range
   const screenOwnPos = {
     x: canvas.offsetWidth / 2,
