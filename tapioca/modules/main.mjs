@@ -801,7 +801,9 @@ const mouseFiring = () => {
   }
   */
   const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
-  const randomError = degreeRange * (Math.random() - .5) * (1 + inventory[selectSlot].recoilEffect)
+  const randomError =
+    degreeRange * (Math.random() - .5) * (
+    1 + inventory[selectSlot].recoilEffect + Math.abs(ownState.dx) + Math.abs(ownState.dy))
   const theta =
     Math.atan2(
       cursor.offsetY - canvas.offsetHeight / 2,
@@ -2014,8 +2016,9 @@ const drawAim = () => { // Expected effective range
   }
   const radius =
     Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
-  let aimRadius =
-    (targetWidth * radius / inventory[selectSlot].effectiveRange) * (1 + inventory[selectSlot].recoilEffect)
+  let aimRadius = (
+    targetWidth * radius / inventory[selectSlot].effectiveRange) * (
+    1 + inventory[selectSlot].recoilEffect + Math.abs(ownState.dx) + Math.abs(ownState.dy))
   context.save()
   context.strokeStyle = 'hsl(0, 0%, 100%)'
   context.beginPath()
