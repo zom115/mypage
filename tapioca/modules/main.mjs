@@ -240,7 +240,7 @@ const weaponRatiryColorList = [
   'hsl(270, 100%, 50%)',
   'hsl(30, 100%, 50%)',
 ]
-const categoryList = ['HG', 'SMG', 'AR', 'DMR', 'SR', 'SG']
+const weaponCategoryList = ['HG', 'SMG', 'AR', 'DMR', 'SR', 'SG']
 const Weapon = class {
   constructor(
     name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
@@ -799,7 +799,6 @@ const mouseFiring = () => {
     dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
   }
   */
-  console.log(inventory[selectSlot].gaugeNumber)
   const shotBullet = () => {
     const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
     const randomError =
@@ -1454,7 +1453,7 @@ const setWeapon = () => {
   const gaugeNumber = categoryIndex === 5 ? 1 + 19 * Math.random()|0 : 1
   const weapon = new Weapon(
     `# ${wave.number}`,
-    categoryList[categoryIndex],
+    weaponCategoryList[categoryIndex],
     modeList,
     modeList[modeIndex],
     weaponRarityList[rarityIndex],
@@ -1992,10 +1991,14 @@ const drawWeaponDetail = (box, i) => {
     context.strokeStyle = 'hsl(0, 0%, 100%)'
     strokeText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
     if (!inventoryFlag) return
+    const damage =
+      inventory[i].category === weaponCategoryList[5] ?
+        `${inventory[i].damage.toFixed(0)} * ${inventory[i].gaugeNumber}` :
+      inventory[i].damage.toFixed(0)
     const dictionary = {
       MODE: inventory[i].mode === weaponModeList[2] ? `${inventory[i].roundLimit}-R ${inventory[i].mode}` :
         inventory[i].mode,
-      DAMAGE: inventory[i].damage.toFixed(0),
+      DAMAGE: damage,
       'P. FORCE': inventory[i].penetrationForce.toFixed(2),
       'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
     }
@@ -2433,8 +2436,8 @@ const setStore = () => {
       if (inventory[selectSlot].category !== '') {
         let cost = 0
         cost =
-          inventory[selectSlot].category === categoryList[0] ? 250 :
-          inventory[selectSlot].category === categoryList[1] ? 500 :
+          inventory[selectSlot].category === weaponCategoryList[0] ? 250 :
+          inventory[selectSlot].category === weaponCategoryList[1] ? 500 :
           750 // inventory[selectSlot].category === categoryList[2]
         cost *=
           inventory[selectSlot].rarity === weaponRarityList[0] ? 1 :
@@ -2465,8 +2468,8 @@ const setStore = () => {
         let cost = 0
         if (inventory[selectSlot].category !== '') {
           cost =
-            inventory[selectSlot].category === categoryList[0] ? 250 :
-            inventory[selectSlot].category === categoryList[1] ? 500 :
+            inventory[selectSlot].category === weaponCategoryList[0] ? 250 :
+            inventory[selectSlot].category === weaponCategoryList[1] ? 500 :
             750 // inventory[selectSlot].category === categoryList[2]
           cost *=
             inventory[selectSlot].rarity === weaponRarityList[0] ? 1 :
