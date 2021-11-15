@@ -3097,7 +3097,7 @@ const drawMain = () => {
   drawDirection()
   drawIndicator()
   drawSlot()
-  if (inventory[selectSlot].category !== '') drawAim()
+  if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim()
   if (0 <= afterglow.save) drawSaveCompleted()
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
