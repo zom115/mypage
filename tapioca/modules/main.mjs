@@ -290,9 +290,6 @@ const Weapon = class {
     this.limitBreak = limitBreak
     this.limitBreakIndex = limitBreakIndex
   }
-  update = () => {
-    this.recoilEffect *= this.recoilMultiple
-  }
 }
 let inventory = []
 let mainSlotSize = 3
@@ -2040,7 +2037,7 @@ const drawAim = () => { // Expected effective range
 let holdSlot = {category: ''}
 const inventoryProcess = () => {
   inventory.forEach(v => {
-    if(v.category !== '') v.update()
+    if (v.category !== '') v.recoilEffect *= v.recoilMultiple
   })
   if (!inventoryFlag) {
     if (holdSlot.category !== '') {
@@ -3429,7 +3426,8 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
+    d: Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2)
 
   }
   Object.keys(dictionary).forEach((v, i) => {
