@@ -192,7 +192,7 @@ let afterglow = {
 }
 const flashTimeLimit = 5
 const ownPosition = {x: 0, y: 0}
-const ownState = {dx: 0, dy: 0}
+const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2}
 let clonePosition = []
 let cloneFlag = false
 let clonePower = .8
@@ -803,7 +803,7 @@ const mouseFiring = () => {
   const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
   const randomError =
     degreeRange * (Math.random() - .5) * (
-    1 + inventory[selectSlot].recoilEffect + Math.abs(ownState.dx) + Math.abs(ownState.dy))
+    1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
   const theta =
     Math.atan2(
       cursor.offsetY - canvas.offsetHeight / 2,
@@ -1060,20 +1060,31 @@ const setDirection = arg => {
   return {dx, dy}
 }
 const moving = () => {
-  let {dx, dy} =
-  // directionCalc(currentDirection)
-  // :
-  setDirection(direction)
-  const multiple = 1 / 100
-  ownState.dx += dx * multiple * intervalDiffTime
-  ownState.dy += dy * multiple * intervalDiffTime
-  ownPosition.x += ownState.dx
-  ownPosition.y += ownState.dy
-  // differenceAddition(ownPosition, dx * ownSpeed.current, dy * ownSpeed.current)
-  const brake = .95
-  if (Math.abs(ownState.dx) < 1e-2) ownState.dx = 0
+  /*
+    6 4 12
+    2 0 8
+    3 1 9
+  */
+  if (direction === 1) ownState.theta = -Math.PI / 2
+  else if (direction === 3) ownState.theta = -Math.PI / 4
+  else if (direction === 2) ownState.theta = 0
+  else if (direction === 6) ownState.theta = Math.PI / 4
+  else if (direction === 4) ownState.theta = Math.PI / 2
+  else if (direction === 12) ownState.theta = Math.PI * .75
+  else if (direction === 8) ownState.theta = Math.PI
+  else if (direction === 9) ownState.theta = -Math.PI * .75
+  if (direction === 0) ownState.radius = 0
+  else ownState.radius = 1
+  const multiple = 0.0008
+  ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
+  ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+
+  ownPosition.x += ownState.dx * intervalDiffTime
+  ownPosition.y += ownState.dy * intervalDiffTime
+  const brake = .98
+  if (Math.abs(ownState.dx) < 1e-5) ownState.dx = 0
   else ownState.dx *= brake
-  if (Math.abs(ownState.dy) < 1e-2) ownState.dy = 0
+  if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
   else ownState.dy *= brake
 
   /*
@@ -2018,7 +2029,7 @@ const drawAim = () => { // Expected effective range
     Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
   let aimRadius = (
     targetWidth * radius / inventory[selectSlot].effectiveRange) * (
-    1 + inventory[selectSlot].recoilEffect + Math.abs(ownState.dx) + Math.abs(ownState.dy))
+    1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
   context.save()
   context.strokeStyle = 'hsl(0, 0%, 100%)'
   context.beginPath()
@@ -3418,9 +3429,7 @@ const drawDebug = () => {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: inventory[selectSlot].recoilEffect,
-    b: inventory[selectSlot].recoilCoefficient
+    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`
 
   }
   Object.keys(dictionary).forEach((v, i) => {
