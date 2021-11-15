@@ -1112,6 +1112,21 @@ const bomb = () => {
     enemy.timer = 30
   })
 }
+const modeSelect = () => {
+  if (code[action.modeSelect].isFirst()) {
+    if (code[action.shift].flag) {
+      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) - 1
+      inventory[selectSlot].mode =
+        n < 0 ? inventory[selectSlot].modeList[inventory[selectSlot].modeList.length - 1] :
+        inventory[selectSlot].modeList[n]
+    } else {
+      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) + 1
+      inventory[selectSlot].mode =
+        n < inventory[selectSlot].modeList.length ? inventory[selectSlot].modeList[n] :
+        inventory[selectSlot].modeList[0]
+    }
+  }
+}
 const weaponProcess = () => {
   if (
     code[action.reload].isFirst() &&
@@ -1144,20 +1159,6 @@ const weaponProcess = () => {
   }
   // loadingProcess()
   if (code[action.change].isFirst()) magazineForword() // TODO: to consider
-
-  if (code[action.modeSelect].isFirst()) {
-    if (code[action.shift].flag) {
-      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) - 1
-      inventory[selectSlot].mode =
-        n < 0 ? inventory[selectSlot].modeList[inventory[selectSlot].modeList.length - 1] :
-        inventory[selectSlot].modeList[n]
-    } else {
-      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) + 1
-      inventory[selectSlot].mode =
-        n < inventory[selectSlot].modeList.length ? inventory[selectSlot].modeList[n] :
-        inventory[selectSlot].modeList[0]
-    }
-  }
 }
 const interfaceProcess = () => {
   if (code[action.pause].isFirst()) state = 'pause'
@@ -1187,6 +1188,7 @@ const interfaceProcess = () => {
   if (0 < angle) currentDirection = angle
   else if (direction !== 0) currentDirection = direction
   if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess()
+  if (inventory[selectSlot].category !== '') modeSelect()
   if (dashCoolTimer() === 0 && code[action.dash].isFirst()) dashProcess()
   // if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed)
   moving()
