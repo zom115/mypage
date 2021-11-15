@@ -146,7 +146,6 @@ let cost = {
 }
 const size = 32
 const radius = size / 2
-const bulletRadius = size / 6
 const storeSize = size * 4.5
 
 const targetWidth = .7 // Unit: [m], for effective range
@@ -301,7 +300,7 @@ let selectSlot = 0
 let dropItems = []
 let bullets = []
 const Bullet = class {
-  constructor(x, y, radius, theta, life, damage, penetrationForce, isHoming) {
+  constructor(x, y, radius, theta, life, damage, penetrationForce, bulletRadius, isHoming) {
     this.x = x
     this.y = y
     this.radius = radius
@@ -312,6 +311,7 @@ const Bullet = class {
     this.penetrationForce = penetrationForce
     this.detectFlag = false
     this.detectID = -1
+    this.bulletRadius = bulletRadius // size / 6
     this.isHoming = isHoming
   }
   update() {
@@ -354,7 +354,7 @@ const Bullet = class {
         }
         bullet.x = bullet.x - bullet.dx * bulletSpeed
         bullet.y = bullet.y - bullet.dy * bulletSpeed
-        if (length < radius + bulletRadius){
+        if (length < radius + this.bulletRadius){
           const damage = this.damage * bullet.life / this.baseLife
           enemies[index].life = enemies[index].life - damage
           bullet.life = 0
@@ -400,7 +400,7 @@ const Bullet = class {
         }
         const hit = enemies.findIndex((enemy, index) => {
           return index !== bullet.detectID && 0 < enemy.life &&
-          Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2) < radius + bulletRadius
+          Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2) < radius + this.bulletRadius
         })
         if (explosive3Flag) {
           if (bullet.life === 1) {
@@ -538,6 +538,10 @@ const getKeyName = key => {
   else return key.toUpperCase() // can't work in turco
 }
 
+// for settings
+
+let isSettings = false
+
 // for display
 const setAbsoluteBox = (box) => {
   context.save()
@@ -656,7 +660,8 @@ document.addEventListener('DOMContentLoaded', () => {
     rotateSlot: setStorageFirst('rotateSlot', 'KeyQ'),
     inventory: setStorageFirst('inventory', 'KeyE'),
     pause: setStorageFirst('pause', 'KeyP'),
-    debug: setStorageFirst('debug', 'KeyG')
+    debug: setStorageFirst('debug', 'KeyG'),
+    settings: setStorageFirst('settings', 'Escape')
   }
   setOperation()
   setAngle()
@@ -808,6 +813,7 @@ const mouseFiring = () => {
       Math.atan2(
         cursor.offsetY - canvas.offsetHeight / 2,
         cursor.offsetX - canvas.offsetWidth / 2) + randomError
+    const bulletRadius = inventory[selectSlot].category === weaponCategoryList[5] ? size / 8 : size / 6
     bullets.push(new Bullet(
       ownPosition.x,
       ownPosition.y,
@@ -815,7 +821,8 @@ const mouseFiring = () => {
       theta,
       inventory[selectSlot].bulletLife,
       inventory[selectSlot].damage,
-      inventory[selectSlot].penetrationForce
+      inventory[selectSlot].penetrationForce,
+      bulletRadius
     ))
   }
   for (let i = 0; i < inventory[selectSlot].gaugeNumber; i++) shotBullet()
@@ -895,11 +902,14 @@ const firingProcess = () => {
         dy * inventory[selectSlot].bulletSpeed
       )
     }
+    /*
     // recoil / blowback
+    const bulletRadius = size / 6
     differenceAddition(ownPosition, -dx * bulletRadius, -dy * bulletRadius)
     recoilEffect.dx = dx * bulletRadius
     recoilEffect.dy = dy * bulletRadius
     afterglow.recoil = recoilEffect.flame
+    */
   }
   inventory[selectSlot].chamber = false
 }
@@ -1657,7 +1667,7 @@ const drawBullets = () => {
     if ((explosive1Flag || explosive2Flag || explosive3Flag) && bullet.detectFlag) return
     context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / bullet.baseLife})`
     context.beginPath()
-    context.arc(relativeX(bullet.x), relativeY(bullet.y), bulletRadius, 0, Math.PI * 2, false)
+    context.arc(relativeX(bullet.x), relativeY(bullet.y), bullet.bulletRadius, 0, Math.PI * 2, false)
     context.fill()
   })
 }
@@ -1692,6 +1702,7 @@ const dropItemProcess = () => {
     item.y = item.y + height / distance * multiple * intervalDiffTime
     if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
     if (item.type === 'cartridge') {
+      const bulletRadius = size / 6
       if (distance < minImgRadius + bulletRadius) {
         ammo = (ammo+item.amount)|0
         dropItems.splice(index, 1)
@@ -3052,6 +3063,7 @@ const main = () => setInterval(() => {
   else if (state === 'pause') pauseProcess()
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
+  if (code[action.settings].isFirst()) isSettings = !isSettings
   resetKeyState()
 }, 0)
 const drawTitleScreen = () => {
@@ -3462,12 +3474,12 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    d: Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2)
+    s: isSettings
 
   }
-  Object.keys(dictionary).forEach((v, i) => {
-    context.fillText(`${v}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
-    context.fillText(dictionary[v], canvas.width, size / 2 * (i + 1))
+  Object.entries(dictionary).forEach((v, i) => {
+    context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
+    context.fillText(v[1], canvas.width, size / 2 * (i + 1))
   })
 }
 const draw = () => {
