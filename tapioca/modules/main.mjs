@@ -541,6 +541,10 @@ const getKeyName = key => {
 // for settings
 
 let isSettings = false
+let settingsObject = {
+  isTutorialTooltip: true
+}
+// let isTutorialTooltip = false
 
 // for display
 const setAbsoluteBox = (box) => {
@@ -642,6 +646,28 @@ let removeWeaponSlot = {
   width: size * 1.5,
   height: size * 1.5
 }
+let settingsArray = [{
+  toggle: Object.keys(settingsObject)[0],
+  explain: 'Show tutorial tooltip',
+  offsetX: 0,
+  offsetY: 0,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: ''
+// }, {
+//   toggle: 'isTutorialTooltip',
+//   explain: 'Show manipulate key',
+//   offsetX: 0,
+//   offsetY: 0,
+//   absoluteX: 0,
+//   absoluteY: 0,
+//   width: 0,
+//   height: 0,
+//   text: ''
+}]
+
 
 document.addEventListener('DOMContentLoaded', () => {
   action = {
@@ -2045,8 +2071,7 @@ const drawSlot = () => {
     context.fillStyle = 'hsla(0, 100%, 50%, .2)'
     context.fillRect(
       removeWeaponSlot.absoluteX, removeWeaponSlot.absoluteY, removeWeaponSlot.width, removeWeaponSlot.height)
-    const isTutorialTooltip = true // TODO: include to settings
-    if (isTutorialTooltip && isInner(removeWeaponSlot, cursor)) {
+    if (settingsObject.isTutorialTooltip && isInner(removeWeaponSlot, cursor)) {
       context.font = `${size*.75}px sans-serif`
       context.textAlign = 'left'
       context.fillStyle = 'hsla(0, 0%, 0%, .6)'
@@ -3047,6 +3072,16 @@ const keyLayoutProcess = () => {
     keyPosition === order.indexOf(action.back) && holdTimeLimit <= code[action.back].holdtime
   ) state = 'title'
 }
+const settingsState = () => {
+  settingsArray.forEach((v, i) => {
+    // v.offsetX = canvas.offsetWidth / 2
+    // v.offsetY = frameOffset.y + size * 3 + i * size * 2
+    // const toggleText = v.toggle ? 'On' : 'Off'
+    // v.text = `${v.explain}: ${toggleText}`
+    // setAbsoluteBox(v)
+    if (button(v)) settingsObject[v.toggle] = !settingsObject[v.toggle]
+  })
+}
 const resetKeyState = () => {
   isLeftMouseDownFirst = false
   isLeftMouseUpFirst = false
@@ -3058,12 +3093,13 @@ const main = () => setInterval(() => {
   intervalDiffTime = globalTimestamp - currentTime
   if (100 < intervalDiffTime) intervalDiffTime = 0
   currentTime = globalTimestamp
-  if (state === 'title') titleProcess()
+  if (state === 'title' && !isSettings) titleProcess()
   else if (state === 'main') mainProcess()
   else if (state === 'pause') pauseProcess()
   else if (state === 'result') resultProcess()
   else if (state === 'keyLayout') keyLayoutProcess()
   if (code[action.settings].isFirst()) isSettings = !isSettings
+  if (isSettings) settingsState()
   resetKeyState()
 }, 0)
 const drawTitleScreen = () => {
@@ -3465,6 +3501,30 @@ const drawKeyLayout = () => {
     )
   }
 }
+const drawSettings = () => {
+  context.save()
+  const frameOffset = {
+    x: canvas.offsetWidth * .075,
+    y: canvas.offsetHeight * .075,
+    w: canvas.offsetWidth * .85,
+    h: canvas.offsetHeight * .85
+  }
+  context.fillStyle = 'hsla(0, 0%, 0%, .5)'
+  context.fillRect(frameOffset.x, frameOffset.y, frameOffset.w, frameOffset.h)
+  settingsArray.forEach((v, i) => {
+    v.offsetX = canvas.offsetWidth / 2
+    v.offsetY = frameOffset.y + size * 3 + i * size * 2
+    const toggleText = settingsObject[v.toggle] ? 'On' : 'Off'
+    v.text = `${v.explain}: ${toggleText}`
+    setAbsoluteBox(v)
+    context.font = isInner(v, cursor) ? `bold ${size}px sans-serif` : `${size}px sans-serif`
+    context.fillStyle = isInner(v, cursor) ? 'hsl(0, 0%, 90%)' : 'hsl(0, 0%, 80%)'
+    context.strokeStyle = isInner(v, cursor) ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 0%)'
+    context.textAlign = 'center'
+    strokeText(v.text, canvas.offsetWidth / 2, frameOffset.y + size * 3 + i * size * 2)
+  })
+  context.restore()
+}
 const drawDebug = () => {
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
@@ -3474,7 +3534,7 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    s: isSettings
+    a: settingsObject.isTutorialTooltip
 
   }
   Object.entries(dictionary).forEach((v, i) => {
@@ -3491,6 +3551,7 @@ const draw = () => {
   if (state === 'pause') drawPause()
   else if (state === 'result') drawResult()
   else if (state === 'keyLayout') drawKeyLayout()
+  if (isSettings) drawSettings()
   drawDebug()
 }
 
