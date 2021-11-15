@@ -1054,7 +1054,6 @@ const moving = () => {
   // directionCalc(currentDirection)
   // :
   setDirection(direction)
-  console.log(dx, dy)
   const multiple = 1 / 100
   ownState.dx += dx * multiple * intervalDiffTime
   ownState.dy += dy * multiple * intervalDiffTime
@@ -1638,13 +1637,12 @@ const dropItemProcess = () => {
     const distance = Math.sqrt(width ** 2 + height ** 2)
     const blankInventorySlot = inventory.findIndex(v => v.category === '')
     let multiple = (
-      item.type === 'weapon' || item.type === 'droppedWeapon') &&
-      mainSlotSize + inventorySize <= inventory.length ? 0 : .5 + 160 / (distance) // : size / 512
+      size < distance || (
+      item.type === 'droppedWeapon')) &&
+      mainSlotSize + inventorySize <= inventory.length ? 0 : 1 / distance
+    item.x = item.x + width / distance * multiple * intervalDiffTime
+    item.y = item.y + height / distance * multiple * intervalDiffTime
     if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
-    else {
-      item.x = item.x + width / distance * multiple
-      item.y = item.y + height / distance * multiple
-    }
     if (item.type === 'cartridge') {
       if (distance < minImgRadius + bulletRadius) {
         ammo = (ammo+item.amount)|0
