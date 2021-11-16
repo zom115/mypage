@@ -293,6 +293,7 @@ const Weapon = class {
   }
 }
 let inventory = []
+let holdSlot = {category: ''}
 let mainSlotSize = 3
 let inventorySize = 10
 let inventoryFlag = false
@@ -541,8 +542,9 @@ const getKeyName = key => {
 // for settings
 
 let isSettings = false
-console.log(storage.getItem('isTutorialTooltip'))
 let settingsObject = {
+  isManipulateSlotAnytime:
+    storage.getItem('isManipulateSlotAnytime') ? JSON.parse(storage.getItem('isManipulateSlotAnytime')) : true,
   isTutorialTooltip: storage.getItem('isTutorialTooltip') ? JSON.parse(storage.getItem('isTutorialTooltip')) : true,
   isManipulateCode: storage.getItem('isManipulateCode') ? JSON.parse(storage.getItem('isManipulateCode')) : true
 }
@@ -650,7 +652,7 @@ let removeWeaponSlot = {
 }
 let settingsArray = [{
   toggle: Object.keys(settingsObject)[0],
-  explain: 'Show tutorial tooltip',
+  explain: 'Manipulate main slot when close inventory',
   offsetX: 0,
   offsetY: 0,
   absoluteX: 0,
@@ -660,6 +662,16 @@ let settingsArray = [{
   text: ''
 }, {
   toggle: Object.keys(settingsObject)[1],
+  explain: 'Show tutorial tooltip',
+  offsetX: 0,
+  offsetY: 0,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: ''
+}, {
+  toggle: Object.keys(settingsObject)[2],
   explain: 'Show manipulate key',
   offsetX: 0,
   offsetY: 0,
@@ -2123,12 +2135,11 @@ const drawAim = () => { // Expected effective range
   context.stroke()
   context.restore()
 }
-let holdSlot = {category: ''}
 const inventoryProcess = () => {
   inventory.forEach(v => {
     if (v.category !== '') v.recoilEffect *= v.recoilMultiple
   })
-  if (!inventoryFlag) {
+  if (!settingsObject.isManipulateSlotAnytime && !inventoryFlag) {
     if (holdSlot.category !== '') {
       inventory.forEach((v, i) => {
         if (v.category === '') {
@@ -2139,6 +2150,7 @@ const inventoryProcess = () => {
     return
   }
   inventorySlotBox.forEach((v, i) => {
+    if (!inventoryFlag && mainSlotSize - 1 < i) return
     if (downButton(v)) {
       if (code[action.shift].flag) {
         let findIndex = -1
