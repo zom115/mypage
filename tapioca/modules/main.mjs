@@ -603,8 +603,8 @@ setAbsoluteBox(resultBackBox)
 const setTitleMenuWord = () => {
   titleMenuWordArray = [
     {text: `PRESS [${getKeyName(action.fire)}] TO START`, hue: 10},
-    {text: `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`, hue: 210},
-    {text: `[${getKeyName(action.change)}]MAP: ${mapMode}`, hue: 210}
+    // {text: `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`, hue: 210},
+    // {text: `[${getKeyName(action.change)}]MAP: ${mapMode}`, hue: 210}
   ]
   context.save()
   context.textAlign = 'center'
@@ -683,7 +683,7 @@ let settingsArray = [{
 }]
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => { // init
   action = {
     fire: setStorageFirst('fire', 'Space'),
     reload: setStorageFirst('reload', 'KeyR'),
@@ -3013,6 +3013,7 @@ const titleProcess = () => {
     }
     state = 'main'
   }
+  /*
   if (code[action.slow].isFirst() || button(titleMenuWordArray[1])) {
     input()
     state = 'keyLayout'
@@ -3021,6 +3022,7 @@ const titleProcess = () => {
     mapMode = !mapMode
     setTitleMenuWord()
   }
+  */
 }
 const combatProcess = () => {
   if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
