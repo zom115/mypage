@@ -14,7 +14,7 @@ let currentTime = globalTimestamp
 const isKeyFirst = list => {
   return list.some(v => code[v].holdtime !== 0 && code[v].holdtime <= intervalDiffTime)
 }
-const version = 'v.0.8.8.1'
+const version = 'v.0.9'
 const canvas = document.getElementById`canvas`
 
 let cursor = {offsetX: 0, offsetY: 0}
