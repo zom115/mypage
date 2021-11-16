@@ -542,7 +542,8 @@ const getKeyName = key => {
 
 let isSettings = false
 let settingsObject = {
-  isTutorialTooltip: true
+  isTutorialTooltip: true,
+  isManipulateCode: true
 }
 // let isTutorialTooltip = false
 
@@ -656,16 +657,16 @@ let settingsArray = [{
   width: 0,
   height: 0,
   text: ''
-// }, {
-//   toggle: 'isTutorialTooltip',
-//   explain: 'Show manipulate key',
-//   offsetX: 0,
-//   offsetY: 0,
-//   absoluteX: 0,
-//   absoluteY: 0,
-//   width: 0,
-//   height: 0,
-//   text: ''
+}, {
+  toggle: Object.keys(settingsObject)[1],
+  explain: 'Show manipulate key',
+  offsetX: 0,
+  offsetY: 0,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: ''
 }]
 
 
@@ -1887,6 +1888,14 @@ const drawIndicator = () => {
         v === weaponModeList[3] ? 'F' : '' // FULL AUTO
         context.fillText(text, c.x, c.y - size * (9 - i))
     })
+    if (settingsObject.isManipulateCode && 1 < inventory[selectSlot].modeList.length) {
+
+      context.fillStyle = 'hsla(210, 100%, 75%, .4)'
+      context.fillRect(c.x - size * .55, c.y - size * 10.6, size * .6, size * .6)
+      context.font = `${size*.75}px sans-serif`
+      context.fillStyle = 'hsla(0, 0%, 100%, .4)'
+      context.fillText(extractCode(action.modeSelect), c.x , c.y - size * 10)
+    }
     context.restore()
     context.save()
     const inChamber = (inventory[selectSlot].chamber) ? 1 : 0
@@ -2047,6 +2056,11 @@ const drawWeaponDetail = (box, i) => {
     })
   }
 }
+const extractCode = (text) => {
+  text = text.replace('Key', '')
+  text = text.replace('Digit', '')
+  return text
+}
 const drawSlot = () => {
   context.save()
   const box = {
@@ -2062,6 +2076,17 @@ const drawSlot = () => {
       context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
     }
     drawWeaponCategory(v, inventory[i])
+    if (settingsObject.isManipulateCode && i < mainSlotSize) {
+      context.fillStyle = 'hsla(210, 100%, 75%, .4)'
+      context.fillRect(v.absoluteX + size * 1.15, v.absoluteY - size / 3, size * .6, size * .6)
+      context.font = `${size*.75}px sans-serif`
+      context.fillStyle = 'hsla(0, 0%, 100%, .4)'
+      const text =
+        i === 0 ? extractCode(action.primary) :
+        i === 1 ? extractCode(action.secondary) :
+        i === 2 ? extractCode(action.tertiary) : ''
+      context.fillText(text, v.absoluteX + size * 1.45, v.absoluteY + size / 4)
+    }
   })
   inventorySlotBox.forEach((v, i) => {
     if (mainSlotSize - 1 < i && !inventoryFlag) return
