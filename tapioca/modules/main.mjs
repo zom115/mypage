@@ -602,7 +602,7 @@ let resultBackBox = {
 setAbsoluteBox(resultBackBox)
 const setTitleMenuWord = () => {
   titleMenuWordArray = [
-    {text: `PRESS [${getKeyName(action.fire)}] TO START`, hue: 10},
+    {text: `START`, hue: 10},
     // {text: `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`, hue: 210},
     // {text: `[${getKeyName(action.change)}]MAP: ${mapMode}`, hue: 210}
   ]
