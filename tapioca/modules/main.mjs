@@ -76,21 +76,6 @@ canvas.addEventListener('contextmenu', e => {
   e.preventDefault()
 })
 
-const DOM = {
-  operation: document.getElementById`operation`,
-  lookUp: document.getElementById`lookUp`,
-  lookRight: document.getElementById`lookRight`,
-  lookDown: document.getElementById`lookDown`,
-  lookLeft: document.getElementById`lookLeft`,
-  fire: document.getElementById`fire`,
-  slow: document.getElementById`slow`,
-  reload: document.getElementById`reload`,
-  back: document.getElementById`back`,
-  dash: document.getElementById`dash`,
-  inventory: document.getElementById`inventory`,
-  pause: document.getElementById`pause`,
-  debug: document.getElementById`debug`
-}
 const context = canvas.getContext`2d`
 context.imageSmoothingEnabled =
   context.msImageSmoothingEnabled =
@@ -99,9 +84,32 @@ const storage = localStorage
 document.getElementById('clear').addEventListener('click', () => {
   storage.clear()
 })
+const extractCode = (text) => {
+  text = text.replace('Key', '')
+  text = text.replace('Digit', '')
+  return text
+}
+const DOM = {
+  operation: document.getElementById`operation`,
+  inventory: document.getElementById`inventory`,
+  reload: document.getElementById`reload`,
+  modeSelect: document.getElementById`modeSelect`,
+  rotateSlot: document.getElementById`rotateSlot`,
+  // lookUp: document.getElementById`lookUp`,
+  // lookRight: document.getElementById`lookRight`,
+  // lookDown: document.getElementById`lookDown`,
+  // lookLeft: document.getElementById`lookLeft`,
+  // fire: document.getElementById`fire`,
+  // slow: document.getElementById`slow`,
+  // back: document.getElementById`back`,
+  // dash: document.getElementById`dash`,
+  pause: document.getElementById`pause`,
+  debug: document.getElementById`debug`,
+  settings: document.getElementById`settings`,
+}
 const setDOM = (key, value) => {
   if (Object.keys(DOM).some(x => x === key)) {
-    DOM[key].innerHTML = value === ' ' ? 'SPACE' : value.toUpperCase()
+    DOM[key].innerHTML = extractCode(value).toUpperCase()
   }
 }
 const setStorageFirst = (key, value) => {
@@ -2067,11 +2075,6 @@ const drawWeaponDetail = (box, i) => {
       strokeText(dictionary[v], cursor.offsetX + size * 5, cursor.offsetY + size * (2 + i), size * 3)
     })
   }
-}
-const extractCode = (text) => {
-  text = text.replace('Key', '')
-  text = text.replace('Digit', '')
-  return text
 }
 const drawSlot = () => {
   context.save()
