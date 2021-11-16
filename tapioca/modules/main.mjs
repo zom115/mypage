@@ -2894,7 +2894,7 @@ const reset = () => {
       magSizeInitial,
       Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
       loading.weight,
-      0,
+      .2,
       0,
       10,
       .2,
