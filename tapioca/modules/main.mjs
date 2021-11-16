@@ -541,9 +541,10 @@ const getKeyName = key => {
 // for settings
 
 let isSettings = false
+console.log(storage.getItem('isTutorialTooltip'))
 let settingsObject = {
-  isTutorialTooltip: true,
-  isManipulateCode: true
+  isTutorialTooltip: storage.getItem('isTutorialTooltip') ? JSON.parse(storage.getItem('isTutorialTooltip')) : true,
+  isManipulateCode: storage.getItem('isManipulateCode') ? JSON.parse(storage.getItem('isManipulateCode')) : true
 }
 // let isTutorialTooltip = false
 
@@ -1889,7 +1890,6 @@ const drawIndicator = () => {
         context.fillText(text, c.x, c.y - size * (9 - i))
     })
     if (settingsObject.isManipulateCode && 1 < inventory[selectSlot].modeList.length) {
-
       context.fillStyle = 'hsla(210, 100%, 75%, .4)'
       context.fillRect(c.x - size * .55, c.y - size * 10.6, size * .6, size * .6)
       context.font = `${size*.75}px sans-serif`
@@ -3104,7 +3104,10 @@ const settingsState = () => {
     // const toggleText = v.toggle ? 'On' : 'Off'
     // v.text = `${v.explain}: ${toggleText}`
     // setAbsoluteBox(v)
-    if (button(v)) settingsObject[v.toggle] = !settingsObject[v.toggle]
+    if (button(v)) {
+      settingsObject[v.toggle] = !settingsObject[v.toggle]
+      storage.setItem(v.toggle, JSON.stringify(settingsObject[v.toggle]))
+    }
   })
 }
 const resetKeyState = () => {
