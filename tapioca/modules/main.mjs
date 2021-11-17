@@ -554,12 +554,12 @@ let settingsObject = {
   isManipulateSlotAnytime:
     storage.getItem('isManipulateSlotAnytime') ? JSON.parse(storage.getItem('isManipulateSlotAnytime')) : true,
   isTutorialTooltip: storage.getItem('isTutorialTooltip') ? JSON.parse(storage.getItem('isTutorialTooltip')) : true,
-  isManipulateCode: storage.getItem('isManipulateCode') ? JSON.parse(storage.getItem('isManipulateCode')) : true
+  isManipulateCode: storage.getItem('isManipulateCode') ? JSON.parse(storage.getItem('isManipulateCode')) : true,
+  isMiddleView: storage.getItem('isMiddleView') ? JSON.parse(storage.getItem('isMiddleView')) : true
 }
 // let isTutorialTooltip = false
 
 // for display
-let isMiddleView = true
 let screenOwnPos = {x: 0, y: 0}
 
 const setAbsoluteBox = (box) => {
@@ -683,6 +683,16 @@ let settingsArray = [{
 }, {
   toggle: Object.keys(settingsObject)[2],
   explain: 'Show manipulate key',
+  offsetX: 0,
+  offsetY: 0,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: ''
+}, {
+  toggle: Object.keys(settingsObject)[3],
+  explain: 'Draw ownself relative to the cursor',
   offsetX: 0,
   offsetY: 0,
   absoluteX: 0,
@@ -1316,7 +1326,7 @@ const drawMyself = () => {
   ownSpeed.max < ownSpeed.current && 0 < currentDirection ? setOwnImage(currentDirection) :
   0 < angle ? setOwnImage(angle) : setOwnImage(direction)
   const pos =
-    isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y} : { // recoil effect
+    settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y} : { // recoil effect
       x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
       y: canvas.offsetHeight / 2 + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
     }
@@ -1384,7 +1394,7 @@ const drawField = () => {
   context.fillStyle = 'hsl(240, 100%, 60%)'
   const width = size * 7.5
   const pos =
-    isMiddleView ? {x: ownPosition.x - screenOwnPos.x, y: ownPosition.y - screenOwnPos.y} :
+    settingsObject.isMiddleView ? {x: ownPosition.x - screenOwnPos.x, y: ownPosition.y - screenOwnPos.y} :
     0 < afterglow.recoil ? {
       x: ownPosition.x - recoilEffect.dx * (afterglow.recoil/recoilEffect.flame),
       y: ownPosition.y - recoilEffect.dy * (afterglow.recoil/recoilEffect.flame)
@@ -2765,12 +2775,12 @@ const drawObjects = () => {
   }
 }
 const relativeX = (arg) => {
-  const a = isMiddleView ? ownPosition.x - screenOwnPos.x : canvas.offsetWidth / 2 - ownPosition.x
-  return  - a + recoilEffect.dx * (afterglow.recoil/recoilEffect.flame) + arg
+  const a = settingsObject.isMiddleView ? screenOwnPos.x - ownPosition.x : canvas.offsetWidth / 2 - ownPosition.x
+  return a + recoilEffect.dx * (afterglow.recoil/recoilEffect.flame) + arg
 }
 const relativeY = (arg) => {
-  const a = isMiddleView ? ownPosition.y - screenOwnPos.y : canvas.offsetHeight / 2 - ownPosition.y
-  return  - a + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
+  const a = settingsObject.isMiddleView ? screenOwnPos.y - ownPosition.y : canvas.offsetHeight / 2 - ownPosition.y
+  return a + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
 }
 const command = () => {
   let bool = false
