@@ -891,7 +891,10 @@ const mouseFiring = () => {
     inventory[selectSlot].mode === weaponModeList[2] &&
     inventory[selectSlot].round === inventory[selectSlot].roundLimit)
   ) inventory[selectSlot].disconnector = true
-  inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient
+  const burstReduction =
+    inventory[selectSlot].mode === weaponModeList[2] ? inventory[selectSlot].roundLimit / (inventory[selectSlot].roundLimit + 1) : 1
+  console.log(burstReduction, inventory[selectSlot].roundLimit)
+  inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient * burstReduction
 }
 const firingProcess = () => {
   if (
@@ -1767,7 +1770,6 @@ const dropItemProcess = () => {
       }
     } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
       if (item.unavailableTime <= 0 && distance < minImgRadius * 2 && 0 <= blankInventorySlot) {
-        console.log(mainSlotSize + inventorySize, blankInventorySlot)
         delete item.type,
         delete item.unavailableTime,
         delete item.x,
