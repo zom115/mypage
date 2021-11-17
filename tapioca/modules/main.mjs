@@ -1720,6 +1720,7 @@ const drawBullets = () => {
   })
 }
 const dropItemProcess = () => {
+  const blankInventorySlot = inventory.findIndex(v => v.category === '')
   dropItems.forEach((item, index) => {
     if (item.type === 'explosive' || item.type === 'droppedWeapon') {
       if (item.life <= 0)  {
@@ -1741,13 +1742,14 @@ const dropItemProcess = () => {
     const width = ownPosition.x - item.x
     const height = ownPosition.y - item.y
     const distance = Math.sqrt(width ** 2 + height ** 2)
-    const blankInventorySlot = inventory.findIndex(v => v.category === '')
-    let multiple = (
-      size < distance || (
-      item.type === 'droppedWeapon')) &&
-      mainSlotSize + inventorySize <= inventory.length ? 0 : 1 / distance
-    item.x = item.x + width / distance * multiple * intervalDiffTime
-    item.y = item.y + height / distance * multiple * intervalDiffTime
+    if (0 <= blankInventorySlot) { // vacuuming
+      let multiple = (
+        size < distance || (
+        item.type === 'droppedWeapon')) &&
+        mainSlotSize + inventorySize <= inventory.length ? 0 : 1 / distance
+      item.x = item.x + width / distance * multiple * intervalDiffTime
+      item.y = item.y + height / distance * multiple * intervalDiffTime
+    }
     if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
     if (item.type === 'cartridge') {
       const bulletRadius = size / 6
@@ -1764,10 +1766,8 @@ const dropItemProcess = () => {
         dropItems.splice(index, 1)
       }
     } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
-      if (
-        item.unavailableTime <= 0 && distance < minImgRadius * 2 &&
-        blankInventorySlot < mainSlotSize + inventorySize
-      ) {
+      if (item.unavailableTime <= 0 && distance < minImgRadius * 2 && 0 <= blankInventorySlot) {
+        console.log(mainSlotSize + inventorySize, blankInventorySlot)
         delete item.type,
         delete item.unavailableTime,
         delete item.x,
