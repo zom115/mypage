@@ -2483,8 +2483,8 @@ const setStore = () => {
     }
   }
   const fillAmmoBox = {
-    offsetX: canvas.offsetWidth * 3 / 4,
-    offsetY: canvas.offsetHeight / 4,
+    offsetX: canvas.offsetWidth * 4 / 7,
+    offsetY: canvas.offsetHeight / 5,
     absoluteX: 0,
     absoluteY: 0,
     width: 0,
@@ -2493,9 +2493,20 @@ const setStore = () => {
     hue: 210
   }
   setAbsoluteBox(fillAmmoBox)
+  const fillAmmoAllBox = {
+    offsetX: canvas.offsetWidth * 6 / 7,
+    offsetY: canvas.offsetHeight / 5,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: 'Buy ammo all',
+    hue: 210
+  }
+  setAbsoluteBox(fillAmmoAllBox)
   const limitBreakBox = {
     offsetX: canvas.offsetWidth * 3 / 4,
-    offsetY: canvas.offsetHeight / 2,
+    offsetY: canvas.offsetHeight * 2 / 5,
     absoluteX: 0,
     absoluteY: 0,
     width: 0,
@@ -2504,19 +2515,35 @@ const setStore = () => {
     hue: 0
   }
   setAbsoluteBox(limitBreakBox)
+  const calcCost = slot => {
+    let cost = 0
+    if (slot.category !== '') {
+      cost =
+        slot.category === weaponCategoryList[0] ? 250 :
+        slot.category === weaponCategoryList[1] ? 500 :
+        slot.category === weaponCategoryList[5] ? 400 :
+        750 // slot.category === categoryList[2]
+      cost *=
+        slot.rarity === weaponRarityList[0] ? 1 :
+        slot.rarity === weaponRarityList[1] ? 2 :
+        slot.rarity === weaponRarityList[2] ? 3 :
+        4 // slot.rarity === weaponRarityList[3]
+    }
+    return cost
+  }
   class ShopSpot extends Spot {
     process() {
+      // const costAll = inventory.reduce(v => {calcCost(v)})
+
+      const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
+      if (costAll <= point && button(fillAmmoAllBox)) {
+        point -= costAll
+        inventory.forEach(v => {
+          if (v.category !== '') v.magazines.fill(inventory[selectSlot].magazineSize)
+        })
+      }
       if (inventory[selectSlot].category !== '') {
-        let cost = 0
-        cost =
-          inventory[selectSlot].category === weaponCategoryList[0] ? 250 :
-          inventory[selectSlot].category === weaponCategoryList[1] ? 500 :
-          750 // inventory[selectSlot].category === categoryList[2]
-        cost *=
-          inventory[selectSlot].rarity === weaponRarityList[0] ? 1 :
-          inventory[selectSlot].rarity === weaponRarityList[1] ? 2 :
-          inventory[selectSlot].rarity === weaponRarityList[2] ? 3 :
-          4 // inventory[selectSlot].rarity === weaponRarityList[3]
+        const cost = calcCost(inventory[selectSlot])
         if (cost <= point && button(fillAmmoBox)) {
           point -= cost
           inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
@@ -2538,19 +2565,6 @@ const setStore = () => {
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
       if (isInner(this, offset)) {
-        let cost = 0
-        if (inventory[selectSlot].category !== '') {
-          cost =
-            inventory[selectSlot].category === weaponCategoryList[0] ? 250 :
-            inventory[selectSlot].category === weaponCategoryList[1] ? 500 :
-            750 // inventory[selectSlot].category === categoryList[2]
-          cost *=
-            inventory[selectSlot].rarity === weaponRarityList[0] ? 1 :
-            inventory[selectSlot].rarity === weaponRarityList[1] ? 2 :
-            inventory[selectSlot].rarity === weaponRarityList[2] ? 3 :
-            4 // inventory[selectSlot].rarity === weaponRarityList[3]
-        }
-        const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
         context.save()
         if (inventory[selectSlot].category !== '') {
           context.fillStyle = 'hsla(300, 100%, 70%, .5)'
@@ -2560,17 +2574,24 @@ const setStore = () => {
             inventorySlotBox[selectSlot].width,
             inventorySlotBox[selectSlot].height)
         }
-        drawBox(fillAmmoBox, ammoAlpha)
+        const cost = calcCost(inventory[selectSlot])
+        const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
+        context.font = `${size * .75}px sans-serif`
         context.textAlign = 'center'
         context.textBaseline = 'middle'
         context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
+        drawBox(fillAmmoBox, ammoAlpha)
         if (cost !== 0) {
-          context.font = `${size * .75}px sans-serif`
           context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size * 1.5)
+        }
+        drawBox(fillAmmoAllBox, ammoAlpha)
+        const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
+        if (costAll !== 0) {
+          context.fillText(
+            `Cost: ${costAll}`, fillAmmoAllBox.offsetX, fillAmmoAllBox.offsetY + size * 1.5)
         }
         drawBox(limitBreakBox, ammoAlpha)
         if (inventory[selectSlot].category !== '') {
-          context.font = `${size * .75}px sans-serif`
           context.fillText(
             `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
             limitBreakBox.offsetX,
