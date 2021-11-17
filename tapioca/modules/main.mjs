@@ -555,7 +555,8 @@ let settingsObject = {
     storage.getItem('isManipulateSlotAnytime') ? JSON.parse(storage.getItem('isManipulateSlotAnytime')) : true,
   isTutorialTooltip: storage.getItem('isTutorialTooltip') ? JSON.parse(storage.getItem('isTutorialTooltip')) : true,
   isManipulateCode: storage.getItem('isManipulateCode') ? JSON.parse(storage.getItem('isManipulateCode')) : true,
-  isMiddleView: storage.getItem('isMiddleView') ? JSON.parse(storage.getItem('isMiddleView')) : true
+  isMiddleView: storage.getItem('isMiddleView') ? JSON.parse(storage.getItem('isMiddleView')) : true,
+  isReverseBoundary: storage.getItem('isReverseBoundary') ? JSON.parse(storage.getItem('isReverseBoundary')) : true
 }
 // let isTutorialTooltip = false
 
@@ -693,6 +694,16 @@ let settingsArray = [{
 }, {
   toggle: Object.keys(settingsObject)[3],
   explain: 'Draw ownself relative to the cursor',
+  offsetX: 0,
+  offsetY: 0,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: ''
+}, {
+  toggle: Object.keys(settingsObject)[4],
+  explain: 'Reverse boundary if active above',
   offsetX: 0,
   offsetY: 0,
   absoluteX: 0,
@@ -3290,7 +3301,18 @@ const drawMain = () => {
   const WIDTH_RANGE = 16
   const WIDTH_RATIO = 1.5
   const HEIGHT_RANGE = 9
-  screenOwnPos = {
+  screenOwnPos = settingsObject.isReverseBoundary ? {
+    x: cursor.offsetX <= canvas.offsetWidth * WIDTH_RATIO * 2 / WIDTH_RANGE ?
+      canvas.offsetWidth * (WIDTH_RANGE / 2 + WIDTH_RATIO * 2) / WIDTH_RANGE - cursor.offsetX :
+      canvas.offsetWidth * (WIDTH_RANGE - WIDTH_RATIO * 2) / WIDTH_RANGE <= cursor.offsetX ?
+      canvas.offsetWidth * (WIDTH_RANGE + (WIDTH_RANGE - WIDTH_RATIO * 4) / 2) / WIDTH_RANGE - cursor.offsetX :
+      canvas.offsetWidth / 2,
+    y: cursor.offsetY <= canvas.offsetHeight * WIDTH_RATIO * 2 / HEIGHT_RANGE ?
+      canvas.offsetHeight * (HEIGHT_RANGE / 2 + WIDTH_RATIO * 2) / HEIGHT_RANGE - cursor.offsetY :
+      canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO * 2) / HEIGHT_RANGE <= cursor.offsetY ?
+      canvas.offsetHeight * (HEIGHT_RANGE + (HEIGHT_RANGE - WIDTH_RATIO * 4) / 2) / HEIGHT_RANGE - cursor.offsetY :
+      canvas.offsetHeight / 2
+  } : {
     x: cursor.offsetX < canvas.offsetWidth * ((WIDTH_RANGE - HEIGHT_RANGE) / 2 + WIDTH_RATIO) / WIDTH_RANGE ?
       canvas.offsetWidth * (WIDTH_RANGE - (WIDTH_RANGE - HEIGHT_RANGE) / 2 - WIDTH_RATIO) / WIDTH_RANGE :
       canvas.offsetWidth * (
@@ -3584,7 +3606,7 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: settingsObject.isTutorialTooltip
+    a: screenOwnPos.y
 
   }
   Object.entries(dictionary).forEach((v, i) => {
