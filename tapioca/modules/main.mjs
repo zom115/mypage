@@ -565,10 +565,10 @@ const setAbsoluteBox = (box) => {
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   const measure = context.measureText(box.text)
-  box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft,
-  box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent,
-  box.width = measure.width
-  box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+  box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft - size / 4,
+  box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent - size / 4,
+  box.width = measure.width + size / 2
+  box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent + size / 2
   context.restore()
 }
 let portalConfirmBox = [{
@@ -578,7 +578,8 @@ let portalConfirmBox = [{
   absoluteY: 0,
   width: 0,
   height: 0,
-  text: 'Yes'
+  text: 'Yes',
+  hue: 210
 }, {
   offsetX: canvas.offsetWidth * 2 / 3,
   offsetY: canvas.offsetHeight * 2 / 5,
@@ -586,7 +587,8 @@ let portalConfirmBox = [{
   absoluteY: 0,
   width: 0,
   height: 0,
-  text: 'No(Continue)'
+  text: 'No(Continue)',
+  hue: 30
 }, {
   offsetX: canvas.offsetWidth / 2,
   offsetY: canvas.offsetHeight * 2 / 5,
@@ -594,7 +596,8 @@ let portalConfirmBox = [{
   absoluteY: 0,
   width: 0,
   height: 0,
-  text: 'Yes'
+  text: 'Yes',
+  hue: 30
 }]
 portalConfirmBox.forEach(v => setAbsoluteBox(v))
 let titleMenuWordArray = []
@@ -609,34 +612,30 @@ let resultBackBox = {
 }
 setAbsoluteBox(resultBackBox)
 const setTitleMenuWord = () => {
-  titleMenuWordArray = [
-    {text: `START`, hue: 10},
+  titleMenuWordArray = [{
+    offsetX: 0,
+    offsetY: 0,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: `START`,
+    hue: 10
+  }
     // {text: `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`, hue: 210},
     // {text: `[${getKeyName(action.change)}]MAP: ${mapMode}`, hue: 210}
   ]
-  context.save()
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  context.font = `${size}px sans-serif`
   titleMenuWordArray.forEach((v, i) => {
     const property = {
       offsetX: canvas.offsetWidth / 2,
       offsetY: canvas.offsetHeight * (2 / 3 + i / 11)
     }
-    const measure = context.measureText(v.text)
-    {
-      Object.assign(
-        titleMenuWordArray[i],
-        {
-          offsetX: property.offsetX,
-          offsetY: property.offsetY,
-          absoluteX: property.offsetX - measure.actualBoundingBoxLeft,
-          absoluteY: property.offsetY - measure.actualBoundingBoxAscent,
-          width: measure.width,
-          height: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
-        }
-      )
-    }
+    Object.assign(
+      titleMenuWordArray[i], {
+        offsetX: property.offsetX,
+        offsetY: property.offsetY
+    })
+    setAbsoluteBox(v)
   })
   context.restore()
 }
@@ -891,9 +890,8 @@ const mouseFiring = () => {
     inventory[selectSlot].mode === weaponModeList[2] &&
     inventory[selectSlot].round === inventory[selectSlot].roundLimit)
   ) inventory[selectSlot].disconnector = true
-  const burstReduction =
+  const burstReduction = // TODO: FAMAS and AN-94 are not example of this
     inventory[selectSlot].mode === weaponModeList[2] ? inventory[selectSlot].roundLimit / (inventory[selectSlot].roundLimit + 1) : 1
-  console.log(burstReduction, inventory[selectSlot].roundLimit)
   inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient * burstReduction
 }
 const firingProcess = () => {
@@ -2454,12 +2452,16 @@ const setStore = () => {
     draw() {}
   }
   const box = {
-    absoluteX: canvas.offsetWidth / 2 - 50,
-    absoluteY: 100,
-    width: 100,
-    height: 40,
-    text: 'START'
+    offsetX: canvas.offsetWidth / 2,
+    offsetY: canvas.offsetHeight / 5,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: 'START',
+    hue: 30
   }
+  setAbsoluteBox(box)
   class StartSpot extends Spot {
     process() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y} // TODO: integrate x and absoluteX
@@ -2477,25 +2479,8 @@ const setStore = () => {
     }
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) {
-        context.save()
-        if (isInner(box, cursor)) {
-          context.fillStyle = 'hsl(30, 100%, 70%)'
-          context.fillRect(box.absoluteX - 10, box.absoluteY, box.width + 20, box.height)
-        }
-        context.textAlign = 'left'
-        context.textBaseline = 'top'
-        context.fillStyle = 'hsl(210, 100%, 70%)'
-        context.fillText(box.text, box.absoluteX, box.absoluteY)
-        context.restore()
-      }
+      if (isInner(this, offset)) drawBox(box)
     }
-  }
-  const slotBox = {
-    absoluteX: canvas.offsetWidth / 2 - size * 1.5 / 2,
-    absoluteY: canvas.offsetHeight / 2 - size * 6,
-    width: size * 1.5,
-    height: size * 1.5
   }
   const fillAmmoBox = {
     offsetX: canvas.offsetWidth * 3 / 4,
@@ -2504,7 +2489,8 @@ const setStore = () => {
     absoluteY: 0,
     width: 0,
     height: 0,
-    text: 'Buy ammo'
+    text: 'Buy ammo',
+    hue: 210
   }
   setAbsoluteBox(fillAmmoBox)
   const limitBreakBox = {
@@ -2514,7 +2500,8 @@ const setStore = () => {
     absoluteY: 0,
     width: 0,
     height: 0,
-    text: 'Limit break (x0.01 - x2)'
+    text: 'Limit break (x0.01 - x2)',
+    hue: 0
   }
   setAbsoluteBox(limitBreakBox)
   class ShopSpot extends Spot {
@@ -2573,41 +2560,21 @@ const setStore = () => {
             inventorySlotBox[selectSlot].width,
             inventorySlotBox[selectSlot].height)
         }
-
-        if (inventory[selectSlot].category !== '' && cost <= point && isInner(fillAmmoBox, cursor)) {
-          context.fillStyle = 'hsl(30, 100%, 70%)'
-          context.fillRect(fillAmmoBox.absoluteX, fillAmmoBox.absoluteY, fillAmmoBox.width, fillAmmoBox.height)
-        }
-        context.font = `${size}px sans-serif`
+        drawBox(fillAmmoBox, ammoAlpha)
         context.textAlign = 'center'
         context.textBaseline = 'middle'
         context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
-        context.fillText(fillAmmoBox.text, fillAmmoBox.offsetX, fillAmmoBox.offsetY)
         if (cost !== 0) {
           context.font = `${size * .75}px sans-serif`
-          context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size)
+          context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size * 1.5)
         }
-
-        if (
-          inventory[selectSlot].category !== '' &&
-          inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point &&
-          isInner(limitBreakBox, cursor)
-        ) {
-          context.fillStyle = 'hsl(30, 100%, 70%)'
-          context.fillRect(
-            limitBreakBox.absoluteX, limitBreakBox.absoluteY, limitBreakBox.width, limitBreakBox.height)
-        }
-        const limitBreakAlpha =
-          inventory[selectSlot].category !== '' && inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point ? 1 : .4
-        context.fillStyle = `hsla(210, 100%, 70%, ${limitBreakAlpha})`
-        context.font = `${size}px sans-serif`
-        context.fillText(limitBreakBox.text, limitBreakBox.offsetX, limitBreakBox.offsetY)
+        drawBox(limitBreakBox, ammoAlpha)
         if (inventory[selectSlot].category !== '') {
           context.font = `${size * .75}px sans-serif`
           context.fillText(
             `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
             limitBreakBox.offsetX,
-            limitBreakBox.offsetY + size)
+            limitBreakBox.offsetY + size * 1.5)
         }
         if (0 < afterglow.limitBreakSuccess) {
           const ratio = afterglow.limitBreakSuccess / 2000
@@ -2630,7 +2597,8 @@ const setStore = () => {
     absoluteY: 0,
     width: 0,
     height: 0,
-    text: 'SAVE'
+    text: 'SAVE',
+    hue: 210
   }
   setAbsoluteBox(saveBox)
   class SaveSpot extends Spot {
@@ -2646,19 +2614,7 @@ const setStore = () => {
     }
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) {
-        context.save()
-        if (isInner(saveBox, cursor)) {
-          context.fillStyle = 'hsl(30, 100%, 70%)'
-          context.fillRect(saveBox.absoluteX, saveBox.absoluteY, saveBox.width, saveBox.height)
-        }
-        context.font = `${size}px sans-serif`
-        context.textAlign = 'center'
-        context.textBaseline = 'middle'
-        context.fillStyle = 'hsl(210, 100%, 70%)'
-        context.fillText(saveBox.text, saveBox.offsetX, saveBox.offsetY)
-        context.restore()
-      }
+      if (isInner(this, offset)) drawBox(saveBox)
     }
   }
   objects.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
@@ -3149,6 +3105,25 @@ const main = () => setInterval(() => {
   if (isSettings) settingsState()
   resetKeyState()
 }, 0)
+const drawBox = (box, alpha = 1) => {
+  context.save()
+  // outline box
+  const saturation = 90
+  context.strokeStyle = `hsl(${box.hue}, ${saturation}%, 60%)`
+  context.strokeRect(box.absoluteX, box.absoluteY, box.width, box.height)
+  // text highlight
+  if (isInner(box, cursor)) {
+    const lightness = isLeftMouseDown ? 70 : 75
+    context.fillStyle = `hsla(${box.hue}, ${saturation}%, ${lightness}%, .5)`
+    context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
+  }
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.font = `${size}px sans-serif`
+  context.fillStyle = `hsla(${box.hue}, ${saturation}%, 50%, ${alpha})`
+  context.fillText(box.text, box.offsetX, box.offsetY)
+  context.restore()
+}
 const drawTitleScreen = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -3157,22 +3132,7 @@ const drawTitleScreen = () => {
     loadedMap['images/ROGOv1.2.png'],
     ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
 
-  context.save()
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  context.font = `${size}px sans-serif`
-
-  titleMenuWordArray.forEach(v => {
-    // text highlight
-    if (isInner(v, cursor)) {
-      context.fillStyle = `hsl(${v.hue}, 50%, 75%)`
-      context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-    }
-    context.fillStyle = `hsl(${v.hue}, 50%, 50%)`
-    context.fillText(v.text, v.offsetX, v.offsetY)
-
-  })
-  context.restore()
+  titleMenuWordArray.forEach(v => drawBox(v))
 
   context.textAlign = 'right'
   context.fillStyle = (manyAmmo()) ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
@@ -3261,15 +3221,7 @@ const drawPortal = () => {
     portalConfirmBox.forEach((v, i) => {
       if (location === locationList[0] && (i !== 2)) return
       if (location === locationList[1] && (i === 2)) return
-      if (isInner(v, cursor)) {
-        context.fillStyle = 'hsl(30, 100%, 70%)'
-        context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-      }
-      context.textAlign = 'center'
-      context.textBaseline = 'middle'
-      context.font = `${size}px sans-serif`
-      context.fillStyle = 'hsl(210, 100%, 70%)'
-      context.fillText(v.text, v.offsetX, v.offsetY)
+      drawBox(v)
     })
     context.restore()
   }
