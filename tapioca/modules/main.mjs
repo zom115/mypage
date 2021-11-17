@@ -559,6 +559,9 @@ let settingsObject = {
 // let isTutorialTooltip = false
 
 // for display
+let isMiddleView = true
+let screenOwnPos = {x: 0, y: 0}
+
 const setAbsoluteBox = (box) => {
   context.save()
   context.font = `${size}px sans-serif`
@@ -1312,10 +1315,11 @@ const drawMyself = () => {
   ? 'images/TP2F.png' :
   ownSpeed.max < ownSpeed.current && 0 < currentDirection ? setOwnImage(currentDirection) :
   0 < angle ? setOwnImage(angle) : setOwnImage(direction)
-  const pos = { // recoil effect
-    x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
-    y: canvas.offsetHeight / 2 + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
-  }
+  const pos =
+    isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y} : { // recoil effect
+      x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
+      y: canvas.offsetHeight / 2 + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
+    }
   context.fillStyle = 'hsla(0, 0%, 0%, .2)' // shadow
   context.beginPath()
   context.arc(
@@ -1379,10 +1383,12 @@ const drawDirection = () => {
 const drawField = () => {
   context.fillStyle = 'hsl(240, 100%, 60%)'
   const width = size * 7.5
-  const pos = (0 < afterglow.recoil) ? {
-    x: ownPosition.x - recoilEffect.dx * (afterglow.recoil/recoilEffect.flame),
-    y: ownPosition.y - recoilEffect.dy * (afterglow.recoil/recoilEffect.flame)
-  } : {x: ownPosition.x, y: ownPosition.y}
+  const pos =
+    isMiddleView ? {x: ownPosition.x - screenOwnPos.x, y: ownPosition.y - screenOwnPos.y} :
+    0 < afterglow.recoil ? {
+      x: ownPosition.x - recoilEffect.dx * (afterglow.recoil/recoilEffect.flame),
+      y: ownPosition.y - recoilEffect.dy * (afterglow.recoil/recoilEffect.flame)
+    } : {x: ownPosition.x, y: ownPosition.y}
   for (let i = -1, l = Math.ceil(canvas.offsetWidth / width) + 2; i < l; i=(i+1)|0) {
     for (let j = -1, l = Math.ceil(canvas.offsetHeight / width) + 2; j < l; j=(j+1)|0) {
       context.fillStyle = 'hsla(0, 0%, 50%, .5)'
@@ -2122,10 +2128,6 @@ const drawSlot = () => {
   context.restore()
 }
 const drawAim = () => { // Expected effective range
-  const screenOwnPos = {
-    x: canvas.offsetWidth / 2,
-    y: canvas.offsetHeight / 2
-  }
   const radius =
     Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
   let aimRadius = (
@@ -2763,10 +2765,12 @@ const drawObjects = () => {
   }
 }
 const relativeX = (arg) => {
-  return canvas.offsetWidth / 2 - ownPosition.x + recoilEffect.dx * (afterglow.recoil/recoilEffect.flame) + arg
+  const a = isMiddleView ? ownPosition.x - screenOwnPos.x : canvas.offsetWidth / 2 - ownPosition.x
+  return  - a + recoilEffect.dx * (afterglow.recoil/recoilEffect.flame) + arg
 }
 const relativeY = (arg) => {
-  return canvas.offsetHeight / 2 - ownPosition.y + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
+  const a = isMiddleView ? ownPosition.y - screenOwnPos.y : canvas.offsetHeight / 2 - ownPosition.y
+  return  - a + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
 }
 const command = () => {
   let bool = false
@@ -3273,6 +3277,22 @@ const drawSaveCompleted = () => {
   afterglow.save -= intervalDiffTime
 }
 const drawMain = () => {
+  const WIDTH_RANGE = 16
+  const WIDTH_RATIO = 1.5
+  const HEIGHT_RANGE = 9
+  screenOwnPos = {
+    x: cursor.offsetX < canvas.offsetWidth * ((WIDTH_RANGE - HEIGHT_RANGE) / 2 + WIDTH_RATIO) / WIDTH_RANGE ?
+      canvas.offsetWidth * (WIDTH_RANGE - (WIDTH_RANGE - HEIGHT_RANGE) / 2 - WIDTH_RATIO) / WIDTH_RANGE :
+      canvas.offsetWidth * (
+        WIDTH_RANGE - (WIDTH_RANGE - HEIGHT_RANGE) / 2 - WIDTH_RATIO) / WIDTH_RANGE < cursor.offsetX ?
+      canvas.offsetWidth * ((WIDTH_RANGE - HEIGHT_RANGE) / 2 + WIDTH_RATIO) / WIDTH_RANGE :
+      canvas.offsetWidth - cursor.offsetX,
+    y: cursor.offsetY < canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE ?
+      canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO) / HEIGHT_RANGE :
+      canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO) / HEIGHT_RANGE < cursor.offsetY ?
+      canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE :
+      canvas.offsetHeight - cursor.offsetY
+  }
   drawField()
   if (portalFlag) drawPortal()
   if (0 < objects.length) drawObjects()
@@ -3281,7 +3301,7 @@ const drawMain = () => {
   if (0 < enemies.length) drawEnemies()
   if (0 < dropItems.length) drawDropItems()
   drawMyself()
-  drawDirection()
+  // drawDirection()
   drawIndicator()
   drawSlot()
   if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim()
