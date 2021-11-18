@@ -3747,6 +3747,7 @@ imagePathList.forEach(path => {
   }
 })
 const timerId = setInterval(() => { // loading monitoring
+  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   context.save()
   context.textAlign = 'center'
   context.textBaseline = 'middle'
