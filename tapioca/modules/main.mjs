@@ -557,8 +557,8 @@ let settingsObject = {
     storage.getItem('isManipulateSlotAnytime') ? JSON.parse(storage.getItem('isManipulateSlotAnytime')) : true,
   isTutorialTooltip: storage.getItem('isTutorialTooltip') ? JSON.parse(storage.getItem('isTutorialTooltip')) : true,
   isManipulateCode: storage.getItem('isManipulateCode') ? JSON.parse(storage.getItem('isManipulateCode')) : true,
-  isMiddleView: storage.getItem('isMiddleView') ? JSON.parse(storage.getItem('isMiddleView')) : true,
-  isReverseBoundary: storage.getItem('isReverseBoundary') ? JSON.parse(storage.getItem('isReverseBoundary')) : true
+  isMiddleView: storage.getItem('isMiddleView') ? JSON.parse(storage.getItem('isMiddleView')) : false,
+  isReverseBoundary: storage.getItem('isReverseBoundary') ? JSON.parse(storage.getItem('isReverseBoundary')) : false
 }
 // let isTutorialTooltip = false
 
@@ -1646,9 +1646,6 @@ const enemyProcess = () => {
         const DELTA_THETA = .002 * intervalDiffTime
         const CROSS_PRODUCT = (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y)
         enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
-        if (index === 0) {
-          console.log(Math.abs(CROSS_PRODUCT) <= 1)
-        }
         if (Math.abs(CROSS_PRODUCT) <= 1) {
           enemy.state = 'active'
           enemy.fuel = 1500 + 500 * Math.random()
@@ -2741,7 +2738,6 @@ const setStore = () => {
     }
   )
   dropItems.push(weapon)
-  console.log('a')
 }
 const upgradeDash =() => {
   if (holdTimeLimit <= code[action.lookUp].holdtime && cost.dashDamage <= ammo) {
@@ -3697,7 +3693,6 @@ const draw = () => {
   else if (state === 'keyLayout') drawKeyLayout()
   if (isSettings) drawSettings()
   drawDebug()
-  console.log(dropItems.length)
 }
 
 const imagePathList = [
