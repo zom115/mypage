@@ -614,7 +614,8 @@ let resultBackBox = {
   absoluteY: 0,
   width: 0,
   height: 0,
-  text: 'Rerutn to base'
+  text: 'Rerutn to base',
+  hue: 210
 }
 setAbsoluteBox(resultBackBox)
 const setTitleMenuWord = () => {
@@ -3431,16 +3432,7 @@ const drawResult = () => {
   context.fillText(
     `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
   )
-  context.save()
-  if (isInner(resultBackBox, cursor)) {
-    context.fillStyle = 'hsl(30, 100%, 70%)'
-    context.fillRect(resultBackBox.absoluteX, resultBackBox.absoluteY, resultBackBox.width, resultBackBox.height)
-  }
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  context.fillStyle = 'hsl(210, 100%, 70%)'
-  context.fillText(resultBackBox.text, resultBackBox.offsetX, resultBackBox.offsetY)
-  context.restore()
+  drawBox(resultBackBox)
   context.fillStyle = 'hsla(30, 100%, 50%, .5)'
   context.fillRect(
     canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
