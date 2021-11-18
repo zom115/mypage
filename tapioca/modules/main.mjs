@@ -2628,7 +2628,7 @@ const setStore = () => {
       if (costAll <= point && button(fillAmmoAllBox)) {
         point -= costAll
         inventory.forEach(v => {
-          if (v.category !== '') v.magazines.fill(inventory[selectSlot].magazineSize)
+          if (v.category !== '') v.magazines.fill(v.magazineSize)
         })
       }
       if (inventory[selectSlot].category !== '') {
