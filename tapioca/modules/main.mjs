@@ -2731,6 +2731,17 @@ const setStore = () => {
   objects.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
   objects.push(new ShopSpot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
   objects.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
+  const weapon = initWeapon()
+  Object.assign(
+    weapon, {
+      type: 'weapon',
+      x: offset.offsetX - size * 3,
+      y: offset.offsetY + size * 6,
+      unavailableTime: 30
+    }
+  )
+  dropItems.push(weapon)
+  console.log('a')
 }
 const upgradeDash =() => {
   if (holdTimeLimit <= code[action.lookUp].holdtime && cost.dashDamage <= ammo) {
@@ -2877,10 +2888,36 @@ const command = () => {
     return bool
   }
 }; const manyAmmo = command()
+const initWeapon = () => {
+  return new Weapon(
+    'T1911',
+    'HG',
+    [weaponModeList[1]],
+    weaponModeList[1],
+    weaponRarityList[0],
+    maxDamageInitial,
+    1,
+    cartridgeInfo.speed,
+    cartridgeInfo.life,
+    1,
+    magSizeInitial,
+    Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
+    loading.weight,
+    .2,
+    0,
+    10,
+    .2,
+    1,
+
+    4000,
+    0
+  )
+}
 const reset = () => {
   state = 'title'
   location = locationList[0]
   objects = []
+  dropItems = []
   setStore()
   // if (mapMode) setMap()
 
@@ -2911,7 +2948,6 @@ const reset = () => {
   explosive3Flag = false
   currentDirection = 4
   ownStep = 0
-  dropItems = []
   bullets = []
   enemies = []
   cost = {
@@ -2951,29 +2987,7 @@ const reset = () => {
     for (let i = 0; i < mainSlotSize + inventorySize; i++) {
       inventory.push({category: ''})
     }
-    inventory[selectSlot] = new Weapon(
-      'T1911',
-      'HG',
-      [weaponModeList[1]],
-      weaponModeList[1],
-      weaponRarityList[0],
-      maxDamageInitial,
-      1,
-      cartridgeInfo.speed,
-      cartridgeInfo.life,
-      1,
-      magSizeInitial,
-      Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
-      loading.weight,
-      .2,
-      0,
-      10,
-      .2,
-      1,
-
-      4000,
-      0
-    )
+    inventory[selectSlot] = initWeapon()
   }
   ammo = 24
   loading = {
@@ -3106,7 +3120,6 @@ const combatProcess = () => {
     bullet.update()
     if (bullet.life < 0) bullets.splice(i, 1)
   })
-  if (0 < dropItems.length) dropItemProcess()
   if (cloneFlag) cloneProcess()
   if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
   else if (reviveFlag) {
@@ -3120,6 +3133,7 @@ const mainProcess = () => {
   interfaceProcess()
   if (direction !== 0) direction = 0
   if (angle !== 0) angle = 0
+  if (0 < dropItems.length) dropItemProcess()
   inventoryProcess()
 
   if (location === locationList[0]) {
@@ -3683,6 +3697,7 @@ const draw = () => {
   else if (state === 'keyLayout') drawKeyLayout()
   if (isSettings) drawSettings()
   drawDebug()
+  console.log(dropItems.length)
 }
 
 const imagePathList = [
