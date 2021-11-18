@@ -1615,8 +1615,17 @@ const enemyProcess = () => {
         )
       }
     } else if (dungeon === dungeonList[1]) {
-      enemy.x += .01
-      enemy.y += .01
+      const r = .15 * intervalDiffTime
+      const x = enemy.x + r * Math.cos(enemy.theta)
+      const y = enemy.y + r * Math.sin(enemy.theta)
+      const DELTA_THETA = .001 * intervalDiffTime
+      enemy.theta +=
+        (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y) < 0 ?  // Cross product
+        -DELTA_THETA : DELTA_THETA
+      console.log((x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y), enemy.theta)
+
+      enemy.x += r * Math.cos(enemy.theta)
+      enemy.y += r * Math.sin(enemy.theta)
     }
     enemy.step = (enemy.stepLimit <= enemy.step) ? enemy.step = 0 : (enemy.step+1)|0
     // collisionDetect
@@ -2234,8 +2243,6 @@ const setWave = () => {
     wave.enemyHitPoint * 1.1
 }
 const setEnemy = () => {
-  const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
-  const a = ~~(Math.random() * 360 + 1)
   const setEnemySpeed = () => {
     return (wave.number === 16) ? .95 + Math.random() * .05 : // pre
     (wave.number === 15) ? .9 + Math.random() * .1 :
@@ -2255,11 +2262,17 @@ const setEnemy = () => {
     (wave.number === 1) ? .6 + Math.random() * .05 : 1
   }
   const type = dungeonList[0] ? dungeonList[0] : dungeonList[1]
+  const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
+  const a = 2 * Math.PI * Math.random()
+  const x = ownPosition.x + r * Math.cos(a)
+  const y = ownPosition.y + r * Math.sin(a)
+  const theta = a - Math.PI
   enemies.push({
     type: type,
     life: wave.enemyHitPoint+.5|0,
-    x: ownPosition.x + r * Math.cos(a * (Math.PI / 180)),
-    y: ownPosition.y + r * Math.sin(a * (Math.PI / 180)),
+    x: x,
+    y: y,
+    theta: theta,
     speed: setEnemySpeed(),
     step: 0,
     stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
@@ -2511,7 +2524,6 @@ const setStore = () => {
         setWave()
       }
       if (button(DUNGEON_SELECT_BOX)) {
-        console.log(dungeonList.indexOf(dungeon))
         const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
         dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
       }
