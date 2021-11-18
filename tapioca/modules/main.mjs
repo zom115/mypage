@@ -133,7 +133,7 @@ let angleMode = setStorageFirst('angle', 'IJKL')
 let state = ''
 let locationList = ['bazaar', 'dungeon']
 let location = locationList[0]
-let dungeonList = ['zombie', 'test']
+let dungeonList = ['Zombie', 'Homing', 'Ruins Star']
 let dungeon = dungeonList[0]
 
 let point = 0
@@ -1615,17 +1615,44 @@ const enemyProcess = () => {
         )
       }
     } else if (dungeon === dungeonList[1]) {
-      const r = .15 * intervalDiffTime
+      const r = .17 * intervalDiffTime
       const x = enemy.x + r * Math.cos(enemy.theta)
       const y = enemy.y + r * Math.sin(enemy.theta)
       const DELTA_THETA = .001 * intervalDiffTime
       enemy.theta +=
         (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y) < 0 ?  // Cross product
         -DELTA_THETA : DELTA_THETA
-      console.log((x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y), enemy.theta)
-
       enemy.x += r * Math.cos(enemy.theta)
       enemy.y += r * Math.sin(enemy.theta)
+    } else if (dungeon === dungeonList[2]) {
+      if (enemy.state === 'active') {
+        const r = .275 * intervalDiffTime
+
+        const x = enemy.x + r * Math.cos(enemy.theta)
+        const y = enemy.y + r * Math.sin(enemy.theta)
+        const DELTA_THETA = .0004 * intervalDiffTime
+        const CROSS_PRODUCT = (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y)
+        enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
+
+        enemy.x += r * Math.cos(enemy.theta)
+        enemy.y += r * Math.sin(enemy.theta)
+        enemy.fuel -= intervalDiffTime
+        if (enemy.fuel < 0) enemy.state = 'wait'
+      } else if (enemy.state === 'wait') {
+        const r = .35 * intervalDiffTime
+        const x = enemy.x + r * Math.cos(enemy.theta)
+        const y = enemy.y + r * Math.sin(enemy.theta)
+        const DELTA_THETA = .002 * intervalDiffTime
+        const CROSS_PRODUCT = (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y)
+        enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
+        if (index === 0) {
+          console.log(Math.abs(CROSS_PRODUCT) <= 1)
+        }
+        if (Math.abs(CROSS_PRODUCT) <= 1) {
+          enemy.state = 'active'
+          enemy.fuel = 1500 + 500 * Math.random()
+        }
+      }
     }
     enemy.step = (enemy.stepLimit <= enemy.step) ? enemy.step = 0 : (enemy.step+1)|0
     // collisionDetect
@@ -2274,6 +2301,8 @@ const setEnemy = () => {
     y: y,
     theta: theta,
     speed: setEnemySpeed(),
+    state: 'active',
+    fuel: 1000,
     step: 0,
     stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
     imageID: ~~(Math.random() * enemyImageAmount)
