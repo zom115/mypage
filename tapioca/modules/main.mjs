@@ -133,6 +133,8 @@ let angleMode = setStorageFirst('angle', 'IJKL')
 let state = ''
 let locationList = ['bazaar', 'dungeon']
 let location = locationList[0]
+let dungeonList = ['zombie', 'test']
+let dungeon = dungeonList[0]
 
 let point = 0
 let portalFlag = false
@@ -623,7 +625,7 @@ const setTitleMenuWord = () => {
     absoluteY: 0,
     width: 0,
     height: 0,
-    text: `START`,
+    text: `Start`,
     hue: 10
   }
     // {text: `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`, hue: 210},
@@ -1580,42 +1582,41 @@ const enemyProcess = () => {
           dropItems.push(enemies.splice(index, 1)[0])
         } else {
           enemies.splice(index, 1)
-          // const waveWeight = (wave.number <= 4) ? 2 : 1
-          // enemies[index] = {
-          //   type: 'cartridge',
-          //   life: 630,
-          //   dissapearTime: 660,
-          //   amount: waveWeight * wave.number
-          // }
         }
       } return
     }
     const width = ownPosition.x - enemy.x
     const height = ownPosition.y - enemy.y
     const length = Math.sqrt(width ** 2 + height ** 2)
-    if (0 < moreAwayCount) {
-      differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed)
-    } else {
-      differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed)
-    }
-    if (
-      Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2)*.7 < length &&
-      !reviveFlag
-    ) { // repop
-      const r = Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
-      const a = ~~(Math.random() * 360 + 1)
-      enemy.x = ownPosition.x + r * Math.cos(a * (Math.PI / 180))
-      enemy.y = ownPosition.y + r * Math.sin(a * (Math.PI / 180))
-    }
-    if (
-      enemies.some((e, i) => index !== i && 0 < e.life &&
-      Math.sqrt((e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2) < size)
-    ) {
-      differenceAddition(
-        enemy,
-        -width / length * enemy.speed + (size / 2 * (.5 - Math.random())),
-        -height / length * enemy.speed + (size / 2 * (.5 - Math.random()))
-      )
+
+    if (dungeon === dungeonList[0]) {
+      if (0 < moreAwayCount) { // clone process
+        differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed)
+      } else { // close to myself
+        differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed)
+      }
+      // if (
+      //   Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2)*.7 < length &&
+      //   !reviveFlag
+      // ) { // repop
+      //   const r = Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
+      //   const a = ~~(Math.random() * 360 + 1)
+      //   enemy.x = ownPosition.x + r * Math.cos(a * (Math.PI / 180))
+      //   enemy.y = ownPosition.y + r * Math.sin(a * (Math.PI / 180))
+      // }
+      if (
+        enemies.some((e, i) => index !== i && 0 < e.life &&
+        Math.sqrt((e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2) < size)
+      ) {
+        differenceAddition(
+          enemy,
+          -width / length * enemy.speed + (size / 2 * (.5 - Math.random())),
+          -height / length * enemy.speed + (size / 2 * (.5 - Math.random()))
+        )
+      }
+    } else if (dungeon === dungeonList[1]) {
+      enemy.x += .01
+      enemy.y += .01
     }
     enemy.step = (enemy.stepLimit <= enemy.step) ? enemy.step = 0 : (enemy.step+1)|0
     // collisionDetect
@@ -2253,7 +2254,9 @@ const setEnemy = () => {
     (wave.number === 2) ? .6 + Math.random() * .1 :
     (wave.number === 1) ? .6 + Math.random() * .05 : 1
   }
+  const type = dungeonList[0] ? dungeonList[0] : dungeonList[1]
   enemies.push({
+    type: type,
     life: wave.enemyHitPoint+.5|0,
     x: ownPosition.x + r * Math.cos(a * (Math.PI / 180)),
     y: ownPosition.y + r * Math.sin(a * (Math.PI / 180)),
@@ -2471,38 +2474,59 @@ const setStore = () => {
       this.Id = Id
       this.img = img
     }
-    process() {}
-    draw() {}
   }
-  const box = {
+  const START_BOX = {
     offsetX: canvas.offsetWidth / 2,
     offsetY: canvas.offsetHeight / 5,
     absoluteX: 0,
     absoluteY: 0,
     width: 0,
     height: 0,
-    text: 'START',
+    text: 'Start',
     hue: 30
   }
-  setAbsoluteBox(box)
+  setAbsoluteBox(START_BOX)
+  const DUNGEON_SELECT_BOX = {
+    offsetX: canvas.offsetWidth * 3 / 4,
+    offsetY: canvas.offsetHeight / 5,
+    absoluteX: 0,
+    absoluteY: 0,
+    width: 0,
+    height: 0,
+    text: 'Select',
+    hue: 300
+  }
+  setAbsoluteBox(DUNGEON_SELECT_BOX)
   class StartSpot extends Spot {
     process() {
-      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y} // TODO: integrate x and absoluteX
-      if (isInner(this, offset)) {
-        if (button(box)) {
-          location = locationList[1]
-          objects = []
-          portalFlag = false
-          storage.setItem('portalFlag', portalFlag)
-          afterglow.save = 1000
-          wave.number = 0
-          setWave()
-        }
+      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+      if (!isInner(this, offset)) return
+      if (button(START_BOX)) {
+        location = locationList[1]
+        objects = []
+        portalFlag = false
+        storage.setItem('portalFlag', portalFlag)
+        afterglow.save = 1000
+        wave.number = 0
+        setWave()
+      }
+      if (button(DUNGEON_SELECT_BOX)) {
+        console.log(dungeonList.indexOf(dungeon))
+        const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
+        dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
       }
     }
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) drawBox(box)
+      if (isInner(this, offset)) {
+        drawBox(START_BOX)
+        drawBox(DUNGEON_SELECT_BOX)
+        context.save()
+        context.textAlign = 'center'
+        context.fillStyle = 'hsl(210, 100%, 70%)'
+        context.fillText(dungeon, DUNGEON_SELECT_BOX.offsetX, DUNGEON_SELECT_BOX.offsetY + size * 2)
+        context.restore()
+      }
     }
   }
   const fillAmmoBox = {
@@ -2556,7 +2580,8 @@ const setStore = () => {
   }
   class ShopSpot extends Spot {
     process() {
-      // const costAll = inventory.reduce(v => {calcCost(v)})
+      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+      if (!isInner(this, offset)) return
 
       const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
       if (costAll <= point && button(fillAmmoAllBox)) {
@@ -2641,7 +2666,7 @@ const setStore = () => {
     absoluteY: 0,
     width: 0,
     height: 0,
-    text: 'SAVE',
+    text: 'Save',
     hue: 210
   }
   setAbsoluteBox(saveBox)
