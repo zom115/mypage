@@ -3281,6 +3281,36 @@ const drawTitleScreen = () => {
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
 
 }
+const drawScreenEdge = (obj, hue) => {
+  context.save()
+  context.fillStyle = `hsl(${hue}, 100%, 90%)`
+  if (
+    obj.x < ownPosition.x - canvas.offsetWidth/2 + radius &&
+   obj.y < ownPosition.y - canvas.offsetHeight/2 + radius // left & top
+  ) context.fillRect(0, 0, size, size)
+  else if (
+    obj.x < ownPosition.x - canvas.offsetWidth/2 + radius &&
+    ownPosition.y + canvas.offsetHeight/2 - size + radius < obj.y // left & bottom
+  ) context.fillRect(0, canvas.offsetHeight - size, size, size)
+  else if (
+    ownPosition.x + canvas.offsetWidth/2 - size + radius < obj.x &&
+    obj.y < ownPosition.y - canvas.offsetHeight/2 + radius // right & top
+  ) context.fillRect(canvas.offsetWidth - size, 0, size, size)
+  else if (
+    ownPosition.x + canvas.offsetWidth/2 - size + radius < obj.x &&
+    ownPosition.y + canvas.offsetHeight/2 - size + radius < obj.y // right & bottom
+  ) context.fillRect(canvas.offsetWidth - size, canvas.offsetHeight - size, size, size)
+  else if (obj.x < ownPosition.x - canvas.offsetWidth/2 + radius) { // out of left
+    context.fillRect(0, relativeY(obj.y - radius), size, size)
+  } else if (ownPosition.x + canvas.offsetWidth/2 + radius < obj.x) { // out of right
+    context.fillRect(canvas.offsetWidth-size, relativeY(obj.y - radius), size, size)
+  } else if (obj.y < ownPosition.y - canvas.offsetHeight/2 + radius) { // out of top
+    context.fillRect(relativeX(obj.x - radius), 0, size, size)
+  } else if (ownPosition.y + canvas.offsetHeight/2 + radius < obj.y) { // out of bottom
+    context.fillRect(relativeX(obj.x - radius), canvas.offsetHeight - size, size, size)
+  }
+  context.restore()
+}
 const drawPortal = () => {
   const particle = class {
     constructor(x, y, w, h, dx, dy, life, lightness) {
@@ -3329,6 +3359,7 @@ const drawPortal = () => {
     v.y += v.dy
   })
 
+  drawScreenEdge(portalCooldinate, 180)
   if (
     portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
     portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
