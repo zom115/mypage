@@ -2233,6 +2233,7 @@ const inventoryProcess = () => {
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
 }
 const setWave = () => {
+  if (wave.number === 0) dropItems = []
   wave.roundInterval = 0
   afterglow.round = intervalDiffTime
 
