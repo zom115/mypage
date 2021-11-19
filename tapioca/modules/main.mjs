@@ -2284,6 +2284,13 @@ const setEnemy = () => {
   })
   if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
 }
+const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave = true) => {
+  if (isInventory) storage.setItem('inventoryArray', JSON.stringify(inventory))
+  if (isPoint) storage.setItem('point', JSON.stringify(point))
+  if (isPortal) storage.setItem('portalFlag', JSON.stringify(portalFlag))
+  if (isWave) storage.setItem('waveNumber', JSON.stringify(wave.number))
+  afterglow.save = 1000
+}
 const portalProcess = () => {
   if (!portalFlag) {
     portalFlag = true
@@ -2298,16 +2305,16 @@ const portalProcess = () => {
       portalCooldinate.y += size * 3
       location = locationList[0]
       objects = []
+      saveProcess()
       setStore()
     }
     if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) { // Continue
       portalFlag = false
-      storage.setItem('portalFlag', portalFlag)
-      afterglow.save = 1000
       portalCooldinate.x = 0
       portalCooldinate.y = 0
       location = locationList[1]
       objects = []
+      saveProcess()
       setWave()
     }
   }
@@ -2522,8 +2529,7 @@ const setStore = () => {
         location = locationList[1]
         objects = []
         portalFlag = false
-        storage.setItem('portalFlag', portalFlag)
-        afterglow.save = 1000
+        saveProcess()
         wave.number = 0
         setWave()
       }
@@ -2617,8 +2623,7 @@ const setStore = () => {
           inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
           point -= inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex
           inventory[selectSlot].limitBreakIndex += 1
-          storage.setItem('inventoryArray', JSON.stringify(inventory))
-          afterglow.save = 1000
+          saveProcess(true, true, false, false)
           afterglow.limitBreakSuccess += 2000
         }
       }
@@ -2690,11 +2695,7 @@ const setStore = () => {
     process() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
       if (isInner(this, offset) && button(saveBox, cursor)) {
-        storage.setItem('inventoryArray', JSON.stringify(inventory))
-        storage.setItem('point', JSON.stringify(point))
-        storage.setItem('portalFlag', JSON.stringify(portalFlag))
-        storage.setItem('waveNumber', JSON.stringify(wave.number))
-        afterglow.save = 1000
+        saveProcess()
       }
     }
     draw() {
@@ -3097,10 +3098,9 @@ let resultFlag = false
 const resultProcess = () => {
   manyAmmo()
   if (!resultFlag) {
-    storage.setItem('inventoryArray', JSON.stringify(inventory))
     point = (point / 100)|0
     point *= 10
-    storage.setItem('point', JSON.stringify(point))
+    saveProcess(true, true, false, false)
     afterglow.save = 1000
     resultFlag = true
   }
