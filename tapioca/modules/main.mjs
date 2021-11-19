@@ -3285,28 +3285,28 @@ const drawScreenEdge = (obj, hue) => {
   context.save()
   context.fillStyle = `hsl(${hue}, 100%, 90%)`
   if (
-    obj.x < ownPosition.x - canvas.offsetWidth/2 + radius &&
-   obj.y < ownPosition.y - canvas.offsetHeight/2 + radius // left & top
+    obj.x < ownPosition.x - screenOwnPos.x + radius &&
+   obj.y < ownPosition.y - screenOwnPos.y + radius // left & top
   ) context.fillRect(0, 0, size, size)
   else if (
-    obj.x < ownPosition.x - canvas.offsetWidth/2 + radius &&
-    ownPosition.y + canvas.offsetHeight/2 - size + radius < obj.y // left & bottom
+    obj.x < ownPosition.x - screenOwnPos.x + radius &&
+    ownPosition.y + canvas.offsetHeight - screenOwnPos.y - size + radius < obj.y // left & bottom
   ) context.fillRect(0, canvas.offsetHeight - size, size, size)
   else if (
-    ownPosition.x + canvas.offsetWidth/2 - size + radius < obj.x &&
-    obj.y < ownPosition.y - canvas.offsetHeight/2 + radius // right & top
+    ownPosition.x + canvas.offsetWidth - screenOwnPos.x - size + radius < obj.x &&
+    obj.y < ownPosition.y - screenOwnPos.y + radius // right & top
   ) context.fillRect(canvas.offsetWidth - size, 0, size, size)
   else if (
-    ownPosition.x + canvas.offsetWidth/2 - size + radius < obj.x &&
-    ownPosition.y + canvas.offsetHeight/2 - size + radius < obj.y // right & bottom
+    ownPosition.x + canvas.offsetWidth - screenOwnPos.x - size + radius < obj.x &&
+    ownPosition.y + canvas.offsetHeight - screenOwnPos.y - size + radius < obj.y // right & bottom
   ) context.fillRect(canvas.offsetWidth - size, canvas.offsetHeight - size, size, size)
-  else if (obj.x < ownPosition.x - canvas.offsetWidth/2 + radius) { // out of left
+  else if (obj.x < ownPosition.x - screenOwnPos.x + radius) { // out of left
     context.fillRect(0, relativeY(obj.y - radius), size, size)
-  } else if (ownPosition.x + canvas.offsetWidth/2 + radius < obj.x) { // out of right
+  } else if (ownPosition.x + canvas.offsetWidth - screenOwnPos.x + radius < obj.x) { // out of right
     context.fillRect(canvas.offsetWidth-size, relativeY(obj.y - radius), size, size)
-  } else if (obj.y < ownPosition.y - canvas.offsetHeight/2 + radius) { // out of top
+  } else if (obj.y < ownPosition.y - screenOwnPos.y + radius) { // out of top
     context.fillRect(relativeX(obj.x - radius), 0, size, size)
-  } else if (ownPosition.y + canvas.offsetHeight/2 + radius < obj.y) { // out of bottom
+  } else if (ownPosition.y + canvas.offsetHeight - screenOwnPos.y + radius < obj.y) { // out of bottom
     context.fillRect(relativeX(obj.x - radius), canvas.offsetHeight - size, size, size)
   }
   context.restore()
