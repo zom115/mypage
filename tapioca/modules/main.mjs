@@ -1707,31 +1707,7 @@ const drawEnemies = () => {
     context.fillStyle = (enemy.imageID === 0) ? 'hsla(0, 100%, 50%, .5)' :
     (enemy.imageID === 1) ? 'hsla(300, 100%, 50%, .5)' :
     (enemy.imageID === 2) ? 'hsla(60, 100%, 60%, .5)' : 'hsla(0, 0%, 100%, .5)'
-    if (
-      enemy.x < ownPosition.x - canvas.offsetWidth/2 + radius &&
-     enemy.y < ownPosition.y - canvas.offsetHeight/2 + radius // left & top
-    ) context.fillRect(0, 0, size, size)
-    else if (
-      enemy.x < ownPosition.x - canvas.offsetWidth/2 + radius &&
-      ownPosition.y + canvas.offsetHeight/2 - size + radius < enemy.y // left & bottom
-    ) context.fillRect(0, canvas.offsetHeight - size, size, size)
-    else if (
-      ownPosition.x + canvas.offsetWidth/2 - size + radius < enemy.x &&
-      enemy.y < ownPosition.y - canvas.offsetHeight/2 + radius // right & top
-    ) context.fillRect(canvas.offsetWidth - size, 0, size, size)
-    else if (
-      ownPosition.x + canvas.offsetWidth/2 - size + radius < enemy.x &&
-      ownPosition.y + canvas.offsetHeight/2 - size + radius < enemy.y // right & bottom
-    ) context.fillRect(canvas.offsetWidth - size, canvas.offsetHeight - size, size, size)
-    else if (enemy.x < ownPosition.x - canvas.offsetWidth/2 + radius) { // out of left
-      context.fillRect(0, relativeY(enemy.y - radius), size, size)
-    } else if (ownPosition.x + canvas.offsetWidth/2 + radius < enemy.x) { // out of right
-      context.fillRect(canvas.offsetWidth-size, relativeY(enemy.y - radius), size, size)
-    } else if (enemy.y < ownPosition.y - canvas.offsetHeight/2 + radius) { // out of top
-      context.fillRect(relativeX(enemy.x - radius), 0, size, size)
-    } else if (ownPosition.y + canvas.offsetHeight/2 + radius < enemy.y) { // out of bottom
-      context.fillRect(relativeX(enemy.x - radius), canvas.offsetHeight - size, size, size)
-    } else {
+    {
       const imgPath = (enemy.imageID === 0) ?
       {F: 'images/JK32F.png', L: 'images/JK32L.png', R: 'images/JK32R.png'} :
       (enemy.imageID === 1) ?
@@ -2821,33 +2797,9 @@ const storeProcess = () => {
 }
 const drawStore = () => {
   context.font = `${size}px sans-serif`
-  objects.forEach(object => { // only rectangle
-    context.fillStyle = 'hsla(30, 100%, 70%)'
-    if (
-      object.x < ownPosition.x - canvas.offsetWidth/2 - object.w &&
-      object.y < ownPosition.y - canvas.offsetHeight/2
-    ) context.fillRect(0, 0, size, size) // left & top
-    else if (object.x < ownPosition.x - canvas.offsetWidth/2 - object.w &&
-      ownPosition.y + canvas.offsetHeight/2 - object.h < object.y)
-    { // left & bottom
-      context.fillRect(0, canvas.offsetHeight, size, size)
-    } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
-      object.y < ownPosition.y - canvas.offsetHeight/2) { // right & top
-      context.fillRect(canvas.offsetWidth - size, 0, size, size)
-    } else if (ownPosition.x + canvas.offsetWidth/2 < object.x &&
-      ownPosition.y + canvas.offsetHeight/2 < object.y) { // right & bottom
-      context.fillRect(canvas.offsetWidth - size, canvas.offsetHeight - size, size, size)
-    } else if (object.x < ownPosition.x - canvas.offsetWidth/2 - object.w) { // out of left
-      context.fillRect(0, relativeY(object.y + object.h/2 - size), size, size)
-    } else if (ownPosition.x + canvas.offsetWidth/2 < object.x) { // out of right
-      context.fillRect(canvas.offsetWidth - size, relativeY(object.y + object.h/2 - size), size, size)
-    } else if (object.y < ownPosition.y - canvas.offsetHeight/2 - object.h) { // out of top
-      context.fillRect(relativeX(object.x + object.w/2), 0, size, size)
-    } else if (ownPosition.y + canvas.offsetHeight/2 < object.y) { // out of bottom
-      context.fillRect(relativeX(object.x + object.w/2), canvas.offsetHeight- size, size, size)
-    } else {
-      context.drawImage(loadedMap[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
-    }
+  objects.forEach(object => {
+    drawScreenEdge(object, 30)
+    context.drawImage(loadedMap[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
     object.draw()
   })
 }
