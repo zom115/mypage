@@ -1755,67 +1755,73 @@ const dropItemProcess = () => {
     }
   })
 }
+
+const drawScreenEdgeArc = (item) => {
+  const testSize = size / 3
+  context.save()
+  context.fillStyle =
+    item.rarity === weaponRarityList[0] ? weaponRatiryColorList[0] :
+    item.rarity === weaponRarityList[1] ? weaponRatiryColorList[1] :
+    item.rarity === weaponRarityList[2] ? weaponRatiryColorList[2] :
+    item.rarity === weaponRarityList[3] ? weaponRatiryColorList[3] : weaponRatiryColorList[4]
+  context.beginPath()
+  if ( // left & top
+    item.x < ownPosition.x - screenOwnPos.x + testSize / 2 &&
+    item.y < ownPosition.y - screenOwnPos.y + testSize / 2
+  ) context.arc(
+    testSize / 2, testSize / 2, testSize / 2, 0 / 2, Math.PI * 2, false
+  )
+  else if ( // left & bottom
+    item.x < ownPosition.x - screenOwnPos.x + testSize / 2 &&
+    ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
+  ) context.arc(
+    testSize / 2, canvas.offsetHeight - testSize / 2,
+    testSize / 2, 0, Math.PI * 2, false
+  )
+  else if ( // right & top
+    ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
+    item.y < ownPosition.y - screenOwnPos.y + testSize / 2
+  ) context.arc(
+    canvas.offsetWidth - testSize / 2, testSize / 2,
+    testSize / 2, 0, Math.PI * 2, false
+  )
+  else if ( // right & bottom
+    ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
+    ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
+  ) context.arc(
+    canvas.offsetWidth - testSize / 2,
+    canvas.offsetHeight - testSize / 2,
+    testSize / 2, 0, Math.PI * 2, false
+  )
+  else if (item.x < ownPosition.x - screenOwnPos.x + testSize / 2) { // out of left
+    context.arc(
+      testSize / 2, relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
+    )
+  } else if (ownPosition.x + canvas.offsetWidth - screenOwnPos.x + testSize / 2 < item.x) { // out of right
+    context.arc(
+      canvas.offsetWidth - testSize / 2, relativeY(item.y),
+      testSize / 2, 0, Math.PI * 2, false
+    )
+  } else if (item.y < ownPosition.y - screenOwnPos.y + testSize / 2) { // out of top
+    context.arc(
+      relativeX(item.x), testSize / 2,
+      testSize / 2, 0, Math.PI * 2, false
+    )
+  } else if (ownPosition.y + canvas.offsetHeight - screenOwnPos.y + testSize / 2 < item.y) { // out of bottom
+    context.arc(
+      relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
+      testSize / 2, 0, Math.PI * 2, false
+    )
+  } else {
+    context.arc(relativeX(item.x), relativeY(item.y), testSize, 0, Math.PI * 2, false)
+  }
+  context.fill()
+  context.restore()
+}
 const drawDropItems = () => {
   dropItems.forEach(item => {
-    const testSize = size / 3
     if (item.type === 'weapon') {
-      context.fillStyle =
-        item.rarity === weaponRarityList[0] ? weaponRatiryColorList[0] :
-        item.rarity === weaponRarityList[1] ? weaponRatiryColorList[1] :
-        item.rarity === weaponRarityList[2] ? weaponRatiryColorList[2] :
-        item.rarity === weaponRarityList[3] ? weaponRatiryColorList[3] : weaponRatiryColorList[4]
-      context.beginPath()
-      if ( // left & top
-        item.x < ownPosition.x - canvas.offsetWidth / 2 + testSize / 2 &&
-        item.y < ownPosition.y - canvas.offsetHeight / 2 + testSize / 2
-      ) context.arc(
-        testSize / 2, testSize / 2, testSize / 2, 0 / 2, Math.PI * 2, false
-      )
-      else if ( // left & bottom
-        item.x < ownPosition.x - canvas.offsetWidth / 2 + testSize / 2 &&
-        ownPosition.y + canvas.offsetHeight / 2 - testSize / 2 < item.y
-      ) context.arc(
-        testSize / 2, canvas.offsetHeight - testSize / 2,
-        testSize / 2, 0, Math.PI * 2, false
-      )
-      else if ( // right & top
-        ownPosition.x + canvas.offsetWidth/2 - testSize / 2 < item.x &&
-        item.y < ownPosition.y - canvas.offsetHeight/2 + testSize / 2
-      ) context.arc(
-        canvas.offsetWidth - testSize / 2, testSize / 2,
-        testSize / 2, 0, Math.PI * 2, false
-      )
-      else if ( // right & bottom
-        ownPosition.x + canvas.offsetWidth/2 - testSize / 2 < item.x &&
-        ownPosition.y + canvas.offsetHeight/2 - testSize / 2 < item.y
-      ) context.arc(
-        canvas.offsetWidth - testSize / 2,
-        canvas.offsetHeight - testSize / 2,
-        testSize / 2, 0, Math.PI * 2, false
-      )
-      else if (item.x < ownPosition.x - canvas.offsetWidth/2 + testSize / 2) { // out of left
-        context.arc(
-          testSize / 2, relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
-        )
-      } else if (ownPosition.x + canvas.offsetWidth / 2 + testSize / 2 < item.x) { // out of right
-        context.arc(
-          canvas.offsetWidth - testSize / 2, relativeY(item.y),
-          testSize / 2, 0, Math.PI * 2, false
-        )
-      } else if (item.y < ownPosition.y - canvas.offsetHeight / 2 + testSize / 2) { // out of top
-        context.arc(
-          relativeX(item.x), testSize / 2,
-          testSize / 2, 0, Math.PI * 2, false
-        )
-      } else if (ownPosition.y + canvas.offsetHeight / 2 + testSize / 2 < item.y) { // out of bottom
-        context.arc(
-          relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
-          testSize / 2, 0, Math.PI * 2, false
-        )
-      } else {
-        context.arc(relativeX(item.x), relativeY(item.y), testSize, 0, Math.PI * 2, false)
-      }
-      context.fill()
+      drawScreenEdgeArc(item)
     } else if (item.type === 'magazine') {
       context.fillStyle = 'hsl(120, 100%, 20%)'
       context.fillRect(relativeX(item.x), relativeY(item.y), size / 3, size * 2 / 3)
