@@ -257,7 +257,7 @@ const Weapon = class {
   constructor(
     name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
     magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange, recoilCoefficient,
-    gaugeNumber, limitBreak, limitBreakIndex
+    gaugeNumber, limitBreak, limitBreakIndex, level
   ) {
     this.name = name
     this.category = category
@@ -303,6 +303,8 @@ const Weapon = class {
 
     this.limitBreak = limitBreak
     this.limitBreakIndex = limitBreakIndex
+
+    this.level = level
   }
 }
 let inventory = []
@@ -1502,7 +1504,8 @@ const setWeapon = () => {
     gaugeNumber,
 
     4000,
-    0
+    0,
+    wave.number
   )
   Object.assign(weapon, {type: 'weapon'})
   return weapon
@@ -2014,7 +2017,9 @@ const drawIndicator = () => {
   drawText(size * 1.5, 'left', wave.number, c)
 }
 const drawWeaponCategory = (box, weapon) => {
+  context.save()
   context.fillStyle= weaponRatiryColorList[weaponRarityList.indexOf(weapon.rarity)]
+  context.globalAlpha = weapon.level <= wave.number ? 1 : .5
   context.textAlign = 'center'
   context.font = `${size * .75}px sans-serif`
   context.fillText(weapon.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
@@ -2029,6 +2034,7 @@ const drawWeaponCategory = (box, weapon) => {
     if (ratio === 0) ratio = 1
     context.fillRect(box.absoluteX + size / 16, box.absoluteY + size * 1.4, size * 1.4 * ratio, size / 16)
   }
+  context.restore()
 }
 const strokeText = (text, x, y, maxWidth) => {
   context.strokeText(text, x, y, maxWidth)
@@ -2774,6 +2780,7 @@ const initWeapon = () => {
     1,
 
     4000,
+    0,
     0
   )
 }
@@ -3575,8 +3582,7 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: (-4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1).toPrecision(3),
-    b: ownState.step
+    a: wave.number
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
