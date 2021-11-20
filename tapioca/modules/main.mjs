@@ -21,6 +21,7 @@ let cursor = {offsetX: 0, offsetY: 0}
 let mouseDownPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseDownFirst = false
 let isLeftMouseDown = false
+let isRightMouseDownFirst = false
 let mouseUpPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseUpFirst = false
 canvas.addEventListener('mouseover', () => {
@@ -39,6 +40,9 @@ canvas.addEventListener('mousedown', e => {
   if (e.button === 0) {
     isLeftMouseDownFirst = true
     isLeftMouseDown = true
+  }
+  if (e.button === 2) {
+    isRightMouseDownFirst = true
   }
 }, false)
 canvas.addEventListener('mouseup', e => {
@@ -216,12 +220,11 @@ let ownSpeed = {
   constDx: (size / 32) * .05
 }
 let dash = {
-  attackFlag: false,
-  breakthrough: 10,
   coolTime: 0,
+  coolTimeLimit: 1000,
   damage: 150,
-  decrease: 10,
-  limit: 150
+  invincibleTime: 200,
+  isAttack: false
 }
 let cloneDashType1Flag = false
 let cloneDashType2Flag = false
@@ -1077,90 +1080,33 @@ const magazineForword = () => {
   inventory[selectSlot].magazines.push(inventory[selectSlot].magazines[1])
   inventory[selectSlot].magazines.splice(1, 1)
 }
-const dashCoolTimer = arg => {
-  if (dash.coolTime === 1) {
-    dash.attackFlag = false
-    afterglow.dashGauge = flashTimeLimit
-  }
-  if (typeof arg === 'number') dash.coolTime = arg
-  else if (0 < dash.coolTime) dash.coolTime = (dash.coolTime-1)|0
-  return dash.coolTime
+const setTheta = d => {
+  /*
+    6 4 12
+    2 0 8
+    3 1 9
+  */
+  if (d === 1) ownState.theta = -Math.PI / 2
+  else if (d === 3) ownState.theta = -Math.PI / 4
+  else if (d === 2) ownState.theta = 0
+  else if (d === 6) ownState.theta = Math.PI / 4
+  else if (d === 4) ownState.theta = Math.PI / 2
+  else if (d === 12) ownState.theta = Math.PI * .75
+  else if (d === 8) ownState.theta = Math.PI
+  else if (d === 9) ownState.theta = -Math.PI * .75
 }
 const dashProcess = () => {
-  if (cloneDashType1Flag && !code[action.slow].flag) cloneSpeed = dash.breakthrough
-  else if (cloneDashType2Flag) { ownSpeed.current = dash.breakthrough
-  } else if (cloneDashType3Flag && !code[action.slow].flag) {
-    clonePosition = []
-    cloneSpeed = dash.breakthrough
-  } else ownSpeed.current = dash.breakthrough
-  dashCoolTimer(dash.limit)
-}
-const speedAdjust = () => {
-  if (((
-    code[action.up].flag && code[action.lookDown].flag) ||
-    (code[action.right].flag && code[action.lookLeft].flag) ||
-    (code[action.down].flag && code[action.lookUp].flag) ||
-    (code[action.left].flag && code[action.lookRight].flag)) &&
-    ownSpeed.min < ownSpeed.current
-  ) {
-    ownSpeed.current = ownSpeed.current - ownSpeed.dx
-  } else if (ownSpeed.current < ownSpeed.max) {
-    ownSpeed.current = ownSpeed.current + ownSpeed.constDx
-  }
-  if (ownSpeed.max < ownSpeed.current) {
-    ownSpeed.current = ownSpeed.current - ownSpeed.dx * dash.decrease
-  }
-  if (cloneDashType1Flag) {
-    if (ownSpeed.max < cloneSpeed) cloneSpeed = cloneSpeed - ownSpeed.dx * dash.decrease
-    else if (ownSpeed.max < ownSpeed.current) {} else cloneSpeed = ownSpeed.current
-  } else if (cloneDashType2Flag) {
-    if (ownSpeed.max < cloneSpeed) cloneSpeed = cloneSpeed - ownSpeed.dx * dash.decrease
-    else cloneSpeed = ownSpeed.current
-  } else if (cloneDashType3Flag) {
-    if (ownSpeed.max < cloneSpeed) cloneSpeed = cloneSpeed - ownSpeed.dx * dash.decrease
-    else if (ownSpeed.max < ownSpeed.current) {} else cloneSpeed = ownSpeed.current
-  } else cloneSpeed = ownSpeed.current
-}
-const setDirection = arg => {
-  let dx = 0, dy = 0
-  /*
-    6 4 12
-    2 0 8
-    3 1 9
-  */
-  if (arg === 1) dy = -1
-  else if (arg === 3) {
-    dx = 1 / Math.SQRT2
-    dy = -1 / Math.SQRT2
-  } else if (arg === 2) dx = 1
-  else if (arg === 6) {
-    dx = 1 / Math.SQRT2
-    dy = 1 / Math.SQRT2
-  } else if (arg === 4) dy = 1
-  else if (arg === 12) {
-    dx = -1 / Math.SQRT2
-    dy = 1 / Math.SQRT2
-  } else if (arg === 8) dx = -1
-  else if (arg === 9) {
-    dx = -1 / Math.SQRT2
-    dy = -1 / Math.SQRT2
-  }
-  return {dx, dy}
+  const d = direction === 0 ? currentDirection : direction
+  setTheta(d)
+  ownState.radius = 1
+  const multiple = 0.3
+  ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
+  ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+  dash.isAttack = false
+  dash.coolTime = dash.coolTimeLimit
 }
 const moving = () => {
-  /*
-    6 4 12
-    2 0 8
-    3 1 9
-  */
-  if (direction === 1) ownState.theta = -Math.PI / 2
-  else if (direction === 3) ownState.theta = -Math.PI / 4
-  else if (direction === 2) ownState.theta = 0
-  else if (direction === 6) ownState.theta = Math.PI / 4
-  else if (direction === 4) ownState.theta = Math.PI / 2
-  else if (direction === 12) ownState.theta = Math.PI * .75
-  else if (direction === 8) ownState.theta = Math.PI
-  else if (direction === 9) ownState.theta = -Math.PI * .75
+  setTheta(direction)
   if (direction === 0) ownState.radius = 0
   else ownState.radius = 1
   const multiple = 0.0008
@@ -1262,7 +1208,6 @@ const interfaceProcess = () => {
     selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
   }
   if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
-  speedAdjust()
   if (code[action.lookUp].flag) angle = (angle+1)|0
   if (code[action.lookRight].flag) angle = (angle+2)|0
   if (code[action.lookDown].flag) angle = (angle+4)|0
@@ -1275,8 +1220,7 @@ const interfaceProcess = () => {
   else if (direction !== 0) currentDirection = direction
   if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess()
   if (inventory[selectSlot].category !== '') modeSelect()
-  if (dashCoolTimer() === 0 && code[action.dash].isFirst()) dashProcess()
-  // if (0 < direction || ownSpeed.max < ownSpeed.current || ownSpeed.max < cloneSpeed)
+  if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess()
   moving()
   if (code[action.debug].isFirst()) debugMode = !debugMode
   if (manyAmmo() && code[action.back].isFirst()) bomb()
@@ -1350,41 +1294,36 @@ const drawMyself = () => {
     pos.x + radius * .05, pos.y + radius * .6, size / 4, 0, Math.PI * 2, false
   )
   context.fill()
-  if (0 < afterglow.dashGauge) {
+  if (0 < dash.coolTime) {
+    const angle =
+      dash.coolTime < dash.coolTimeLimit - dash.invincibleTime ?
+      dash.coolTime / (dash.coolTimeLimit - dash.invincibleTime) * Math.PI * 2 :
+      Math.PI * 2
     context.fillStyle = 'hsla(0, 100%, 100%, .5)'
     context.beginPath()
+    context.moveTo(pos.x, pos.y)
     context.arc(
-      pos.x, pos.y, size / 2, 0, Math.PI * 2, false
+      pos.x, pos.y, size / 2, -Math.PI * .5, -angle - Math.PI * .5, true
     )
     context.fill()
   }
   context.save()
-  if (0 < dash.coolTime) {
-    if (ownSpeed.max < ownSpeed.current) afterimage.push({
+  if (dash.coolTimeLimit - dash.invincibleTime < dash.coolTime) {
+    afterimage.push({
       x: ownPosition.x, y: ownPosition.y, alpha: .5
     })
-    afterimage.forEach((own, index) => {
-      context.save()
-      context.globalAlpha = own.alpha
-      context.drawImage(loadedMap[imgMyself],
-        ~~(relativeX(own.x - size / 2)+.5),
-        ~~(relativeY(own.y - size / 2)+.5)
-      )
-      context.restore()
-      own.alpha = own.alpha - .05
-      if (own.alpha <= 0) afterimage.splice(index, 1)
-    })
-    context.globalAlpha = .5
-    if (
-      code[action.dash].flag && code[action.dash].holdtime <= flashTimeLimit &&
-      ownSpeed.current <= ownSpeed.max
-    ) {
-      context.fillStyle = 'hsla(0, 100%, 50%, .5)'
-      context.beginPath()
-      context.arc(pos.x, pos.y, size / 2, 0, Math.PI * 2, false)
-      context.fill()
-    }
   }
+  afterimage.forEach((own, index) => {
+    context.save()
+    context.globalAlpha = own.alpha
+    context.drawImage(loadedMap[imgMyself],
+      ~~(relativeX(own.x - size / 2)+.5),
+      ~~(relativeY(own.y - size / 2)+.5)
+    )
+    context.restore()
+    own.alpha = own.alpha - .1
+    if (own.alpha <= 0) afterimage.splice(index, 1)
+  })
   context.globalAlpha = (0 < moreAwayCount) ? moreAwayCount / moreAwayLimit : 1
   context.drawImage(loadedMap[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
   context.restore()
@@ -1658,9 +1597,9 @@ const enemyProcess = () => {
         ownPosition.x - enemy.x) ** 2 + (ownPosition.y - enemy.y) ** 2
       ) ** .5 < minImgRadius * 2 + size / 8 && 0 < enemy.life
     ) {
-      if (ownSpeed.max < ownSpeed.current) {
-        if (!dash.attackFlag) {
-          dash.attackFlag = true
+      if (dash.coolTimeLimit - dash.coolTime < dash.invincibleTime) {
+        if (!dash.isAttack) {
+          dash.isAttack = true
           enemy.life = (enemy.life-dash.damage)|0
           enemy.damage = dash.damage
           enemy.timer = damageTimerLimit
@@ -1680,7 +1619,7 @@ const enemyProcess = () => {
       }
     }
     if (
-      ownSpeed.max < cloneSpeed && !dash.attackFlag &&
+      ownSpeed.max < cloneSpeed && !dash.isAttack &&
       (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)
     ) {
       const pos = {
@@ -1691,7 +1630,7 @@ const enemyProcess = () => {
         pos.x - enemy.x) ** 2 + (pos.y - enemy.y) ** 2) ** .5 < minImgRadius * 2 + size / 8 &&
         0 < enemy.life
       ) {
-        dash.attackFlag = true
+        dash.isAttack = true
         enemy.life = (enemy.life-dash.damage)|0
         enemy.damage = dash.damage
         enemy.timer = damageTimerLimit
@@ -2716,36 +2655,6 @@ const setStore = () => {
   )
   dropItems.push(weapon)
 }
-const upgradeDash =() => {
-  if (holdTimeLimit <= code[action.lookUp].holdtime && cost.dashDamage <= ammo) {
-    cost.dashDamageIndex = (cost.dashDamageIndex+1)|0
-    dash.damage = dash.damage + dash.damage * (1 / cost.dashDamageIndex)
-    ammo = (ammo - cost.dashDamage)|0
-    cost.dashDamage = (cost.dashDamage*2)|0
-    afterglow.dashDamage = holdTimeLimit
-  } else if (0 < afterglow.dashDamage) afterglow.dashDamage = (afterglow.dashDamage-1)|0
-  if (holdTimeLimit <= code[action.lookRight].holdtime && cost.dashDistance <= point) {
-    dash.decrease = dash.decrease*.85
-    point = (point - cost.dashDistance)|0
-    cost.dashDistance = (cost.dashDistance*2)|0
-    cost.dashDistanceIndex = (cost.dashDistanceIndex+1)|0
-    afterglow.dashDistance = holdTimeLimit
-  } else if (0 < afterglow.dashDistance) afterglow.dashDistance = (afterglow.dashDistance-1)|0
-  if (holdTimeLimit <= code[action.lookDown].holdtime && cost.dashCooltime <= point) {
-    dash.limit = dash.limit * .95
-    point = (point - cost.dashCooltime)|0
-    cost.dashCooltime = (cost.dashCooltime+cost.dashCooltime*2)|0
-    cost.dashCooltimeIndex = (cost.dashCooltimeIndex+1)|0
-    afterglow.dashCooltime = holdTimeLimit
-  } else if (0 < afterglow.dashCooltime) afterglow.dashCooltime = (afterglow.dashCooltime-1)|0
-  if (holdTimeLimit <= code[action.lookLeft].holdtime && cost.dashDistance <= point) {
-    dash.breakthrough = dash.breakthrough * 1.05
-    point = (point - cost.dashDistance)|0
-    cost.dashDistance = (cost.dashDistance*2)|0
-    cost.dashSpeedIndex = (cost.dashSpeedIndex+1)|0
-    afterglow.dashSpeed = holdTimeLimit
-  } else if (0 < afterglow.dashSpeed) afterglow.dashSpeed = (afterglow.dashSpeed-1)|0
-}
 const upgradeExplosive = () => {
   if (holdTimeLimit <= code[action.lookDown].holdtime && inventory[selectSlot].explosive3 <= ammo) {
     homingFlag = false
@@ -2920,14 +2829,14 @@ const reset = () => {
     dx: (size / 32) * .05,
     constDx: (size / 32) * .05
   }
-  dash = {
-    attackFlag: false,
-    breakthrough: 10,
-    coolTime: 0,
-    damage: 150,
-    decrease: 10,
-    limit: 150
-  }
+  // dash = {
+  //   attackFlag: false,
+  //   breakthrough: 10,
+  //   coolTime: 0,
+  //   damage: 150,
+  //   decrease: 10,
+  //   limit: 150
+  // }
   selectSlot = 0
   inventoryFlag = false
   inventory = JSON.parse(storage.getItem('inventoryArray'))
@@ -3160,16 +3069,19 @@ const settingsState = () => {
     }
   })
 }
-const resetKeyState = () => {
+const frameResetProcess = () => {
   isLeftMouseDownFirst = false
+  isRightMouseDownFirst = false
   isLeftMouseUpFirst = false
   wheelEvent.isFirst = false
+
+  if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
   globalTimestamp = Date.now()
   intervalDiffTime = globalTimestamp - currentTime
-  if (100 < intervalDiffTime) intervalDiffTime = 0
+  // if (100 < intervalDiffTime) intervalDiffTime = 0
   currentTime = globalTimestamp
   if (state === 'title' && !isSettings) titleProcess()
   else if (state === 'main') mainProcess()
@@ -3178,7 +3090,7 @@ const main = () => setInterval(() => {
   else if (state === 'keyLayout') keyLayoutProcess()
   if (code[action.settings].isFirst()) isSettings = !isSettings
   if (isSettings) settingsState()
-  resetKeyState()
+  frameResetProcess()
 }, 0)
 const drawBox = (box, alpha = 1) => {
   context.save()
@@ -3657,8 +3569,6 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: inventory[selectSlot].grip
-
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
