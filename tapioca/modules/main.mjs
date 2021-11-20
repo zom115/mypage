@@ -1232,6 +1232,18 @@ const cloneProcess = () => {
   ) clonePosition.shift()
   if (60 < clonePosition.length) clonePosition.shift()
 }
+const setOwnImageFromDiff = (dx, dy) => {
+  const coefficient = .2
+  return false ? 'images/TP2F.png' : // TODO: Pre-check max diff
+    dy < 0 && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2U.png' :
+    0 < dx && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2R.png' :
+    0 < dy && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2D.png' :
+    dx < 0 && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2L.png' :
+    dy < 0 && 0 < dx ? 'images/TP2RU.png' :
+    0 < dy && 0 < dx ? 'images/TP2RD.png' :
+    0 < dy && dx < 0 ? 'images/TP2LD.png' :
+    dy < 0 && dx < 0 ? 'images/TP2LU.png' : 'images/TP2F.png'
+}
 const setOwnImage = arg => {
   return (arg === 1) ? 'images/TP2U.png' :
   (arg === 3) ? 'images/TP2RU.png' :
@@ -1277,12 +1289,11 @@ const drawClone = () => {
   }
 }
 const drawMyself = () => {
-  if (direction === 0) ownStep = 0
+  if (ownState.radius) ownStep = 0
   else ownStep = (ownStep+1)|0
-  const imgMyself = ownStepLimit / 2 <= ownStep && ownSpeed.current <= ownSpeed.max
-  ? 'images/TP2F.png' :
-  ownSpeed.max < ownSpeed.current && 0 < currentDirection ? setOwnImage(currentDirection) :
-  0 < angle ? setOwnImage(angle) : setOwnImage(direction)
+  const imgMyself =
+    ownState.radius === 0 ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
+
   const pos =
     settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y} : { // recoil effect
       x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
@@ -1328,20 +1339,6 @@ const drawMyself = () => {
   context.drawImage(loadedMap[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
   context.restore()
   if (ownStepLimit <= ownStep) ownStep = 0
-}
-const drawDirection = () => {
-  const pos = { // recoil effect
-    x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
-    y: canvas.offsetHeight / 2 + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
-  }
-  let {dx, dy} = (angle !== 0) ? directionCalc(angle) : directionCalc(currentDirection)
-  context.fillStyle = 'hsla(0, 0%, 0%, .2)'
-  context.beginPath()
-  context.arc(
-    pos.x - dx * size / 2, pos.y - dy * size / 2,
-    size / 8, 0, Math.PI * 2, false
-  )
-  context.fill()
 }
 const drawField = () => {
   context.fillStyle = 'hsl(240, 100%, 60%)'
@@ -3305,7 +3302,6 @@ const drawMain = () => {
   if (0 < enemies.length) drawEnemies()
   if (0 < dropItems.length) drawDropItems()
   drawMyself()
-  // drawDirection()
   drawIndicator()
   drawSlot()
   if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim()
