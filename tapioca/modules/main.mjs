@@ -1388,7 +1388,7 @@ const setWeapon = () => {
   let modeList = [] // TODO: incomplete manual mode
   // type:: SEMI : BURST : FULL AUTO
   // HG:: 9 : 2 : 6
-  // SMG:: 5 : 4 : 8
+  // SMG:: 5 : 4 : 10
   // AR:: 7 : 3 : 7
   // DMR
   // SR
@@ -1402,16 +1402,16 @@ const setWeapon = () => {
     modeList.push(weaponModeList[1])
   }
   if ((
-    categoryIndex === 0 && Math.random() < .5) || (
+    categoryIndex === 0 && Math.random() < .2) || (
     categoryIndex === 1 && Math.random() < .4) || (
-    categoryIndex === 2 && Math.random() < .8) || (
+    categoryIndex === 2 && Math.random() < .3) || (
     categoryIndex === 5 && Math.random() < .3)
   ) {
     modeList.push(weaponModeList[2])
   }
   if ((
-    categoryIndex === 0 && Math.random() < .7) || (
-    categoryIndex === 1 && Math.random() < .3) || (
+    categoryIndex === 0 && Math.random() < .6) || (
+    categoryIndex === 1) || (
     categoryIndex === 2 && Math.random() < .7) || (
     categoryIndex === 5 && Math.random() < .3)
   ) {
