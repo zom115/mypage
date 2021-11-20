@@ -2197,7 +2197,6 @@ const inventoryProcess = () => {
         if (findIndex !== -1) [inventory[i], inventory[findIndex]] = [inventory[findIndex], inventory[i]]
       } else {
         [holdSlot, inventory[i]] = [inventory[i], holdSlot]
-        inventory[selectSlot].grip = 0
         // afterglow.inventory = 60
       }
     }
@@ -3658,7 +3657,7 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: screenOwnPos.y
+    a: inventory[selectSlot].grip
 
   }
   Object.entries(dictionary).forEach((v, i) => {
