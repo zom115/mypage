@@ -205,7 +205,7 @@ let afterglow = {
 }
 const flashTimeLimit = 5
 const ownPosition = {x: 0, y: 0}
-const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2}
+const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2, step: 0, stepLimit: 300}
 let clonePosition = []
 let cloneFlag = false
 let clonePower = .8
@@ -238,7 +238,7 @@ let explosive2Flag = false
 let explosive3Flag = false
 let collectRadius = size * 5
 let afterimage = []
-let objects, currentDirection, ownStep
+let objects, currentDirection
 let direction = 0
 let angle = 0
 let ownStepLimit = 50
@@ -1257,7 +1257,7 @@ const setOwnImage = arg => {
 const drawClone = () => {
   const delayStep = 15
   const imgClone = ((
-    ownStepLimit / 2 + delayStep <= ownStep || ownStep < delayStep) &&
+    ownStepLimit / 2 + delayStep <= ownState.step || ownState.step < delayStep) &&
     cloneSpeed <= ownSpeed.max
   ) ? 'images/TP2F.png' :
   (0 < angle) ? setOwnImage(angle) : setOwnImage(direction)
@@ -1289,15 +1289,19 @@ const drawClone = () => {
   }
 }
 const drawMyself = () => {
-  if (ownState.radius) ownStep = 0
-  else ownStep = (ownStep+1)|0
+  if (ownState.radius === 0) ownState.step = 0
+  else ownState.step += intervalDiffTime
+  // y = -4 * (x - .5) ** 2 + 1
+  const formula = -4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1
+  const isJumpImage = .3 < formula ? true : false
+  const jump = .8 < formula ? 1 : 0
   const imgMyself =
-    ownState.radius === 0 ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
+    ownState.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
 
   const pos =
-    settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y} : { // recoil effect
+    settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : { // recoil effect
       x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
-      y: canvas.offsetHeight / 2 + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
+      y: canvas.offsetHeight / 2 - jump + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
     }
   context.fillStyle = 'hsla(0, 0%, 0%, .2)' // shadow
   context.beginPath()
@@ -1321,7 +1325,7 @@ const drawMyself = () => {
   context.save()
   if (dash.coolTimeLimit - dash.invincibleTime < dash.coolTime) {
     afterimage.push({
-      x: ownPosition.x, y: ownPosition.y, alpha: .5
+      x: ownPosition.x, y: ownPosition.y - jump, alpha: .5
     })
   }
   afterimage.forEach((own, index) => {
@@ -1338,7 +1342,6 @@ const drawMyself = () => {
   context.globalAlpha = (0 < moreAwayCount) ? moreAwayCount / moreAwayLimit : 1
   context.drawImage(loadedMap[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
   context.restore()
-  if (ownStepLimit <= ownStep) ownStep = 0
 }
 const drawField = () => {
   context.fillStyle = 'hsl(240, 100%, 60%)'
@@ -2802,7 +2805,6 @@ const reset = () => {
   explosive2Flag = false
   explosive3Flag = false
   currentDirection = 4
-  ownStep = 0
   bullets = []
   enemies = []
   cost = {
@@ -3073,6 +3075,8 @@ const frameResetProcess = () => {
   wheelEvent.isFirst = false
 
   if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
+
+  if (ownState.stepLimit <= ownState.step) ownState.step = 0
 }
 const main = () => setInterval(() => {
   frameCounter(internalFrameList)
@@ -3565,6 +3569,8 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
+    a: (-4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1).toPrecision(3),
+    b: ownState.step
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
