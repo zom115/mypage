@@ -2644,6 +2644,50 @@ const setStore = () => {
     hue: 210
   }
   setAbsoluteBox(saveBox)
+  const warehouseBox = {
+    absoluteX: size * .25,
+    absoluteY: size * 6.75,
+    width: size * 10.5,
+    height: size * 15.5
+  }
+  const warehouseColumn = [
+    {
+      lavel: 'Name',
+      property: 'name',
+      width: 100,
+      isShow: true
+    }, {
+      lavel: 'Category',
+      property: 'category',
+      width: 80,
+      isShow: true
+    }, {
+      lavel: 'Mode',
+      property: 'mode',
+      width: 50,
+      isShow: false
+    }, {
+      lavel: 'Damage',
+      property: 'damage * gaugeNumber',
+      width: 30,
+      isShow: false
+    }, {
+      lavel: 'Mag. size',
+      property: 'magazineSize * magazines',
+      width: 30,
+      isShow: false
+    }, {
+      lavel: 'Penetration force',
+      property: 'penetrationForce',
+      width: 30,
+      isShow: false
+    }, {
+      lavel: 'Effective range',
+      property: 'effectiveRange',
+      width: 30,
+      isShow: false
+    }
+  ]
   class SaveSpot extends Spot {
     process() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
@@ -2654,9 +2698,31 @@ const setStore = () => {
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
       if (isInner(this, offset)) {
+        context.save()
         drawBox(saveBox)
-        context.fillStyle = 'hsla(0, 0%, 50%, .75)'
-        context.fillRect(size * .75, size * 9, size, size) // TODO: warehouse
+        context.fillStyle = 'hsla(0, 0%, 50%, .5)'
+        context.fillRect(
+          warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
+        context.font = `${size * .5}px sans-serif`
+        context.textBaseline = 'top'
+        context.textAlign = 'left'
+        context.fillStyle = 'hsla(0, 0%, 100%, .5)'
+        // context.fillText('Warehouse', warehouseBox.absoluteX + size * .25, warehouseBox.absoluteY + size * .25)
+        const offset = {
+          x: warehouseBox.absoluteX + size * .25,
+          y: warehouseBox.absoluteY + size * .25
+        }
+        console.log(
+          warehouseColumn.reduce((pV, cV, cI, array) => {
+            if (cV.isShow) {
+              context.fillRect(offset.x + pV + cV.width - 1, offset.y, 1, size / 2)
+              context.fillText(cV.lavel, offset.x + pV + 1, offset.y)
+              context.fillText(pV, offset.x + pV + 1, offset.y + size)
+              return pV + cV.width
+            }else return pV
+          }, 0)
+        )
+        context.restore()
       }
     }
   }
