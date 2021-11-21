@@ -2241,11 +2241,12 @@ const setEnemy = () => {
   })
   if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
 }
-const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave = true) => {
+const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave = true, isWarehouse = true) => {
   if (isInventory) storage.setItem('inventoryArray', JSON.stringify(inventory))
   if (isPoint) storage.setItem('point', JSON.stringify(point))
   if (isPortal) storage.setItem('portalFlag', JSON.stringify(portalFlag))
   if (isWave) storage.setItem('waveNumber', JSON.stringify(wave.number))
+  if (isWarehouse) storage.setItem('warehouseArray', JSON.stringify(warehouse))
   afterglow.save = 1000
 }
 const portalProcess = () => {
@@ -2977,6 +2978,8 @@ const reset = () => {
   //   limit: 150
   // }
   selectSlot = 0
+  const temporaryWarehouse = JSON.parse(storage.getItem('warehouseArray'))
+  if (temporaryWarehouse) warehouse = temporaryWarehouse
   inventoryFlag = false
   inventory = JSON.parse(storage.getItem('inventoryArray'))
   if (!inventory || inventory.every(v => v.category === '')) {
