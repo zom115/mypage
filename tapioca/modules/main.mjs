@@ -666,12 +666,6 @@ let inventorySlotBox = []
         absoluteX: size * (.75 + 2 * j), absoluteY: size * (2.75 + 2 * i), width: size * 1.5, height: size * 1.5})}
   }
 }
-let removeWeaponSlot = {
-  absoluteX: size * .75,
-  absoluteY: size * (.5 + 1.5 + .75 + 2 * 2), // offset + inventory row
-  width: size * 1.5,
-  height: size * 1.5
-}
 let settingsArray = [{
   toggle: Object.keys(settingsObject)[0],
   explain: 'Manipulate main slot when close inventory',
@@ -2067,8 +2061,18 @@ const drawWeaponDetail = (box, i) => {
     })
   }
 }
+const inventoryBox = {
+  absoluteX: size * .25,
+  absoluteY: size * .25,
+  width: size * 10.5,
+  height: size * 6.25
+}
 const drawSlot = () => {
   context.save()
+  if (inventoryFlag) {
+    context.fillStyle = 'hsla(0, 0%, 50%, .2)'
+    context.fillRect(inventoryBox.absoluteX, inventoryBox.absoluteY, inventoryBox.width, inventoryBox.height)
+  }
   const box = {
     absoluteX: cursor.offsetX,
     absoluteY: cursor.offsetY
@@ -2087,6 +2091,7 @@ const drawSlot = () => {
       context.fillRect(v.absoluteX + size * 1.15, v.absoluteY - size / 3, size * .6, size * .6)
       context.font = `${size*.75}px sans-serif`
       context.fillStyle = 'hsla(0, 0%, 100%, .4)'
+      context.textAlign = 'center'
       const text =
         i === 0 ? extractCode(action.primary) :
         i === 1 ? extractCode(action.secondary) :
@@ -2098,18 +2103,6 @@ const drawSlot = () => {
     if (mainSlotSize - 1 < i && !inventoryFlag) return
     drawWeaponDetail(v, i)
   })
-  if (inventoryFlag) {
-    context.fillStyle = 'hsla(0, 100%, 50%, .2)'
-    context.fillRect(
-      removeWeaponSlot.absoluteX, removeWeaponSlot.absoluteY, removeWeaponSlot.width, removeWeaponSlot.height)
-    if (settingsObject.isTutorialTooltip && isInner(removeWeaponSlot, cursor)) {
-      context.font = `${size*.75}px sans-serif`
-      context.textAlign = 'left'
-      context.fillStyle = 'hsla(0, 0%, 0%, .6)'
-      context.strokeStyle = 'hsl(0, 0%, 100%)'
-      strokeText('Remove when drop to here', cursor.offsetX + size, cursor.offsetY)
-    }
-  }
   context.restore()
 }
 const drawAim = () => { // Expected effective range
@@ -2154,11 +2147,11 @@ const inventoryProcess = () => {
       }
     }
   })
-  if (holdSlot.category !== '' && downButton(removeWeaponSlot)) {
+  if (inventoryFlag && holdSlot.category !== '' && !downButton(inventoryBox) && isLeftMouseDownFirst) {
     holdSlot.type = 'weapon'
     holdSlot.unavailableTime = 30
     const r = size * 3
-    const theta = Math.atan2(cursor.offsetY - canvas.offsetHeight, cursor.offsetX - canvas.offsetWidth)
+    const theta = Math.atan2(cursor.offsetY - canvas.offsetHeight / 2, cursor.offsetX - canvas.offsetWidth / 2)
     holdSlot.x = ownPosition.x + r * Math.cos(theta)
     holdSlot.y = ownPosition.y + r * Math.sin(theta)
     dropItems.push(holdSlot)
