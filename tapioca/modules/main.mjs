@@ -2137,11 +2137,16 @@ const inventoryProcess = () => {
     if (!inventoryFlag && mainSlotSize - 1 < i) return
     if (downButton(v)) {
       if (code[action.shift].flag) {
-        let findIndex = -1
-        if (i < mainSlotSize) {
-          findIndex = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
-        } else  findIndex = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
-        if (findIndex !== -1) [inventory[i], inventory[findIndex]] = [inventory[findIndex], inventory[i]]
+        if (isWarehouse) {
+          warehouse.push(inventory[i])
+          inventory[i] = {category: ''}
+        } else {
+          let findIndex = -1
+          if (i < mainSlotSize) {
+            findIndex = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
+          } else findIndex = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
+          if (findIndex !== -1) [inventory[i], inventory[findIndex]] = [inventory[findIndex], inventory[i]]
+        }
       } else {
         [holdSlot, inventory[i]] = [inventory[i], holdSlot]
         // afterglow.inventory = 60
@@ -2720,6 +2725,7 @@ const setStore = () => {
         isWarehouse = true
         if (downButton(saveBox, cursor)) saveProcess()
         if (downButton(warehouseBox, cursor)) {
+
           let bool = false
           warehouse.forEach((v, i) => {
             const box = {
@@ -2729,9 +2735,22 @@ const setStore = () => {
               height: size * .5
             }
             if (isInner(box, cursor)) {
-              [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
-              if (warehouse[i].category === '') warehouse.splice(i, 1)
-              bool = true
+              if (code[action.shift].flag) {
+                let findIndex = -1
+                findIndex = inventory.findIndex((v, index) => {
+                  if (!inventoryFlag && mainSlotSize - 1 < index) return -1
+                  else return v.category === ''
+                })
+                if (findIndex !== -1) {
+                  inventory[findIndex] = warehouse.splice(i, 1)[0]
+                  bool = true
+                }
+                console.log(findIndex)
+              } else {
+                [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
+                if (warehouse[i].category === '') warehouse.splice(i, 1)
+                bool = true
+              }
             }
           })
           if (!bool && holdSlot.category !== '') {
