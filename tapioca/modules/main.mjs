@@ -480,10 +480,12 @@ const Bullet = class {
             } else {
               enemies[hit].life = enemies[hit].life - damage
               bullet.life = bullet.life * this.penetrationForce
-              const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
-              if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
-              point = (point+additionalPoint)|0
-              afterglow.point.push({number: additionalPoint, count: 30})
+              if (inventory[selectSlot].level < wave.number) { // TODO: level infuse to bullet
+                const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
+                if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
+                point = (point+additionalPoint)|0
+                afterglow.point.push({number: additionalPoint, count: 30})
+              }
               enemies[hit].damage = damage
               enemies[hit].timer = damageTimerLimit
             }
