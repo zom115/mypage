@@ -307,6 +307,7 @@ const Weapon = class {
     this.level = level
   }
 }
+let warehouse = []
 let inventory = []
 let holdSlot = {category: ''}
 let mainSlotSize = 3
@@ -1520,7 +1521,6 @@ const enemyProcess = () => {
         const c = {x: enemy.x, y: enemy.y}
         if (enemy.imageID === enemyImageAmount) {
           enemies[index] = setWeapon()
-          // setWeapon(index)
           enemies[index].unavailableTime = 30
           enemies[index].x = c.x
           enemies[index].y = c.y
@@ -2155,7 +2155,15 @@ const inventoryProcess = () => {
     }
   })
   if (holdSlot.category !== '' && downButton(removeWeaponSlot)) {
+    holdSlot.type = 'weapon'
+    holdSlot.unavailableTime = 30
+    const r = size * 3
+    const theta = Math.atan2(cursor.offsetY - canvas.offsetHeight, cursor.offsetX - canvas.offsetWidth)
+    holdSlot.x = ownPosition.x + r * Math.cos(theta)
+    holdSlot.y = ownPosition.y + r * Math.sin(theta)
+    dropItems.push(holdSlot)
     holdSlot = {category: ''}
+    console.log('a')
   }
 
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
@@ -2652,7 +2660,11 @@ const setStore = () => {
     }
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) drawBox(saveBox)
+      if (isInner(this, offset)) {
+        drawBox(saveBox)
+        context.fillStyle = 'hsla(0, 0%, 50%, .75)'
+        context.fillRect(size * .75, size * 9, size, size) // TODO: warehouse
+      }
     }
   }
   objects.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
