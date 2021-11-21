@@ -308,6 +308,7 @@ const Weapon = class {
   }
 }
 let warehouse = []
+let isWarehouse = false
 let inventory = []
 let holdSlot = {category: ''}
 let mainSlotSize = 3
@@ -2147,7 +2148,10 @@ const inventoryProcess = () => {
       }
     }
   })
-  if (inventoryFlag && holdSlot.category !== '' && !downButton(inventoryBox) && isLeftMouseDownFirst) {
+  if (
+    holdSlot.category !== '' && !downButton(inventoryBox) && isLeftMouseDownFirst && (
+    !isWarehouse || !downButton(warehouseBox))
+  ) {
     holdSlot.type = 'weapon'
     holdSlot.unavailableTime = 30
     const r = size * 3
@@ -2436,6 +2440,12 @@ const setMap = () => {
   objects.push({x: offset.x - l*(251-295), y: offset.y - l*(435-460), width: l*17, height: l*5})
   objects.push({x: offset.x - l*(251-468), y: offset.y - l*(435-190), width: l*21, height: l*29})
 }
+const warehouseBox = {
+  absoluteX: size * .25,
+  absoluteY: size * 6.75,
+  width: size * 10.5,
+  height: size * 15.5
+}
 const setStore = () => {
   const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
   const Spot = class {
@@ -2644,56 +2654,91 @@ const setStore = () => {
     hue: 210
   }
   setAbsoluteBox(saveBox)
-  const warehouseBox = {
-    absoluteX: size * .25,
-    absoluteY: size * 6.75,
-    width: size * 10.5,
-    height: size * 15.5
-  }
   const warehouseColumn = [
     {
+      lavel: 'Level',
+      property: 'level',
+      width: 50,
+      align: 'right',
+      isShow: true
+    }, {
       lavel: 'Name',
       property: 'name',
-      width: 100,
+      width: 50,
+      align: 'left',
       isShow: true
     }, {
       lavel: 'Category',
       property: 'category',
       width: 80,
-      isShow: true
+      align: 'left',
+      isShow: false
     }, {
       lavel: 'Mode',
       property: 'mode',
       width: 50,
+      align: 'left',
       isShow: false
     }, {
       lavel: 'Damage',
-      property: 'damage * gaugeNumber',
-      width: 30,
-      isShow: false
+      property: 'damage',
+      width: 70,
+      align: 'right',
+      isShow: true
     }, {
       lavel: 'Mag. size',
-      property: 'magazineSize * magazines',
-      width: 30,
-      isShow: false
+      property: 'magazineSize',
+      width: 80,
+      align: 'right',
+      isShow: true
     }, {
       lavel: 'Penetration force',
       property: 'penetrationForce',
-      width: 30,
-      isShow: false
+      width: 140,
+      align: 'right',
+      isShow: true
     }, {
       lavel: 'Effective range',
       property: 'effectiveRange',
-      width: 30,
-      isShow: false
+      width: 120,
+      align: 'right',
+      isShow: true
     }
   ]
+  warehouseColumn.forEach(v => {
+    v.width = context.measureText(v.lavel).width + size * .25
+  })
+  const warehouseOffset = {
+    x: warehouseBox.absoluteX + size * .25,
+    y: warehouseBox.absoluteY + size * .25
+  }
   class SaveSpot extends Spot {
     process() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset) && button(saveBox, cursor)) {
-        saveProcess()
-      }
+      if (isInner(this, offset)) {
+        isWarehouse = true
+        if (downButton(saveBox, cursor)) saveProcess()
+        if (downButton(warehouseBox, cursor)) {
+          let bool = false
+          warehouse.forEach((v, i) => {
+            const box = {
+              absoluteX: warehouseOffset.x,
+              absoluteY: warehouseOffset.y + size * (1 + i * .5),
+              width: warehouseBox.width - size * .5,
+              height: size * .5
+            }
+            if (isInner(box, cursor)) {
+              [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
+              if (warehouse[i].category === '') warehouse.splice(i, 1)
+              bool = true
+            }
+          })
+          if (!bool && holdSlot.category !== '') {
+            warehouse.push(holdSlot)
+            holdSlot = {category: ''}
+          }
+        }
+      } else isWarehouse = false
     }
     draw() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
@@ -2705,23 +2750,32 @@ const setStore = () => {
           warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
         context.font = `${size * .5}px sans-serif`
         context.textBaseline = 'top'
-        context.textAlign = 'left'
         context.fillStyle = 'hsla(0, 0%, 100%, .5)'
-        // context.fillText('Warehouse', warehouseBox.absoluteX + size * .25, warehouseBox.absoluteY + size * .25)
-        const offset = {
-          x: warehouseBox.absoluteX + size * .25,
-          y: warehouseBox.absoluteY + size * .25
-        }
-        console.log(
-          warehouseColumn.reduce((pV, cV, cI, array) => {
-            if (cV.isShow) {
-              context.fillRect(offset.x + pV + cV.width - 1, offset.y, 1, size / 2)
-              context.fillText(cV.lavel, offset.x + pV + 1, offset.y)
-              context.fillText(pV, offset.x + pV + 1, offset.y + size)
-              return pV + cV.width
-            }else return pV
-          }, 0)
-        )
+        warehouseColumn.reduce((pV, cV, cI, array) => {
+          const padding = size / 8
+          if (cV.isShow) {
+            context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 1, size / 2)
+            context.textAlign = 'left'
+            context.fillText(cV.lavel, warehouseOffset.x + pV + padding, warehouseOffset.y)
+            warehouse.forEach((v, i) => {
+              if (v.category === '') return
+              // * gaugeNumber
+              let text = v[cV.property]
+              if (cV.property === 'penetrationForce' || cV.property === 'effectiveRange') {
+                text = text.toPrecision(3)
+              } else if (cV.property === 'magazineSize') {
+                text += ` * ${v.magazines.length}`
+              }
+              let offsetY = warehouseOffset.x + pV + padding
+              if (cV.align === 'right') {
+                context.textAlign = cV.align
+                offsetY += cV.width - padding * 2
+              }
+              context.fillText(text, offsetY, warehouseOffset.y + size * (1 + i * .5))
+            })
+            return pV + cV.width
+          }else return pV
+        }, 0)
         context.restore()
       }
     }
@@ -3655,7 +3709,7 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: wave.number
+    a: isWarehouse
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
