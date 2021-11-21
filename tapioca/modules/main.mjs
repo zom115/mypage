@@ -2724,8 +2724,23 @@ const setStore = () => {
       if (isInner(this, offset)) {
         isWarehouse = true
         if (downButton(saveBox, cursor)) saveProcess()
+        warehouseColumn.reduce((pV, cV, cI, array) => {
+          if (cV.isShow) {
+            const box = {
+              absoluteX: warehouseOffset.x + pV,
+              absoluteY: warehouseOffset.y,
+              width: cV.width,
+              height: size / 2
+            }
+            if (button(box)) warehouse.sort((a, b) => {
+              if (cV.property === 'magazineSize') {
+                return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
+              } else return a[cV.property] - b[cV.property]
+            })
+            return pV + cV.width
+          }else return pV
+        }, 0)
         if (downButton(warehouseBox, cursor)) {
-
           let bool = false
           warehouse.forEach((v, i) => {
             const box = {
