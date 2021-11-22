@@ -2665,48 +2665,56 @@ const setStore = () => {
       property: 'level',
       width: 50,
       align: 'right',
+      isAscending: false,
       isShow: true
     }, {
       label: 'Name',
       property: 'name',
       width: 50,
       align: 'left',
+      isAscending: false,
       isShow: true
     }, {
       label: 'Category',
       property: 'category',
       width: 80,
       align: 'left',
+      isAscending: false,
       isShow: false
     }, {
       label: 'Mode',
       property: 'mode',
       width: 50,
       align: 'left',
+      isAscending: false,
       isShow: false
     }, {
       label: 'Damage',
       property: 'damage',
       width: 70,
       align: 'right',
+      isAscending: false,
       isShow: true
     }, {
       label: 'Mag. size',
       property: 'magazineSize',
       width: 80,
       align: 'right',
+      isAscending: false,
       isShow: true
     }, {
       label: 'Penetration force',
       property: 'penetrationForce',
       width: 140,
       align: 'right',
+      isAscending: false,
       isShow: true
     }, {
       label: 'Effective range',
       property: 'effectiveRange',
       width: 120,
       align: 'right',
+      isAscending: false,
       isShow: true
     }
   ]
@@ -2759,11 +2767,20 @@ const setStore = () => {
               width: cV.width - padding * 2,
               height: size / 2
             }
-            if (button(box)) warehouse.sort((a, b) => {
-              if (cV.property === 'magazineSize') {
-                return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
-              } else return a[cV.property] - b[cV.property]
-            })
+            if (button(box)) {
+              warehouse.sort((a, b) => {
+                if (cV.isAscending) {
+                  if (cV.property === 'magazineSize') {
+                    return b[cV.property] * b.magazines.length - a[cV.property] * a.magazines.length
+                  } else return b[cV.property] - a[cV.property]
+                } else {
+                  if (cV.property === 'magazineSize') {
+                    return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
+                  } else return a[cV.property] - b[cV.property]
+                }
+              })
+              cV.isAscending = !cV.isAscending
+            }
             return pV + cV.width
           }else return pV
         }, 0)
