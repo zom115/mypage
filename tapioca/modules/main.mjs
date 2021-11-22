@@ -2166,7 +2166,6 @@ const inventoryProcess = () => {
     holdSlot.y = ownPosition.y + r * Math.sin(theta)
     dropItems.push(holdSlot)
     holdSlot = {category: ''}
-    console.log('a')
   }
 
   if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
@@ -2663,49 +2662,49 @@ const setStore = () => {
   setAbsoluteBox(saveBox)
   const warehouseColumn = [
     {
-      lavel: 'Level',
+      label: 'Level',
       property: 'level',
       width: 50,
       align: 'right',
       isShow: true
     }, {
-      lavel: 'Name',
+      label: 'Name',
       property: 'name',
       width: 50,
       align: 'left',
       isShow: true
     }, {
-      lavel: 'Category',
+      label: 'Category',
       property: 'category',
       width: 80,
       align: 'left',
       isShow: false
     }, {
-      lavel: 'Mode',
+      label: 'Mode',
       property: 'mode',
       width: 50,
       align: 'left',
       isShow: false
     }, {
-      lavel: 'Damage',
+      label: 'Damage',
       property: 'damage',
       width: 70,
       align: 'right',
       isShow: true
     }, {
-      lavel: 'Mag. size',
+      label: 'Mag. size',
       property: 'magazineSize',
       width: 80,
       align: 'right',
       isShow: true
     }, {
-      lavel: 'Penetration force',
+      label: 'Penetration force',
       property: 'penetrationForce',
       width: 140,
       align: 'right',
       isShow: true
     }, {
-      lavel: 'Effective range',
+      label: 'Effective range',
       property: 'effectiveRange',
       width: 120,
       align: 'right',
@@ -2713,7 +2712,7 @@ const setStore = () => {
     }
   ]
   warehouseColumn.forEach(v => {
-    v.width = context.measureText(v.lavel).width + size * .25
+    v.width = context.measureText(v.label).width + size * .25
   })
   const warehouseOffset = {
     x: warehouseBox.absoluteX + size * .25,
@@ -2774,7 +2773,6 @@ const setStore = () => {
                   inventory[findIndex] = warehouse.splice(i, 1)[0]
                   bool = true
                 }
-                console.log(findIndex)
               } else {
                 [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
                 if (warehouse[i].category === '') warehouse.splice(i, 1)
@@ -2802,6 +2800,16 @@ const setStore = () => {
         context.fillStyle = 'hsla(0, 0%, 100%, .5)'
         let isChangeCursorImage = false
         warehouseColumn.reduce((pV, cV, cI, array) => {
+
+          let sendText = ''
+          for (let i = cV.label.length; 0 <= i; i--) {
+            const text = i === cV.label.length ? cV.label : cV.label.slice(0, i) + '...'
+            let width = context.measureText(text).width + size * .25
+            if (width <= cV.width) {
+              sendText = text
+              break
+            }
+          }
           const padding = size / 8
           if (cV.isShow) {
             const box = {
@@ -2816,7 +2824,7 @@ const setStore = () => {
             } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
             context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 1, size / 2)
             context.textAlign = 'left'
-            context.fillText(cV.lavel, warehouseOffset.x + pV + padding, warehouseOffset.y)
+            context.fillText(sendText, warehouseOffset.x + pV + padding, warehouseOffset.y)
             warehouse.forEach((v, i) => {
               if (v.category === '') return
               // * gaugeNumber
@@ -3786,9 +3794,7 @@ const drawDebug = () => {
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
     a: ttxt,
-    b: testWidth,
-    c: previousCursor.offsetX,
-    d: cursor.offsetX - previousCursor.offsetX
+    b: testWidth
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
