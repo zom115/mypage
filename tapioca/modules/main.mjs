@@ -18,7 +18,6 @@ const version = 'v.0.9'
 const canvas = document.getElementById`canvas`
 
 let cursor = {offsetX: 0, offsetY: 0}
-let previousCursor = {offsetX: 0, offsetY: 0}
 let mouseDownPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseDownFirst = false
 let isLeftMouseDown = false
@@ -2719,6 +2718,7 @@ const setStore = () => {
     y: warehouseBox.absoluteY + size * .25
   }
   let manipulateColumnSizeNumber = -1
+  let temporaryDiffX = -1
   class SaveSpot extends Spot {
     process() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
@@ -2735,10 +2735,24 @@ const setStore = () => {
               height: size * .5
             }
             if ((isInner(colResizeBox, cursor) || manipulateColumnSizeNumber === cI) && isLeftMouseDown) {
-              manipulateColumnSizeNumber = cI
-              cV.width += cursor.offsetX - previousCursor.offsetX
+              if (cV.width <= padding && isLeftMouseDownFirst) {
+                colResizeBox.absoluteX += padding
+                colResizeBox.width -= padding
+                if (isInner(colResizeBox, cursor)) {
+                  manipulateColumnSizeNumber = -1
+                  temporaryDiffX = -1
+                }
+              }
+              if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
+              if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
+              const x = cursor.offsetX - temporaryDiffX
+              if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
+              console.log(manipulateColumnSizeNumber)
             }
-            if (!isLeftMouseDown) manipulateColumnSizeNumber = -1
+            if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
+              temporaryDiffX = -1
+              manipulateColumnSizeNumber = -1
+            }
             const box = {
               absoluteX: warehouseOffset.x + pV + padding,
               absoluteY: warehouseOffset.y,
@@ -2818,7 +2832,7 @@ const setStore = () => {
               width: 20,
               height: size * .5
             }
-            if (isInner(box, cursor)) {
+            if (isInner(box, cursor) || manipulateColumnSizeNumber !== -1) {
               canvas.style.cursor = 'col-resize'
               isChangeCursorImage = true
             } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
@@ -3279,7 +3293,6 @@ const settingsState = () => {
   })
 }
 const frameResetProcess = () => {
-  previousCursor = JSON.parse(JSON.stringify(cursor))
   isLeftMouseDownFirst = false
   isRightMouseDownFirst = false
   isLeftMouseUpFirst = false
