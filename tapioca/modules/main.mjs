@@ -2719,6 +2719,11 @@ const setStore = () => {
     x: warehouseBox.absoluteX + size * .25,
     y: warehouseBox.absoluteY + size * .25
   }
+
+  let manipulateSwapIndex = -1
+  let swapAbsoluteX = -1
+  let isSwapMode = false
+
   let manipulateColumnSizeNumber = -1
   let temporaryDiffX = -1
   class SaveSpot extends Spot {
@@ -2727,41 +2732,20 @@ const setStore = () => {
       if (isInner(this, offset)) {
         isWarehouse = true
         if (downButton(saveBox, cursor)) saveProcess()
+        let pI = 0
         warehouseColumn.reduce((pV, cV, cI, array) => {
           if (cV.isShow) {
             const padding = 10
-            const colResizeBox = {
-              absoluteX: warehouseOffset.x + pV + cV.width - padding,
-              absoluteY: warehouseOffset.y,
-              width: padding * 2,
-              height: size * .5
-            }
-            if ((isInner(colResizeBox, cursor) || manipulateColumnSizeNumber === cI) && isLeftMouseDown) {
-              if (cV.width <= padding && isLeftMouseDownFirst) {
-                colResizeBox.absoluteX += padding
-                colResizeBox.width -= padding
-                if (isInner(colResizeBox, cursor)) {
-                  manipulateColumnSizeNumber = -1
-                  temporaryDiffX = -1
-                }
-              }
-              if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
-              if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
-              const x = cursor.offsetX - temporaryDiffX
-              if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
-              console.log(manipulateColumnSizeNumber)
-            }
-            if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
-              temporaryDiffX = -1
-              manipulateColumnSizeNumber = -1
-            }
+
             const box = {
               absoluteX: warehouseOffset.x + pV + padding,
               absoluteY: warehouseOffset.y,
               width: cV.width - padding * 2,
               height: size / 2
             }
-            if (button(box)) {
+
+            // Sort weapon
+            if (button(box) && !isSwapMode) {
               warehouse.sort((a, b) => {
                 if (orderNumber === cI && !isDescending) {
                   if (cV.property === 'magazineSize') {
@@ -2776,6 +2760,57 @@ const setStore = () => {
               if (orderNumber === cI) isDescending = !isDescending
               else isDescending = false
               orderNumber = cI
+            }
+
+            // Sort label
+            if (downButton(box)) {
+              console.log(cI)
+              manipulateSwapIndex = cI
+              swapAbsoluteX = cursor.offsetX
+            }
+            if (0 <= manipulateSwapIndex && isLeftMouseDown && 5 <= Math.abs(swapAbsoluteX - cursor.offsetX)) {
+              isSwapMode = true
+            }
+            if(isSwapMode && isInner(box, cursor) && !isLeftMouseDown) {
+              box.width = cV.width * .5 - padding
+              const i = isInner(box, cursor) ? pI : cI
+              console.log(i, manipulateSwapIndex)
+              array.splice(i, 0, array.splice(manipulateSwapIndex, 1)[0])
+              console.log(array)
+              // array[cI] = [array[manipulateSwapIndex], array[manipulateSwapIndex] = array[cI]][0]
+              manipulateSwapIndex = -1
+              swapAbsoluteX = -1
+              isSwapMode = false
+            }
+
+            const colResizeBox = {
+              absoluteX: warehouseOffset.x + pV + cV.width - padding,
+              absoluteY: warehouseOffset.y,
+              width: padding * 2,
+              height: size * .5
+            }
+            pI = cI
+
+            // Adjust width
+            if (downButton(colResizeBox)) {
+              if (cV.width <= padding && isLeftMouseDownFirst) {
+                colResizeBox.absoluteX += padding
+                colResizeBox.width -= padding
+                if (isInner(colResizeBox, cursor)) {
+                  manipulateColumnSizeNumber = -1
+                  temporaryDiffX = -1
+                }
+              }
+              if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
+              if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
+            }
+            if (manipulateColumnSizeNumber === cI && isLeftMouseDown) {
+              const x = cursor.offsetX - temporaryDiffX
+              if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
+            }
+            if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
+              temporaryDiffX = -1
+              manipulateColumnSizeNumber = -1
             }
             return pV + cV.width
           } else return pV
