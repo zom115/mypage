@@ -18,6 +18,7 @@ const version = 'v.0.9'
 const canvas = document.getElementById`canvas`
 
 let cursor = {offsetX: 0, offsetY: 0}
+let previousCursor = {offsetX: 0, offsetY: 0}
 let mouseDownPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseDownFirst = false
 let isLeftMouseDown = false
@@ -2718,6 +2719,7 @@ const setStore = () => {
     x: warehouseBox.absoluteX + size * .25,
     y: warehouseBox.absoluteY + size * .25
   }
+  let manipulateColumnSizeNumber = -1
   class SaveSpot extends Spot {
     process() {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
@@ -2726,10 +2728,22 @@ const setStore = () => {
         if (downButton(saveBox, cursor)) saveProcess()
         warehouseColumn.reduce((pV, cV, cI, array) => {
           if (cV.isShow) {
-            const box = {
-              absoluteX: warehouseOffset.x + pV,
+            const padding = 10
+            const colResizeBox = {
+              absoluteX: warehouseOffset.x + pV + cV.width - padding,
               absoluteY: warehouseOffset.y,
-              width: cV.width,
+              width: padding * 2,
+              height: size * .5
+            }
+            if ((isInner(colResizeBox, cursor) || manipulateColumnSizeNumber === cI) && isLeftMouseDown) {
+              manipulateColumnSizeNumber = cI
+              cV.width += cursor.offsetX - previousCursor.offsetX
+            }
+            if (!isLeftMouseDown) manipulateColumnSizeNumber = -1
+            const box = {
+              absoluteX: warehouseOffset.x + pV + padding,
+              absoluteY: warehouseOffset.y,
+              width: cV.width - padding * 2,
               height: size / 2
             }
             if (button(box)) warehouse.sort((a, b) => {
@@ -2786,9 +2800,20 @@ const setStore = () => {
         context.font = `${size * .5}px sans-serif`
         context.textBaseline = 'top'
         context.fillStyle = 'hsla(0, 0%, 100%, .5)'
+        let isChangeCursorImage = false
         warehouseColumn.reduce((pV, cV, cI, array) => {
           const padding = size / 8
           if (cV.isShow) {
+            const box = {
+              absoluteX: warehouseOffset.x + pV + cV.width - 10,
+              absoluteY: warehouseOffset.y,
+              width: 20,
+              height: size * .5
+            }
+            if (isInner(box, cursor)) {
+              canvas.style.cursor = 'col-resize'
+              isChangeCursorImage = true
+            } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
             context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 1, size / 2)
             context.textAlign = 'left'
             context.fillText(cV.lavel, warehouseOffset.x + pV + padding, warehouseOffset.y)
@@ -3246,6 +3271,7 @@ const settingsState = () => {
   })
 }
 const frameResetProcess = () => {
+  previousCursor = JSON.parse(JSON.stringify(cursor))
   isLeftMouseDownFirst = false
   isRightMouseDownFirst = false
   isLeftMouseUpFirst = false
@@ -3256,6 +3282,8 @@ const frameResetProcess = () => {
   if (ownState.stepLimit <= ownState.step) ownState.step = 0
 }
 const main = () => setInterval(() => {
+
+  if (isLeftMouseDownFirst) testWidth = cursor.offsetX
   frameCounter(internalFrameList)
   globalTimestamp = Date.now()
   intervalDiffTime = globalTimestamp - currentTime
@@ -3737,7 +3765,18 @@ const drawSettings = () => {
   })
   context.restore()
 }
+const txt = 'isWarehouse'
+let testWidth = size
 const drawDebug = () => {
+  let ttxt = ''
+  for (let i = txt.length; 0 <= i; i--) {
+    const text = i === txt.length ? txt : txt.slice(0, i) + '...'
+    let width = context.measureText(text).width
+    if (width <= testWidth) {
+      ttxt = text
+      break
+    }
+  }
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
   context.fillStyle = 'hsl(0, 0%, 50%)'
@@ -3746,7 +3785,10 @@ const drawDebug = () => {
     screenFps: animationFrameList.length - 1,
     'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
     'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: isWarehouse
+    a: ttxt,
+    b: testWidth,
+    c: previousCursor.offsetX,
+    d: cursor.offsetX - previousCursor.offsetX
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
