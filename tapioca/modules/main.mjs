@@ -2814,15 +2814,12 @@ const setStore = () => {
         context.fillStyle = 'hsla(0, 0%, 100%, .5)'
         let isChangeCursorImage = false
         warehouseColumn.reduce((pV, cV, cI, array) => {
-
-          let sendText = ''
-          for (let i = cV.label.length; 0 <= i; i--) {
-            const text = i === cV.label.length ? cV.label : cV.label.slice(0, i) + '...'
-            let width = context.measureText(text).width + size * .25
-            if (width <= cV.width) {
-              sendText = text
-              break
+          const getRistrictWidthText = (str, w) => {
+            for (let i = str.length; 0 <= i; i--) {
+              const text = i === str.length ? str : str.slice(0, i) + '...'
+              if (context.measureText(text).width + size * .25 <= w) return text
             }
+            return ''
           }
           const padding = size / 8
           if (cV.isShow) {
@@ -2838,7 +2835,8 @@ const setStore = () => {
             } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
             context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 1, size / 2)
             context.textAlign = 'left'
-            context.fillText(sendText, warehouseOffset.x + pV + padding, warehouseOffset.y)
+            context.fillText(
+              getRistrictWidthText(cV.label, cV.width), warehouseOffset.x + pV + padding, warehouseOffset.y)
             warehouse.forEach((v, i) => {
               if (v.category === '') return
               // * gaugeNumber
@@ -2853,7 +2851,7 @@ const setStore = () => {
                 context.textAlign = cV.align
                 offsetY += cV.width - padding * 2
               }
-              context.fillText(text, offsetY, warehouseOffset.y + size * (1 + i * .5))
+              context.fillText(getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
             })
             return pV + cV.width
           }else return pV
