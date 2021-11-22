@@ -2665,59 +2665,53 @@ const setStore = () => {
       property: 'level',
       width: 50,
       align: 'right',
-      isAscending: false,
       isShow: true
     }, {
       label: 'Name',
       property: 'name',
       width: 50,
       align: 'left',
-      isAscending: false,
       isShow: true
     }, {
       label: 'Category',
       property: 'category',
       width: 80,
       align: 'left',
-      isAscending: false,
       isShow: false
     }, {
       label: 'Mode',
       property: 'mode',
       width: 50,
       align: 'left',
-      isAscending: false,
       isShow: false
     }, {
       label: 'Damage',
       property: 'damage',
       width: 70,
       align: 'right',
-      isAscending: false,
       isShow: true
     }, {
       label: 'Mag. size',
       property: 'magazineSize',
       width: 80,
       align: 'right',
-      isAscending: false,
       isShow: true
     }, {
       label: 'Penetration force',
       property: 'penetrationForce',
       width: 140,
       align: 'right',
-      isAscending: false,
       isShow: true
     }, {
       label: 'Effective range',
       property: 'effectiveRange',
       width: 120,
       align: 'right',
-      isAscending: false,
       isShow: true
     }
   ]
+  let orderNumber = -1
+  let isDescending = false
   warehouseColumn.forEach(v => {
     v.width = context.measureText(v.label).width + size * .25
   })
@@ -2769,7 +2763,7 @@ const setStore = () => {
             }
             if (button(box)) {
               warehouse.sort((a, b) => {
-                if (cV.isAscending) {
+                if (orderNumber === cI && !isDescending) {
                   if (cV.property === 'magazineSize') {
                     return b[cV.property] * b.magazines.length - a[cV.property] * a.magazines.length
                   } else return b[cV.property] - a[cV.property]
@@ -2779,10 +2773,12 @@ const setStore = () => {
                   } else return a[cV.property] - b[cV.property]
                 }
               })
-              cV.isAscending = !cV.isAscending
+              if (orderNumber === cI) isDescending = !isDescending
+              else isDescending = false
+              orderNumber = cI
             }
             return pV + cV.width
-          }else return pV
+          } else return pV
         }, 0)
         if (downButton(warehouseBox, cursor)) {
           let bool = false
@@ -2854,6 +2850,13 @@ const setStore = () => {
             context.textAlign = 'left'
             context.fillText(
               getRistrictWidthText(cV.label, cV.width), warehouseOffset.x + pV + padding, warehouseOffset.y)
+            if (cI === orderNumber) {
+              context.textAlign = 'center'
+              if (isDescending) {
+                context.fillText('∨', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+              } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+
+            }
             warehouse.forEach((v, i) => {
               if (v.category === '') return
               // * gaugeNumber
@@ -2868,7 +2871,8 @@ const setStore = () => {
                 context.textAlign = cV.align
                 offsetY += cV.width - padding * 2
               }
-              context.fillText(getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
+              context.fillText(
+                getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
             })
             return pV + cV.width
           }else return pV
