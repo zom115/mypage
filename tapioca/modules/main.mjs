@@ -3653,7 +3653,9 @@ const drawMain = () => {
   const WIDTH_RANGE = 16
   const WIDTH_RATIO = 1.5
   const HEIGHT_RANGE = 9
-  screenOwnPos = settingsObject.isReverseBoundary ? {
+  screenOwnPos = !settingsObject.isMiddleView ? {
+    x: canvas.offsetWidth * .5, y: canvas.offsetHeight * .5
+  } : settingsObject.isReverseBoundary ? {
     x: cursor.offsetX <= canvas.offsetWidth * WIDTH_RATIO * 2 / WIDTH_RANGE ?
       canvas.offsetWidth * (WIDTH_RANGE / 2 + WIDTH_RATIO * 2) / WIDTH_RANGE - cursor.offsetX :
       canvas.offsetWidth * (WIDTH_RANGE - WIDTH_RATIO * 2) / WIDTH_RANGE <= cursor.offsetX ?
