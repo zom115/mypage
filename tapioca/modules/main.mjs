@@ -3454,8 +3454,6 @@ const frameResetProcess = () => {
   if (ownState.stepLimit <= ownState.step) ownState.step = 0
 }
 const main = () => setInterval(() => {
-
-  if (isLeftMouseDownFirst) testWidth = cursor.offsetX
   frameCounter(internalFrameList)
   globalTimestamp = Date.now()
   intervalDiffTime = globalTimestamp - currentTime
@@ -3941,18 +3939,7 @@ const drawSettings = () => {
   })
   context.restore()
 }
-const txt = 'isWarehouse'
-let testWidth = size
 const drawDebug = () => {
-  let ttxt = ''
-  for (let i = txt.length; 0 <= i; i--) {
-    const text = i === txt.length ? txt : txt.slice(0, i) + '...'
-    let width = context.measureText(text).width
-    if (width <= testWidth) {
-      ttxt = text
-      break
-    }
-  }
   context.textAlign = 'right'
   context.font = `${size / 2}px sans-serif`
   context.fillStyle = 'hsl(0, 0%, 50%)'
