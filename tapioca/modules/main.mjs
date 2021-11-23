@@ -2749,16 +2749,29 @@ const setStore = () => {
               if (orderNumber === cI && !isDescending) {
                 if (cV.property === 'magazineSize') {
                   return b[cV.property] * b.magazines.length - a[cV.property] * a.magazines.length
+                } else if (cV.property === 'damage') {
+                  return b[cV.property] * b.gaugeNumber - a[cV.property] * a.gaugeNumber
+                } else if (cV.property === 'name') {
+                  if (a[cV.property] < b[cV.property]) return -1
+                  if (b[cV.property] < a[cV.property]) return 1
+                  return 0
                 } else return b[cV.property] - a[cV.property]
               } else {
                 if (cV.property === 'magazineSize') {
                   return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
+                } else if (cV.property === 'damage') {
+                  return a[cV.property] * a.gaugeNumber - b[cV.property] * b.gaugeNumber
+                } else if (cV.property === 'name') {
+                  if (b[cV.property] < a[cV.property]) return -1
+                  if (a[cV.property] < b[cV.property]) return 1
+                  return 0
                 } else return a[cV.property] - b[cV.property]
               }
             })
             if (orderNumber === cI) isDescending = !isDescending
             else isDescending = false
             orderNumber = cI
+            console.log(cV.property, warehouse[0][cV.property])
           }
 
           // Sort label
@@ -2962,8 +2975,8 @@ const setStore = () => {
               text += ` * ${v.magazines.length}`
             }
             let offsetY = warehouseOffset.x + pV + padding
+            context.textAlign = cV.align
             if (cV.align === 'right') {
-              context.textAlign = cV.align
               offsetY += cV.width - padding * 2
             }
             context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(v.rarity)]
