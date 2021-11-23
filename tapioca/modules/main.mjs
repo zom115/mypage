@@ -2929,6 +2929,23 @@ const setStore = () => {
             isChangeCursorImage = true
           } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
 
+          const drawInterectBoxArea = (box) => {
+            context.save()
+            if (isInner(box, cursor)) {
+              if (isLeftMouseDown) context.globalAlpha = .5
+              else context.globalAlpha = .3
+            } else context.globalAlpha = .1
+            context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
+            context.restore()
+          }
+          const LABEL_BOX = {
+            absoluteX: warehouseOffset.x + pV,
+            absoluteY: warehouseOffset.y,
+            width: cV.width,
+            height: size * .5
+          }
+          drawInterectBoxArea(LABEL_BOX)
+
           if (sendSortLabelIndex === cI) {
             if (
               cI < manipulateSortLabelIndex || (
@@ -2987,6 +3004,9 @@ const setStore = () => {
           })
           return pV + cV.width
         }, 0)
+        context.textAlign = 'left'
+        context.font = `${size * .5}px sans-serif`
+        context.fillText('TODO: Context menu, Filter, Scroll overall', size * .5, canvas.offsetHeight - size)
         context.restore()
       }
     }
