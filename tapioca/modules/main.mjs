@@ -2810,6 +2810,9 @@ const setStore = () => {
               warehouseColumn.splice(
                 warehouseColumn.findIndex(v => v.label === array[manipulateSortLabelIndex].label), 1)[0]
             )
+            if (orderNumber === manipulateSortLabelIndex) orderNumber = sendSortLabelIndex
+            else if (manipulateSortLabelIndex < orderNumber && orderNumber <= sendSortLabelIndex) orderNumber -= 1
+            else if (orderNumber < manipulateSortLabelIndex && sendSortLabelIndex <= orderNumber) orderNumber += 1
           }
 
           // Adjust width
