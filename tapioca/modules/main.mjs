@@ -137,7 +137,7 @@ let angleMode = setStorageFirst('angle', 'IJKL')
 let state = ''
 let locationList = ['bazaar', 'dungeon']
 let location = locationList[0]
-let dungeonList = ['Zombie', 'Homing', 'Ruins Star']
+let dungeonList = ['Zombie', 'Homing', 'Ruins Star', 'Boss']
 let dungeon = dungeonList[0]
 
 let point = 0
@@ -174,6 +174,8 @@ let recoilEffect = {
   dy: 0
 }
 let afterglow = {
+  startBoss: 0,
+  endBoss: 0,
   save: 0,
   point: [],
   inventory: 0,
@@ -2006,12 +2008,33 @@ const drawIndicator = () => {
   // c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
   // context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
   // context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
-  context.fillStyle =  // round number
-    0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
-    0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
-    'hsla(0, 100%, 30%, .7)'
-  c = {x: size, y: canvas.offsetHeight - size}
-  drawText(size * 1.5, 'left', wave.number, c)
+  context.save()
+  if (dungeon !== dungeonList[3]) {
+    context.fillStyle =  // round number
+      0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
+      0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
+      'hsla(0, 100%, 30%, .7)'
+    c = {x: size, y: canvas.offsetHeight - size}
+    drawText(size * 1.5, 'left', wave.number, c)
+  } else if (location === locationList[1]) {
+    bossArray.forEach(v => {
+      context.fillStyle = 'hsla(0, 100%, 50%, .7)'
+      context.fillRect(
+        canvas.offsetWidth * .25,
+        canvas.offsetHeight * .05,
+        canvas.offsetWidth * .5 * v.life / v.lifeLimit,
+        canvas.offsetHeight * .005
+      )
+      context.strokeStyle = 'hsla(0, 0%, 0%, .3)'
+      context.strokeRect(
+        canvas.offsetWidth * .25, canvas.offsetHeight * .05, canvas.offsetWidth * .5, canvas.offsetHeight * .005)
+      context.font = `${size * .5}px sans-serif`
+      context.fillStyle = 'hsla(0, 0%, 100%, .7)'
+      context.textAlign = 'right'
+      context.fillText(v.life, canvas.offsetWidth * .75, canvas.offsetHeight * .08)
+    })
+  }
+  context.restore()
 }
 const drawWeaponCategory = (box, weapon) => {
   context.save()
@@ -2447,6 +2470,41 @@ const setMap = () => {
   objects.push({x: offset.x - l*(251-295), y: offset.y - l*(435-460), width: l*17, height: l*5})
   objects.push({x: offset.x - l*(251-468), y: offset.y - l*(435-190), width: l*21, height: l*29})
 }
+const Boss = class {
+  constructor (life, x, y) {
+    this.type = 'boss',
+    this.life = life,
+    this.lifeLimit = life,
+    this.x = x,
+    this.y = y,
+    this.theta = 0,
+    this.speed = 0,
+    this.state = 'wait',
+    this.fuel = 0,
+    this.step = 0,
+    this.stepLimit = 1000,
+    this.imageID = 0
+  }
+}
+const bossArray = []
+let isDefeatBoss = false
+const bossProcessFirst = () => {
+  afterglow.startBoss = 1400
+  bossArray.push(new Boss(10000, ownPosition.x, ownPosition.y - canvas.offsetHeight * .4))
+}
+const bossProcess = () => {
+  if (0 < afterglow.startBoss) afterglow.startBoss -= intervalDiffTime
+  bossArray.forEach((v, i) => {
+    if (afterglow.startBoss <= 0) v.life -= intervalDiffTime
+    if (v.life <= 0) bossArray.splice(i, 1)
+  })
+  if (bossArray.length === 0 && afterglow.endBoss <= 0 && !isDefeatBoss) {
+    isDefeatBoss = true
+    afterglow.endBoss = 1000
+  }
+  if (0 < afterglow.endBoss) afterglow.endBoss -= intervalDiffTime
+  if (bossArray.length === 0) portalProcess()
+}
 const warehouseBox = {
   absoluteX: size * .25,
   absoluteY: size * 6.75,
@@ -2502,7 +2560,8 @@ const setStore = () => {
         portalFlag = false
         saveProcess()
         wave.number = 0
-        setWave()
+        if (dungeon !== dungeonList[3]) setWave()
+        else bossProcessFirst()
       }
       if (button(DUNGEON_SELECT_BOX)) {
         const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
@@ -3346,7 +3405,8 @@ const titleProcess = () => {
 }
 const combatProcess = () => {
   if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
-  waveProcess()
+  if (dungeon !== dungeonList[3]) waveProcess()
+  else bossProcess()
   if (0 < enemies.length) enemyProcess()
   bullets.forEach((bullet, i) => {
     bullet.update()
