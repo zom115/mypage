@@ -2949,7 +2949,7 @@ const setStore = () => {
 
           }
           warehouse.filter(v => v.category !== '').forEach((v, i) => {
-            // * gaugeNumber
+            context.save()
             let text = v[cV.property]
             if (cV.property === 'damage') {
               if (v.gaugeNumber !== 1) text += ` * ${v.gaugeNumber}`
@@ -2963,8 +2963,11 @@ const setStore = () => {
               context.textAlign = cV.align
               offsetY += cV.width - padding * 2
             }
+            context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(v.rarity)]
+            context.globalAlpha = .75
             context.fillText(
               getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
+            context.restore()
           })
           return pV + cV.width
         }, 0)
