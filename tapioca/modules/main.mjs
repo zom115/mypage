@@ -2720,9 +2720,10 @@ const setStore = () => {
     y: warehouseBox.absoluteY + size * .25
   }
 
-  let manipulateSwapIndex = -1
+  let manipulateSortLabelIndex = -1
+  let sendSortLabelIndex = -1
   let swapAbsoluteX = -1
-  let isSwapMode = false
+  let isSortLabel = false
 
   let manipulateColumnSizeNumber = -1
   let temporaryDiffX = -1
@@ -2732,89 +2733,121 @@ const setStore = () => {
       if (isInner(this, offset)) {
         isWarehouse = true
         if (downButton(saveBox, cursor)) saveProcess()
-        let pI = 0
-        warehouseColumn.reduce((pV, cV, cI, array) => {
-          if (cV.isShow) {
-            const padding = 10
+        warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
+          const padding = 10
 
-            const box = {
-              absoluteX: warehouseOffset.x + pV + padding,
-              absoluteY: warehouseOffset.y,
-              width: cV.width - padding * 2,
-              height: size / 2
-            }
+          const box = {
+            absoluteX: warehouseOffset.x + pV + padding,
+            absoluteY: warehouseOffset.y,
+            width: cV.width - padding * 2,
+            height: size / 2
+          }
 
-            // Sort weapon
-            if (button(box) && !isSwapMode) {
-              warehouse.sort((a, b) => {
-                if (orderNumber === cI && !isDescending) {
-                  if (cV.property === 'magazineSize') {
-                    return b[cV.property] * b.magazines.length - a[cV.property] * a.magazines.length
-                  } else return b[cV.property] - a[cV.property]
-                } else {
-                  if (cV.property === 'magazineSize') {
-                    return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
-                  } else return a[cV.property] - b[cV.property]
-                }
-              })
-              if (orderNumber === cI) isDescending = !isDescending
-              else isDescending = false
-              orderNumber = cI
-            }
-
-            // Sort label
-            if (downButton(box)) {
-              console.log(cI)
-              manipulateSwapIndex = cI
-              swapAbsoluteX = cursor.offsetX
-            }
-            if (0 <= manipulateSwapIndex && isLeftMouseDown && 5 <= Math.abs(swapAbsoluteX - cursor.offsetX)) {
-              isSwapMode = true
-            }
-            if(isSwapMode && isInner(box, cursor) && !isLeftMouseDown) {
-              box.width = cV.width * .5 - padding
-              const i = isInner(box, cursor) ? pI : cI
-              console.log(i, manipulateSwapIndex)
-              array.splice(i, 0, array.splice(manipulateSwapIndex, 1)[0])
-              console.log(array)
-              // array[cI] = [array[manipulateSwapIndex], array[manipulateSwapIndex] = array[cI]][0]
-              manipulateSwapIndex = -1
-              swapAbsoluteX = -1
-              isSwapMode = false
-            }
-
-            const colResizeBox = {
-              absoluteX: warehouseOffset.x + pV + cV.width - padding,
-              absoluteY: warehouseOffset.y,
-              width: padding * 2,
-              height: size * .5
-            }
-            pI = cI
-
-            // Adjust width
-            if (downButton(colResizeBox)) {
-              if (cV.width <= padding && isLeftMouseDownFirst) {
-                colResizeBox.absoluteX += padding
-                colResizeBox.width -= padding
-                if (isInner(colResizeBox, cursor)) {
-                  manipulateColumnSizeNumber = -1
-                  temporaryDiffX = -1
-                }
+          // Sort weapon
+          if (button(box) && !isSortLabel) {
+            warehouse.sort((a, b) => {
+              if (orderNumber === cI && !isDescending) {
+                if (cV.property === 'magazineSize') {
+                  return b[cV.property] * b.magazines.length - a[cV.property] * a.magazines.length
+                } else return b[cV.property] - a[cV.property]
+              } else {
+                if (cV.property === 'magazineSize') {
+                  return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
+                } else return a[cV.property] - b[cV.property]
               }
-              if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
-              if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
+            })
+            if (orderNumber === cI) isDescending = !isDescending
+            else isDescending = false
+            orderNumber = cI
+          }
+
+          // Sort label
+          if (downButton(box)) {
+            manipulateSortLabelIndex = cI
+            swapAbsoluteX = cursor.offsetX
+          }
+          // Start sort label mode if move 5px or more
+          if (
+            !isSortLabel &&
+            0 <= manipulateSortLabelIndex &&
+            isLeftMouseDown &&
+            5 <= Math.abs(swapAbsoluteX - cursor.offsetX)
+          ) isSortLabel = true
+
+          if (isSortLabel) {
+            if (cI === 0) {
+              if (cursor.offsetX < warehouseOffset.x + cV.width * .5) sendSortLabelIndex = cI
+            } else if (cI === array.length - 1) {
+              if (warehouseOffset.x + pV + array[cI].width * .5 < cursor.offsetX) sendSortLabelIndex = cI
+            } else if (
+              cI < manipulateSortLabelIndex &&
+              warehouseOffset.x + pV - array[cI - 1].width * .5 < cursor.offsetX &&
+              cursor.offsetX < warehouseOffset.x + pV + cV.width * .5
+            ) {
+              sendSortLabelIndex = cI
+            } else if (
+              manipulateSortLabelIndex < cI &&
+              warehouseOffset.x + pV + cV.width * .5 < cursor.offsetX &&
+              cursor.offsetX < warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
+            ) {
+              sendSortLabelIndex = cI
+            } else if (
+              cI === manipulateSortLabelIndex &&
+              warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
+              cursor.offsetX <= warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
+            ) {
+              sendSortLabelIndex = cI
             }
-            if (manipulateColumnSizeNumber === cI && isLeftMouseDown) {
-              const x = cursor.offsetX - temporaryDiffX
-              if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
+            if (
+              cursor.offsetY < warehouseOffset.y - size * .5 ||
+              warehouseOffset.y + size < cursor.offsetY
+            ) sendSortLabelIndex = -1
+          }
+          if(isSortLabel && isLeftMouseUpFirst && sendSortLabelIndex !== -1 && cI === array.length - 1) {
+            warehouseColumn.splice(
+              warehouseColumn.findIndex(v => v.label === array[sendSortLabelIndex].label),
+              0,
+              warehouseColumn.splice(
+                warehouseColumn.findIndex(v => v.label === array[manipulateSortLabelIndex].label), 1)[0]
+            )
+          }
+
+          // Adjust width
+          const colResizeBox = {
+            absoluteX: warehouseOffset.x + pV + cV.width - padding,
+            absoluteY: warehouseOffset.y,
+            width: padding * 2,
+            height: size * .5
+          }
+
+          if (downButton(colResizeBox)) {
+            if (cV.width <= padding && isLeftMouseDownFirst) {
+              colResizeBox.absoluteX += padding
+              colResizeBox.width -= padding
+              if (isInner(colResizeBox, cursor)) {
+                manipulateColumnSizeNumber = -1
+                temporaryDiffX = -1
+              }
             }
-            if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
-              temporaryDiffX = -1
-              manipulateColumnSizeNumber = -1
-            }
-            return pV + cV.width
-          } else return pV
+            if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
+            if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
+          }
+          if (manipulateColumnSizeNumber === cI && isLeftMouseDown) {
+            const x = cursor.offsetX - temporaryDiffX
+            if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
+          }
+          if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
+            temporaryDiffX = -1
+            manipulateColumnSizeNumber = -1
+          }
+          return pV + cV.width
         }, 0)
+        if((isSortLabel || sendSortLabelIndex === -1) && !isLeftMouseDown) { // Reset sort label
+          manipulateSortLabelIndex = -1
+          sendSortLabelIndex = -1
+          swapAbsoluteX = -1
+          isSortLabel = false
+        }
         if (downButton(warehouseBox, cursor)) {
           let bool = false
           warehouse.forEach((v, i) => {
@@ -2861,7 +2894,7 @@ const setStore = () => {
         context.textBaseline = 'top'
         context.fillStyle = 'hsla(0, 0%, 100%, .5)'
         let isChangeCursorImage = false
-        warehouseColumn.reduce((pV, cV, cI, array) => {
+        warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
           const getRistrictWidthText = (str, w) => {
             for (let i = str.length; 0 <= i; i--) {
               const text = i === str.length ? str : str.slice(0, i) + '...'
@@ -2869,48 +2902,70 @@ const setStore = () => {
             }
             return ''
           }
-          const padding = size / 8
-          if (cV.isShow) {
-            const box = {
-              absoluteX: warehouseOffset.x + pV + cV.width - 10,
-              absoluteY: warehouseOffset.y,
-              width: 20,
-              height: size * .5
-            }
-            if (isInner(box, cursor) || manipulateColumnSizeNumber !== -1) {
-              canvas.style.cursor = 'col-resize'
-              isChangeCursorImage = true
-            } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
-            context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 1, size / 2)
-            context.textAlign = 'left'
-            context.fillText(
-              getRistrictWidthText(cV.label, cV.width), warehouseOffset.x + pV + padding, warehouseOffset.y)
-            if (cI === orderNumber) {
-              context.textAlign = 'center'
-              if (isDescending) {
-                context.fillText('∨', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
-              } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+          const box = {
+            absoluteX: warehouseOffset.x + pV + cV.width - 10,
+            absoluteY: warehouseOffset.y,
+            width: 20,
+            height: size * .5
+          }
+          if ((isInner(box, cursor) || manipulateColumnSizeNumber !== -1) && !isSortLabel) {
+            canvas.style.cursor = 'col-resize'
+            isChangeCursorImage = true
+          } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
 
+          if (sendSortLabelIndex === cI) {
+            if (
+              cI < manipulateSortLabelIndex || (
+              cI === manipulateSortLabelIndex &&
+              warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
+              cursor.offsetX <= warehouseOffset.x + pV + cV.width * .5)
+            ) {
+              context.fillRect(warehouseOffset.x + pV - 1, warehouseOffset.y, 3, size / 2)
+            } else { // manipulateSortLabelIndex < cI
+              context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 3, size / 2)
             }
-            warehouse.forEach((v, i) => {
-              if (v.category === '') return
-              // * gaugeNumber
-              let text = v[cV.property]
-              if (cV.property === 'penetrationForce' || cV.property === 'effectiveRange') {
-                text = text.toPrecision(3)
-              } else if (cV.property === 'magazineSize') {
-                text += ` * ${v.magazines.length}`
-              }
-              let offsetY = warehouseOffset.x + pV + padding
-              if (cV.align === 'right') {
-                context.textAlign = cV.align
-                offsetY += cV.width - padding * 2
-              }
-              context.fillText(
-                getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
-            })
-            return pV + cV.width
-          }else return pV
+          }
+          context.fillRect(warehouseOffset.x + pV, warehouseOffset.y, 1, size / 2)
+          if (cI === array.length - 1) {
+            context.fillRect(warehouseOffset.x + pV + cV.width , warehouseOffset.y, 1, size / 2)
+          }
+
+          context.textAlign = 'left'
+          const padding = size / 8
+          context.fillText(
+            getRistrictWidthText(cV.label, cV.width), warehouseOffset.x + pV + padding, warehouseOffset.y)
+          if (isSortLabel && manipulateSortLabelIndex === cI && sendSortLabelIndex !== -1) {
+            context.fillText(
+              getRistrictWidthText(cV.label, cV.width),
+              warehouseOffset.x + pV + padding - swapAbsoluteX + cursor.offsetX,
+              warehouseOffset.y - size * .5
+            )
+          }
+          if (cI === orderNumber) {
+            context.textAlign = 'center'
+            if (isDescending) {
+              context.fillText('∨', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+            } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+
+          }
+          warehouse.forEach((v, i) => {
+            if (v.category === '') return
+            // * gaugeNumber
+            let text = v[cV.property]
+            if (cV.property === 'penetrationForce' || cV.property === 'effectiveRange') {
+              text = text.toPrecision(3)
+            } else if (cV.property === 'magazineSize') {
+              text += ` * ${v.magazines.length}`
+            }
+            let offsetY = warehouseOffset.x + pV + padding
+            if (cV.align === 'right') {
+              context.textAlign = cV.align
+              offsetY += cV.width - padding * 2
+            }
+            context.fillText(
+              getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
+          })
+          return pV + cV.width
         }, 0)
         context.restore()
       }
