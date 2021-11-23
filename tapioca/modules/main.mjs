@@ -2934,7 +2934,7 @@ const setStore = () => {
             if (isInner(box, cursor)) {
               if (isLeftMouseDown) context.globalAlpha = .5
               else context.globalAlpha = .3
-            } else context.globalAlpha = .1
+            } else context.globalAlpha = .05
             context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
             context.restore()
           }
@@ -2944,7 +2944,7 @@ const setStore = () => {
             width: cV.width,
             height: size * .5
           }
-          drawInterectBoxArea(LABEL_BOX)
+          if (!isSortLabel) drawInterectBoxArea(LABEL_BOX)
 
           if (sendSortLabelIndex === cI) {
             if (
