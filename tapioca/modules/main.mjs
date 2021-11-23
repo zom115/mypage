@@ -2948,11 +2948,12 @@ const setStore = () => {
             } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
 
           }
-          warehouse.forEach((v, i) => {
-            if (v.category === '') return
+          warehouse.filter(v => v.category !== '').forEach((v, i) => {
             // * gaugeNumber
             let text = v[cV.property]
-            if (cV.property === 'penetrationForce' || cV.property === 'effectiveRange') {
+            if (cV.property === 'damage') {
+              if (v.gaugeNumber !== 1) text += ` * ${v.gaugeNumber}`
+            } else if (cV.property === 'penetrationForce' || cV.property === 'effectiveRange') {
               text = text.toPrecision(3)
             } else if (cV.property === 'magazineSize') {
               text += ` * ${v.magazines.length}`
