@@ -2267,6 +2267,7 @@ const portalProcess = () => {
       portalCooldinate.y += size * 3
       location = locationList[0]
       objects = []
+      dropItems = []
       saveProcess()
       setStore()
     }
@@ -2276,6 +2277,7 @@ const portalProcess = () => {
       portalCooldinate.y = 0
       location = locationList[1]
       objects = []
+      dropItems = []
       saveProcess()
       setWave()
     }
@@ -2496,6 +2498,7 @@ const setStore = () => {
       if (button(START_BOX)) {
         location = locationList[1]
         objects = []
+        dropItems = []
         portalFlag = false
         saveProcess()
         wave.number = 0
@@ -2771,7 +2774,6 @@ const setStore = () => {
             if (orderNumber === cI) isDescending = !isDescending
             else isDescending = false
             orderNumber = cI
-            console.log(cV.property, warehouse[0][cV.property])
           }
 
           // Sort label
@@ -3487,6 +3489,9 @@ const drawBox = (box, alpha = 1) => {
   context.fillText(box.text, box.offsetX, box.offsetY)
   context.restore()
 }
+const drawImage = (img, x, y) => {
+  context.drawImage(img, ~~(x+.5), ~~(y+.5))
+}
 const drawTitleScreen = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -3518,7 +3523,8 @@ const drawTitleScreen = () => {
   if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y + size/16
   if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
-
+  const IMG = ms < 500 ? 'images/JK1_NL.png' : 'images/JK1_NR.png'
+  drawImage(loadedMap[IMG], size, size)
 }
 const drawScreenEdge = (obj, hue) => {
   context.save()
@@ -3952,11 +3958,7 @@ const drawDebug = () => {
   context.fillStyle = 'hsl(0, 0%, 50%)'
   const dictionary = {
     internalFps: internalFrameList.length - 1,
-    screenFps: animationFrameList.length - 1,
-    'player(x, y)': `${ownPosition.x|0} ${ownPosition.y|0}`,
-    'cursor(x, y)': `${cursor.offsetX} ${cursor.offsetY}`,
-    a: ttxt,
-    b: testWidth
+    screenFps: animationFrameList.length - 1
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
@@ -3986,6 +3988,9 @@ const imagePathList = [
   'images/TP2LD.png',
   'images/TP2L.png',
   'images/TP2LU.png',
+  'images/JK1_NL.png',
+  'images/JK1_NN.png',
+  'images/JK1_NR.png',
   'images/JK32F.png',
   'images/JK32L.png',
   'images/JK32R.png',
