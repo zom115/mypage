@@ -534,6 +534,8 @@ const Weapon = class {
 }
 let warehouse = []
 let isWarehouse = false
+let orderNumber = -1
+let isDescending = false
 let inventory = []
 let holdSlot = {category: ''}
 let mainSlotSize = 3
@@ -2369,6 +2371,8 @@ const inventoryProcess = () => {
         if (isWarehouse) {
           warehouse.push(inventory[i])
           inventory[i] = {category: ''}
+          orderNumber = -1
+          isDescending = false
         } else {
           let findIndex = -1
           if (i < mainSlotSize) {
@@ -2968,8 +2972,6 @@ const setStore = () => {
       isShow: true
     }
   ]
-  let orderNumber = -1
-  let isDescending = false
   warehouseColumn.forEach(v => {
     v.width = context.measureText(v.label).width + size * .25
   })
@@ -3145,12 +3147,16 @@ const setStore = () => {
                 [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
                 if (warehouse[i].category === '') warehouse.splice(i, 1)
                 bool = true
+                orderNumber = -1
+                isDescending = false
               }
             }
           })
           if (!bool && holdSlot.category !== '') {
             warehouse.push(holdSlot)
             holdSlot = {category: ''}
+            orderNumber = -1
+            isDescending = false
           }
         }
       } else isWarehouse = false
@@ -4236,7 +4242,7 @@ const drawDebug = () => {
   const dictionary = {
     internalFps: internalFrameList.length - 1,
     screenFps: animationFrameList.length - 1,
-    a: enemyBulletArray.length
+    a: orderNumber
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
