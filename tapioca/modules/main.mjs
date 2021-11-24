@@ -3404,7 +3404,6 @@ const reset = () => {
   location = locationList[0]
   objects = []
   dropItems = []
-  setStore()
   // if (mapMode) setMap()
 
   const temporaryPoint = JSON.parse(storage.getItem('point'))
@@ -3498,6 +3497,7 @@ const reset = () => {
   setWave()
   wave.roundInterval = 0
   defeatCount = 0
+  setStore()
 }; reset()
 let mapMode = false
 const swap = (get, set) => {
@@ -3671,7 +3671,6 @@ const resultProcess = () => {
     enemyBulletArray.forEach(v => {
       v.life = 0
     })
-    setStore()
     wave.number = 0
     wave.enemySpawnInterval = 0
     wave.enemySpawnIntervalLimit = 0
@@ -3680,6 +3679,7 @@ const resultProcess = () => {
     setWave()
     wave.roundInterval = 0
     defeatCount = 0
+    setStore()
 
   }
 }
