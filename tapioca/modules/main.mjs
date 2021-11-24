@@ -140,6 +140,228 @@ let location = locationList[0]
 let dungeonList = ['Zombie', 'Homing', 'Ruins Star', 'Boss']
 let dungeon = dungeonList[0]
 
+let bossArray = []
+let enemyBulletArray = []
+let array = [enemyBulletArray, bossArray]
+
+const EnemyBullet = class {
+  constructor (life, x, y, radius, speed, theta, additionalRadius = 0, additionalSpeed = 0, additionalTheta = 0) {
+    this.life = life
+    this.x = x
+    this.y = y
+    this.radius = radius
+    this.speed = speed
+    this.theta = theta
+    this.additionalRadius = additionalRadius
+    this.additionalSpeed = additionalSpeed
+    this.additionalTheta = additionalTheta
+  }
+  update = () => {
+    this.life -= intervalDiffTime
+    this.x += this.speed * Math.cos(this.theta) * intervalDiffTime
+    this.y += this.speed * Math.sin(this.theta) * intervalDiffTime
+    this.radius += this.additionalRadius * intervalDiffTime
+    this.speed += this.additionalSpeed * intervalDiffTime
+    this.theta += this.additionalTheta * intervalDiffTime
+  }
+  render = () => {
+    context.save()
+    context.fillStyle = 'hsl(0, 100%, 100%)'
+    context.beginPath()
+    context.arc(relativeX(this.x), relativeY(this.y), this.radius, 0, 2 * Math.PI)
+    context.fill()
+    context.restore()
+  }
+}
+const HomingBullet = class {
+  constructor (life, x, y, radius, speed, theta, waitTime, homingSpeed, deltaTheta) {
+    this.life = life
+    this.x = x
+    this.y = y
+    this.radius = radius
+    this.speed = speed
+    this.theta = theta
+    this.waitTime = waitTime
+    this.isHoming = false
+    this.homingSpeed = homingSpeed
+    this.deltaTheta = deltaTheta
+  }
+  update = () => {
+    this.life -= intervalDiffTime
+    this.waitTime -= intervalDiffTime
+    const DELTA_THETA = this.deltaTheta * intervalDiffTime
+    this.theta +=
+      (this.x + this.radius * Math.cos(this.theta) - this.x) * (ownPosition.y - this.y) - (
+        ownPosition.x - this.x) * (this.y + this.radius * Math.sin(this.theta) - this.y) < 0 ?  // Cross product
+      -DELTA_THETA : DELTA_THETA
+    const SPEED = this.waitTime <= 0 ? this.homingSpeed : this.speed
+    this.x += SPEED * Math.cos(this.theta) * intervalDiffTime
+    this.y += SPEED * Math.sin(this.theta) * intervalDiffTime
+  }
+  render = () => {
+    context.save()
+    context.fillStyle = 'hsl(0, 100%, 100%)'
+    context.beginPath()
+    context.arc(relativeX(this.x), relativeY(this.y), this.radius, 0, 2 * Math.PI)
+    context.fill()
+    context.restore()
+  }
+}
+
+const Boss = class {
+  constructor (x, y, life) {
+    this.x = x,
+    this.y = y,
+    this.life = life
+    this.lifeLimit = life
+    this.initialTime = 3000
+    this.initialTimeLimit = 3000
+    this.state = 'active'
+    this.coolTime = 0
+    this.count = 3
+    this.front = 0
+  }
+  update () {
+    if (this.initialTime <= 0) this.life -= intervalDiffTime
+    if (0 < this.initialTime) this.initialTime -= intervalDiffTime
+    if (0 < this.coolTime) this.coolTime -= intervalDiffTime
+    else this.state = 'active'
+    this.bulletController()
+  }
+  bulletController () {
+    if (this.life < 25000 && this.state === 'active') {
+      this.front = this.getFront()
+      const SEMISIRCLE = this.count % 2 ? 0 : Math.PI
+      enemyBulletArray.push(new HomingBullet(
+        10000, this.x, this.y, 8, .1, this.front + Math.PI * .5 + SEMISIRCLE + Math.random() * .5, 1500, .25, .001))
+      this.count += 1
+      this.state = 'wait'
+      if (this.count % 16 === 0) {
+        this.coolTime = 2000
+        this.count = 0
+      } else this.coolTime = 150
+    }
+    if (35000 < this.life && this.life < 40000) this.count = 0
+    if (45000 < this.life && this.life < 60000 && this.state === 'active') {
+      const sign = this.count % 2 ? 1 : -1
+      enemyBulletArray.push(
+        new EnemyBullet(20000, this.x, this.y, 16, .15, 2 * Math.PI * Math.random(), .001, 0, sign * Math.PI * .0001))
+      this.count += 1
+      this.state = 'wait'
+      this.coolTime = 100
+    }
+    if (63000 < this.life && this.life < 64000) this.count = 0
+    if (65000 < this.life && this.life < 95000 && this.state === 'active') { // balkan
+      this.front = this.getFront()
+      const VALUE = Math.floor(this.count * .02) + 4
+      for (let i = 0; i < VALUE; i++) {
+        enemyBulletArray.push(new EnemyBullet(
+          20000, this.x, this.y, 8, .1, this.front + 2 * Math.PI * (i + .5) / VALUE))
+      }
+      const WEIGHT = 25
+      if (this.count % WEIGHT === 0) {
+        const N = Math.ceil(this.count / WEIGHT) + 4
+        for (let i = 0; i < N; i++) {
+          enemyBulletArray.push(new EnemyBullet(
+            20000, this.x, this.y, 8, .15, this.front + 2 * Math.PI * i / N, .3 / N))
+        }
+      }
+      this.count += 1
+      this.state = 'wait'
+      this.coolTime = 150
+    }
+    if (95000 < this.life && this.life < 96000) this.count = 0
+    if (100000 < this.life && this.life < 127000 && this.state === 'active') { // n-way around
+      if (this.count === 3) this.front = this.getFront()
+      for (let i = 0; i < this.count; i++) {
+        enemyBulletArray.push(new EnemyBullet(
+          20000, this.x, this.y, 190 - this.count * 8, .1, this.front + this.count % 2 * Math.PI + 2 * Math.PI * i / this.count))
+      }
+      this.count += 1
+      this.state = 'wait'
+      this.coolTime = 3000
+    }
+  }
+  getFront () {
+    return Math.atan2(ownPosition.y - this.y, ownPosition.x - this.x)
+  }
+  render () {
+
+    if (0 < this.initialTime) this.renderWarning()
+    context.save()
+    context.fillStyle = 'hsla(0, 100%, 50%, .7)'
+    const ratio = 0 < this.initialTime ? (
+      this.initialTimeLimit - this.initialTime) / this.initialTimeLimit : 1
+    context.fillRect( // life gauge
+      canvas.offsetWidth * .25,
+      canvas.offsetHeight * .05,
+      canvas.offsetWidth * .5 * this.life / this.lifeLimit * ratio,
+      canvas.offsetHeight * .005
+    )
+    context.strokeStyle = 'hsla(0, 0%, 0%, .3)'
+    context.strokeRect( // life outline
+      canvas.offsetWidth * .25, canvas.offsetHeight * .05, canvas.offsetWidth * .5, canvas.offsetHeight * .005)
+    context.font = `Italic ${size * .5}px sans-serif`
+    context.fillStyle = 'hsla(0, 0%, 100%, .7)'
+    context.textAlign = 'right'
+    context.fillText(Math.floor(this.life * ratio), canvas.offsetWidth * .75, canvas.offsetHeight * .075)
+    context.fillStyle = 'hsl(120, 100%, 50%)'
+    // context.beginPath()
+    // context.arc(relativeX(this.x), relativeY(this.y), size * .5, 0, 2 * Math.PI)
+    // context.fill()
+    const IMAGE_PATH = 'images/JK1_NN.png'
+    drawImage(
+      loadedMap[IMAGE_PATH],
+      relativeX(this.x - loadedMap[IMAGE_PATH].width / 2),
+      relativeY(this.y - loadedMap[IMAGE_PATH].height / 2))
+    // context.arc(relativeX(this.x), relativeY(this.y), size * .5, 0, 2 * Math.PI)
+
+    context.restore()
+  }
+  renderWarning () {
+    context.save()
+    const a = 500
+    const alpha =
+      this.initialTime <= a ? context.globalAlpha = this.initialTime / a :
+      this.initialTimeLimit - a <= this.initialTime ?
+      context.globalAlpha = (this.initialTimeLimit - this.initialTime) / a : 1
+    context.fillStyle = `hsla(0, 0%, 0%, ${alpha})`
+    context.fillRect(0, canvas.offsetHeight * .3, canvas.offsetWidth, canvas.offsetHeight * .4)
+
+    context.fillStyle = `hsla(0, 100%, 50%, ${alpha})`
+    context.font = `bold ${size * 4}px sans-serif`
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    context.fillText('WARNING', canvas.offsetWidth * .5, canvas.offsetHeight * .5)
+    let offsetY = canvas.offsetHeight * .31
+    const length = 24
+    const speed = 2
+    for (let i = 0; i < length; i++) {
+      const offsetX = size * i * 2 - (this.initialTime / 10) % size * 2 * speed
+      context.beginPath()
+      context.moveTo(offsetX, offsetY)
+      context.lineTo(offsetX + size, offsetY)
+      context.lineTo(offsetX - size * .5, offsetY + canvas.offsetHeight * .08)
+      context.lineTo(offsetX - size * 1.5, offsetY + canvas.offsetHeight * .08)
+      context.closePath()
+      context.fill()
+    }
+    offsetY = canvas.offsetHeight * .61
+    for (let i = 0; i < length; i++) {
+      const offsetX = size * i * 2 + (this.initialTime / 10) % size * 2 * speed - size * 16
+      context.beginPath()
+      context.moveTo(offsetX, offsetY)
+      context.lineTo(offsetX + size, offsetY)
+      context.lineTo(offsetX - size * .5, offsetY + canvas.offsetHeight * .08)
+      context.lineTo(offsetX - size * 1.5, offsetY + canvas.offsetHeight * .08)
+      context.closePath()
+      context.fill()
+    }
+
+    context.restore()
+  }
+}
+
 let point = 0
 let portalFlag = false
 let portalCooldinate = {x: 0, y: 0}
@@ -175,6 +397,7 @@ let recoilEffect = {
 }
 let afterglow = {
   startBoss: 0,
+  startBossLimit: 3000,
   endBoss: 0,
   save: 0,
   point: [],
@@ -2016,23 +2239,6 @@ const drawIndicator = () => {
       'hsla(0, 100%, 30%, .7)'
     c = {x: size, y: canvas.offsetHeight - size}
     drawText(size * 1.5, 'left', wave.number, c)
-  } else if (location === locationList[1]) {
-    bossArray.forEach(v => {
-      context.fillStyle = 'hsla(0, 100%, 50%, .7)'
-      context.fillRect(
-        canvas.offsetWidth * .25,
-        canvas.offsetHeight * .05,
-        canvas.offsetWidth * .5 * v.life / v.lifeLimit,
-        canvas.offsetHeight * .005
-      )
-      context.strokeStyle = 'hsla(0, 0%, 0%, .3)'
-      context.strokeRect(
-        canvas.offsetWidth * .25, canvas.offsetHeight * .05, canvas.offsetWidth * .5, canvas.offsetHeight * .005)
-      context.font = `${size * .5}px sans-serif`
-      context.fillStyle = 'hsla(0, 0%, 100%, .7)'
-      context.textAlign = 'right'
-      context.fillText(v.life, canvas.offsetWidth * .75, canvas.offsetHeight * .08)
-    })
   }
   context.restore()
 }
@@ -2470,32 +2676,14 @@ const setMap = () => {
   objects.push({x: offset.x - l*(251-295), y: offset.y - l*(435-460), width: l*17, height: l*5})
   objects.push({x: offset.x - l*(251-468), y: offset.y - l*(435-190), width: l*21, height: l*29})
 }
-const Boss = class {
-  constructor (life, x, y) {
-    this.type = 'boss',
-    this.life = life,
-    this.lifeLimit = life,
-    this.x = x,
-    this.y = y,
-    this.theta = 0,
-    this.speed = 0,
-    this.state = 'wait',
-    this.fuel = 0,
-    this.step = 0,
-    this.stepLimit = 1000,
-    this.imageID = 0
-  }
-}
-const bossArray = []
 let isDefeatBoss = false
 const bossProcessFirst = () => {
-  afterglow.startBoss = 1400
-  bossArray.push(new Boss(10000, ownPosition.x, ownPosition.y - canvas.offsetHeight * .4))
+  bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
 }
 const bossProcess = () => {
-  if (0 < afterglow.startBoss) afterglow.startBoss -= intervalDiffTime
+  if (0 < this.initialTime) this.initialTime -= intervalDiffTime
   bossArray.forEach((v, i) => {
-    if (afterglow.startBoss <= 0) v.life -= intervalDiffTime
+    if (this.initialTime <= 0) v.life -= intervalDiffTime
     if (v.life <= 0) bossArray.splice(i, 1)
   })
   if (bossArray.length === 0 && afterglow.endBoss <= 0 && !isDefeatBoss) {
@@ -2505,6 +2693,14 @@ const bossProcess = () => {
   if (0 < afterglow.endBoss) afterglow.endBoss -= intervalDiffTime
   if (bossArray.length === 0) portalProcess()
 }
+// const drawBoss = () => {
+//   bossArray.forEach(v => {
+//     context.drawImage(
+//       loadedMap['images/JK1_NL.png'], ~~(relativeX(v.x)+.5), ~~(relativeY(v.y)+.5)
+//     )
+//     console.log(v.x, v.y)
+//   })
+// }
 const warehouseBox = {
   absoluteX: size * .25,
   absoluteY: size * 6.75,
@@ -3404,9 +3600,15 @@ const titleProcess = () => {
   */
 }
 const combatProcess = () => {
+  enemyBulletArray.forEach(v => {
+    if (((
+      ownPosition.x - v.x) ** 2 + (ownPosition.y - v.y) ** 2) ** .5 < v.radius + size * .2 &&
+      dash.coolTime < dash.coolTimeLimit - dash.invincibleTime
+    ) state = 'result'
+  })
+
   if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
   if (dungeon !== dungeonList[3]) waveProcess()
-  else bossProcess()
   if (0 < enemies.length) enemyProcess()
   bullets.forEach((bullet, i) => {
     bullet.update()
@@ -3427,6 +3629,16 @@ const mainProcess = () => {
   if (angle !== 0) angle = 0
   if (0 < dropItems.length) dropItemProcess()
   inventoryProcess()
+
+  const arrayUpdater = array => {
+    array.forEach((v, i) => {
+      v.update()
+    if (v.life <= 0) array.splice(i, 1)
+    })
+  }
+  array.forEach(v => {
+    arrayUpdater(v)
+  })
 
   if (location === locationList[0]) {
     storeProcess()
@@ -3453,6 +3665,12 @@ const resultProcess = () => {
     bullets = []
     enemies = []
     objects = []
+    bossArray.forEach(v => {
+      v.life = 0
+    })
+    enemyBulletArray.forEach(v => {
+      v.life = 0
+    })
     setStore()
     wave.number = 0
     wave.enemySpawnInterval = 0
@@ -3746,8 +3964,18 @@ const drawMain = () => {
   if (0 < bullets.length) drawBullets()
   if (0 < enemies.length) drawEnemies()
   if (0 < dropItems.length) drawDropItems()
-  drawMyself()
   drawIndicator()
+
+  const arrayRenderer = array => {
+    array.forEach(v => {
+      v.render()
+    })
+  }
+  array.forEach(v => {
+    arrayRenderer(v)
+  })
+
+  drawMyself()
   drawSlot()
   if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim()
   if (0 <= afterglow.save) drawSaveCompleted()
@@ -4007,7 +4235,8 @@ const drawDebug = () => {
   context.fillStyle = 'hsl(0, 0%, 50%)'
   const dictionary = {
     internalFps: internalFrameList.length - 1,
-    screenFps: animationFrameList.length - 1
+    screenFps: animationFrameList.length - 1,
+    a: enemyBulletArray.length
   }
   Object.entries(dictionary).forEach((v, i) => {
     context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
