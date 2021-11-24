@@ -3271,7 +3271,7 @@ const setStore = () => {
         context.font = `${size * .5}px sans-serif`
         context.fillText('TODO: Context menu, Filter, Scroll overall', size * .5, canvas.offsetHeight - size)
         context.restore()
-      }
+      } else canvas.style.cursor = 'default'
     }
   }
   objects.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
