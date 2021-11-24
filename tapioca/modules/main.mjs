@@ -2704,7 +2704,7 @@ const bossProcess = () => {
 const warehouseBox = {
   absoluteX: size * .25,
   absoluteY: size * 6.75,
-  width: size * 10.5,
+  width: size * 20.5,
   height: size * 15.5
 }
 const setStore = () => {
@@ -2935,7 +2935,7 @@ const setStore = () => {
       property: 'category',
       width: 80,
       align: 'left',
-      isShow: false
+      isShow: true
     }, {
       label: 'Mode',
       property: 'mode',
