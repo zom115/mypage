@@ -16,6 +16,7 @@ const isKeyFirst = list => {
 }
 const version = 'v.0.9'
 const canvas = document.getElementById`canvas`
+const font = 'jkmarugo'
 
 let cursor = {offsetX: 0, offsetY: 0}
 let mouseDownPos = {offsetX: 0, offsetY: 0}
@@ -301,7 +302,7 @@ const Boss = class {
     context.strokeStyle = 'hsla(0, 0%, 0%, .3)'
     context.strokeRect( // life outline
       canvas.offsetWidth * .25, canvas.offsetHeight * .05, canvas.offsetWidth * .5, canvas.offsetHeight * .005)
-    context.font = `Italic ${size * .5}px sans-serif`
+    context.font = `Italic ${size * .5}px ${font}`
     context.fillStyle = 'hsla(0, 0%, 100%, .7)'
     context.textAlign = 'right'
     context.fillText(Math.floor(this.life * ratio), canvas.offsetWidth * .75, canvas.offsetHeight * .075)
@@ -329,7 +330,7 @@ const Boss = class {
     context.fillRect(0, canvas.offsetHeight * .3, canvas.offsetWidth, canvas.offsetHeight * .4)
 
     context.fillStyle = `hsla(0, 100%, 50%, ${alpha})`
-    context.font = `bold ${size * 4}px sans-serif`
+    context.font = `bold ${size * 4}px ${font}`
     context.textAlign = 'center'
     context.textBaseline = 'middle'
     context.fillText('WARNING', canvas.offsetWidth * .5, canvas.offsetHeight * .5)
@@ -803,7 +804,7 @@ let screenOwnPos = {x: 0, y: 0}
 
 const setAbsoluteBox = (box) => {
   context.save()
-  context.font = `${size}px sans-serif`
+  context.font = `${size}px ${font}`
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   const measure = context.measureText(box.text)
@@ -1895,14 +1896,14 @@ const drawEnemies = () => {
       context.restore()
       if (debugMode) {
         if (0 < enemy.life) {
-          context.font = `${size/2}px sans-serif`
+          context.font = `${size/2}px ${font}`
           context.fillRect(relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2),
           enemy.life / wave.enemyHitPoint * size, size / 16)
           // context.fillText(Math.ceil(enemy.life) // numerical drawing
           // , relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2))
         }
         // pop damage
-        context.font = `${size * 2 / 3 * enemy.timer/damageTimerLimit}px sans-serif`
+        context.font = `${size * 2 / 3 * enemy.timer/damageTimerLimit}px ${font}`
         context.fillStyle = `hsla(0, 0%, 50%, ${enemy.timer/damageTimerLimit})`
         context.fillText(
           Math.ceil(enemy.damage),
@@ -2066,14 +2067,14 @@ const drawDropItems = () => {
   })
 }
 const drawText = (fontSize, align, content, coordinate) => {
-  context.font = `${fontSize}px sans-serif`
+  context.font = `${fontSize}px ${font}`
   context.textAlign = align
   context.fillText(content, coordinate.x, coordinate.y)
 }
 const drawIndicator = () => {
   let c = {x: canvas.offsetWidth - size / 2, y: canvas.offsetHeight - size}
   context.save()
-  context.font = `${size * .5}px sans-serif`
+  context.font = `${size * .5}px ${font}`
   context.fillStyle = 'hsl(330, 100%, 50%)'
   context.globalAlpha = .7
   if (homingFlag) {
@@ -2089,19 +2090,19 @@ const drawIndicator = () => {
     context.fillText('3', c.x - size * 2, c.y - size * 8)
   }
     context.restore()
-  context.font = `${size}px sans-serif`
+  context.font = `${size}px ${font}`
   context.fillStyle = 'hsla(120, 100%, 30%, .7)'
   context.textAlign = 'right'
   context.fillText(point, c.x, c.y - size * 5)
   context.fillStyle = 'hsla(60, 100%, 50%, .7)'
   if (0 < afterglow.point.length) {
-    context.font = `${size*.75}px sans-serif`
+    context.font = `${size*.75}px ${font}`
     afterglow.point.forEach((x, i) => {
       context.fillText(`+${x.number}`, c.x - size * 2 - (30 - x.count)/2, c.y - size * 6)
       x.count = (x.count-1)|0
       if (x.count <= 0) afterglow.point.splice(i, 1)
     })
-    context.font = `${size}px sans-serif`
+    context.font = `${size}px ${font}`
   }
   if (inventory[selectSlot].category !== '') {
     const cartridges = inventory[selectSlot].magazines[inventory[selectSlot].grip]
@@ -2122,7 +2123,7 @@ const drawIndicator = () => {
     if (settingsObject.isManipulateCode && 1 < inventory[selectSlot].modeList.length) {
       context.fillStyle = 'hsla(210, 100%, 75%, .4)'
       context.fillRect(c.x - size * .55, c.y - size * 10.6, size * .6, size * .6)
-      context.font = `${size*.75}px sans-serif`
+      context.font = `${size*.75}px ${font}`
       context.fillStyle = 'hsla(0, 0%, 100%, .4)'
       context.fillText(extractCode(action.modeSelect), c.x , c.y - size * 10)
     }
@@ -2249,7 +2250,7 @@ const drawWeaponCategory = (box, weapon) => {
   context.fillStyle= weaponRatiryColorList[weaponRarityList.indexOf(weapon.rarity)]
   context.globalAlpha = weapon.level <= wave.number ? 1 : .5
   context.textAlign = 'center'
-  context.font = `${size * .75}px sans-serif`
+  context.font = `${size * .75}px ${font}`
   context.fillText(weapon.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
   if (weapon.category !== '') {
     let totalAmmo = 0
@@ -2270,7 +2271,7 @@ const strokeText = (text, x, y, maxWidth) => {
 }
 const drawWeaponDetail = (box, i) => {
   if (inventory[i].category !== '' && isInner(box, cursor)) {
-    context.font = `${size*.75}px sans-serif`
+    context.font = `${size*.75}px ${font}`
     context.textAlign = 'left'
     context.fillStyle = 'hsla(0, 0%, 0%, .6)'
     context.strokeStyle = 'hsl(0, 0%, 100%)'
@@ -2321,7 +2322,7 @@ const drawSlot = () => {
     if (settingsObject.isManipulateCode && i < mainSlotSize) {
       context.fillStyle = 'hsla(210, 100%, 75%, .4)'
       context.fillRect(v.absoluteX + size * 1.15, v.absoluteY - size / 3, size * .6, size * .6)
-      context.font = `${size*.75}px sans-serif`
+      context.font = `${size*.75}px ${font}`
       context.fillStyle = 'hsla(0, 0%, 100%, .4)'
       context.textAlign = 'center'
       const text =
@@ -2875,7 +2876,7 @@ const setStore = () => {
         }
         const cost = calcCost(inventory[selectSlot])
         const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
-        context.font = `${size * .75}px sans-serif`
+        context.font = `${size * .75}px ${font}`
         context.textAlign = 'center'
         context.textBaseline = 'middle'
         context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
@@ -2898,7 +2899,7 @@ const setStore = () => {
         }
         if (0 < afterglow.limitBreakSuccess) {
           const ratio = afterglow.limitBreakSuccess / 2000
-          context.font = `${size * (1 + afterglow.limitBreakResult)}px sans-serif`
+          context.font = `${size * (1 + afterglow.limitBreakResult)}px ${font}`
           context.strokeStyle = `hsla(0, 100%, 0%, ${ratio})`
           context.fillStyle = `hsla(60, 100%, 70%, ${ratio})`
           strokeText(
@@ -3169,7 +3170,7 @@ const setStore = () => {
         context.fillStyle = 'hsla(0, 0%, 50%, .5)'
         context.fillRect(
           warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
-        context.font = `${size * .5}px sans-serif`
+        context.font = `${size * .5}px ${font}`
         context.textBaseline = 'top'
         context.fillStyle = 'hsla(0, 0%, 100%, .5)'
         let isChangeCursorImage = false
@@ -3268,7 +3269,7 @@ const setStore = () => {
           return pV + cV.width
         }, 0)
         context.textAlign = 'left'
-        context.font = `${size * .5}px sans-serif`
+        context.font = `${size * .5}px ${font}`
         context.fillText('TODO: Context menu, Filter, Scroll overall', size * .5, canvas.offsetHeight - size)
         context.restore()
       } else canvas.style.cursor = 'default'
@@ -3338,7 +3339,7 @@ const storeProcess = () => {
   })
 }
 const drawStore = () => {
-  context.font = `${size}px sans-serif`
+  context.font = `${size}px ${font}`
   objects.forEach(object => {
     drawScreenEdge(object, 30)
     context.drawImage(loadedMap[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
@@ -3766,7 +3767,7 @@ const drawBox = (box, alpha = 1) => {
   }
   context.textAlign = 'center'
   context.textBaseline = 'middle'
-  context.font = `${size}px sans-serif`
+  context.font = `${size}px ${font}`
   context.fillStyle = `hsla(${box.hue}, ${saturation}%, 50%, ${alpha})`
   context.fillText(box.text, box.offsetX, box.offsetY)
   context.restore()
@@ -3894,7 +3895,7 @@ const drawPortal = () => {
     context.save()
     context.textAlign = 'center'
     context.fillStyle = ' hsl(30, 100%, 50%)'
-    context.font = `${size}px sans-serif`
+    context.font = `${size}px ${font}`
     if (location === locationList[0]) {
       context.fillText(`Continue to round ${wave.number + 1}`, canvas.offsetWidth / 2, canvas.offsetHeight * 3 / 8)
     } else { // location === locationList[1]
@@ -3911,7 +3912,7 @@ const drawPortal = () => {
 const drawSaveCompleted = () => {
   const ratio = afterglow.save / 1000
   context.save()
-  context.font = `${size / 2}px sans-serif`
+  context.font = `${size / 2}px ${font}`
   context.textAlign = 'center'
   context.textBaseline = 'bottom'
   context.fillStyle = `hsla(0, 0%, 100%, ${ratio})`
@@ -3994,7 +3995,7 @@ const drawPause = () => {
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
   context.save()
-  context.font = '32px sans-serif'
+  context.font = `${size}px ${font}`
   context.fillStyle = (ss % 3 === 2) ? `hsl(60, ${100 * (1 - (ms / 1e3))}%, 40%)` :
   (ss % 3 === 1) ? 'hsl(60, 100%, 40%)' :
   `hsl(60, ${100 * (ms / 1e3)}%, 40%)`
@@ -4003,11 +4004,11 @@ const drawPause = () => {
   context.restore()
 }
 const drawResult = () => {
-  context.font = '32px sans-serif'
+  context.font = `${size}px ${font}`
   context.fillStyle = 'hsl(0, 100%, 40%)'
   context.textAlign = 'center'
   context.fillText('YOU WERE DRUNK', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
-  context.font = '24px sans-serif'
+  context.font = `${size * 2 / 3}px ${font}`
   context.fillStyle = 'hsl(30, 100%, 40%)'
   context.fillText(
     `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
@@ -4028,7 +4029,7 @@ const drawResult = () => {
     ~~((canvas.offsetHeight / 6 - loadedMap[imgCutin].height / 2)+.5)
   )
   context.restore()
-  // context.font = '32px sans-serif'
+  // context.font = `${size}px ${font}`
   // context.fillStyle = 'hsl(300, 100%, 50%)'
   // context.fillText('カットイン(仮)', size*5, canvas.offsetHeight / 2)
 }
@@ -4037,7 +4038,7 @@ const drawKeyLayout = () => {
   const nowTime = Date.now()
   const ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   const ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
-  context.font = `${size * .65}px sans-serif`
+  context.font = `${size * .65}px ${font}`
   context.fillStyle = 'hsl(210, 100%, 40%)'
   let p = {x: canvas.offsetWidth * .56, y: canvas.offsetHeight * .3} // absolute coordinate
   context.textAlign = 'right'
@@ -4054,11 +4055,11 @@ const drawKeyLayout = () => {
   context.restore()
   p.x = p.x + size * 1.75
   context.textAlign = 'center'
-  context.font = `bold ${size * .5}px sans-serif`
+  context.font = `bold ${size * .5}px ${font}`
   context.fillText('＜', p.x - size * 1.4, p.y + size * rowPosition - size/16)
   context.fillText('＞', p.x + size * 1.4, p.y + size * rowPosition - size/16)
   context.fillStyle = 'hsl(210, 100%, 40%)'
-  context.font = `${size * .65}px sans-serif`
+  context.font = `${size * .65}px ${font}`
   if (operationMode === 'WASD') {
     context.fillText('W', p.x, p.y - size * 2.4)
     context.fillText('A', p.x - size * .6, p.y - size * 1.6)
@@ -4073,12 +4074,12 @@ const drawKeyLayout = () => {
   context.fillText(inventory[selectSlot].reloadAuto, p.x, p.y)
   context.fillText(combatReload.auto, p.x, p.y + size)
   p.x = p.x + size * 2
-  context.font = `${size * .65}px sans-serif`
+  context.font = `${size * .65}px ${font}`
   context.textAlign = 'left'
   context.fillStyle = 'hsla(280, 100%, 50%, .5)'
   const text = (action.up === 'w') ? '[HOLD "E"]' : '[HOLD "W"]'
   context.fillText(text, p.x, p.y - size * 2)
-  context.font = `${size*2}px sans-serif`
+  context.font = `${size*2}px ${font}`
   context.textAlign = 'center'
   context.fillStyle = 'hsla(210, 100%, 40%, .3)'
   let flag = false
@@ -4133,8 +4134,8 @@ const drawKeyLayout = () => {
     if (i === keyPosition) {
       context.fillStyle = (ss % 2 === 0) ? `hsl(60, 100%, ${45 + 5 * (1 - (ms / 1e3))}%)` :
       `hsl(60, 100%, ${45 + 5 * (ms / 1e3)}%)`
-      context.font = (ss % 2 === 0) ? `${size * (2 - .1 * (1 - (ms / 1e3)))}px sans-serif` :
-      `${size * (2 - .1 * (ms / 1e3))}px sans-serif`
+      context.font = (ss % 2 === 0) ? `${size * (2 - .1 * (1 - (ms / 1e3)))}px ${font}` :
+      `${size * (2 - .1 * (ms / 1e3))}px ${font}`
     } else if (i === 19 || i === 27 || i === 28 || i === 29) {
       context.fillStyle = 'hsla(210, 100%, 40%, .1)'
     }
@@ -4150,7 +4151,7 @@ const drawKeyLayout = () => {
       context.fillText('[', p.x - size * 3, p.y)
       context.fillText(']', p.x + size * 3, p.y)
     }
-    context.font = `${size}px sans-serif`
+    context.font = `${size}px ${font}`
     if (i === order.indexOf('f') || i === order.indexOf('j')) {
       context.fillStyle = 'hsla(210, 100%, 40%, .3)'
       context.fillText('_', p.x, p.y)
@@ -4158,7 +4159,7 @@ const drawKeyLayout = () => {
     context.restore()
     context.save()
     p.y = p.y - size / 6
-    context.font = `bold ${size}px sans-serif`
+    context.font = `bold ${size}px ${font}`
     context.fillStyle = 'hsl(210, 100%, 40%)'
     if (i === order.indexOf(action.up)) context.fillText('↑', p.x, p.y)
     else if (i === order.indexOf(action.right)) context.fillText('→', p.x, p.y)
@@ -4169,7 +4170,7 @@ const drawKeyLayout = () => {
     else if (i === order.indexOf(action.lookDown)) context.fillText('∨', p.x, p.y)
     else if (i === order.indexOf(action.lookLeft)) context.fillText('<', p.x, p.y)
     p.y = p.y - size / 6
-    context.font = `bold ${size / 2}px sans-serif`
+    context.font = `bold ${size / 2}px ${font}`
     context.fillStyle = 'hsl(210, 100%, 40%)'
     if (i === order.indexOf(action.fire)) context.fillText('FIRE', p.x, p.y)
     else if (i === order.indexOf(action.slow)) context.fillText('SLOW', p.x, p.y)
@@ -4180,7 +4181,7 @@ const drawKeyLayout = () => {
     context.restore()
     context.save()
     p.y = p.y - size / 12
-    context.font = `bold ${size / 3}px sans-serif`
+    context.font = `bold ${size / 3}px ${font}`
     context.fillStyle = 'hsl(210, 100%, 40%)'
     if (i === order.indexOf(action.reload)) context.fillText('RELOAD', p.x, p.y)
     else if (i === order.indexOf(action.debug)) context.fillText('DEBUG', p.x, p.y)
@@ -4193,7 +4194,7 @@ const drawKeyLayout = () => {
     context.restore()
   }
   context.fillStyle = 'hsl(210, 100%, 40%)'
-  context.font = `${size}px sans-serif`
+  context.font = `${size}px ${font}`
   context.textAlign = 'left'
   context.fillText('KEY LAYOUT EDITOR', size, size * 1.75)
   context.textAlign = 'right'
@@ -4227,7 +4228,7 @@ const drawSettings = () => {
     const toggleText = settingsObject[v.toggle] ? 'On' : 'Off'
     v.text = `${v.explain}: ${toggleText}`
     setAbsoluteBox(v)
-    context.font = isInner(v, cursor) ? `bold ${size}px sans-serif` : `${size}px sans-serif`
+    context.font = isInner(v, cursor) ? `bold ${size}px ${font}` : `${size}px ${font}`
     context.fillStyle = isInner(v, cursor) ? 'hsl(0, 0%, 90%)' : 'hsl(0, 0%, 80%)'
     context.strokeStyle = isInner(v, cursor) ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 0%)'
     context.textAlign = 'center'
@@ -4237,7 +4238,7 @@ const drawSettings = () => {
 }
 const drawDebug = () => {
   context.textAlign = 'right'
-  context.font = `${size / 2}px sans-serif`
+  context.font = `${size / 2}px ${font}`
   context.fillStyle = 'hsl(0, 0%, 50%)'
   const dictionary = {
     internalFps: internalFrameList.length - 1,
