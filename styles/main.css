@@ -162,3 +162,7 @@ td {
 .wrapper div p {
   text-align: left;
 }
+@font-face {
+  font-family: 'jkmarugo';
+  src: url("../fonts/JK-Maru-Gothic-M.otf");
+}
