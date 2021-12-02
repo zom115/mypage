@@ -3785,7 +3785,7 @@ const drawTitleScreen = () => {
   titleMenuWordArray.forEach(v => drawBox(v))
 
   context.textAlign = 'right'
-  context.fillStyle = 'hsla(30, 100%, 40%, .75)'
+  context.fillStyle = manyAmmo() ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
   context.fillText(version, canvas.offsetWidth - size, canvas.offsetHeight - size)
   const c = {x: size, y: canvas.offsetHeight - size*.9}
   const drawCharacter = (image, cooldinateX, cooldinateY) => {
@@ -4262,6 +4262,8 @@ const draw = () => {
   drawDebug()
 }
 
+const RESOURCE_LIST = []
+
 const imagePathList = [
   'images/TP2F.png',
   'images/TP2U.png',
@@ -4309,16 +4311,28 @@ const imagePathList = [
   'images/arrowUp.png'
 ]
 const IMAGE = []
-
 imagePathList.forEach(path => {
   const image = new Image()
-  return new Promise(resolve => {
-    image.src = path
-    IMAGE[path] = image
-    image.addEventListener('load', () => {
-      resolve()
-    })
-  })
+  RESOURCE_LIST.push((async () => {
+    return new Promise(resolve => {
+      image.src = path
+      image.addEventListener('load', () => resolve(image))
+    }).then(result => IMAGE[path] = result)
+  })())
+})
+
+const MAP_PATH_ARRAY = ['resources/map_test.json']
+const MAP = []
+MAP_PATH_ARRAY.forEach(path => {
+  RESOURCE_LIST.push((async () => {
+    return new Promise(resolve => {
+      const request = new XMLHttpRequest()
+      request.open('GET', path)
+      request.responseType = 'json'
+      request.send()
+      request.onload = () => resolve(request.response)
+    }).then(result => MAP.push(result))
+  })())
 })
 
 context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -4329,8 +4343,7 @@ context.textBaseline = 'middle'
 context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 context.restore()
 
-Promise.all(IMAGE).then(() => {
-  console.log(IMAGE)
+Promise.all(RESOURCE_LIST).then(() => {
   main()
   draw()
 })
