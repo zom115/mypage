@@ -4309,26 +4309,28 @@ const imagePathList = [
   'images/arrowRight.png',
   'images/arrowUp.png'
 ]
-let loadedList = []
 let loadedMap = []
+
 imagePathList.forEach(path => {
-  const imgPreload = new Image()
-  imgPreload.src = path
-  imgPreload.onload = function () {
-    loadedList.push(path)
-    loadedMap[path] = imgPreload
-  }
+  return new Promise(resolve => {
+    const image = new Image()
+    image.src = path
+    image.addEventListener('load', () => {
+      loadedMap[path] = image
+      resolve()
+    })
+  })
 })
-const timerId = setInterval(() => { // loading monitoring
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  context.save()
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
-  context.restore()
-  if (loadedList.length === imagePathList.length) { // untrustworthy length in associative
-    clearInterval(timerId)
-    main()
-    draw()
-  }
-}, 100)
+
+context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+context.save()
+context.font = `${size / 2}px ${font}`
+context.textAlign = 'center'
+context.textBaseline = 'middle'
+context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+context.restore()
+
+Promise.all(loadedMap).then(() => {
+  main()
+  draw()
+})
