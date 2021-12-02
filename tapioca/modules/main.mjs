@@ -312,9 +312,9 @@ const Boss = class {
     // context.fill()
     const IMAGE_PATH = 'images/JK1_NN.png'
     drawImage(
-      loadedMap[IMAGE_PATH],
-      relativeX(this.x - loadedMap[IMAGE_PATH].width / 2),
-      relativeY(this.y - loadedMap[IMAGE_PATH].height / 2))
+      IMAGE[IMAGE_PATH],
+      relativeX(this.x - IMAGE[IMAGE_PATH].width / 2),
+      relativeY(this.y - IMAGE[IMAGE_PATH].height / 2))
     // context.arc(relativeX(this.x), relativeY(this.y), size * .5, 0, 2 * Math.PI)
 
     context.restore()
@@ -947,7 +947,6 @@ let settingsArray = [{
   text: ''
 }]
 
-
 document.addEventListener('DOMContentLoaded', () => { // init
   action = {
     fire: setStorageFirst('fire', 'Space'),
@@ -1496,7 +1495,7 @@ const drawClone = () => {
   context.save()
   context.globalAlpha = (0 < moreAwayCount) ? .5 + .5 * (1 - moreAwayCount / moreAwayLimit) : .5
   context.drawImage(
-    loadedMap[imgClone], ~~(relativeX(pos.x - radius)+.5), ~~(relativeY(pos.y - radius)+.5)
+    IMAGE[imgClone], ~~(relativeX(pos.x - radius)+.5), ~~(relativeY(pos.y - radius)+.5)
   )
   context.restore()
   if (0 < dash.coolTime && (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)) { // clone dash
@@ -1506,7 +1505,7 @@ const drawClone = () => {
     afterimage.forEach((clone, index) => {
       context.save()
       context.globalAlpha = clone.alpha
-      context.drawImage(loadedMap[imgClone],
+      context.drawImage(IMAGE[imgClone],
         ~~(relativeX(clone.x - size / 2)+.5),
         ~~(relativeY(clone.y - size / 2)+.5)
       )
@@ -1559,7 +1558,7 @@ const drawMyself = () => {
   afterimage.forEach((own, index) => {
     context.save()
     context.globalAlpha = own.alpha
-    context.drawImage(loadedMap[imgMyself],
+    context.drawImage(IMAGE[imgMyself],
       ~~(relativeX(own.x - size / 2)+.5),
       ~~(relativeY(own.y - size / 2)+.5)
     )
@@ -1568,7 +1567,7 @@ const drawMyself = () => {
     if (own.alpha <= 0) afterimage.splice(index, 1)
   })
   context.globalAlpha = (0 < moreAwayCount) ? moreAwayCount / moreAwayLimit : 1
-  context.drawImage(loadedMap[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
+  context.drawImage(IMAGE[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
   context.restore()
 }
 const drawField = () => {
@@ -1891,7 +1890,7 @@ const drawEnemies = () => {
         context.save()
       if (enemy.life <= 0) context.globalAlpha = enemy.timer/damageTimerLimit
       context.drawImage(
-        loadedMap[imgEnemy], ~~(relativeX(coordinate.x)+.5), ~~(relativeY(coordinate.y)+.5)
+        IMAGE[imgEnemy], ~~(relativeX(coordinate.x)+.5), ~~(relativeY(coordinate.y)+.5)
       )
       context.restore()
       if (debugMode) {
@@ -2078,15 +2077,15 @@ const drawIndicator = () => {
   context.fillStyle = 'hsl(330, 100%, 50%)'
   context.globalAlpha = .7
   if (homingFlag) {
-    context.drawImage(loadedMap['images/Homingv1.jpg'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
+    context.drawImage(IMAGE['images/Homingv1.jpg'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
   } else if (explosive1Flag) {
-    context.drawImage(loadedMap['images/TP2F.png'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
+    context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
     context.fillText('1', c.x - size * 2, c.y - size * 8)
   } else if (explosive2Flag) {
-    context.drawImage(loadedMap['images/TP2F.png'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
+    context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
     context.fillText('2', c.x - size * 2, c.y - size * 8)
   } else if (explosive3Flag) {
-    context.drawImage(loadedMap['images/TP2F.png'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
+    context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - size * 2+.5), ~~(c.y - size * 8+.5))
     context.fillText('3', c.x - size * 2, c.y - size * 8)
   }
     context.restore()
@@ -3342,7 +3341,7 @@ const drawStore = () => {
   context.font = `${size}px ${font}`
   objects.forEach(object => {
     drawScreenEdge(object, 30)
-    context.drawImage(loadedMap[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
+    context.drawImage(IMAGE[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
     object.draw()
   })
 }
@@ -3780,19 +3779,19 @@ const drawTitleScreen = () => {
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
   context.drawImage(
-    loadedMap['images/ROGOv1.2.png'],
-    ~~(((canvas.offsetWidth-loadedMap['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
+    IMAGE['images/ROGOv1.2.png'],
+    ~~(((canvas.offsetWidth - IMAGE['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
 
   titleMenuWordArray.forEach(v => drawBox(v))
 
   context.textAlign = 'right'
-  context.fillStyle = (manyAmmo()) ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
+  context.fillStyle = 'hsla(30, 100%, 40%, .75)'
   context.fillText(version, canvas.offsetWidth - size, canvas.offsetHeight - size)
   const c = {x: size, y: canvas.offsetHeight - size*.9}
   const drawCharacter = (image, cooldinateX, cooldinateY) => {
     context.save()
     context.scale(2, 2)
-    context.drawImage(loadedMap[image], ~~((cooldinateX / 2)+.5), ~~((cooldinateY / 2)+.5))
+    context.drawImage(IMAGE[image], ~~((cooldinateX / 2)+.5), ~~((cooldinateY / 2)+.5))
     context.restore()
   }
   if (ss % 2 === 1 && ~~(ms/100) === 0) c.y = c.y - size/16
@@ -3807,7 +3806,7 @@ const drawTitleScreen = () => {
   if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
   drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
   const IMG = ms < 500 ? 'images/JK1_NL.png' : 'images/JK1_NR.png'
-  drawImage(loadedMap[IMG], size, size)
+  drawImage(IMAGE[IMG], size, size)
 }
 const drawScreenEdge = (obj, hue) => {
   context.save()
@@ -4024,9 +4023,9 @@ const drawResult = () => {
   const imgCutin = (ss % 3 === 0) ? 'images/drinking.png' : 'images/drinkSmile.png'
   context.scale(3, 3)
   context.drawImage(
-    loadedMap[imgCutin],
-    ~~((canvas.offsetWidth / 6 - loadedMap[imgCutin].width / 2)+.5),
-    ~~((canvas.offsetHeight / 6 - loadedMap[imgCutin].height / 2)+.5)
+    IMAGE[imgCutin],
+    ~~((canvas.offsetWidth / 6 - IMAGE[imgCutin].width / 2)+.5),
+    ~~((canvas.offsetHeight / 6 - IMAGE[imgCutin].height / 2)+.5)
   )
   context.restore()
   // context.font = `${size}px ${font}`
@@ -4309,14 +4308,14 @@ const imagePathList = [
   'images/arrowRight.png',
   'images/arrowUp.png'
 ]
-let loadedMap = []
+const IMAGE = []
 
 imagePathList.forEach(path => {
+  const image = new Image()
   return new Promise(resolve => {
-    const image = new Image()
     image.src = path
+    IMAGE[path] = image
     image.addEventListener('load', () => {
-      loadedMap[path] = image
       resolve()
     })
   })
@@ -4330,7 +4329,8 @@ context.textBaseline = 'middle'
 context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 context.restore()
 
-Promise.all(loadedMap).then(() => {
+Promise.all(IMAGE).then(() => {
+  console.log(IMAGE)
   main()
   draw()
 })
