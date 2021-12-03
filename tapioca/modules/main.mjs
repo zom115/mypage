@@ -138,7 +138,7 @@ let angleMode = setStorageFirst('angle', 'IJKL')
 let state = ''
 let locationList = ['bazaar', 'dungeon']
 let location = locationList[0]
-let dungeonList = ['Zombie', 'Homing', 'Ruins Star', 'Boss']
+let dungeonList = ['Zombie', 'Homing', 'Ruins Star', 'Boss', 'Map Test']
 let dungeon = dungeonList[0]
 
 let bossArray = []
@@ -2761,6 +2761,10 @@ const setStore = () => {
         saveProcess()
         wave.number = 0
         if (dungeon !== dungeonList[3]) setWave()
+        if (dungeon === dungeonList[4]) {
+          const MAIN_TEST = new Main()
+          MAIN_TEST.render()
+        }
         else bossProcessFirst()
       }
       if (button(DUNGEON_SELECT_BOX)) {
@@ -3629,27 +3633,176 @@ const combatProcess = () => {
   }
   if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
 }
-const mainProcess = () => {
-  interfaceProcess()
-  if (direction !== 0) direction = 0
-  if (angle !== 0) angle = 0
-  if (0 < dropItems.length) dropItemProcess()
-  inventoryProcess()
 
-  const arrayUpdater = array => {
-    array.forEach((v, i) => {
-      v.update()
-    if (v.life <= 0) array.splice(i, 1)
+class Input {
+  constructor(keyMap, prevKeyMap) {
+    this.keyMap = keyMap
+    this.prevKeyMap = prevKeyMap
+  }
+  _getKeyFromMap(keyName, map) {
+    if (map.has(keyName)) return map.get(keyName)
+    else return false
+  }
+  _getPrevKey (keyName) {
+    return this._getKeyFromMap(keyName, this.prevKeyMap)
+  }
+  getKey (keyName) {
+    return this._getKeyFromMap(keyName, this.keyMap)
+  }
+  getKeyDown (keyName) {
+    const prevDown = this._getPrevKey(keyName)
+    const currentDown = this.getKey(keyName)
+    return !prevDown && currentDown
+  }
+  getKeyUp (keyName) {
+    const prevDown = this._getPrevKey(keyName)
+    const currentDown = this.getKey(keyName)
+    return prevDown && !currentDown
+  }
+}
+
+class InputReceiver {
+  constructor () {
+    this._keyMap = new Map()
+    this._prevKeyMap = new Map()
+    addEventListener('keydown', v => this._keyMap.set(v.code, true))
+    addEventListener('keyup', v => this._keyMap.set(v.code, false))
+  }
+  getInput () {
+    const keyMap = new Map(this._keyMap)
+    const prevKeyMap = new Map(this._prevKeyMap)
+    this._prevKeyMap = new Map(this._keyMap)
+    return new Input(keyMap, prevKeyMap)
+  }
+}
+class Ownself {
+  constructor () {
+    this.absoluteX = 0
+    this.absoluteY = 0
+    this.offsetX = canvas.offsetWidth * .5
+    this.offsetY = canvas.offsetHeight * .5
+    this.speed = .05
+  }
+  update = (input, elapsedTime) => {
+    if (input.getKey('KeyW')) this.offsetY -= this.speed * elapsedTime
+    if (input.getKey('KeyS')) this.offsetY += this.speed * elapsedTime
+    if (input.getKey('KeyD')) this.offsetX += this.speed * elapsedTime
+    if (input.getKey('KeyA')) this.offsetX -= this.speed * elapsedTime
+  }
+  render = () => {
+    context.save()
+    context.fillStyle = 'hsl(50, 100%, 90%)'
+    context.beginPath()
+    context.arc(
+      this.offsetX,
+      this.offsetY, size * .5, 0, 2 * Math.PI)
+    context.fill()
+    context.restore()
+  }
+}
+const mapProcess = () => {}
+class Main {
+  constructor () {
+    this.timeStamp = Date.now()
+    this.currentTime = Date.now()
+    this.elapsedTime = this.timeStamp - this.currentTime
+    this._inputReceiver = new InputReceiver()
+    this.array = []
+    this.array.push(new Ownself)
+
+    this.mapArray = []
+    this.mapArray.push(MAP[0])
+    this.location = 'map_Test'
+    this.SELECTED_MAP = this.setMap()
+  }
+  start = () => this.render()
+  update = setInterval (() => {
+    this.timeStamp = Date.now()
+    this.elapsedTime = this.timeStamp - this.currentTime
+    this.currentTime = this.timeStamp
+
+    const input = this._inputReceiver.getInput()
+    this.array.forEach((v, i) => {
+      v.update(input, this.elapsedTime)
+      if (v.life <= 0) array.splice(i, 1)
+    })
+  })
+  setMap = () => {
+    return this.mapArray.filter(v => {
+      const OBJECTGROUP_ID = v.layers.findIndex(v => v.type === 'objectgroup')
+      const ADDRESS_ID = v.layers[OBJECTGROUP_ID].properties.findIndex(v => v.name === 'address')
+      return this.location === v.layers[OBJECTGROUP_ID].properties[ADDRESS_ID].value
+    })[0]
+  }
+  setLocation = str => this.location = str
+  renderMap = () => {
+    this.SELECTED_MAP.layers.filter(v => v.name.includes('tileset_')).forEach(v => {
+      for (let x = 0; x < v.width; x++) {
+        for (let y = 0; y < v.height; y++) {
+          let id = v.data[v.width * y + x]
+          if (0 < id) {
+            let flag = false
+            this.SELECTED_MAP.tilesets.forEach((vl, i, a) => {
+              if (flag) return
+              if (id < vl.firstgid) {
+                const diff = i === 0 ? 0 : a[i - 1].firstgid
+                context.drawImage(
+                  TILESET_IMAGE_ARRAY[a[i - 1].source],
+                  ((id - diff) % TILESET_DATA_ARRAY[a[i - 1].source].columns) * size,
+                  ((id - diff) - (id - diff) % TILESET_DATA_ARRAY[a[i - 1].source].columns) /
+                    TILESET_DATA_ARRAY[a[i - 1].source].columns * size,
+                  size,
+                  size,
+                  (x * size)|0,
+                  (y * size)|0,
+                  size,
+                  size
+                  )
+                flag = true
+              }
+            }, 0)
+          }
+        }
+      }
     })
   }
-  array.forEach(v => {
-    arrayUpdater(v)
-  })
+  render = () => {
+    context.fillStyle = 'hsl(0, 0%, 60%)'
+    context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+    context.fillStyle = 'hsl(0, 0%, 0%)'
+    context.textAlign = 'left'
 
-  if (location === locationList[0]) {
-    storeProcess()
-    if (portalFlag) portalProcess()
-  } else if (location === locationList[1]) combatProcess()
+    this.renderMap()
+
+    this.array.forEach(v => v.render())
+    requestAnimationFrame(this.render.bind(this))
+  }
+}
+
+const mainProcess = () => {
+  if (location === locationList[1] && dungeon === dungeonList[4]) {
+  } else {
+    interfaceProcess()
+    if (direction !== 0) direction = 0
+    if (angle !== 0) angle = 0
+    if (0 < dropItems.length) dropItemProcess()
+    inventoryProcess()
+
+    const arrayUpdater = array => {
+      array.forEach((v, i) => {
+        v.update()
+      if (v.life <= 0) array.splice(i, 1)
+      })
+    }
+    array.forEach(v => {
+      arrayUpdater(v)
+    })
+
+    if (location === locationList[0]) {
+      storeProcess()
+      if (portalFlag) portalProcess()
+    } else if (location === locationList[1]) combatProcess()
+  }
 }
 const pauseProcess = () => {
   if (code[action.pause].isFirst()) state = 'main'
@@ -4320,7 +4473,8 @@ imagePathList.forEach(path => {
     }).then(result => IMAGE[path] = result)
   })())
 })
-
+const TILESET_DATA_ARRAY = []
+const TILESET_IMAGE_ARRAY = []
 const MAP_PATH_ARRAY = ['resources/map_test.json']
 const MAP = []
 MAP_PATH_ARRAY.forEach(path => {
@@ -4331,7 +4485,28 @@ MAP_PATH_ARRAY.forEach(path => {
       request.responseType = 'json'
       request.send()
       request.onload = () => resolve(request.response)
-    }).then(result => MAP.push(result))
+    }).then(result => {
+      MAP.push(result)
+      result.tilesets.forEach(async v => {
+        return new Promise(resolve => {
+          const request = new XMLHttpRequest()
+          request.open('GET', 'resources/' + v.source)
+          request.responseType = 'json'
+          request.send()
+          request.onload = () => resolve(request.response)
+        }).then(async result => {
+          return new Promise(resolve => {
+            TILESET_DATA_ARRAY[v.source] = result
+            const IMG = new Image()
+            IMG.src = result.image.slice(3)
+            IMG.addEventListener('load', () => resolve(IMG))
+          }).then(result => {
+            TILESET_IMAGE_ARRAY[v.source] = result
+          })
+        })
+      })
+    })
+
   })())
 })
 
@@ -4344,6 +4519,7 @@ context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight /
 context.restore()
 
 Promise.all(RESOURCE_LIST).then(() => {
+  console.log(MAP)
   main()
   draw()
 })
