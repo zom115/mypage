@@ -3890,7 +3890,7 @@ const frameResetProcess = () => {
 
   if (ownState.stepLimit <= ownState.step) ownState.step = 0
 }
-const main = () => setInterval(() => {
+const main = () => {
   frameCounter(internalFrameList)
   globalTimestamp = Date.now()
   intervalDiffTime = globalTimestamp - currentTime
@@ -3904,7 +3904,7 @@ const main = () => setInterval(() => {
   if (code[action.settings].isFirst()) isSettings = !isSettings
   if (isSettings) settingsState()
   frameResetProcess()
-}, 0)
+}
 const drawBox = (box, alpha = 1) => {
   context.save()
   // outline box
@@ -4403,7 +4403,6 @@ const drawDebug = () => {
   })
 }
 const draw = () => {
-  requestAnimationFrame(draw)
   frameCounter(animationFrameList)
   context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
   if (state === 'title') drawTitleScreen()
@@ -4518,8 +4517,18 @@ context.textBaseline = 'middle'
 context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 context.restore()
 
+class Entry {
+  constructor () {}
+  loop = setInterval (() => {
+    main()
+  }, 0)
+  render () {
+    draw()
+    requestAnimationFrame(this.render.bind(this))
+  }
+}
+
 Promise.all(RESOURCE_LIST).then(() => {
-  console.log(MAP)
-  main()
-  draw()
+  const ENTRY_POINT = new Entry()
+  ENTRY_POINT.render()
 })
