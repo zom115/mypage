@@ -1,17 +1,13 @@
 import {code, keydownTimeStamp} from '../../modules/code.mjs'
 import {frameCounter} from '../../modules/frameCounter.mjs'
 
-const SIZE = 32
-
-const internalFrameList = []
-const animationFrameList = []
-let intervalDiffTime = 1
-const isKeyFirst = list => {
-  return list.some(v => code[v].holdtime !== 0 && code[v].holdtime <= intervalDiffTime)
-}
 const version = 'v.0.9'
 const canvas = document.getElementById`canvas`
 const font = 'jkmarugo'
+
+const SIZE = 32
+
+let intervalDiffTime = 1
 
 let cursor = {offsetX: 0, offsetY: 0}
 let mouseDownPos = {offsetX: 0, offsetY: 0}
@@ -4397,20 +4393,6 @@ const drawSettings = () => {
   })
   context.restore()
 }
-const drawDebug = () => {
-  context.textAlign = 'right'
-  context.font = `${size / 2}px ${font}`
-  context.fillStyle = 'hsl(0, 0%, 50%)'
-  const dictionary = {
-    internalFps: internalFrameList.length - 1,
-    screenFps: animationFrameList.length - 1,
-    a: orderNumber
-  }
-  Object.entries(dictionary).forEach((v, i) => {
-    context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
-    context.fillText(v[1], canvas.width, size / 2 * (i + 1))
-  })
-}
 
 const RESOURCE_LIST = []
 
@@ -4602,6 +4584,10 @@ class Entry {
     this.timeStamp = Date.now()
     this.currentTime = Date.now()
     this.intervalDiffTime = this.timeStamp - this.currentTime
+
+    this.internalFrameArray = []
+    this.animationFrameArray = []
+
     this._inputReceiver = new InputReceiver()
     this.cursor = {offsetX: 0, offsetY: 0}
     this.deltaY = 0
@@ -4625,7 +4611,7 @@ class Entry {
     if (mouseInput.getKeyDown(4)) console.log('5MB')
     this._windowManager.update(input, mouseInput)
 
-    frameCounter(internalFrameList)
+    frameCounter(this.internalFrameArray)
     intervalDiffTime = this.intervalDiffTime
     if (state === 'title' && !isSettings) titleProcess()
     else if (state === 'main') mainProcess()
@@ -4638,24 +4624,32 @@ class Entry {
     frameResetProcess()
   }, 0)
   render () {
-    context.save()
-    context.fillStyle = 'hsl(0, 0%, 60%)'
-    context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-    context.fillStyle = 'hsl(0, 0%, 0%)'
-    context.fillText(`${this.cursor.offsetX} ${this.cursor.offsetY} ${this.deltaY}`, SIZE, canvas.offsetHeight - SIZE)
-    context.restore()
+    frameCounter(this.animationFrameArray)
+    context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
     this._windowManager.render()
 
-    frameCounter(animationFrameList)
-    context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+
     if (state === 'title') drawTitleScreen()
     else if (state !== 'keyLayout') drawMain(this.timeStamp)
     if (state === 'pause') drawPause()
     else if (state === 'result') drawResult()
     else if (state === 'keyLayout') drawKeyLayout()
     if (isSettings) drawSettings()
-    drawDebug()
+
+    // Draw debug
+    context.textAlign = 'right'
+    context.font = `${size / 2}px ${font}`
+    context.fillStyle = 'hsl(0, 0%, 50%)'
+    const dictionary = {
+      internalFps: this.internalFrameArray.length - 1,
+      screenFps: this.animationFrameArray.length - 1,
+      a: orderNumber
+    }
+    Object.entries(dictionary).forEach((v, i) => {
+      context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
+      context.fillText(v[1], canvas.width, size / 2 * (i + 1))
+    })
 
     requestAnimationFrame(this.render.bind(this))
   }
