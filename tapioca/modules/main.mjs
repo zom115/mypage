@@ -3229,7 +3229,7 @@ const setStore = () => {
           if (cI === orderNumber) {
             context.textAlign = 'center'
             if (isDescending) {
-              context.fillText('∨', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10) // TODO: \u{2228}
+              context.fillText('\u{2228}', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
             } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
 
           }
@@ -4267,7 +4267,7 @@ const drawKeyLayout = () => {
     else if (i === order.indexOf(action.left)) context.fillText('←', p.x, p.y)
     else if (i === order.indexOf(action.lookUp)) context.fillText('∧', p.x, p.y)
     else if (i === order.indexOf(action.lookRight)) context.fillText('>', p.x, p.y)
-    else if (i === order.indexOf(action.lookDown)) context.fillText('∨', p.x, p.y)
+    else if (i === order.indexOf(action.lookDown)) context.fillText('\u{2228}', p.x, p.y)
     else if (i === order.indexOf(action.lookLeft)) context.fillText('<', p.x, p.y)
     p.y = p.y - size / 6
     context.font = `bold ${size / 2}px ${font}`
