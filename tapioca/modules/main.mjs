@@ -3,13 +3,6 @@ import {frameCounter} from '../../modules/frameCounter.mjs'
 
 const SIZE = 32
 
-const keyMap = {
-  lookUp: ['i'],
-  lookRight: ['l'],
-  lookDown: ['k'],
-  lookLeft: ['j'],
-}
-let globalTimestamp = Date.now()
 const internalFrameList = []
 const animationFrameList = []
 let intervalDiffTime = 1
@@ -4007,7 +4000,7 @@ const drawScreenEdge = (obj, hue) => {
   }
   context.restore()
 }
-const drawPortal = () => {
+const drawPortal = (timeStamp) => {
   const particle = class {
     constructor(x, y, w, h, dx, dy, life, lightness) {
       this.x = x
@@ -4042,7 +4035,7 @@ const drawPortal = () => {
       600 + Math.random() * 300, 80 + Math.random() * 20))
   }
   context.fillStyle =
-    `hsl(180, 100%, ${85 + ((1 + Math.sin(globalTimestamp / 600)) / 2) * 15}%)`
+    `hsl(180, 100%, ${85 + ((1 + Math.sin(timeStamp / 600)) / 2) * 15}%)`
   context.beginPath()
   context.ellipse(
     relativeX(portalCooldinate.x), relativeY(portalCooldinate.y), size * .7, size * .3, 0, 0, 2 * Math.PI, false)
@@ -4102,7 +4095,7 @@ const drawSaveCompleted = () => {
   context.restore()
   afterglow.save -= intervalDiffTime
 }
-const drawMain = () => {
+const drawMain = (timeStamp) => {
   const WIDTH_RANGE = 16
   const WIDTH_RATIO = 1.5
   const HEIGHT_RANGE = 9
@@ -4133,7 +4126,7 @@ const drawMain = () => {
       canvas.offsetHeight - cursor.offsetY
   }
   drawField()
-  if (portalFlag) drawPortal()
+  if (portalFlag) drawPortal(timeStamp)
   if (0 < objects.length) drawObjects()
   if (0 < clonePosition.length) drawClone()
   if (0 < bullets.length) drawBullets()
@@ -4418,17 +4411,6 @@ const drawDebug = () => {
     context.fillText(v[1], canvas.width, size / 2 * (i + 1))
   })
 }
-const draw = () => {
-  frameCounter(animationFrameList)
-  context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-  if (state === 'title') drawTitleScreen()
-  else if (state !== 'keyLayout') drawMain()
-  if (state === 'pause') drawPause()
-  else if (state === 'result') drawResult()
-  else if (state === 'keyLayout') drawKeyLayout()
-  if (isSettings) drawSettings()
-  drawDebug()
-}
 
 const RESOURCE_LIST = []
 
@@ -4644,7 +4626,6 @@ class Entry {
     this._windowManager.update(input, mouseInput)
 
     frameCounter(internalFrameList)
-    globalTimestamp = this.timeStamp
     intervalDiffTime = this.intervalDiffTime
     if (state === 'title' && !isSettings) titleProcess()
     else if (state === 'main') mainProcess()
@@ -4665,7 +4646,17 @@ class Entry {
     context.restore()
 
     this._windowManager.render()
-    draw()
+
+    frameCounter(animationFrameList)
+    context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+    if (state === 'title') drawTitleScreen()
+    else if (state !== 'keyLayout') drawMain(this.timeStamp)
+    if (state === 'pause') drawPause()
+    else if (state === 'result') drawResult()
+    else if (state === 'keyLayout') drawKeyLayout()
+    if (isSettings) drawSettings()
+    drawDebug()
+
     requestAnimationFrame(this.render.bind(this))
   }
 }
