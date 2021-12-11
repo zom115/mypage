@@ -3229,7 +3229,7 @@ const setStore = () => {
           if (cI === orderNumber) {
             context.textAlign = 'center'
             if (isDescending) {
-              context.fillText('∨', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+              context.fillText('∨', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10) // TODO: \u{2228}
             } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
 
           }
@@ -3574,25 +3574,6 @@ let rowPosition = 0
 let keyPosition = -2
 
 const titleProcess = () => {
-  if (code[action.fire].isFirst() || button(titleMenuWordArray[0])) {
-    reset()
-    if (manyAmmo()) {
-      inventory[selectSlot].magazines = [99, inventory[selectSlot].magazineSize]
-      point = 999999
-      ammo = 99999
-    }
-    state = 'main'
-  }
-  /*
-  if (code[action.slow].isFirst() || button(titleMenuWordArray[1])) {
-    input()
-    state = 'keyLayout'
-  }
-  if (code[action.change].isFirst() || button(titleMenuWordArray[2])) {
-    mapMode = !mapMode
-    setTitleMenuWord()
-  }
-  */
 }
 const combatProcess = (intervalDiffTime) => {
   enemyBulletArray.forEach(v => {
@@ -3927,38 +3908,6 @@ const drawImage = (img, x, y) => {
   context.drawImage(img, ~~(x+.5), ~~(y+.5))
 }
 const drawTitleScreen = (cursor) => {
-  let nowTime = Date.now()
-  let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
-  let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
-  context.drawImage(
-    IMAGE['images/ROGOv1.2.png'],
-    ~~(((canvas.offsetWidth - IMAGE['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
-
-  titleMenuWordArray.forEach(v => drawBox(v, 1, cursor))
-
-  context.textAlign = 'right'
-  context.fillStyle = manyAmmo() ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
-  context.fillText(version, canvas.offsetWidth - size, canvas.offsetHeight - size)
-  const c = {x: size, y: canvas.offsetHeight - size*.9}
-  const drawCharacter = (image, cooldinateX, cooldinateY) => {
-    context.save()
-    context.scale(2, 2)
-    context.drawImage(IMAGE[image], ~~((cooldinateX / 2)+.5), ~~((cooldinateY / 2)+.5))
-    context.restore()
-  }
-  if (ss % 2 === 1 && ~~(ms/100) === 0) c.y = c.y - size/16
-  drawCharacter('images/JK32F.png', c.x, c.y)
-  if (ss % 2 === 1 && ~~(ms/100) === 0) c.y = c.y + size/16
-  if (ss % 2 === 1 && ~~(ms/100) === 5) c.y = c.y - size/16
-  drawCharacter('images/JK33F.png', c.x + size * 2, c.y)
-  if (ss % 2 === 1 && ~~(ms/100) === 5) c.y = c.y + size/16
-  if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y - size/16
-  drawCharacter('images/JK34F.png', c.x + size * 4, c.y)
-  if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y + size/16
-  if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
-  drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
-  const IMG = ms < 500 ? 'images/JK1_NL.png' : 'images/JK1_NR.png'
-  drawImage(IMAGE[IMG], size, size)
 }
 const drawScreenEdge = (obj, hue) => {
   context.save()
@@ -4531,45 +4480,119 @@ class Window extends EventDispatcher {
     context.fillRect(this.x, this.y, this.w, this.h)
   }
 }
-class WindowManager {
-  constructor () {
-    this.windows = {
-      main: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
-      settings: new Window(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5),
-      inventory: new Window(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5)
+class Scene extends EventDispatcher {
+  change (scene) {
+    this.dispatchEvent('change', scene)
+  }
+}
+class LobbyScene extends Scene {
+  update (input) {}
+  render (cursor) {
+    context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  }
+}
+class TitleScene extends Scene {
+  update (input) {
+    if (code[action.fire].isFirst() || button(titleMenuWordArray[0])) {
+      reset()
+      // if (manyAmmo()) {
+      //   inventory[selectSlot].magazines = [99, inventory[selectSlot].magazineSize]
+      //   point = 999999
+      //   ammo = 99999
+      // }
+      this.change(new LobbyScene)
+
+      console.log('yes')
     }
-    this.windowOrder = ['main']
+  }
+  render (cursor) {
+    let nowTime = Date.now()
+    let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
+    let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
+    context.drawImage(
+      IMAGE['images/ROGOv1.2.png'],
+      ~~(((canvas.offsetWidth - IMAGE['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
+
+    titleMenuWordArray.forEach(v => drawBox(v, 1, cursor))
+
+    context.textAlign = 'right'
+    context.fillStyle = manyAmmo() ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
+    context.fillText(version, canvas.offsetWidth - size, canvas.offsetHeight - size)
+    const c = {x: size, y: canvas.offsetHeight - size*.9}
+    const drawCharacter = (image, cooldinateX, cooldinateY) => {
+      context.save()
+      context.scale(2, 2)
+      context.drawImage(IMAGE[image], ~~((cooldinateX / 2)+.5), ~~((cooldinateY / 2)+.5))
+      context.restore()
+    }
+    if (ss % 2 === 1 && ~~(ms/100) === 0) c.y = c.y - size/16
+    drawCharacter('images/JK32F.png', c.x, c.y)
+    if (ss % 2 === 1 && ~~(ms/100) === 0) c.y = c.y + size/16
+    if (ss % 2 === 1 && ~~(ms/100) === 5) c.y = c.y - size/16
+    drawCharacter('images/JK33F.png', c.x + size * 2, c.y)
+    if (ss % 2 === 1 && ~~(ms/100) === 5) c.y = c.y + size/16
+    if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y - size/16
+    drawCharacter('images/JK34F.png', c.x + size * 4, c.y)
+    if (ss % 2 === 0 && ~~(ms/100) === 0) c.y = c.y + size/16
+    if (ss % 2 === 0 && ~~(ms/100) === 5) c.y = c.y - size/16
+    drawCharacter('images/JK35Fv1.png', c.x + size * 6, c.y)
+    const IMG = ms < 500 ? 'images/JK1_NL.png' : 'images/JK1_NR.png'
+    drawImage(IMAGE[IMG], size, size)
+  }
+}
+class WindowManager extends EventDispatcher {
+  constructor () {
+    super()
+    this.windows = {
+      tutorial: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+      main: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+      dungeon: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+      result: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+
+      warehouse: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+      inventory: new Window(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5),
+      settings: new Window(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5)
+    }
+    this.floatWindowOrder = ['main']
     this.isInventory = false
+  }
+  change (scene) {
+    this.scene = scene
+    this.scene.addEventListener('change', e => this.change(e))
   }
   update (input) {
     if (input.getKeyDown('Escape')) {
-      const index = this.windowOrder.findIndex(v => v !== 'main')
+      const index = this.floatWindowOrder.findIndex(v => v !== 'main')
       if (index === -1) {
         this.windows.settings.dispatchEvent('active')
-        this.windowOrder.push('settings')
+        this.floatWindowOrder.push('settings')
       } else {
-        this.windows[this.windowOrder[index]].dispatchEvent('active')
-        this.windowOrder.splice(index, 1)
+        this.windows[this.floatWindowOrder[index]].dispatchEvent('active')
+        this.floatWindowOrder.splice(index, 1)
       }
     }
     if (this.windows.settings.is === false) {
       if (input.getKeyDown('KeyE')) {
         this.windows.inventory.dispatchEvent('active')
-        const index = this.windowOrder.indexOf('inventory')
-        if (index === -1) this.windowOrder.push('inventory')
-        else this.windowOrder.splice(index, 1)
+        const index = this.floatWindowOrder.indexOf('inventory')
+        if (index === -1) this.floatWindowOrder.push('inventory')
+        else this.floatWindowOrder.splice(index, 1)
       }
     }
-    this.windows[this.windowOrder.slice(-1)[0]].update(input) // Send key input
+    this.windows[this.floatWindowOrder.slice(-1)[0]].update(input) // Send key input
+
+    this.scene.update()
   }
-  render () {
-    this.windowOrder.forEach(v => {
-      this.windows[v].render()
+  render (cursor) {
+    this.scene.render(cursor)
+    this.floatWindowOrder.forEach(v => {
+      this.windows[v].render(cursor)
     })
     context.textAlign = 'left'
     context.fillStyle = 'hsl(0, 0%, 0%)'
-    context.fillText(this.windowOrder, SIZE*5, SIZE*5)
-    context.fillText(Object.keys(this.windows), SIZE*5, SIZE*6)
+    context.fillText(this.scene, SIZE * 5, SIZE * 2)
+    context.fillText(this.floatWindowOrder, SIZE * 5, SIZE * 3)
+    // context.fillText(Object.keys(this.windows), SIZE * 5, SIZE * 3)
   }
 }
 
@@ -4586,6 +4609,9 @@ class Entry {
     this.cursor = {offsetX: 0, offsetY: 0}
     this.deltaY = 0
     this._windowManager = new WindowManager()
+  }
+  change (scene) {
+    this._windowManager.change(scene)
   }
   loop = setInterval (() => {
     this.timeStamp = Date.now()
@@ -4606,8 +4632,9 @@ class Entry {
     this._windowManager.update(input, mouseInput)
 
     frameCounter(this.internalFrameArray)
-    if (state === 'title' && !isSettings) titleProcess()
-    else if (state === 'main') mainProcess(this.intervalDiffTime, this.cursor)
+    // if (state === 'title' && !isSettings) titleProcess()
+    // else
+    if (state === 'main') mainProcess(this.intervalDiffTime, this.cursor)
     else if (state === 'pause') pauseProcess()
     else if (state === 'result') resultProcess()
     else if (state === 'keyLayout') keyLayoutProcess()
@@ -4621,10 +4648,10 @@ class Entry {
     frameCounter(this.animationFrameArray)
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
-    // this._windowManager.render()
+    this._windowManager.render(this.cursor)
 
     if (state === 'title') drawTitleScreen(this.cursor)
-    else if (state !== 'keyLayout') drawMain(this.intervalDiffTime, this.timeStamp, this.cursor)
+    // else if (state !== 'keyLayout') drawMain(this.intervalDiffTime, this.timeStamp, this.cursor)
     if (state === 'pause') drawPause()
     else if (state === 'result') drawResult(this.cursor)
     else if (state === 'keyLayout') drawKeyLayout()
@@ -4637,7 +4664,7 @@ class Entry {
     const dictionary = {
       internalFps: this.internalFrameArray.length - 1,
       screenFps: this.animationFrameArray.length - 1,
-      a: orderNumber
+      a: '\u{2228}'
     }
     Object.entries(dictionary).forEach((v, i) => {
       context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
@@ -4650,5 +4677,6 @@ class Entry {
 
 Promise.all(RESOURCE_LIST).then(() => {
   const ENTRY_POINT = new Entry()
+  ENTRY_POINT.change(new TitleScene())
   ENTRY_POINT.render()
 })
