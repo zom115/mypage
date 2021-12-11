@@ -7,8 +7,6 @@ const font = 'jkmarugo'
 
 const SIZE = 32
 
-let intervalDiffTime = 1
-
 let cursor = {offsetX: 0, offsetY: 0}
 let mouseDownPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseDownFirst = false
@@ -148,7 +146,7 @@ const EnemyBullet = class {
     this.additionalSpeed = additionalSpeed
     this.additionalTheta = additionalTheta
   }
-  update = () => {
+  update = (intervalDiffTime) => {
     this.life -= intervalDiffTime
     this.x += this.speed * Math.cos(this.theta) * intervalDiffTime
     this.y += this.speed * Math.sin(this.theta) * intervalDiffTime
@@ -178,7 +176,7 @@ const HomingBullet = class {
     this.homingSpeed = homingSpeed
     this.deltaTheta = deltaTheta
   }
-  update = () => {
+  update = (intervalDiffTime) => {
     this.life -= intervalDiffTime
     this.waitTime -= intervalDiffTime
     const DELTA_THETA = this.deltaTheta * intervalDiffTime
@@ -213,7 +211,7 @@ const Boss = class {
     this.count = 3
     this.front = 0
   }
-  update () {
+  update (intervalDiffTime) {
     if (this.initialTime <= 0) this.life -= intervalDiffTime
     if (0 < this.initialTime) this.initialTime -= intervalDiffTime
     if (0 < this.coolTime) this.coolTime -= intervalDiffTime
@@ -551,7 +549,7 @@ const Bullet = class {
     this.bulletRadius = bulletRadius // size / 6
     this.isHoming = isHoming
   }
-  update() {
+  update(intervalDiffTime) {
     this.life -= intervalDiffTime
     this.x += this.radius * Math.cos(this.theta) * intervalDiffTime
     this.y += this.radius * Math.sin(this.theta) * intervalDiffTime
@@ -1017,7 +1015,7 @@ const slideProcess = () => {
   } else return
   inventory[selectSlot].slideTime = 0
 }
-const differenceAddition = (position, dx, dy) => {
+const differenceAddition = (position, dx, dy, intervalDiffTime) => {
   let flag = {x: false, y: false}
   objects.forEach((object) => { // only rectangle
     const space = .1
@@ -1313,7 +1311,7 @@ const setTheta = d => {
   else if (d === 8) ownState.theta = Math.PI
   else if (d === 9) ownState.theta = -Math.PI * .75
 }
-const dashProcess = () => {
+const dashProcess = (intervalDiffTime) => {
   const d = direction === 0 ? currentDirection : direction
   setTheta(d)
   ownState.radius = 1
@@ -1323,7 +1321,7 @@ const dashProcess = () => {
   dash.isAttack = false
   dash.coolTime = dash.coolTimeLimit
 }
-const moving = () => {
+const moving = (intervalDiffTime) => {
   setTheta(direction)
   if (direction === 0) ownState.radius = 0
   else ownState.radius = 1
@@ -1410,7 +1408,7 @@ const weaponProcess = () => {
   // loadingProcess()
   if (code[action.change].isFirst()) magazineForword() // TODO: to consider
 }
-const interfaceProcess = () => {
+const interfaceProcess = (intervalDiffTime) => {
   if (code[action.pause].isFirst()) state = 'pause'
   if (code[action.primary].isFirst()) selectSlot = 0
   if (code[action.secondary].isFirst()) selectSlot = 1
@@ -1438,8 +1436,8 @@ const interfaceProcess = () => {
   else if (direction !== 0) currentDirection = direction
   if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess()
   if (inventory[selectSlot].category !== '') modeSelect()
-  if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess()
-  moving()
+  if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess(intervalDiffTime)
+  moving(intervalDiffTime)
   if (code[action.debug].isFirst()) debugMode = !debugMode
   if (manyAmmo() && code[action.back].isFirst()) bomb()
 }
@@ -1506,7 +1504,7 @@ const drawClone = () => {
     })
   }
 }
-const drawMyself = () => {
+const drawMyself = (intervalDiffTime) => {
   if (ownState.radius === 0) ownState.step = 0
   else ownState.step += intervalDiffTime
   // y = -4 * (x - .5) ** 2 + 1
@@ -1726,7 +1724,7 @@ const setWeapon = () => {
   Object.assign(weapon, {type: 'weapon'})
   return weapon
 }
-const enemyProcess = () => {
+const enemyProcess = (intervalDiffTime) => {
   enemies.forEach((enemy, index) => {
     if (0 < enemy.timer) enemy.timer = (enemy.timer-1)|0
     if (enemy.life <= 0) {
@@ -1749,9 +1747,9 @@ const enemyProcess = () => {
 
     if (dungeon === dungeonList[0]) {
       if (0 < moreAwayCount) { // clone process
-        differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed)
+        differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed, intervalDiffTime)
       } else { // close to myself
-        differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed)
+        differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
       }
       // if (
       //   Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2)*.7 < length &&
@@ -1769,7 +1767,8 @@ const enemyProcess = () => {
         differenceAddition(
           enemy,
           -width / length * enemy.speed + (size / 2 * (.5 - Math.random())),
-          -height / length * enemy.speed + (size / 2 * (.5 - Math.random()))
+          -height / length * enemy.speed + (size / 2 * (.5 - Math.random())),
+          intervalDiffTime
         )
       }
     } else if (dungeon === dungeonList[1]) {
@@ -1915,7 +1914,7 @@ const drawBullets = () => {
     context.fill()
   })
 }
-const dropItemProcess = () => {
+const dropItemProcess = (intervalDiffTime) => {
   const blankInventorySlot = inventory.findIndex(v => v.category === '')
   dropItems.forEach((item, index) => {
     if (item.type === 'explosive' || item.type === 'droppedWeapon') {
@@ -2396,7 +2395,7 @@ const inventoryProcess = () => {
 const setWave = () => {
   if (wave.number === 0) dropItems = []
   wave.roundInterval = 0
-  afterglow.round = intervalDiffTime
+  afterglow.round = 0
 
   wave.number += 1
   wave.enemySpawnInterval = 0
@@ -2507,7 +2506,7 @@ const portalProcess = () => {
     }
   }
 }
-const waveProcess = () => {
+const waveProcess = (intervalDiffTime) => {
   if (wave.enemyCount < wave.enemyLimit) {
     if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
       wave.enemySpawnInterval += intervalDiffTime
@@ -2675,7 +2674,7 @@ let isDefeatBoss = false
 const bossProcessFirst = () => {
   bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
 }
-const bossProcess = () => {
+const bossProcess = (intervalDiffTime) => {
   if (0 < this.initialTime) this.initialTime -= intervalDiffTime
   bossArray.forEach((v, i) => {
     if (this.initialTime <= 0) v.life -= intervalDiffTime
@@ -2826,7 +2825,7 @@ const setStore = () => {
     return cost
   }
   class ShopSpot extends Spot {
-    process() {
+    process(intervalDiffTime) {
       const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
       if (!isInner(this, offset)) return
 
@@ -3327,9 +3326,9 @@ const upgradeClone = ()  => {
     0 < afterglow.explosiveRange
   ) afterglow.explosiveRange = (afterglow.explosiveRange-1)|0
 }
-const storeProcess = () => {
+const storeProcess = (intervalDiffTime) => {
   objects.forEach(object => {
-    object.process()
+    object.process(intervalDiffTime)
   })
 }
 const drawStore = () => {
@@ -3600,7 +3599,7 @@ const titleProcess = () => {
   }
   */
 }
-const combatProcess = () => {
+const combatProcess = (intervalDiffTime) => {
   enemyBulletArray.forEach(v => {
     if (((
       ownPosition.x - v.x) ** 2 + (ownPosition.y - v.y) ** 2) ** .5 < v.radius + size * .2 &&
@@ -3609,8 +3608,8 @@ const combatProcess = () => {
   })
 
   if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
-  if (dungeon !== dungeonList[3]) waveProcess()
-  if (0 < enemies.length) enemyProcess()
+  if (dungeon !== dungeonList[3]) waveProcess(intervalDiffTime)
+  if (0 < enemies.length) enemyProcess(intervalDiffTime)
   bullets.forEach((bullet, i) => {
     bullet.update()
     if (bullet.life < 0) bullets.splice(i, 1)
@@ -3799,18 +3798,18 @@ class Main {
   }
 }
 
-const mainProcess = () => {
+const mainProcess = (intervalDiffTime) => {
   if (location === locationList[1] && dungeon === dungeonList[4]) {
   } else {
-    interfaceProcess()
+    interfaceProcess(intervalDiffTime)
     if (direction !== 0) direction = 0
     if (angle !== 0) angle = 0
-    if (0 < dropItems.length) dropItemProcess()
+    if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
     inventoryProcess()
 
     const arrayUpdater = array => {
       array.forEach((v, i) => {
-        v.update()
+        v.update(intervalDiffTime)
       if (v.life <= 0) array.splice(i, 1)
       })
     }
@@ -3819,9 +3818,9 @@ const mainProcess = () => {
     })
 
     if (location === locationList[0]) {
-      storeProcess()
+      storeProcess(intervalDiffTime)
       if (portalFlag) portalProcess()
-    } else if (location === locationList[1]) combatProcess()
+    } else if (location === locationList[1]) combatProcess(intervalDiffTime)
   }
 }
 const pauseProcess = () => {
@@ -3900,7 +3899,7 @@ const settingsState = () => {
     }
   })
 }
-const frameResetProcess = () => {
+const frameResetProcess = (intervalDiffTime) => {
   isLeftMouseDownFirst = false
   isRightMouseDownFirst = false
   isLeftMouseUpFirst = false
@@ -3996,7 +3995,7 @@ const drawScreenEdge = (obj, hue) => {
   }
   context.restore()
 }
-const drawPortal = (timeStamp) => {
+const drawPortal = (intervalDiffTime, timeStamp) => {
   const particle = class {
     constructor(x, y, w, h, dx, dy, life, lightness) {
       this.x = x
@@ -4066,7 +4065,7 @@ const drawPortal = (timeStamp) => {
     context.restore()
   }
 }
-const drawSaveCompleted = () => {
+const drawSaveCompleted = (intervalDiffTime) => {
   const ratio = afterglow.save / 1000
   context.save()
   context.font = `${size / 2}px ${font}`
@@ -4091,7 +4090,7 @@ const drawSaveCompleted = () => {
   context.restore()
   afterglow.save -= intervalDiffTime
 }
-const drawMain = (timeStamp) => {
+const drawMain = (intervalDiffTime, timeStamp) => {
   const WIDTH_RANGE = 16
   const WIDTH_RATIO = 1.5
   const HEIGHT_RANGE = 9
@@ -4122,7 +4121,7 @@ const drawMain = (timeStamp) => {
       canvas.offsetHeight - cursor.offsetY
   }
   drawField()
-  if (portalFlag) drawPortal(timeStamp)
+  if (portalFlag) drawPortal(intervalDiffTime, timeStamp)
   if (0 < objects.length) drawObjects()
   if (0 < clonePosition.length) drawClone()
   if (0 < bullets.length) drawBullets()
@@ -4139,10 +4138,10 @@ const drawMain = (timeStamp) => {
     arrayRenderer(v)
   })
 
-  drawMyself()
+  drawMyself(intervalDiffTime)
   drawSlot()
   if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim()
-  if (0 <= afterglow.save) drawSaveCompleted()
+  if (0 <= afterglow.save) drawSaveCompleted(intervalDiffTime)
   if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
   if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
   if (state === 'pause') drawPause()
@@ -4612,26 +4611,25 @@ class Entry {
     this._windowManager.update(input, mouseInput)
 
     frameCounter(this.internalFrameArray)
-    intervalDiffTime = this.intervalDiffTime
     if (state === 'title' && !isSettings) titleProcess()
-    else if (state === 'main') mainProcess()
+    else if (state === 'main') mainProcess(this.intervalDiffTime)
     else if (state === 'pause') pauseProcess()
     else if (state === 'result') resultProcess()
     else if (state === 'keyLayout') keyLayoutProcess()
 
     if (code[action.settings].isFirst()) isSettings = !isSettings
     if (isSettings) settingsState()
-    frameResetProcess()
+    frameResetProcess(this.intervalDiffTime)
   }, 0)
+
   render () {
     frameCounter(this.animationFrameArray)
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
-    this._windowManager.render()
-
+    // this._windowManager.render()
 
     if (state === 'title') drawTitleScreen()
-    else if (state !== 'keyLayout') drawMain(this.timeStamp)
+    else if (state !== 'keyLayout') drawMain(this.intervalDiffTime, this.timeStamp)
     if (state === 'pause') drawPause()
     else if (state === 'result') drawResult()
     else if (state === 'keyLayout') drawKeyLayout()
