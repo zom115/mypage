@@ -1,5 +1,8 @@
 import {code, keydownTimeStamp} from '../../modules/code.mjs'
 import {frameCounter} from '../../modules/frameCounter.mjs'
+
+const SIZE = 32
+
 const keyMap = {
   lookUp: ['i'],
   lookRight: ['l'],
@@ -10,7 +13,6 @@ let globalTimestamp = Date.now()
 const internalFrameList = []
 const animationFrameList = []
 let intervalDiffTime = 1
-let currentTime = globalTimestamp
 const isKeyFirst = list => {
   return list.some(v => code[v].holdtime !== 0 && code[v].holdtime <= intervalDiffTime)
 }
@@ -3633,7 +3635,6 @@ const combatProcess = () => {
   }
   if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
 }
-
 class Input {
   constructor(keyMap, prevKeyMap) {
     this.keyMap = keyMap
@@ -3660,19 +3661,49 @@ class Input {
     return prevDown && !currentDown
   }
 }
-
 class InputReceiver {
   constructor () {
     this._keyMap = new Map()
     this._prevKeyMap = new Map()
-    addEventListener('keydown', v => this._keyMap.set(v.code, true))
-    addEventListener('keyup', v => this._keyMap.set(v.code, false))
+    document.addEventListener('keydown', e => {
+      this._keyMap.set(e.code, true)
+    })
+    document.addEventListener('keyup', e => this._keyMap.set(e.code, false))
+    this._mouseButtonMap = new Map()
+    this._prevMouseButtonMap = new Map()
+    canvas.addEventListener('mousedown', e => this._mouseButtonMap.set(e.button, true))
+    canvas.addEventListener('mouseup', e => this._mouseButtonMap.set(e.button, false))
+    this._mouseOffsetXMap = 0
+    this._mouseOffsetYMap = 0
+    canvas.addEventListener('mousemove', e => {
+      this._mouseOffsetXMap = e.offsetX
+      this._mouseOffsetYMap = e.offsetY
+    })
+    this._mouseWheelMap = new Map()
+    canvas.addEventListener('wheel', e => {
+      this._mouseWheelMap = e.deltaY
+    })
   }
-  getInput () {
+  getKeyInput () {
     const keyMap = new Map(this._keyMap)
     const prevKeyMap = new Map(this._prevKeyMap)
     this._prevKeyMap = new Map(this._keyMap)
     return new Input(keyMap, prevKeyMap)
+  }
+  getMouseCursorInput () {
+    const offset = {offsetX: this._mouseOffsetXMap, offsetY: this._mouseOffsetYMap}
+    return offset
+  }
+  getMouseButtonInput () {
+    const mouseButtonMap = new Map(this._mouseButtonMap)
+    const prevMouseButtonMap = new Map(this._prevMouseButtonMap)
+    this._prevMouseButtonMap = new Map(this._mouseButtonMap)
+    return new Input(mouseButtonMap, prevMouseButtonMap)
+  }
+  getMouseWheelInput () {
+    const mouseWheelMap = this._mouseWheelMap
+    this._mouseWheelMap = 0
+    return mouseWheelMap
   }
 }
 class Ownself {
@@ -3889,21 +3920,6 @@ const frameResetProcess = () => {
   if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
 
   if (ownState.stepLimit <= ownState.step) ownState.step = 0
-}
-const main = () => {
-  frameCounter(internalFrameList)
-  globalTimestamp = Date.now()
-  intervalDiffTime = globalTimestamp - currentTime
-  // if (100 < intervalDiffTime) intervalDiffTime = 0
-  currentTime = globalTimestamp
-  if (state === 'title' && !isSettings) titleProcess()
-  else if (state === 'main') mainProcess()
-  else if (state === 'pause') pauseProcess()
-  else if (state === 'result') resultProcess()
-  else if (state === 'keyLayout') keyLayoutProcess()
-  if (code[action.settings].isFirst()) isSettings = !isSettings
-  if (isSettings) settingsState()
-  frameResetProcess()
 }
 const drawBox = (box, alpha = 1) => {
   context.save()
@@ -4517,12 +4533,138 @@ context.textBaseline = 'middle'
 context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 context.restore()
 
+class EventDispatcher {
+  constructor () {
+    this._eventListeners = {}
+  }
+
+  addEventListener (type, callback) {
+    if (this._eventListeners[type] === undefined) {
+      this._eventListeners[type] = []
+    }
+
+    this._eventListeners[type].push(callback)
+  }
+
+  dispatchEvent (type, event) {
+    const listeners = this._eventListeners[type]
+    if (listeners !== undefined) listeners.forEach((callback) => callback(event))
+  }
+}
+class Window extends EventDispatcher {
+  constructor (x, y, w, h, color, alpha, is = false) {
+    super()
+    this.x = x
+    this.y = y
+    this.w = w
+    this.h = h
+    this.color = color
+    this.alpha = alpha
+    this.is = is
+    this.addEventListener('active', () => {
+      this.is = !this.is
+    })
+  }
+  update (input) {
+    if (input.getKeyDown('KeyR')) console.log(this.color)
+  }
+  render () {
+    context.fillStyle = `hsla(${this.color}, 100%, 50%, ${this.alpha})`
+    context.fillRect(this.x, this.y, this.w, this.h)
+  }
+}
+class WindowManager {
+  constructor () {
+    this.windows = {
+      main: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+      settings: new Window(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5),
+      inventory: new Window(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5)
+    }
+    this.windowOrder = ['main']
+    this.isInventory = false
+  }
+  update (input) {
+    if (input.getKeyDown('Escape')) {
+      const index = this.windowOrder.findIndex(v => v !== 'main')
+      if (index === -1) {
+        this.windows.settings.dispatchEvent('active')
+        this.windowOrder.push('settings')
+      } else {
+        this.windows[this.windowOrder[index]].dispatchEvent('active')
+        this.windowOrder.splice(index, 1)
+      }
+    }
+    if (this.windows.settings.is === false) {
+      if (input.getKeyDown('KeyE')) {
+        this.windows.inventory.dispatchEvent('active')
+        const index = this.windowOrder.indexOf('inventory')
+        if (index === -1) this.windowOrder.push('inventory')
+        else this.windowOrder.splice(index, 1)
+      }
+    }
+    this.windows[this.windowOrder.slice(-1)[0]].update(input) // Send key input
+  }
+  render () {
+    this.windowOrder.forEach(v => {
+      this.windows[v].render()
+    })
+    context.textAlign = 'left'
+    context.fillStyle = 'hsl(0, 0%, 0%)'
+    context.fillText(this.windowOrder, SIZE*5, SIZE*5)
+    context.fillText(Object.keys(this.windows), SIZE*5, SIZE*6)
+  }
+}
+
 class Entry {
-  constructor () {}
+  constructor () {
+    this.timeStamp = Date.now()
+    this.currentTime = Date.now()
+    this.intervalDiffTime = this.timeStamp - this.currentTime
+    this._inputReceiver = new InputReceiver()
+    this.cursor = {offsetX: 0, offsetY: 0}
+    this.deltaY = 0
+    this._windowManager = new WindowManager()
+  }
   loop = setInterval (() => {
-    main()
+    this.timeStamp = Date.now()
+    this.intervalDiffTime = this.timeStamp - this.currentTime
+    this.currentTime = this.timeStamp
+
+    const input = this._inputReceiver.getKeyInput()
+    const mouseInput = this._inputReceiver.getMouseButtonInput()
+    const mouseCursorInput = this._inputReceiver.getMouseCursorInput()
+    this.cursor = mouseCursorInput
+    const mouseWheelInput = this._inputReceiver.getMouseWheelInput()
+    this.deltaY = mouseWheelInput
+    if (mouseInput.getKeyDown(0)) console.log('LMB')
+    if (mouseInput.getKeyDown(1)) console.log('MMB')
+    if (mouseInput.getKeyDown(2)) console.log('RMB')
+    if (mouseInput.getKeyDown(3)) console.log('4MB')
+    if (mouseInput.getKeyDown(4)) console.log('5MB')
+    this._windowManager.update(input, mouseInput)
+
+    frameCounter(internalFrameList)
+    globalTimestamp = this.timeStamp
+    intervalDiffTime = this.intervalDiffTime
+    if (state === 'title' && !isSettings) titleProcess()
+    else if (state === 'main') mainProcess()
+    else if (state === 'pause') pauseProcess()
+    else if (state === 'result') resultProcess()
+    else if (state === 'keyLayout') keyLayoutProcess()
+
+    if (code[action.settings].isFirst()) isSettings = !isSettings
+    if (isSettings) settingsState()
+    frameResetProcess()
   }, 0)
   render () {
+    context.save()
+    context.fillStyle = 'hsl(0, 0%, 60%)'
+    context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+    context.fillStyle = 'hsl(0, 0%, 0%)'
+    context.fillText(`${this.cursor.offsetX} ${this.cursor.offsetY} ${this.deltaY}`, SIZE, canvas.offsetHeight - SIZE)
+    context.restore()
+
+    this._windowManager.render()
     draw()
     requestAnimationFrame(this.render.bind(this))
   }
