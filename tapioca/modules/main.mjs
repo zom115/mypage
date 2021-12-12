@@ -3775,29 +3775,6 @@ class Main {
 }
 
 const mainProcess = (intervalDiffTime, cursor) => {
-  if (location === locationList[1] && dungeon === dungeonList[4]) {
-  } else {
-    interfaceProcess(intervalDiffTime, cursor)
-    if (direction !== 0) direction = 0
-    if (angle !== 0) angle = 0
-    if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
-    inventoryProcess(cursor)
-
-    const arrayUpdater = array => {
-      array.forEach((v, i) => {
-        v.update(intervalDiffTime)
-      if (v.life <= 0) array.splice(i, 1)
-      })
-    }
-    array.forEach(v => {
-      arrayUpdater(v)
-    })
-
-    if (location === locationList[0]) {
-      storeProcess(intervalDiffTime, cursor)
-      if (portalFlag) portalProcess()
-    } else if (location === locationList[1]) combatProcess(intervalDiffTime)
-  }
 }
 const pauseProcess = () => {
   if (code[action.pause].isFirst()) state = 'main'
@@ -4034,61 +4011,8 @@ const drawSaveCompleted = (intervalDiffTime) => {
   context.restore()
   afterglow.save -= intervalDiffTime
 }
+
 const drawMain = (intervalDiffTime, timeStamp, cursor) => {
-  const WIDTH_RANGE = 16
-  const WIDTH_RATIO = 1.5
-  const HEIGHT_RANGE = 9
-  screenOwnPos = !settingsObject.isMiddleView ? {
-    x: canvas.offsetWidth * .5, y: canvas.offsetHeight * .5
-  } : settingsObject.isReverseBoundary ? {
-    x: cursor.offsetX <= canvas.offsetWidth * WIDTH_RATIO * 2 / WIDTH_RANGE ?
-      canvas.offsetWidth * (WIDTH_RANGE / 2 + WIDTH_RATIO * 2) / WIDTH_RANGE - cursor.offsetX :
-      canvas.offsetWidth * (WIDTH_RANGE - WIDTH_RATIO * 2) / WIDTH_RANGE <= cursor.offsetX ?
-      canvas.offsetWidth * (WIDTH_RANGE + (WIDTH_RANGE - WIDTH_RATIO * 4) / 2) / WIDTH_RANGE - cursor.offsetX :
-      canvas.offsetWidth / 2,
-    y: cursor.offsetY <= canvas.offsetHeight * WIDTH_RATIO * 2 / HEIGHT_RANGE ?
-      canvas.offsetHeight * (HEIGHT_RANGE / 2 + WIDTH_RATIO * 2) / HEIGHT_RANGE - cursor.offsetY :
-      canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO * 2) / HEIGHT_RANGE <= cursor.offsetY ?
-      canvas.offsetHeight * (HEIGHT_RANGE + (HEIGHT_RANGE - WIDTH_RATIO * 4) / 2) / HEIGHT_RANGE - cursor.offsetY :
-      canvas.offsetHeight / 2
-  } : {
-    x: cursor.offsetX < canvas.offsetWidth * ((WIDTH_RANGE - HEIGHT_RANGE) / 2 + WIDTH_RATIO) / WIDTH_RANGE ?
-      canvas.offsetWidth * (WIDTH_RANGE - (WIDTH_RANGE - HEIGHT_RANGE) / 2 - WIDTH_RATIO) / WIDTH_RANGE :
-      canvas.offsetWidth * (
-        WIDTH_RANGE - (WIDTH_RANGE - HEIGHT_RANGE) / 2 - WIDTH_RATIO) / WIDTH_RANGE < cursor.offsetX ?
-      canvas.offsetWidth * ((WIDTH_RANGE - HEIGHT_RANGE) / 2 + WIDTH_RATIO) / WIDTH_RANGE :
-      canvas.offsetWidth - cursor.offsetX,
-    y: cursor.offsetY < canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE ?
-      canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO) / HEIGHT_RANGE :
-      canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO) / HEIGHT_RANGE < cursor.offsetY ?
-      canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE :
-      canvas.offsetHeight - cursor.offsetY
-  }
-  drawField()
-  if (portalFlag) drawPortal(intervalDiffTime, timeStamp, cursor)
-  if (0 < objects.length) drawObjects(cursor)
-  if (0 < clonePosition.length) drawClone()
-  if (0 < bullets.length) drawBullets()
-  if (0 < enemies.length) drawEnemies()
-  if (0 < dropItems.length) drawDropItems()
-  drawIndicator()
-
-  const arrayRenderer = array => {
-    array.forEach(v => {
-      v.render()
-    })
-  }
-  array.forEach(v => {
-    arrayRenderer(v)
-  })
-
-  drawMyself(intervalDiffTime)
-  drawSlot(cursor)
-  if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim(cursor)
-  if (0 <= afterglow.save) drawSaveCompleted(intervalDiffTime)
-  if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
-  if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
-  if (state === 'pause') drawPause()
 }
 const drawPause = () => {
   let nowTime = Date.now()
@@ -4486,26 +4410,104 @@ class Scene extends EventDispatcher {
   }
 }
 class LobbyScene extends Scene {
-  update (input) {}
-  render (cursor) {
-    context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  update (intervalDiffTime, cursor) {
+    if (location === locationList[1] && dungeon === dungeonList[4]) {
+    } else {
+      interfaceProcess(intervalDiffTime, cursor)
+      if (direction !== 0) direction = 0
+      if (angle !== 0) angle = 0
+      if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
+      inventoryProcess(cursor)
+
+      const arrayUpdater = array => {
+        array.forEach((v, i) => {
+          v.update(intervalDiffTime)
+        if (v.life <= 0) array.splice(i, 1)
+        })
+      }
+      array.forEach(v => {
+        arrayUpdater(v)
+      })
+
+      if (location === locationList[0]) {
+        storeProcess(intervalDiffTime, cursor)
+        if (portalFlag) portalProcess()
+      } else if (location === locationList[1]) combatProcess(intervalDiffTime)
+    }
+  }
+  render (cursor, intervalDiffTime) {
+    // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+
+    const WIDTH_RANGE = 16
+    const WIDTH_RATIO = 1.5
+    const HEIGHT_RANGE = 9
+    screenOwnPos = !settingsObject.isMiddleView ? {
+      x: canvas.offsetWidth * .5, y: canvas.offsetHeight * .5
+    } : settingsObject.isReverseBoundary ? {
+      x: cursor.offsetX <= canvas.offsetWidth * WIDTH_RATIO * 2 / WIDTH_RANGE ?
+        canvas.offsetWidth * (WIDTH_RANGE / 2 + WIDTH_RATIO * 2) / WIDTH_RANGE - cursor.offsetX :
+        canvas.offsetWidth * (WIDTH_RANGE - WIDTH_RATIO * 2) / WIDTH_RANGE <= cursor.offsetX ?
+        canvas.offsetWidth * (WIDTH_RANGE + (WIDTH_RANGE - WIDTH_RATIO * 4) / 2) / WIDTH_RANGE - cursor.offsetX :
+        canvas.offsetWidth / 2,
+      y: cursor.offsetY <= canvas.offsetHeight * WIDTH_RATIO * 2 / HEIGHT_RANGE ?
+        canvas.offsetHeight * (HEIGHT_RANGE / 2 + WIDTH_RATIO * 2) / HEIGHT_RANGE - cursor.offsetY :
+        canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO * 2) / HEIGHT_RANGE <= cursor.offsetY ?
+        canvas.offsetHeight * (HEIGHT_RANGE + (HEIGHT_RANGE - WIDTH_RATIO * 4) / 2) / HEIGHT_RANGE - cursor.offsetY :
+        canvas.offsetHeight / 2
+    } : {
+      x: cursor.offsetX < canvas.offsetWidth * ((WIDTH_RANGE - HEIGHT_RANGE) / 2 + WIDTH_RATIO) / WIDTH_RANGE ?
+        canvas.offsetWidth * (WIDTH_RANGE - (WIDTH_RANGE - HEIGHT_RANGE) / 2 - WIDTH_RATIO) / WIDTH_RANGE :
+        canvas.offsetWidth * (
+          WIDTH_RANGE - (WIDTH_RANGE - HEIGHT_RANGE) / 2 - WIDTH_RATIO) / WIDTH_RANGE < cursor.offsetX ?
+        canvas.offsetWidth * ((WIDTH_RANGE - HEIGHT_RANGE) / 2 + WIDTH_RATIO) / WIDTH_RANGE :
+        canvas.offsetWidth - cursor.offsetX,
+      y: cursor.offsetY < canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE ?
+        canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO) / HEIGHT_RANGE :
+        canvas.offsetHeight * (HEIGHT_RANGE - WIDTH_RATIO) / HEIGHT_RANGE < cursor.offsetY ?
+        canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE :
+        canvas.offsetHeight - cursor.offsetY
+    }
+    drawField()
+    if (portalFlag) drawPortal(intervalDiffTime, timeStamp, cursor)
+    if (0 < objects.length) drawObjects(cursor)
+    if (0 < clonePosition.length) drawClone()
+    if (0 < bullets.length) drawBullets()
+    if (0 < enemies.length) drawEnemies()
+    if (0 < dropItems.length) drawDropItems()
+    drawIndicator()
+
+    const arrayRenderer = array => {
+      array.forEach(v => {
+        v.render()
+      })
+    }
+    array.forEach(v => {
+      arrayRenderer(v)
+    })
+
+    drawMyself(intervalDiffTime)
+    drawSlot(cursor)
+    if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim(cursor)
+    if (0 <= afterglow.save) drawSaveCompleted(intervalDiffTime)
+    if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
+    if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
   }
 }
 class TitleScene extends Scene {
-  update (input) {
+  update (intervalDiffTime, cursor) {
     if (code[action.fire].isFirst() || button(titleMenuWordArray[0])) {
-      reset()
+      // reset()
+
       // if (manyAmmo()) {
       //   inventory[selectSlot].magazines = [99, inventory[selectSlot].magazineSize]
       //   point = 999999
       //   ammo = 99999
       // }
-      this.change(new LobbyScene)
 
-      console.log('yes')
+      this.change(new LobbyScene)
     }
   }
-  render (cursor) {
+  render (cursor, intervalDiffTime) {
     let nowTime = Date.now()
     let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
     let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
@@ -4560,7 +4562,7 @@ class WindowManager extends EventDispatcher {
     this.scene = scene
     this.scene.addEventListener('change', e => this.change(e))
   }
-  update (input) {
+  update (input, mouseInput, intervalDiffTime, cursor) {
     if (input.getKeyDown('Escape')) {
       const index = this.floatWindowOrder.findIndex(v => v !== 'main')
       if (index === -1) {
@@ -4581,7 +4583,7 @@ class WindowManager extends EventDispatcher {
     }
     this.windows[this.floatWindowOrder.slice(-1)[0]].update(input) // Send key input
 
-    this.scene.update()
+    this.scene.update(intervalDiffTime, cursor)
   }
   render (cursor) {
     this.scene.render(cursor)
@@ -4590,9 +4592,6 @@ class WindowManager extends EventDispatcher {
     })
     context.textAlign = 'left'
     context.fillStyle = 'hsl(0, 0%, 0%)'
-    context.fillText(this.scene, SIZE * 5, SIZE * 2)
-    context.fillText(this.floatWindowOrder, SIZE * 5, SIZE * 3)
-    // context.fillText(Object.keys(this.windows), SIZE * 5, SIZE * 3)
   }
 }
 
@@ -4629,7 +4628,7 @@ class Entry {
     if (mouseInput.getKeyDown(2)) console.log('RMB')
     if (mouseInput.getKeyDown(3)) console.log('4MB')
     if (mouseInput.getKeyDown(4)) console.log('5MB')
-    this._windowManager.update(input, mouseInput)
+    this._windowManager.update(input, mouseInput, this.intervalDiffTime, this.cursor)
 
     frameCounter(this.internalFrameArray)
     // if (state === 'title' && !isSettings) titleProcess()
@@ -4648,10 +4647,10 @@ class Entry {
     frameCounter(this.animationFrameArray)
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
-    this._windowManager.render(this.cursor)
+    this._windowManager.render(this.cursor, this.intervalDiffTime)
 
     if (state === 'title') drawTitleScreen(this.cursor)
-    // else if (state !== 'keyLayout') drawMain(this.intervalDiffTime, this.timeStamp, this.cursor)
+    else if (state !== 'keyLayout') drawMain(this.intervalDiffTime, this.timeStamp, this.cursor)
     if (state === 'pause') drawPause()
     else if (state === 'result') drawResult(this.cursor)
     else if (state === 'keyLayout') drawKeyLayout()
@@ -4663,8 +4662,7 @@ class Entry {
     context.fillStyle = 'hsl(0, 0%, 50%)'
     const dictionary = {
       internalFps: this.internalFrameArray.length - 1,
-      screenFps: this.animationFrameArray.length - 1,
-      a: '\u{2228}'
+      screenFps: this.animationFrameArray.length - 1
     }
     Object.entries(dictionary).forEach((v, i) => {
       context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
