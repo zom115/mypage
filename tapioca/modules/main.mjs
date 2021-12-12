@@ -1434,7 +1434,6 @@ const interfaceProcess = (intervalDiffTime, cursor) => {
   if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess(intervalDiffTime)
   moving(intervalDiffTime)
   if (code[action.debug].isFirst()) debugMode = !debugMode
-  if (manyAmmo() && code[action.back].isFirst()) bomb()
 }
 const cloneProcess = () => {
   if (
@@ -1719,140 +1718,7 @@ const setWeapon = () => {
   Object.assign(weapon, {type: 'weapon'})
   return weapon
 }
-const enemyProcess = (intervalDiffTime) => {
-  enemies.forEach((enemy, index) => {
-    if (0 < enemy.timer) enemy.timer = (enemy.timer-1)|0
-    if (enemy.life <= 0) {
-      if (enemy.timer <= 0) {
-        const c = {x: enemy.x, y: enemy.y}
-        if (enemy.imageID === enemyImageAmount) {
-          enemies[index] = setWeapon()
-          enemies[index].unavailableTime = 30
-          enemies[index].x = c.x
-          enemies[index].y = c.y
-          dropItems.push(enemies.splice(index, 1)[0])
-        } else {
-          enemies.splice(index, 1)
-        }
-      } return
-    }
-    const width = ownPosition.x - enemy.x
-    const height = ownPosition.y - enemy.y
-    const length = Math.sqrt(width ** 2 + height ** 2)
 
-    if (dungeon === dungeonList[0]) {
-      if (0 < moreAwayCount) { // clone process
-        differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed, intervalDiffTime)
-      } else { // close to myself
-        differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
-      }
-      // if (
-      //   Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2)*.7 < length &&
-      //   !reviveFlag
-      // ) { // repop
-      //   const r = Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
-      //   const a = ~~(Math.random() * 360 + 1)
-      //   enemy.x = ownPosition.x + r * Math.cos(a * (Math.PI / 180))
-      //   enemy.y = ownPosition.y + r * Math.sin(a * (Math.PI / 180))
-      // }
-      if (
-        enemies.some((e, i) => index !== i && 0 < e.life &&
-        Math.sqrt((e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2) < size)
-      ) {
-        differenceAddition(
-          enemy,
-          -width / length * enemy.speed + (size / 2 * (.5 - Math.random())),
-          -height / length * enemy.speed + (size / 2 * (.5 - Math.random())),
-          intervalDiffTime
-        )
-      }
-    } else if (dungeon === dungeonList[1]) {
-      const r = .17 * intervalDiffTime
-      const x = enemy.x + r * Math.cos(enemy.theta)
-      const y = enemy.y + r * Math.sin(enemy.theta)
-      const DELTA_THETA = .001 * intervalDiffTime
-      enemy.theta +=
-        (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y) < 0 ?  // Cross product
-        -DELTA_THETA : DELTA_THETA
-      enemy.x += r * Math.cos(enemy.theta)
-      enemy.y += r * Math.sin(enemy.theta)
-    } else if (dungeon === dungeonList[2]) {
-      if (enemy.state === 'active') {
-        const r = .275 * intervalDiffTime
-
-        const x = enemy.x + r * Math.cos(enemy.theta)
-        const y = enemy.y + r * Math.sin(enemy.theta)
-        const DELTA_THETA = .0004 * intervalDiffTime
-        const CROSS_PRODUCT = (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y)
-        enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
-
-        enemy.x += r * Math.cos(enemy.theta)
-        enemy.y += r * Math.sin(enemy.theta)
-        enemy.fuel -= intervalDiffTime
-        if (enemy.fuel < 0) enemy.state = 'wait'
-      } else if (enemy.state === 'wait') {
-        const r = .35 * intervalDiffTime
-        const x = enemy.x + r * Math.cos(enemy.theta)
-        const y = enemy.y + r * Math.sin(enemy.theta)
-        const DELTA_THETA = .002 * intervalDiffTime
-        const CROSS_PRODUCT = (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y)
-        enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
-        if (Math.abs(CROSS_PRODUCT) <= 1) {
-          enemy.state = 'active'
-          enemy.fuel = 1500 + 500 * Math.random()
-        }
-      }
-    }
-    enemy.step = (enemy.stepLimit <= enemy.step) ? enemy.step = 0 : (enemy.step+1)|0
-    // collisionDetect
-    if (((
-        ownPosition.x - enemy.x) ** 2 + (ownPosition.y - enemy.y) ** 2
-      ) ** .5 < minImgRadius * 2 + size / 8 && 0 < enemy.life
-    ) {
-      if (dash.coolTimeLimit - dash.coolTime < dash.invincibleTime) {
-        if (!dash.isAttack) {
-          dash.isAttack = true
-          enemy.life = (enemy.life-dash.damage)|0
-          enemy.damage = dash.damage
-          enemy.timer = damageTimerLimit
-          const additionalPoint = (enemy.life <= 0) ? 130 : 10
-          if (additionalPoint === 130) defeatCount = (defeatCount+1)|0
-          point = (point+additionalPoint)|0
-          afterglow.point.push({number: additionalPoint, count: 30})
-        }
-      } else {
-        if (cloneFlag) {
-          reviveFlag = true
-          moreAwayCount = moreAwayLimit
-        } else if (!reviveFlag) {
-          state = 'result'
-          return
-        }
-      }
-    }
-    if (
-      ownSpeed.max < cloneSpeed && !dash.isAttack &&
-      (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)
-    ) {
-      const pos = {
-        x: clonePosition.reduce((a, v) => {return a + v.dx}, ownPosition.x),
-        y: clonePosition.reduce((a, v) => {return a + v.dy}, ownPosition.y)
-      }
-      if (((
-        pos.x - enemy.x) ** 2 + (pos.y - enemy.y) ** 2) ** .5 < minImgRadius * 2 + size / 8 &&
-        0 < enemy.life
-      ) {
-        dash.isAttack = true
-        enemy.life = (enemy.life-dash.damage)|0
-        enemy.damage = dash.damage
-        enemy.timer = damageTimerLimit
-        const additionalPoint = (enemy.life <= 0) ? 130 : 10
-        point = (point+additionalPoint)|0
-        afterglow.point.push({number: additionalPoint, count: 30})
-      }
-    }
-  })
-}
 const drawEnemies = () => {
   enemies.forEach(enemy => {
     context.fillStyle = (enemy.imageID === 0) ? 'hsla(0, 100%, 50%, .5)' :
@@ -3351,23 +3217,7 @@ const relativeY = (arg) => {
   const a = settingsObject.isMiddleView ? screenOwnPos.y - ownPosition.y : canvas.offsetHeight / 2 - ownPosition.y
   return a + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
 }
-const command = () => {
-  let bool = false
-  let counter = 0
-  return () => {
-    if (counter % 2 === 0 && code[action.lookUp].flag && code[action.up].flag) counter += 1
-    else if (
-      counter % 2 === 1 && code[action.lookUp].flag && code[action.down].flag) counter += 1
-    if (counter === 5) {
-      bool = true
-    }
-    if (state === 'result') {
-      bool = false
-      counter = 0
-    }
-    return bool
-  }
-}; const manyAmmo = command()
+
 const initWeapon = () => {
   return new Weapon(
     'T1911',
@@ -3573,32 +3423,6 @@ const menuColumn = () => {
 let rowPosition = 0
 let keyPosition = -2
 
-const titleProcess = () => {
-}
-const combatProcess = (intervalDiffTime) => {
-  enemyBulletArray.forEach(v => {
-    if (((
-      ownPosition.x - v.x) ** 2 + (ownPosition.y - v.y) ** 2) ** .5 < v.radius + size * .2 &&
-      dash.coolTime < dash.coolTimeLimit - dash.invincibleTime
-    ) state = 'result'
-  })
-
-  if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
-  if (dungeon !== dungeonList[3]) waveProcess(intervalDiffTime)
-  if (0 < enemies.length) enemyProcess(intervalDiffTime)
-  bullets.forEach((bullet, i) => {
-    bullet.update()
-    if (bullet.life < 0) bullets.splice(i, 1)
-  })
-  if (cloneFlag) cloneProcess()
-  if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
-  else if (reviveFlag) {
-    cloneFlag = false
-    clonePosition = []
-    reviveFlag = false
-  }
-  if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
-}
 class Input {
   constructor(keyMap, prevKeyMap) {
     this.keyMap = keyMap
@@ -3778,41 +3602,6 @@ const mainProcess = (intervalDiffTime, cursor) => {
 }
 const pauseProcess = () => {
   if (code[action.pause].isFirst()) state = 'main'
-}
-let resultFlag = false
-const resultProcess = () => {
-  manyAmmo()
-  if (!resultFlag) {
-    point = (point / 100)|0
-    point *= 10
-    saveProcess(true, true, false, false)
-    afterglow.save = 1000
-    resultFlag = true
-  }
-  if (button(resultBackBox)) {
-    state = 'main'
-    location = locationList[0]
-    dropItems = []
-    bullets = []
-    enemies = []
-    objects = []
-    bossArray.forEach(v => {
-      v.life = 0
-    })
-    enemyBulletArray.forEach(v => {
-      v.life = 0
-    })
-    wave.number = 0
-    wave.enemySpawnInterval = 0
-    wave.enemySpawnIntervalLimit = 0
-    wave.enemyCount = 0
-    wave.enemyLimit = 0
-    setWave()
-    wave.roundInterval = 0
-    defeatCount = 0
-    setStore()
-
-  }
 }
 const keyLayoutProcess = () => {
   rowPosition = rotate()
@@ -4028,34 +3817,6 @@ const drawPause = () => {
   context.restore()
 }
 const drawResult = (cursor) => {
-  context.font = `${size}px ${font}`
-  context.fillStyle = 'hsl(0, 100%, 40%)'
-  context.textAlign = 'center'
-  context.fillText('YOU WERE DRUNK', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
-  context.font = `${size * 2 / 3}px ${font}`
-  context.fillStyle = 'hsl(30, 100%, 40%)'
-  context.fillText(
-    `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
-  )
-  drawBox(resultBackBox, 1, cursor)
-  context.fillStyle = 'hsla(30, 100%, 50%, .5)'
-  context.fillRect(
-    canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
-  )
-  context.save()
-  let nowTime = Date.now()
-  let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
-  const imgCutin = (ss % 3 === 0) ? 'images/drinking.png' : 'images/drinkSmile.png'
-  context.scale(3, 3)
-  context.drawImage(
-    IMAGE[imgCutin],
-    ~~((canvas.offsetWidth / 6 - IMAGE[imgCutin].width / 2)+.5),
-    ~~((canvas.offsetHeight / 6 - IMAGE[imgCutin].height / 2)+.5)
-  )
-  context.restore()
-  // context.font = `${size}px ${font}`
-  // context.fillStyle = 'hsl(300, 100%, 50%)'
-  // context.fillText('カットイン(仮)', size*5, canvas.offsetHeight / 2)
 }
 const drawKeyLayout = () => {
   // resetScreen()
@@ -4404,12 +4165,243 @@ class Window extends EventDispatcher {
     context.fillRect(this.x, this.y, this.w, this.h)
   }
 }
+
+let resultFlag = false
+const resultProcess = () => {
+}
+
+class ResultWindow extends Window {
+  constructor () {
+    super()
+  }
+  update (input, mouseInput, intervalDiffTime, cursor) {
+
+    if (!resultFlag) {
+      point = (point / 100)|0
+      point *= 10
+      saveProcess(true, true, false, false)
+      afterglow.save = 1000
+      resultFlag = true
+    }
+    if (button(resultBackBox)) {
+      this.dispatchEvent('deleteMenu', 'result')
+      this.dispatchEvent('change', new LobbyScene())
+
+      state = 'main'
+      location = locationList[0]
+      dropItems = []
+      bullets = []
+      enemies = []
+      objects = []
+      bossArray.forEach(v => {
+        v.life = 0
+      })
+      enemyBulletArray.forEach(v => {
+        v.life = 0
+      })
+      wave.number = 0
+      wave.enemySpawnInterval = 0
+      wave.enemySpawnIntervalLimit = 0
+      wave.enemyCount = 0
+      wave.enemyLimit = 0
+      setWave()
+      wave.roundInterval = 0
+      defeatCount = 0
+      setStore()
+    }
+  }
+  render (cursor) {
+    context.font = `${size}px ${font}`
+    context.fillStyle = 'hsl(0, 100%, 40%)'
+    context.textAlign = 'center'
+    context.fillText('YOU WERE DRUNK', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
+    context.font = `${size * 2 / 3}px ${font}`
+    context.fillStyle = 'hsl(30, 100%, 40%)'
+    context.fillText(
+      `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
+    )
+    drawBox(resultBackBox, 1, cursor)
+    context.fillStyle = 'hsla(30, 100%, 50%, .5)'
+    context.fillRect(
+      canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
+    )
+    context.save()
+    let nowTime = Date.now()
+    let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
+    const imgCutin = (ss % 3 === 0) ? 'images/drinking.png' : 'images/drinkSmile.png'
+    context.scale(3, 3)
+    context.drawImage(
+      IMAGE[imgCutin],
+      ~~((canvas.offsetWidth / 6 - IMAGE[imgCutin].width / 2)+.5),
+      ~~((canvas.offsetHeight / 6 - IMAGE[imgCutin].height / 2)+.5)
+    )
+    context.restore()
+  }
+}
 class Scene extends EventDispatcher {
   change (scene) {
     this.dispatchEvent('change', scene)
   }
 }
 class LobbyScene extends Scene {
+  enemyProcess = (intervalDiffTime) => {
+    enemies.forEach((enemy, index) => {
+      if (0 < enemy.timer) enemy.timer = (enemy.timer-1)|0
+      if (enemy.life <= 0) {
+        if (enemy.timer <= 0) {
+          const c = {x: enemy.x, y: enemy.y}
+          if (enemy.imageID === enemyImageAmount) {
+            enemies[index] = setWeapon()
+            enemies[index].unavailableTime = 30
+            enemies[index].x = c.x
+            enemies[index].y = c.y
+            dropItems.push(enemies.splice(index, 1)[0])
+          } else {
+            enemies.splice(index, 1)
+          }
+        } return
+      }
+      const width = ownPosition.x - enemy.x
+      const height = ownPosition.y - enemy.y
+      const length = Math.sqrt(width ** 2 + height ** 2)
+
+      if (dungeon === dungeonList[0]) {
+        if (0 < moreAwayCount) { // clone process
+          differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed, intervalDiffTime)
+        } else { // close to myself
+          differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
+        }
+        // if (
+        //   Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2)*.7 < length &&
+        //   !reviveFlag
+        // ) { // repop
+        //   const r = Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
+        //   const a = ~~(Math.random() * 360 + 1)
+        //   enemy.x = ownPosition.x + r * Math.cos(a * (Math.PI / 180))
+        //   enemy.y = ownPosition.y + r * Math.sin(a * (Math.PI / 180))
+        // }
+        if (
+          enemies.some((e, i) => index !== i && 0 < e.life &&
+          Math.sqrt((e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2) < size)
+        ) {
+          differenceAddition(
+            enemy,
+            -width / length * enemy.speed + (size / 2 * (.5 - Math.random())),
+            -height / length * enemy.speed + (size / 2 * (.5 - Math.random())),
+            intervalDiffTime
+          )
+        }
+      } else if (dungeon === dungeonList[1]) {
+        const r = .17 * intervalDiffTime
+        const x = enemy.x + r * Math.cos(enemy.theta)
+        const y = enemy.y + r * Math.sin(enemy.theta)
+        const DELTA_THETA = .001 * intervalDiffTime
+        enemy.theta +=
+          (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y) < 0 ?  // Cross product
+          -DELTA_THETA : DELTA_THETA
+        enemy.x += r * Math.cos(enemy.theta)
+        enemy.y += r * Math.sin(enemy.theta)
+      } else if (dungeon === dungeonList[2]) {
+        if (enemy.state === 'active') {
+          const r = .275 * intervalDiffTime
+
+          const x = enemy.x + r * Math.cos(enemy.theta)
+          const y = enemy.y + r * Math.sin(enemy.theta)
+          const DELTA_THETA = .0004 * intervalDiffTime
+          const CROSS_PRODUCT = (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y)
+          enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
+
+          enemy.x += r * Math.cos(enemy.theta)
+          enemy.y += r * Math.sin(enemy.theta)
+          enemy.fuel -= intervalDiffTime
+          if (enemy.fuel < 0) enemy.state = 'wait'
+        } else if (enemy.state === 'wait') {
+          const r = .35 * intervalDiffTime
+          const x = enemy.x + r * Math.cos(enemy.theta)
+          const y = enemy.y + r * Math.sin(enemy.theta)
+          const DELTA_THETA = .002 * intervalDiffTime
+          const CROSS_PRODUCT = (x - enemy.x) * (ownPosition.y - enemy.y) - (ownPosition.x - enemy.x) * (y - enemy.y)
+          enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
+          if (Math.abs(CROSS_PRODUCT) <= 1) {
+            enemy.state = 'active'
+            enemy.fuel = 1500 + 500 * Math.random()
+          }
+        }
+      }
+      enemy.step = (enemy.stepLimit <= enemy.step) ? enemy.step = 0 : (enemy.step+1)|0
+      // collisionDetect
+      if (((
+          ownPosition.x - enemy.x) ** 2 + (ownPosition.y - enemy.y) ** 2
+        ) ** .5 < minImgRadius * 2 + size / 8 && 0 < enemy.life
+      ) {
+        if (dash.coolTimeLimit - dash.coolTime < dash.invincibleTime) {
+          if (!dash.isAttack) {
+            dash.isAttack = true
+            enemy.life = (enemy.life-dash.damage)|0
+            enemy.damage = dash.damage
+            enemy.timer = damageTimerLimit
+            const additionalPoint = (enemy.life <= 0) ? 130 : 10
+            if (additionalPoint === 130) defeatCount = (defeatCount+1)|0
+            point = (point+additionalPoint)|0
+            afterglow.point.push({number: additionalPoint, count: 30})
+          }
+        } else {
+          if (cloneFlag) {
+            reviveFlag = true
+            moreAwayCount = moreAwayLimit
+          } else if (!reviveFlag) {
+            this.dispatchEvent('addMenu', 'result')
+            return
+          }
+        }
+      }
+      if (
+        ownSpeed.max < cloneSpeed && !dash.isAttack &&
+        (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)
+      ) {
+        const pos = {
+          x: clonePosition.reduce((a, v) => {return a + v.dx}, ownPosition.x),
+          y: clonePosition.reduce((a, v) => {return a + v.dy}, ownPosition.y)
+        }
+        if (((
+          pos.x - enemy.x) ** 2 + (pos.y - enemy.y) ** 2) ** .5 < minImgRadius * 2 + size / 8 &&
+          0 < enemy.life
+        ) {
+          dash.isAttack = true
+          enemy.life = (enemy.life-dash.damage)|0
+          enemy.damage = dash.damage
+          enemy.timer = damageTimerLimit
+          const additionalPoint = (enemy.life <= 0) ? 130 : 10
+          point = (point+additionalPoint)|0
+          afterglow.point.push({number: additionalPoint, count: 30})
+        }
+      }
+    })
+  }
+  combatProcess = (intervalDiffTime) => {
+    enemyBulletArray.forEach(v => {
+      if (((
+        ownPosition.x - v.x) ** 2 + (ownPosition.y - v.y) ** 2) ** .5 < v.radius + size * .2 &&
+        dash.coolTime < dash.coolTimeLimit - dash.invincibleTime
+      ) this.dispatchEvent('addMenu', 'result')
+    })
+
+    if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
+    if (dungeon !== dungeonList[3]) waveProcess(intervalDiffTime)
+    if (0 < enemies.length) this.enemyProcess(intervalDiffTime)
+    bullets.forEach((bullet, i) => {
+      bullet.update()
+      if (bullet.life < 0) bullets.splice(i, 1)
+    })
+    if (cloneFlag) cloneProcess()
+    if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
+    else if (reviveFlag) {
+      cloneFlag = false
+      clonePosition = []
+      reviveFlag = false
+    }
+    if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
+  }
   update (intervalDiffTime, cursor) {
     if (location === locationList[1] && dungeon === dungeonList[4]) {
     } else {
@@ -4432,7 +4424,7 @@ class LobbyScene extends Scene {
       if (location === locationList[0]) {
         storeProcess(intervalDiffTime, cursor)
         if (portalFlag) portalProcess()
-      } else if (location === locationList[1]) combatProcess(intervalDiffTime)
+      } else if (location === locationList[1]) this.combatProcess(intervalDiffTime)
     }
   }
   render (cursor, intervalDiffTime) {
@@ -4518,7 +4510,7 @@ class TitleScene extends Scene {
     titleMenuWordArray.forEach(v => drawBox(v, 1, cursor))
 
     context.textAlign = 'right'
-    context.fillStyle = manyAmmo() ? 'hsla(0, 0%, 0%, .75)' : 'hsla(30, 100%, 40%, .75)'
+    context.fillStyle = 'hsla(30, 100%, 40%, .75)'
     context.fillText(version, canvas.offsetWidth - size, canvas.offsetHeight - size)
     const c = {x: size, y: canvas.offsetHeight - size*.9}
     const drawCharacter = (image, cooldinateX, cooldinateY) => {
@@ -4545,22 +4537,27 @@ class TitleScene extends Scene {
 class WindowManager extends EventDispatcher {
   constructor () {
     super()
+    this.floatWindowOrder = ['main']
     this.windows = {
       tutorial: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
       main: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
       dungeon: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
-      result: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+      result: new ResultWindow(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
 
       warehouse: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
       inventory: new Window(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5),
       settings: new Window(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5)
     }
-    this.floatWindowOrder = ['main']
-    this.isInventory = false
+    this.windows.result.addEventListener('deleteMenu', e => {
+      this.floatWindowOrder.splice(this.floatWindowOrder.indexOf(e), 1)
+    })
   }
   change (scene) {
     this.scene = scene
     this.scene.addEventListener('change', e => this.change(e))
+    this.scene.addEventListener('addMenu', e => {
+      if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)}
+      )
   }
   update (input, mouseInput, intervalDiffTime, cursor) {
     if (input.getKeyDown('Escape')) {
@@ -4583,7 +4580,7 @@ class WindowManager extends EventDispatcher {
     }
     this.windows[this.floatWindowOrder.slice(-1)[0]].update(input) // Send key input
 
-    this.scene.update(intervalDiffTime, cursor)
+    if (!this.floatWindowOrder.some(v => v === 'result')) this.scene.update(intervalDiffTime, cursor)
   }
   render (cursor) {
     this.scene.render(cursor)
@@ -4592,6 +4589,7 @@ class WindowManager extends EventDispatcher {
     })
     context.textAlign = 'left'
     context.fillStyle = 'hsl(0, 0%, 0%)'
+    context.fillText(this.floatWindowOrder, SIZE, SIZE)
   }
 }
 
