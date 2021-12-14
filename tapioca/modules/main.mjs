@@ -772,7 +772,6 @@ const getKeyName = key => {
 
 // for settings
 
-let isSettings = false
 let settingsObject = {
   isManipulateSlotAnytime:
     storage.getItem('isManipulateSlotAnytime') ? JSON.parse(storage.getItem('isManipulateSlotAnytime')) : true,
@@ -3628,19 +3627,6 @@ const keyLayoutProcess = () => {
     keyPosition === order.indexOf(action.back) && holdTimeLimit <= code[action.back].holdtime
   ) state = 'title'
 }
-const settingsState = () => {
-  settingsArray.forEach((v, i) => {
-    // v.offsetX = canvas.offsetWidth / 2
-    // v.offsetY = frameOffset.y + size * 3 + i * size * 2
-    // const toggleText = v.toggle ? 'On' : 'Off'
-    // v.text = `${v.explain}: ${toggleText}`
-    // setAbsoluteBox(v)
-    if (button(v)) {
-      settingsObject[v.toggle] = !settingsObject[v.toggle]
-      storage.setItem(v.toggle, JSON.stringify(settingsObject[v.toggle]))
-    }
-  })
-}
 const frameResetProcess = (intervalDiffTime) => {
   isLeftMouseDownFirst = false
   isRightMouseDownFirst = false
@@ -3997,30 +3983,6 @@ const drawKeyLayout = () => {
     )
   }
 }
-const drawSettings = (cursor) => {
-  context.save()
-  const frameOffset = {
-    x: canvas.offsetWidth * .075,
-    y: canvas.offsetHeight * .075,
-    w: canvas.offsetWidth * .85,
-    h: canvas.offsetHeight * .85
-  }
-  context.fillStyle = 'hsla(0, 0%, 0%, .5)'
-  context.fillRect(frameOffset.x, frameOffset.y, frameOffset.w, frameOffset.h)
-  settingsArray.forEach((v, i) => {
-    v.offsetX = canvas.offsetWidth / 2
-    v.offsetY = frameOffset.y + size * 3 + i * size * 2
-    const toggleText = settingsObject[v.toggle] ? 'On' : 'Off'
-    v.text = `${v.explain}: ${toggleText}`
-    setAbsoluteBox(v)
-    context.font = isInner(v, cursor) ? `bold ${size}px ${font}` : `${size}px ${font}`
-    context.fillStyle = isInner(v, cursor) ? 'hsl(0, 0%, 90%)' : 'hsl(0, 0%, 80%)'
-    context.strokeStyle = isInner(v, cursor) ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 0%)'
-    context.textAlign = 'center'
-    strokeText(v.text, canvas.offsetWidth / 2, frameOffset.y + size * 3 + i * size * 2)
-  })
-  context.restore()
-}
 
 const RESOURCE_LIST = []
 
@@ -4169,13 +4131,49 @@ class Window extends EventDispatcher {
 let resultFlag = false
 const resultProcess = () => {
 }
+class SettingsWindow extends Window {
+  constructor () {
+    super()
+  }
+  update (input) {
+    settingsArray.forEach((v, i) => {
+      if (button(v)) {
+        settingsObject[v.toggle] = !settingsObject[v.toggle]
+        storage.setItem(v.toggle, JSON.stringify(settingsObject[v.toggle]))
+      }
+    })
+  }
+  render (cursor) {
+    context.save()
+    const frameOffset = {
+      x: canvas.offsetWidth * .075,
+      y: canvas.offsetHeight * .075,
+      w: canvas.offsetWidth * .85,
+      h: canvas.offsetHeight * .85
+    }
+    context.fillStyle = 'hsla(0, 0%, 0%, .5)'
+    context.fillRect(frameOffset.x, frameOffset.y, frameOffset.w, frameOffset.h)
+    settingsArray.forEach((v, i) => {
+      v.offsetX = canvas.offsetWidth / 2
+      v.offsetY = frameOffset.y + size * 3 + i * size * 2
+      const toggleText = settingsObject[v.toggle] ? 'On' : 'Off'
+      v.text = `${v.explain}: ${toggleText}`
+      setAbsoluteBox(v)
+      context.font = isInner(v, cursor) ? `bold ${size}px ${font}` : `${size}px ${font}`
+      context.fillStyle = isInner(v, cursor) ? 'hsl(0, 0%, 90%)' : 'hsl(0, 0%, 80%)'
+      context.strokeStyle = isInner(v, cursor) ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 0%)'
+      context.textAlign = 'center'
+      strokeText(v.text, canvas.offsetWidth / 2, frameOffset.y + size * 3 + i * size * 2)
+    })
+    context.restore()
+  }
+}
 
 class ResultWindow extends Window {
   constructor () {
     super()
   }
-  update (input, mouseInput, intervalDiffTime, cursor) {
-
+  update (input) {
     if (!resultFlag) {
       point = (point / 100)|0
       point *= 10
@@ -4537,16 +4535,13 @@ class TitleScene extends Scene {
 class WindowManager extends EventDispatcher {
   constructor () {
     super()
-    this.floatWindowOrder = ['main']
+    this.floatWindowOrder = []
     this.windows = {
-      tutorial: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
-      main: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
-      dungeon: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
       result: new ResultWindow(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
 
       warehouse: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
       inventory: new Window(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5),
-      settings: new Window(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5)
+      settings: new SettingsWindow(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5)
     }
     this.windows.result.addEventListener('deleteMenu', e => {
       this.floatWindowOrder.splice(this.floatWindowOrder.indexOf(e), 1)
@@ -4578,7 +4573,11 @@ class WindowManager extends EventDispatcher {
         else this.floatWindowOrder.splice(index, 1)
       }
     }
-    this.windows[this.floatWindowOrder.slice(-1)[0]].update(input) // Send key input
+
+    // Send key input
+    if (this.floatWindowOrder.length !== 0) {
+      this.windows[this.floatWindowOrder.slice(-1)[0]].update(input)
+    }
 
     if (!this.floatWindowOrder.some(v => v === 'result')) this.scene.update(intervalDiffTime, cursor)
   }
@@ -4629,15 +4628,7 @@ class Entry {
     this._windowManager.update(input, mouseInput, this.intervalDiffTime, this.cursor)
 
     frameCounter(this.internalFrameArray)
-    // if (state === 'title' && !isSettings) titleProcess()
-    // else
-    if (state === 'main') mainProcess(this.intervalDiffTime, this.cursor)
-    else if (state === 'pause') pauseProcess()
-    else if (state === 'result') resultProcess()
-    else if (state === 'keyLayout') keyLayoutProcess()
 
-    if (code[action.settings].isFirst()) isSettings = !isSettings
-    if (isSettings) settingsState()
     frameResetProcess(this.intervalDiffTime)
   }, 0)
 
@@ -4646,13 +4637,6 @@ class Entry {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
     this._windowManager.render(this.cursor, this.intervalDiffTime)
-
-    if (state === 'title') drawTitleScreen(this.cursor)
-    else if (state !== 'keyLayout') drawMain(this.intervalDiffTime, this.timeStamp, this.cursor)
-    if (state === 'pause') drawPause()
-    else if (state === 'result') drawResult(this.cursor)
-    else if (state === 'keyLayout') drawKeyLayout()
-    if (isSettings) drawSettings(this.cursor)
 
     // Draw debug
     context.textAlign = 'right'
