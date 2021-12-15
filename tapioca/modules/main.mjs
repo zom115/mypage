@@ -54,6 +54,25 @@ const button = box => {
   return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isLeftMouseUpFirst
 }
 
+class Button {
+  isInner = (box, cursor) => {
+    const offset = {
+      x: cursor.offsetX - box.absoluteX,
+      y: cursor.offsetY - box.absoluteY
+    }
+    return 0 <= offset.x && offset.x <= box.width &&
+    0 <= offset.y && offset.y <= box.height
+  }
+  isDownInBox = (box, isLeftMouseDown, cursor) => {
+    if (!isLeftMouseDown) return false
+    return this.isInner(box, cursor)
+  }
+  isDownAndUpInBox = (box, isLeftMouseUp, cursor, mouseDownPos) => {
+    if (!isLeftMouseUp) return false
+    return this.isInner(box, mouseDownPos) && this.isInner(box, cursor)
+  }
+}
+
 let wheelEvent = {deltaY: 0, isFirst: false}
 canvas.addEventListener('wheel', e => {
   e.preventDefault()
@@ -4118,6 +4137,7 @@ class Window extends EventDispatcher {
     this.addEventListener('active', () => {
       this.is = !this.is
     })
+    this.button = new Button()
   }
   update (input) {
     if (input.getKeyDown('KeyR')) console.log(this.color)
@@ -4135,9 +4155,9 @@ class SettingsWindow extends Window {
   constructor () {
     super()
   }
-  update (input) {
+  update (mouseInput, cursor, mouseDownPosition) {
     settingsArray.forEach((v, i) => {
-      if (button(v)) {
+      if (this.button.isDownAndUpInBox(v, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
         settingsObject[v.toggle] = !settingsObject[v.toggle]
         storage.setItem(v.toggle, JSON.stringify(settingsObject[v.toggle]))
       }
@@ -4173,7 +4193,7 @@ class ResultWindow extends Window {
   constructor () {
     super()
   }
-  update (input) {
+  update (mouseInput, cursor, mouseDownPosition) {
     if (!resultFlag) {
       point = (point / 100)|0
       point *= 10
@@ -4181,7 +4201,7 @@ class ResultWindow extends Window {
       afterglow.save = 1000
       resultFlag = true
     }
-    if (button(resultBackBox)) {
+    if (this.button.isDownAndUpInBox(resultBackBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       this.dispatchEvent('deleteMenu', 'result')
       this.dispatchEvent('change', new LobbyScene())
 
@@ -4237,11 +4257,18 @@ class ResultWindow extends Window {
   }
 }
 class Scene extends EventDispatcher {
+  constructor () {
+    super()
+    this.button = new Button()
+  }
   change (scene) {
     this.dispatchEvent('change', scene)
   }
 }
 class LobbyScene extends Scene {
+  constructor () {
+    super()
+  }
   enemyProcess = (intervalDiffTime) => {
     enemies.forEach((enemy, index) => {
       if (0 < enemy.timer) enemy.timer = (enemy.timer-1)|0
@@ -4400,7 +4427,7 @@ class LobbyScene extends Scene {
     }
     if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
   }
-  update (intervalDiffTime, cursor) {
+  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     if (location === locationList[1] && dungeon === dungeonList[4]) {
     } else {
       interfaceProcess(intervalDiffTime, cursor)
@@ -4484,16 +4511,11 @@ class LobbyScene extends Scene {
   }
 }
 class TitleScene extends Scene {
-  update (intervalDiffTime, cursor) {
-    if (code[action.fire].isFirst() || button(titleMenuWordArray[0])) {
-      // reset()
-
-      // if (manyAmmo()) {
-      //   inventory[selectSlot].magazines = [99, inventory[selectSlot].magazineSize]
-      //   point = 999999
-      //   ammo = 99999
-      // }
-
+  // constructor () {
+  //   super()
+  // }
+  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
+    if (this.button.isDownAndUpInBox(titleMenuWordArray[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       this.change(new LobbyScene)
     }
   }
@@ -4554,7 +4576,7 @@ class WindowManager extends EventDispatcher {
       if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)}
       )
   }
-  update (input, mouseInput, intervalDiffTime, cursor) {
+  update (input, mouseInput, intervalDiffTime, cursor, mouseDownPosition) {
     if (input.getKeyDown('Escape')) {
       const index = this.floatWindowOrder.findIndex(v => v !== 'main')
       if (index === -1) {
@@ -4576,10 +4598,12 @@ class WindowManager extends EventDispatcher {
 
     // Send key input
     if (this.floatWindowOrder.length !== 0) {
-      this.windows[this.floatWindowOrder.slice(-1)[0]].update(input)
+      this.windows[this.floatWindowOrder.slice(-1)[0]].update(mouseInput, cursor, mouseDownPosition)
     }
 
-    if (!this.floatWindowOrder.some(v => v === 'result')) this.scene.update(intervalDiffTime, cursor)
+    if (!this.floatWindowOrder.some(v => v === 'result')) {
+      this.scene.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
+    }
   }
   render (cursor) {
     this.scene.render(cursor)
@@ -4603,6 +4627,7 @@ class Entry {
 
     this._inputReceiver = new InputReceiver()
     this.cursor = {offsetX: 0, offsetY: 0}
+    this.mouseDownPosition = {offsetX: 0, offsetY: 0}
     this.deltaY = 0
     this._windowManager = new WindowManager()
   }
@@ -4618,14 +4643,14 @@ class Entry {
     const mouseInput = this._inputReceiver.getMouseButtonInput()
     const mouseCursorInput = this._inputReceiver.getMouseCursorInput()
     this.cursor = mouseCursorInput
-    const mouseWheelInput = this._inputReceiver.getMouseWheelInput()
-    this.deltaY = mouseWheelInput
-    if (mouseInput.getKeyDown(0)) console.log('LMB')
+    if (mouseInput.getKeyDown(0)) this.mouseDownPosition = mouseCursorInput
     if (mouseInput.getKeyDown(1)) console.log('MMB')
     if (mouseInput.getKeyDown(2)) console.log('RMB')
     if (mouseInput.getKeyDown(3)) console.log('4MB')
     if (mouseInput.getKeyDown(4)) console.log('5MB')
-    this._windowManager.update(input, mouseInput, this.intervalDiffTime, this.cursor)
+    const mouseWheelInput = this._inputReceiver.getMouseWheelInput()
+    this.deltaY = mouseWheelInput
+    this._windowManager.update(input, mouseInput, this.intervalDiffTime, this.cursor, this.mouseDownPosition)
 
     frameCounter(this.internalFrameArray)
 
@@ -4644,7 +4669,8 @@ class Entry {
     context.fillStyle = 'hsl(0, 0%, 50%)'
     const dictionary = {
       internalFps: this.internalFrameArray.length - 1,
-      screenFps: this.animationFrameArray.length - 1
+      screenFps: this.animationFrameArray.length - 1,
+      pos: `${this.mouseDownPosition.offsetX} ${this.mouseDownPosition.offsetY}`
     }
     Object.entries(dictionary).forEach((v, i) => {
       context.fillText(`${v[0]}:`, canvas.width - size / 2 * 5, size / 2 * (i + 1))
