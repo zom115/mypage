@@ -2531,36 +2531,39 @@ const Shop = class {
   }
   render (cursor) {}
 }
-const START_BOX = {
-  offsetX: canvas.offsetWidth / 2,
-  offsetY: canvas.offsetHeight / 5,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: 'Start',
-  hue: 30
-}
-setAbsoluteBox(START_BOX)
-const DUNGEON_SELECT_BOX = {
-  offsetX: canvas.offsetWidth * 3 / 4,
-  offsetY: canvas.offsetHeight / 5,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: 'Select',
-  hue: 300
-}
-setAbsoluteBox(DUNGEON_SELECT_BOX)
 class StartSpot extends Shop {
+  constructor(dx, dy, w, h, Id, img) {
+    super(dx, dy, w, h, Id, img)
+    this.startBox = {
+      offsetX: canvas.offsetWidth / 2,
+      offsetY: canvas.offsetHeight / 5,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: 'Start',
+      hue: 30
+    }
+    setAbsoluteBox(this.startBox)
+    this.selectBox = {
+      offsetX: canvas.offsetWidth * 3 / 4,
+      offsetY: canvas.offsetHeight / 5,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: 'Select',
+      hue: 300
+    }
+    setAbsoluteBox(this.selectBox)
+  }
   update(intervalDiffTime, cursor) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (!isInner(this, offset)) return
     const bossProcessFirst = () => {
       bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
     }
-    if (button(START_BOX)) {
+    if (button(this.startBox)) {
       location = locationList[1]
       objects = []
       dropItems = []
@@ -2574,7 +2577,7 @@ class StartSpot extends Shop {
       }
       else bossProcessFirst()
     }
-    if (button(DUNGEON_SELECT_BOX)) {
+    if (button(this.selectBox)) {
       const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
       dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
     }
@@ -2583,84 +2586,87 @@ class StartSpot extends Shop {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
-      drawBox(START_BOX, 1, cursor)
-      drawBox(DUNGEON_SELECT_BOX, 1, cursor)
+      drawBox(this.startBox, 1, cursor)
+      drawBox(this.selectBox, 1, cursor)
       context.save()
       context.textAlign = 'center'
       context.fillStyle = 'hsl(210, 100%, 70%)'
-      context.fillText(dungeon, DUNGEON_SELECT_BOX.offsetX, DUNGEON_SELECT_BOX.offsetY + size * 2)
+      context.fillText(dungeon, this.selectBox.offsetX, this.selectBox.offsetY + size * 2)
       context.restore()
     }
   }
 }
-const fillAmmoBox = {
-  offsetX: canvas.offsetWidth * 4 / 7,
-  offsetY: canvas.offsetHeight / 5,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: 'Buy ammo',
-  hue: 210
-}
-setAbsoluteBox(fillAmmoBox)
-const fillAmmoAllBox = {
-  offsetX: canvas.offsetWidth * 6 / 7,
-  offsetY: canvas.offsetHeight / 5,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: 'Buy ammo all',
-  hue: 210
-}
-setAbsoluteBox(fillAmmoAllBox)
-const limitBreakBox = {
-  offsetX: canvas.offsetWidth * 3 / 4,
-  offsetY: canvas.offsetHeight * 2 / 5,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: 'Limit break (x0.01 - x2)',
-  hue: 0
-}
-setAbsoluteBox(limitBreakBox)
-const calcCost = slot => {
-  let cost = 0
-  if (slot.category !== '') {
-    cost =
-      slot.category === weaponCategoryList[0] ? 250 :
-      slot.category === weaponCategoryList[1] ? 500 :
-      slot.category === weaponCategoryList[5] ? 400 :
-      750 // slot.category === categoryList[2]
-    cost *=
-      slot.rarity === weaponRarityList[0] ? 1 :
-      slot.rarity === weaponRarityList[1] ? 2 :
-      slot.rarity === weaponRarityList[2] ? 3 :
-      4 // slot.rarity === weaponRarityList[3]
-  }
-  return cost
-}
 class ShopSpot extends Shop {
+  constructor(dx, dy, w, h, Id, img) {
+    super(dx, dy, w, h, Id, img)
+    this.fillAmmoBox = {
+      offsetX: canvas.offsetWidth * 4 / 7,
+      offsetY: canvas.offsetHeight / 5,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: 'Buy ammo',
+      hue: 210
+    }
+    setAbsoluteBox(this.fillAmmoBox)
+    this.fillAmmoAllBox = {
+      offsetX: canvas.offsetWidth * 6 / 7,
+      offsetY: canvas.offsetHeight / 5,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: 'Buy ammo all',
+      hue: 210
+    }
+    setAbsoluteBox(this.fillAmmoAllBox)
+    this.limitBreakBox = {
+      offsetX: canvas.offsetWidth * 3 / 4,
+      offsetY: canvas.offsetHeight * 2 / 5,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: 'Limit break (x0.01 - x2)',
+      hue: 0
+    }
+    setAbsoluteBox(this.limitBreakBox)
+  }
+  calcCost = slot => {
+    let cost = 0
+    if (slot.category !== '') {
+      cost =
+        slot.category === weaponCategoryList[0] ? 250 :
+        slot.category === weaponCategoryList[1] ? 500 :
+        slot.category === weaponCategoryList[5] ? 400 :
+        750 // slot.category === categoryList[2]
+      cost *=
+        slot.rarity === weaponRarityList[0] ? 1 :
+        slot.rarity === weaponRarityList[1] ? 2 :
+        slot.rarity === weaponRarityList[2] ? 3 :
+        4 // slot.rarity === weaponRarityList[3]
+    }
+    return cost
+  }
   update(intervalDiffTime, cursor) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (!isInner(this, offset)) return
 
-    const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
-    if (costAll <= point && button(fillAmmoAllBox)) {
+    const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
+    if (costAll <= point && button(this.fillAmmoAllBox)) {
       point -= costAll
       inventory.forEach(v => {
         if (v.category !== '') v.magazines.fill(v.magazineSize)
       })
     }
     if (inventory[selectSlot].category !== '') {
-      const cost = calcCost(inventory[selectSlot])
-      if (cost <= point && button(fillAmmoBox)) {
+      const cost = this.calcCost(inventory[selectSlot])
+      if (cost <= point && button(this.fillAmmoBox)) {
         point -= cost
         inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
       }
-      if (inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point && button(limitBreakBox)) {
+      if (inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point && button(this.limitBreakBox)) {
         afterglow.limitBreakResult = .01 + Math.random() * 1.99
         inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
         point -= inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex
@@ -2686,28 +2692,28 @@ class ShopSpot extends Shop {
           inventorySlotBox[selectSlot].width,
           inventorySlotBox[selectSlot].height)
       }
-      const cost = calcCost(inventory[selectSlot])
+      const cost = this.calcCost(inventory[selectSlot])
       const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
       context.font = `${size * .75}px ${font}`
       context.textAlign = 'center'
       context.textBaseline = 'middle'
       context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
-      drawBox(fillAmmoBox, ammoAlpha, cursor)
+      drawBox(this.fillAmmoBox, ammoAlpha, cursor)
       if (cost !== 0) {
-        context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size * 1.5)
+        context.fillText(`Cost: ${cost}`, this.fillAmmoBox.offsetX, this.fillAmmoBox.offsetY + size * 1.5)
       }
-      drawBox(fillAmmoAllBox, ammoAlpha, cursor)
-      const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
+      drawBox(this.fillAmmoAllBox, ammoAlpha, cursor)
+      const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
       if (costAll !== 0) {
         context.fillText(
-          `Cost: ${costAll}`, fillAmmoAllBox.offsetX, fillAmmoAllBox.offsetY + size * 1.5)
+          `Cost: ${costAll}`, this.fillAmmoAllBox.offsetX, this.fillAmmoAllBox.offsetY + size * 1.5)
       }
-      drawBox(limitBreakBox, ammoAlpha, cursor)
+      drawBox(this.limitBreakBox, ammoAlpha, cursor)
       if (inventory[selectSlot].category !== '') {
         context.fillText(
           `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
-          limitBreakBox.offsetX,
-          limitBreakBox.offsetY + size * 1.5)
+          this.limitBreakBox.offsetX,
+          this.limitBreakBox.offsetY + size * 1.5)
       }
       if (0 < afterglow.limitBreakSuccess) {
         const ratio = afterglow.limitBreakSuccess / 2000
@@ -2723,101 +2729,103 @@ class ShopSpot extends Shop {
     }
   }
 }
-const saveBox = {
-  offsetX: canvas.offsetWidth / 2,
-  offsetY: canvas.offsetHeight / 4,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: 'Save',
-  hue: 210
-}
-setAbsoluteBox(saveBox)
-const warehouseColumn = [
-  {
-    label: 'Level',
-    property: 'level',
-    width: 50,
-    align: 'right',
-    isShow: true
-  }, {
-    label: 'Name',
-    property: 'name',
-    width: 50,
-    align: 'left',
-    isShow: true
-  }, {
-    label: 'Category',
-    property: 'category',
-    width: 80,
-    align: 'left',
-    isShow: true
-  }, {
-    label: 'Mode',
-    property: 'mode',
-    width: 50,
-    align: 'left',
-    isShow: false
-  }, {
-    label: 'Damage',
-    property: 'damage',
-    width: 70,
-    align: 'right',
-    isShow: true
-  }, {
-    label: 'Mag. size',
-    property: 'magazineSize',
-    width: 80,
-    align: 'right',
-    isShow: true
-  }, {
-    label: 'Penetration force',
-    property: 'penetrationForce',
-    width: 140,
-    align: 'right',
-    isShow: true
-  }, {
-    label: 'Effective range',
-    property: 'effectiveRange',
-    width: 120,
-    align: 'right',
-    isShow: true
-  }
-]
-warehouseColumn.forEach(v => {
-  v.width = context.measureText(v.label).width + size * .25
-})
-const warehouseOffset = {
-  x: warehouseBox.absoluteX + size * .25,
-  y: warehouseBox.absoluteY + size * .25
-}
-
-let manipulateSortLabelIndex = -1
-let sendSortLabelIndex = -1
-let swapAbsoluteX = -1
-let isSortLabel = false
-
-let manipulateColumnSizeNumber = -1
-let temporaryDiffX = -1
 class SaveSpot extends Shop {
+  constructor(dx, dy, w, h, Id, img) {
+    super(dx, dy, w, h, Id, img)
+    this.saveBox = {
+      offsetX: canvas.offsetWidth / 2,
+      offsetY: canvas.offsetHeight / 4,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: 'Save',
+      hue: 210
+    }
+    setAbsoluteBox(this.saveBox)
+    this.warehouseColumn = [
+      {
+        label: 'Level',
+        property: 'level',
+        width: 50,
+        align: 'right',
+        isShow: true
+      }, {
+        label: 'Name',
+        property: 'name',
+        width: 50,
+        align: 'left',
+        isShow: true
+      }, {
+        label: 'Category',
+        property: 'category',
+        width: 80,
+        align: 'left',
+        isShow: true
+      }, {
+        label: 'Mode',
+        property: 'mode',
+        width: 50,
+        align: 'left',
+        isShow: false
+      }, {
+        label: 'Damage',
+        property: 'damage',
+        width: 70,
+        align: 'right',
+        isShow: true
+      }, {
+        label: 'Mag. size',
+        property: 'magazineSize',
+        width: 80,
+        align: 'right',
+        isShow: true
+      }, {
+        label: 'Penetration force',
+        property: 'penetrationForce',
+        width: 140,
+        align: 'right',
+        isShow: true
+      }, {
+        label: 'Effective range',
+        property: 'effectiveRange',
+        width: 120,
+        align: 'right',
+        isShow: true
+      }
+    ]
+    this.warehouseColumn.forEach(v => {
+      v.width = context.measureText(v.label).width + size * .25
+    })
+    this.warehouseOffset = {
+      x: warehouseBox.absoluteX + size * .25,
+      y: warehouseBox.absoluteY + size * .25
+    }
+    this.manipulateSortLabelIndex = -1
+    this.sendSortLabelIndex = -1
+    this.swapAbsoluteX = -1
+    this.isSortLabel = false
+
+    this.manipulateColumnSizeNumber = -1
+    this.temporaryDiffX = -1
+  }
   update(intervalDiffTime, cursor) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
       isWarehouse = true
-      if (downButton(saveBox, cursor)) saveProcess()
-      warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
+      if (downButton(this.saveBox, cursor)) saveProcess()
+      this.warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
         const padding = 10
 
         const box = {
-          absoluteX: warehouseOffset.x + pV + padding,
-          absoluteY: warehouseOffset.y,
+          absoluteX: this.warehouseOffset.x + pV + padding,
+          absoluteY: this.warehouseOffset.y,
           width: cV.width - padding * 2,
           height: size / 2
         }
 
         // Sort weapon
-        if (button(box) && !isSortLabel) {
+        if (button(box) && !this.isSortLabel) {
           warehouse.sort((a, b) => {
             if (orderNumber === cI && !isDescending) {
               if (cV.property === 'magazineSize') {
@@ -2848,62 +2856,62 @@ class SaveSpot extends Shop {
 
         // Sort label
         if (downButton(box)) {
-          manipulateSortLabelIndex = cI
-          swapAbsoluteX = cursor.offsetX
+          this.manipulateSortLabelIndex = cI
+          this.swapAbsoluteX = cursor.offsetX
         }
         // Start sort label mode if move 5px or more
         if (
-          !isSortLabel &&
-          0 <= manipulateSortLabelIndex &&
+          !this.isSortLabel &&
+          0 <= this.manipulateSortLabelIndex &&
           isLeftMouseDown &&
-          5 <= Math.abs(swapAbsoluteX - cursor.offsetX)
-        ) isSortLabel = true
+          5 <= Math.abs(this.swapAbsoluteX - cursor.offsetX)
+        ) this.isSortLabel = true
 
-        if (isSortLabel) {
+        if (this.isSortLabel) {
           if (cI === 0) {
-            if (cursor.offsetX < warehouseOffset.x + cV.width * .5) sendSortLabelIndex = cI
+            if (cursor.offsetX < this.warehouseOffset.x + cV.width * .5) this.sendSortLabelIndex = cI
           } else if (cI === array.length - 1) {
-            if (warehouseOffset.x + pV + array[cI].width * .5 < cursor.offsetX) sendSortLabelIndex = cI
+            if (this.warehouseOffset.x + pV + array[cI].width * .5 < cursor.offsetX) this.sendSortLabelIndex = cI
           } else if (
-            cI < manipulateSortLabelIndex &&
-            warehouseOffset.x + pV - array[cI - 1].width * .5 < cursor.offsetX &&
-            cursor.offsetX < warehouseOffset.x + pV + cV.width * .5
+            cI < this.manipulateSortLabelIndex &&
+            this.warehouseOffset.x + pV - array[cI - 1].width * .5 < cursor.offsetX &&
+            cursor.offsetX < this.warehouseOffset.x + pV + cV.width * .5
           ) {
-            sendSortLabelIndex = cI
+            this.sendSortLabelIndex = cI
           } else if (
-            manipulateSortLabelIndex < cI &&
-            warehouseOffset.x + pV + cV.width * .5 < cursor.offsetX &&
-            cursor.offsetX < warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
+            this.manipulateSortLabelIndex < cI &&
+            this.warehouseOffset.x + pV + cV.width * .5 < cursor.offsetX &&
+            cursor.offsetX < this.warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
           ) {
-            sendSortLabelIndex = cI
+            this.sendSortLabelIndex = cI
           } else if (
-            cI === manipulateSortLabelIndex &&
-            warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
-            cursor.offsetX <= warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
+            cI === this.manipulateSortLabelIndex &&
+            this.warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
+            cursor.offsetX <= this.warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
           ) {
-            sendSortLabelIndex = cI
+            this.sendSortLabelIndex = cI
           }
           if (
-            cursor.offsetY < warehouseOffset.y - size * .5 ||
-            warehouseOffset.y + size < cursor.offsetY
-          ) sendSortLabelIndex = -1
+            cursor.offsetY < this.warehouseOffset.y - size * .5 ||
+            this.warehouseOffset.y + size < cursor.offsetY
+          ) this.sendSortLabelIndex = -1
         }
-        if(isSortLabel && isLeftMouseUpFirst && sendSortLabelIndex !== -1 && cI === array.length - 1) {
-          warehouseColumn.splice(
-            warehouseColumn.findIndex(v => v.label === array[sendSortLabelIndex].label),
+        if(this.isSortLabel && isLeftMouseUpFirst && this.sendSortLabelIndex !== -1 && cI === array.length - 1) {
+          this.warehouseColumn.splice(
+            this.warehouseColumn.findIndex(v => v.label === array[this.sendSortLabelIndex].label),
             0,
-            warehouseColumn.splice(
-              warehouseColumn.findIndex(v => v.label === array[manipulateSortLabelIndex].label), 1)[0]
+            this.warehouseColumn.splice(
+              this.warehouseColumn.findIndex(v => v.label === array[this.manipulateSortLabelIndex].label), 1)[0]
           )
-          if (orderNumber === manipulateSortLabelIndex) orderNumber = sendSortLabelIndex
-          else if (manipulateSortLabelIndex < orderNumber && orderNumber <= sendSortLabelIndex) orderNumber -= 1
-          else if (orderNumber < manipulateSortLabelIndex && sendSortLabelIndex <= orderNumber) orderNumber += 1
+          if (orderNumber === this.manipulateSortLabelIndex) orderNumber = this.sendSortLabelIndex
+          else if (this.manipulateSortLabelIndex < orderNumber && orderNumber <= this.sendSortLabelIndex) orderNumber -= 1
+          else if (orderNumber < this.manipulateSortLabelIndex && this.sendSortLabelIndex <= orderNumber) orderNumber += 1
         }
 
         // Adjust width
         const colResizeBox = {
-          absoluteX: warehouseOffset.x + pV + cV.width - padding,
-          absoluteY: warehouseOffset.y,
+          absoluteX: this.warehouseOffset.x + pV + cV.width - padding,
+          absoluteY: this.warehouseOffset.y,
           width: padding * 2,
           height: size * .5
         }
@@ -2913,35 +2921,35 @@ class SaveSpot extends Shop {
             colResizeBox.absoluteX += padding
             colResizeBox.width -= padding
             if (isInner(colResizeBox, cursor)) {
-              manipulateColumnSizeNumber = -1
-              temporaryDiffX = -1
+              this.manipulateColumnSizeNumber = -1
+              this.temporaryDiffX = -1
             }
           }
-          if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
-          if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
+          if (this.manipulateColumnSizeNumber === -1) this.manipulateColumnSizeNumber = cI
+          if (this.temporaryDiffX === -1) this.temporaryDiffX = cursor.offsetX - cV.width
         }
-        if (manipulateColumnSizeNumber === cI && isLeftMouseDown) {
-          const x = cursor.offsetX - temporaryDiffX
-          if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
+        if (this.manipulateColumnSizeNumber === cI && isLeftMouseDown) {
+          const x = cursor.offsetX - this.temporaryDiffX
+          if (0 < x && this.manipulateColumnSizeNumber === cI) cV.width = x
         }
-        if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
-          temporaryDiffX = -1
-          manipulateColumnSizeNumber = -1
+        if (this.manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
+          this.temporaryDiffX = -1
+          this.manipulateColumnSizeNumber = -1
         }
         return pV + cV.width
       }, 0)
-      if((isSortLabel || sendSortLabelIndex === -1) && !isLeftMouseDown) { // Reset sort label
-        manipulateSortLabelIndex = -1
-        sendSortLabelIndex = -1
-        swapAbsoluteX = -1
-        isSortLabel = false
+      if((this.isSortLabel || this.sendSortLabelIndex === -1) && !isLeftMouseDown) { // Reset sort label
+        this.manipulateSortLabelIndex = -1
+        this.sendSortLabelIndex = -1
+        this.swapAbsoluteX = -1
+        this.isSortLabel = false
       }
       if (downButton(warehouseBox, cursor)) {
         let bool = false
         warehouse.forEach((v, i) => {
           const box = {
-            absoluteX: warehouseOffset.x,
-            absoluteY: warehouseOffset.y + size * (1 + i * .5),
+            absoluteX: this.warehouseOffset.x,
+            absoluteY: this.warehouseOffset.y + size * (1 + i * .5),
             width: warehouseBox.width - size * .5,
             height: size * .5
           }
@@ -2979,7 +2987,7 @@ class SaveSpot extends Shop {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
       context.save()
-      drawBox(saveBox, 1, cursor)
+      drawBox(this.saveBox, 1, cursor)
       context.fillStyle = 'hsla(0, 0%, 50%, .5)'
       context.fillRect(
         warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
@@ -2987,7 +2995,7 @@ class SaveSpot extends Shop {
       context.textBaseline = 'top'
       context.fillStyle = 'hsla(0, 0%, 100%, .5)'
       let isChangeCursorImage = false
-      warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
+      this.warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
         const getRistrictWidthText = (str, w) => {
           for (let i = str.length; 0 <= i; i--) {
             const text = i === str.length ? str : str.slice(0, i) + '...'
@@ -2996,12 +3004,12 @@ class SaveSpot extends Shop {
           return ''
         }
         const box = {
-          absoluteX: warehouseOffset.x + pV + cV.width - 10,
-          absoluteY: warehouseOffset.y,
+          absoluteX: this.warehouseOffset.x + pV + cV.width - 10,
+          absoluteY: this.warehouseOffset.y,
           width: 20,
           height: size * .5
         }
-        if ((isInner(box, cursor) || manipulateColumnSizeNumber !== -1) && !isSortLabel) {
+        if ((isInner(box, cursor) || this.manipulateColumnSizeNumber !== -1) && !this.isSortLabel) {
           canvas.style.cursor = 'col-resize'
           isChangeCursorImage = true
         } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
@@ -3016,39 +3024,39 @@ class SaveSpot extends Shop {
           context.restore()
         }
         const LABEL_BOX = {
-          absoluteX: warehouseOffset.x + pV,
-          absoluteY: warehouseOffset.y,
+          absoluteX: this.warehouseOffset.x + pV,
+          absoluteY: this.warehouseOffset.y,
           width: cV.width,
           height: size * .5
         }
-        if (!isSortLabel) drawInterectBoxArea(LABEL_BOX)
+        if (!this.isSortLabel) drawInterectBoxArea(LABEL_BOX)
 
-        if (sendSortLabelIndex === cI) {
+        if (this.sendSortLabelIndex === cI) {
           if (
-            cI < manipulateSortLabelIndex || (
-            cI === manipulateSortLabelIndex &&
-            warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
-            cursor.offsetX <= warehouseOffset.x + pV + cV.width * .5)
+            cI < this.manipulateSortLabelIndex || (
+            cI === this.manipulateSortLabelIndex &&
+            this.warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
+            cursor.offsetX <= this.warehouseOffset.x + pV + cV.width * .5)
           ) {
-            context.fillRect(warehouseOffset.x + pV - 1, warehouseOffset.y, 3, size / 2)
+            context.fillRect(this.warehouseOffset.x + pV - 1, this.warehouseOffset.y, 3, size / 2)
           } else { // manipulateSortLabelIndex < cI
-            context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 3, size / 2)
+            context.fillRect(this.warehouseOffset.x + pV + cV.width - 1, this.warehouseOffset.y, 3, size / 2)
           }
         }
-        context.fillRect(warehouseOffset.x + pV, warehouseOffset.y, 1, size / 2)
+        context.fillRect(this.warehouseOffset.x + pV, this.warehouseOffset.y, 1, size / 2)
         if (cI === array.length - 1) {
-          context.fillRect(warehouseOffset.x + pV + cV.width , warehouseOffset.y, 1, size / 2)
+          context.fillRect(this.warehouseOffset.x + pV + cV.width , this.warehouseOffset.y, 1, size / 2)
         }
 
         context.textAlign = 'left'
         const padding = size / 8
         context.fillText(
-          getRistrictWidthText(cV.label, cV.width), warehouseOffset.x + pV + padding, warehouseOffset.y)
-        if (isSortLabel && manipulateSortLabelIndex === cI && sendSortLabelIndex !== -1) {
+          getRistrictWidthText(cV.label, cV.width), this.warehouseOffset.x + pV + padding, this.warehouseOffset.y)
+        if (this.isSortLabel && this.manipulateSortLabelIndex === cI && this.sendSortLabelIndex !== -1) {
           context.fillText(
             getRistrictWidthText(cV.label, cV.width),
-            warehouseOffset.x + pV + padding - swapAbsoluteX + cursor.offsetX,
-            warehouseOffset.y - size * .5
+            this.warehouseOffset.x + pV + padding - this.swapAbsoluteX + cursor.offsetX,
+            this.warehouseOffset.y - size * .5
           )
         }
         if (cI === orderNumber) {
@@ -3068,7 +3076,7 @@ class SaveSpot extends Shop {
           } else if (cV.property === 'magazineSize') {
             text += ` * ${v.magazines.length}`
           }
-          let offsetY = warehouseOffset.x + pV + padding
+          let offsetY = this.warehouseOffset.x + pV + padding
           context.textAlign = cV.align
           if (cV.align === 'right') {
             offsetY += cV.width - padding * 2
@@ -3076,7 +3084,7 @@ class SaveSpot extends Shop {
           context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(v.rarity)]
           context.globalAlpha = .75
           context.fillText(
-            getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
+            getRistrictWidthText(text.toString(), cV.width), offsetY, this.warehouseOffset.y + size * (1 + i * .5))
           context.restore()
         })
         return pV + cV.width
