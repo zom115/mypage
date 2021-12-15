@@ -2216,58 +2216,6 @@ const drawAim = (cursor) => { // Expected effective range
   context.stroke()
   context.restore()
 }
-const inventoryProcess = (cursor) => {
-  inventory.forEach(v => {
-    if (v.category !== '') v.recoilEffect *= v.recoilMultiple
-  })
-  if (!settingsObject.isManipulateSlotAnytime && !inventoryFlag) {
-    if (holdSlot.category !== '') {
-      inventory.forEach((v, i) => {
-        if (v.category === '') {
-          [holdSlot, inventory[i]] = [inventory[i], holdSlot]
-        }
-      })
-    }
-    return
-  }
-  inventorySlotBox.forEach((v, i) => {
-    if (!inventoryFlag && mainSlotSize - 1 < i) return
-    if (downButton(v)) {
-      if (code[action.shift].flag) {
-        if (isWarehouse) {
-          warehouse.push(inventory[i])
-          inventory[i] = {category: ''}
-          orderNumber = -1
-          isDescending = false
-        } else {
-          let findIndex = -1
-          if (i < mainSlotSize) {
-            findIndex = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
-          } else findIndex = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
-          if (findIndex !== -1) [inventory[i], inventory[findIndex]] = [inventory[findIndex], inventory[i]]
-        }
-      } else {
-        [holdSlot, inventory[i]] = [inventory[i], holdSlot]
-        // afterglow.inventory = 60
-      }
-    }
-  })
-  if (
-    holdSlot.category !== '' && !downButton(inventoryBox) && isLeftMouseDownFirst && (
-    !isWarehouse || !downButton(warehouseBox))
-  ) {
-    holdSlot.type = 'weapon'
-    holdSlot.unavailableTime = 30
-    const r = size * 3
-    const theta = Math.atan2(cursor.offsetY - canvas.offsetHeight / 2, cursor.offsetX - canvas.offsetWidth / 2)
-    holdSlot.x = ownPosition.x + r * Math.cos(theta)
-    holdSlot.y = ownPosition.y + r * Math.sin(theta)
-    dropItems.push(holdSlot)
-    holdSlot = {category: ''}
-  }
-
-  if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
-}
 const setWave = () => {
   if (wave.number === 0) dropItems = []
   wave.roundInterval = 0
@@ -4433,6 +4381,59 @@ class LobbyScene extends Scene {
     }
     if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
   }
+
+  inventoryProcess = (cursor) => {
+    inventory.forEach(v => {
+      if (v.category !== '') v.recoilEffect *= v.recoilMultiple
+    })
+    if (!settingsObject.isManipulateSlotAnytime && !inventoryFlag) {
+      if (holdSlot.category !== '') {
+        inventory.forEach((v, i) => {
+          if (v.category === '') {
+            [holdSlot, inventory[i]] = [inventory[i], holdSlot]
+          }
+        })
+      }
+      return
+    }
+    inventorySlotBox.forEach((v, i) => {
+      if (!inventoryFlag && mainSlotSize - 1 < i) return
+      if (downButton(v)) {
+        if (code[action.shift].flag) {
+          if (isWarehouse) {
+            warehouse.push(inventory[i])
+            inventory[i] = {category: ''}
+            orderNumber = -1
+            isDescending = false
+          } else {
+            let findIndex = -1
+            if (i < mainSlotSize) {
+              findIndex = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
+            } else findIndex = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
+            if (findIndex !== -1) [inventory[i], inventory[findIndex]] = [inventory[findIndex], inventory[i]]
+          }
+        } else {
+          [holdSlot, inventory[i]] = [inventory[i], holdSlot]
+          // afterglow.inventory = 60
+        }
+      }
+    })
+    if (
+      holdSlot.category !== '' && !downButton(inventoryBox) && isLeftMouseDownFirst && (
+      !isWarehouse || !downButton(warehouseBox))
+    ) {
+      holdSlot.type = 'weapon'
+      holdSlot.unavailableTime = 30
+      const r = size * 3
+      const theta = Math.atan2(cursor.offsetY - canvas.offsetHeight / 2, cursor.offsetX - canvas.offsetWidth / 2)
+      holdSlot.x = ownPosition.x + r * Math.cos(theta)
+      holdSlot.y = ownPosition.y + r * Math.sin(theta)
+      dropItems.push(holdSlot)
+      holdSlot = {category: ''}
+    }
+
+    if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
+  }
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     if (location === locationList[1] && dungeon === dungeonList[4]) {
     } else {
@@ -4440,7 +4441,7 @@ class LobbyScene extends Scene {
       if (direction !== 0) direction = 0
       if (angle !== 0) angle = 0
       if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
-      inventoryProcess(cursor)
+      this.inventoryProcess(cursor)
 
       const arrayUpdater = array => {
         array.forEach((v, i) => {
