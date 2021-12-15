@@ -2355,53 +2355,6 @@ const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave
   if (isWarehouse) storage.setItem('warehouseArray', JSON.stringify(warehouse))
   afterglow.save = 1000
 }
-const portalProcess = () => {
-  if (!portalFlag) {
-    portalFlag = true
-    portalCooldinate.x = ownPosition.x|0
-    portalCooldinate.y = (ownPosition.y - size * 3)|0
-  }
-  if (
-    portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
-    portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
-  ) {
-    if (button(portalConfirmBox[0])) { // Return to Base
-      portalCooldinate.y += size * 3
-      location = locationList[0]
-      objects = []
-      dropItems = []
-      saveProcess()
-      setStore()
-    }
-    if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) { // Continue
-      portalFlag = false
-      portalCooldinate.x = 0
-      portalCooldinate.y = 0
-      location = locationList[1]
-      objects = []
-      dropItems = []
-      saveProcess()
-      setWave()
-    }
-  }
-}
-const waveProcess = (intervalDiffTime) => {
-  if (wave.enemyCount < wave.enemyLimit) {
-    if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
-      wave.enemySpawnInterval += intervalDiffTime
-    } else if (enemies.length <= 24) { // && wave.enemySpawnIntervalLimit <= wave.enemySpawnInterval
-      wave.enemySpawnInterval = 0
-      wave.enemyCount += 1
-      setEnemy()
-    }
-  } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
-    wave.roundInterval += intervalDiffTime
-    if (wave.roundIntervalLimit <= wave.roundInterval) {
-      if (wave.number % 5 === 0) portalProcess()
-      else setWave()
-    }
-  }
-}
 const setMap = () => {
   const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
   const l = size/9.2
@@ -2550,617 +2503,605 @@ const setMap = () => {
   objects.push({x: offset.x - l*(251-468), y: offset.y - l*(435-190), width: l*21, height: l*29})
 }
 let isDefeatBoss = false
-const bossProcessFirst = () => {
-  bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
-}
-const bossProcess = (intervalDiffTime) => {
-  if (0 < this.initialTime) this.initialTime -= intervalDiffTime
-  bossArray.forEach((v, i) => {
-    if (this.initialTime <= 0) v.life -= intervalDiffTime
-    if (v.life <= 0) bossArray.splice(i, 1)
-  })
-  if (bossArray.length === 0 && afterglow.endBoss <= 0 && !isDefeatBoss) {
-    isDefeatBoss = true
-    afterglow.endBoss = 1000
-  }
-  if (0 < afterglow.endBoss) afterglow.endBoss -= intervalDiffTime
-  if (bossArray.length === 0) portalProcess()
-}
-// const drawBoss = () => {
-//   bossArray.forEach(v => {
-//     context.drawImage(
-//       loadedMap['images/JK1_NL.png'], ~~(relativeX(v.x)+.5), ~~(relativeY(v.y)+.5)
-//     )
-//     console.log(v.x, v.y)
-//   })
-// }
 const warehouseBox = {
   absoluteX: size * .25,
   absoluteY: size * 6.75,
   width: size * 20.5,
   height: size * 15.5
 }
-const setStore = () => {
-  const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-  const Spot = class {
-    constructor(dx, dy, w, h, Id, img) {
-      this.x = offset.offsetX + dx // TODO: integrate x and absoluteX
-      this.y = offset.offsetY + dy
-      this.absoluteX = offset.offsetX + dx
-      this.absoluteY = offset.offsetY + dy
-      this.w = storeSize * w
-      this.h = storeSize * h
-      this.width = storeSize * w
-      this.height = storeSize * h
-      this.Id = Id
-      this.img = img
-    }
-  }
-  const START_BOX = {
-    offsetX: canvas.offsetWidth / 2,
-    offsetY: canvas.offsetHeight / 5,
-    absoluteX: 0,
-    absoluteY: 0,
-    width: 0,
-    height: 0,
-    text: 'Start',
-    hue: 30
-  }
-  setAbsoluteBox(START_BOX)
-  const DUNGEON_SELECT_BOX = {
-    offsetX: canvas.offsetWidth * 3 / 4,
-    offsetY: canvas.offsetHeight / 5,
-    absoluteX: 0,
-    absoluteY: 0,
-    width: 0,
-    height: 0,
-    text: 'Select',
-    hue: 300
-  }
-  setAbsoluteBox(DUNGEON_SELECT_BOX)
-  class StartSpot extends Spot {
-    process() {
-      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (!isInner(this, offset)) return
-      if (button(START_BOX)) {
-        location = locationList[1]
-        objects = []
-        dropItems = []
-        portalFlag = false
-        saveProcess()
-        wave.number = 0
-        if (dungeon !== dungeonList[3]) setWave()
-        if (dungeon === dungeonList[4]) {
-          const MAIN_TEST = new Main()
-          MAIN_TEST.render()
-        }
-        else bossProcessFirst()
-      }
-      if (button(DUNGEON_SELECT_BOX)) {
-        const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
-        dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
-      }
-    }
-    draw(cursor) {
-      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) {
-        drawBox(START_BOX, 1, cursor)
-        drawBox(DUNGEON_SELECT_BOX, 1, cursor)
-        context.save()
-        context.textAlign = 'center'
-        context.fillStyle = 'hsl(210, 100%, 70%)'
-        context.fillText(dungeon, DUNGEON_SELECT_BOX.offsetX, DUNGEON_SELECT_BOX.offsetY + size * 2)
-        context.restore()
-      }
-    }
-  }
-  const fillAmmoBox = {
-    offsetX: canvas.offsetWidth * 4 / 7,
-    offsetY: canvas.offsetHeight / 5,
-    absoluteX: 0,
-    absoluteY: 0,
-    width: 0,
-    height: 0,
-    text: 'Buy ammo',
-    hue: 210
-  }
-  setAbsoluteBox(fillAmmoBox)
-  const fillAmmoAllBox = {
-    offsetX: canvas.offsetWidth * 6 / 7,
-    offsetY: canvas.offsetHeight / 5,
-    absoluteX: 0,
-    absoluteY: 0,
-    width: 0,
-    height: 0,
-    text: 'Buy ammo all',
-    hue: 210
-  }
-  setAbsoluteBox(fillAmmoAllBox)
-  const limitBreakBox = {
-    offsetX: canvas.offsetWidth * 3 / 4,
-    offsetY: canvas.offsetHeight * 2 / 5,
-    absoluteX: 0,
-    absoluteY: 0,
-    width: 0,
-    height: 0,
-    text: 'Limit break (x0.01 - x2)',
-    hue: 0
-  }
-  setAbsoluteBox(limitBreakBox)
-  const calcCost = slot => {
-    let cost = 0
-    if (slot.category !== '') {
-      cost =
-        slot.category === weaponCategoryList[0] ? 250 :
-        slot.category === weaponCategoryList[1] ? 500 :
-        slot.category === weaponCategoryList[5] ? 400 :
-        750 // slot.category === categoryList[2]
-      cost *=
-        slot.rarity === weaponRarityList[0] ? 1 :
-        slot.rarity === weaponRarityList[1] ? 2 :
-        slot.rarity === weaponRarityList[2] ? 3 :
-        4 // slot.rarity === weaponRarityList[3]
-    }
-    return cost
-  }
-  class ShopSpot extends Spot {
-    process(intervalDiffTime) {
-      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (!isInner(this, offset)) return
 
-      const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
-      if (costAll <= point && button(fillAmmoAllBox)) {
-        point -= costAll
-        inventory.forEach(v => {
-          if (v.category !== '') v.magazines.fill(v.magazineSize)
-        })
+const Shop = class {
+  constructor(dx, dy, w, h, Id, img) {
+    this.x = ownPosition.x + dx // TODO: integrate x and absoluteX
+    this.y = ownPosition.y + dy
+    this.absoluteX = ownPosition.x + dx
+    this.absoluteY = ownPosition.y + dy
+    this.w = storeSize * w
+    this.h = storeSize * h
+    this.width = storeSize * w
+    this.height = storeSize * h
+    this.Id = Id
+    this.img = img
+    this.button = new Button()
+  }
+  update (intervalDiffTime, cursor) {}
+
+  drawShop = () => {
+    context.drawImage(IMAGE[this.img], ~~(relativeX(this.x)+.5), ~~(relativeY(this.y)+.5))
+  }
+  render (cursor) {}
+}
+const START_BOX = {
+  offsetX: canvas.offsetWidth / 2,
+  offsetY: canvas.offsetHeight / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Start',
+  hue: 30
+}
+setAbsoluteBox(START_BOX)
+const DUNGEON_SELECT_BOX = {
+  offsetX: canvas.offsetWidth * 3 / 4,
+  offsetY: canvas.offsetHeight / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Select',
+  hue: 300
+}
+setAbsoluteBox(DUNGEON_SELECT_BOX)
+class StartSpot extends Shop {
+  update(intervalDiffTime, cursor) {
+    const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+    if (!isInner(this, offset)) return
+    const bossProcessFirst = () => {
+      bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
+    }
+    if (button(START_BOX)) {
+      location = locationList[1]
+      objects = []
+      dropItems = []
+      portalFlag = false
+      saveProcess()
+      wave.number = 0
+      if (dungeon !== dungeonList[3]) setWave()
+      if (dungeon === dungeonList[4]) {
+        const MAIN_TEST = new Main()
+        MAIN_TEST.render()
       }
+      else bossProcessFirst()
+    }
+    if (button(DUNGEON_SELECT_BOX)) {
+      const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
+      dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
+    }
+  }
+  render(cursor) {
+    this.drawShop()
+    const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+    if (isInner(this, offset)) {
+      drawBox(START_BOX, 1, cursor)
+      drawBox(DUNGEON_SELECT_BOX, 1, cursor)
+      context.save()
+      context.textAlign = 'center'
+      context.fillStyle = 'hsl(210, 100%, 70%)'
+      context.fillText(dungeon, DUNGEON_SELECT_BOX.offsetX, DUNGEON_SELECT_BOX.offsetY + size * 2)
+      context.restore()
+    }
+  }
+}
+const fillAmmoBox = {
+  offsetX: canvas.offsetWidth * 4 / 7,
+  offsetY: canvas.offsetHeight / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Buy ammo',
+  hue: 210
+}
+setAbsoluteBox(fillAmmoBox)
+const fillAmmoAllBox = {
+  offsetX: canvas.offsetWidth * 6 / 7,
+  offsetY: canvas.offsetHeight / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Buy ammo all',
+  hue: 210
+}
+setAbsoluteBox(fillAmmoAllBox)
+const limitBreakBox = {
+  offsetX: canvas.offsetWidth * 3 / 4,
+  offsetY: canvas.offsetHeight * 2 / 5,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Limit break (x0.01 - x2)',
+  hue: 0
+}
+setAbsoluteBox(limitBreakBox)
+const calcCost = slot => {
+  let cost = 0
+  if (slot.category !== '') {
+    cost =
+      slot.category === weaponCategoryList[0] ? 250 :
+      slot.category === weaponCategoryList[1] ? 500 :
+      slot.category === weaponCategoryList[5] ? 400 :
+      750 // slot.category === categoryList[2]
+    cost *=
+      slot.rarity === weaponRarityList[0] ? 1 :
+      slot.rarity === weaponRarityList[1] ? 2 :
+      slot.rarity === weaponRarityList[2] ? 3 :
+      4 // slot.rarity === weaponRarityList[3]
+  }
+  return cost
+}
+class ShopSpot extends Shop {
+  update(intervalDiffTime, cursor) {
+    const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+    if (!isInner(this, offset)) return
+
+    const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
+    if (costAll <= point && button(fillAmmoAllBox)) {
+      point -= costAll
+      inventory.forEach(v => {
+        if (v.category !== '') v.magazines.fill(v.magazineSize)
+      })
+    }
+    if (inventory[selectSlot].category !== '') {
+      const cost = calcCost(inventory[selectSlot])
+      if (cost <= point && button(fillAmmoBox)) {
+        point -= cost
+        inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
+      }
+      if (inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point && button(limitBreakBox)) {
+        afterglow.limitBreakResult = .01 + Math.random() * 1.99
+        inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
+        point -= inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex
+        inventory[selectSlot].limitBreakIndex += 1
+        saveProcess(true, true, false, false)
+        afterglow.limitBreakSuccess += 2000
+      }
+    }
+    if (0 < afterglow.limitBreakSuccess) afterglow.limitBreakSuccess -= intervalDiffTime
+    if (0 < afterglow.limitBreakFailed) afterglow.limitBreakFailed -= intervalDiffTime
+
+  }
+  render(cursor) {
+    this.drawShop()
+    const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+    if (isInner(this, offset)) {
+      context.save()
       if (inventory[selectSlot].category !== '') {
-        const cost = calcCost(inventory[selectSlot])
-        if (cost <= point && button(fillAmmoBox)) {
-          point -= cost
-          inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
-        }
-        if (inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point && button(limitBreakBox)) {
-          afterglow.limitBreakResult = .01 + Math.random() * 1.99
-          inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
-          point -= inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex
-          inventory[selectSlot].limitBreakIndex += 1
-          saveProcess(true, true, false, false)
-          afterglow.limitBreakSuccess += 2000
-        }
-      }
-      if (0 < afterglow.limitBreakSuccess) afterglow.limitBreakSuccess -= intervalDiffTime
-      if (0 < afterglow.limitBreakFailed) afterglow.limitBreakFailed -= intervalDiffTime
-
-    }
-    draw(cursor) {
-      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) {
-        context.save()
-        if (inventory[selectSlot].category !== '') {
-          context.fillStyle = 'hsla(300, 100%, 70%, .5)'
-          context.fillRect(
-            inventorySlotBox[selectSlot].absoluteX,
-            inventorySlotBox[selectSlot].absoluteY,
-            inventorySlotBox[selectSlot].width,
-            inventorySlotBox[selectSlot].height)
-        }
-        const cost = calcCost(inventory[selectSlot])
-        const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
-        context.font = `${size * .75}px ${font}`
-        context.textAlign = 'center'
-        context.textBaseline = 'middle'
-        context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
-        drawBox(fillAmmoBox, ammoAlpha, cursor)
-        if (cost !== 0) {
-          context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size * 1.5)
-        }
-        drawBox(fillAmmoAllBox, ammoAlpha, cursor)
-        const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
-        if (costAll !== 0) {
-          context.fillText(
-            `Cost: ${costAll}`, fillAmmoAllBox.offsetX, fillAmmoAllBox.offsetY + size * 1.5)
-        }
-        drawBox(limitBreakBox, ammoAlpha, cursor)
-        if (inventory[selectSlot].category !== '') {
-          context.fillText(
-            `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
-            limitBreakBox.offsetX,
-            limitBreakBox.offsetY + size * 1.5)
-        }
-        if (0 < afterglow.limitBreakSuccess) {
-          const ratio = afterglow.limitBreakSuccess / 2000
-          context.font = `${size * (1 + afterglow.limitBreakResult)}px ${font}`
-          context.strokeStyle = `hsla(0, 100%, 0%, ${ratio})`
-          context.fillStyle = `hsla(60, 100%, 70%, ${ratio})`
-          strokeText(
-            'x' + afterglow.limitBreakResult.toPrecision(3),
-            canvas.offsetWidth / 2,
-            canvas.offsetHeight * 3 / 4)
-        }
-        context.restore()
-      }
-    }
-  }
-  const saveBox = {
-    offsetX: canvas.offsetWidth / 2,
-    offsetY: canvas.offsetHeight / 4,
-    absoluteX: 0,
-    absoluteY: 0,
-    width: 0,
-    height: 0,
-    text: 'Save',
-    hue: 210
-  }
-  setAbsoluteBox(saveBox)
-  const warehouseColumn = [
-    {
-      label: 'Level',
-      property: 'level',
-      width: 50,
-      align: 'right',
-      isShow: true
-    }, {
-      label: 'Name',
-      property: 'name',
-      width: 50,
-      align: 'left',
-      isShow: true
-    }, {
-      label: 'Category',
-      property: 'category',
-      width: 80,
-      align: 'left',
-      isShow: true
-    }, {
-      label: 'Mode',
-      property: 'mode',
-      width: 50,
-      align: 'left',
-      isShow: false
-    }, {
-      label: 'Damage',
-      property: 'damage',
-      width: 70,
-      align: 'right',
-      isShow: true
-    }, {
-      label: 'Mag. size',
-      property: 'magazineSize',
-      width: 80,
-      align: 'right',
-      isShow: true
-    }, {
-      label: 'Penetration force',
-      property: 'penetrationForce',
-      width: 140,
-      align: 'right',
-      isShow: true
-    }, {
-      label: 'Effective range',
-      property: 'effectiveRange',
-      width: 120,
-      align: 'right',
-      isShow: true
-    }
-  ]
-  warehouseColumn.forEach(v => {
-    v.width = context.measureText(v.label).width + size * .25
-  })
-  const warehouseOffset = {
-    x: warehouseBox.absoluteX + size * .25,
-    y: warehouseBox.absoluteY + size * .25
-  }
-
-  let manipulateSortLabelIndex = -1
-  let sendSortLabelIndex = -1
-  let swapAbsoluteX = -1
-  let isSortLabel = false
-
-  let manipulateColumnSizeNumber = -1
-  let temporaryDiffX = -1
-  class SaveSpot extends Spot {
-    process(intervalDiffTime, cursor) {
-      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) {
-        isWarehouse = true
-        if (downButton(saveBox, cursor)) saveProcess()
-        warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
-          const padding = 10
-
-          const box = {
-            absoluteX: warehouseOffset.x + pV + padding,
-            absoluteY: warehouseOffset.y,
-            width: cV.width - padding * 2,
-            height: size / 2
-          }
-
-          // Sort weapon
-          if (button(box) && !isSortLabel) {
-            warehouse.sort((a, b) => {
-              if (orderNumber === cI && !isDescending) {
-                if (cV.property === 'magazineSize') {
-                  return b[cV.property] * b.magazines.length - a[cV.property] * a.magazines.length
-                } else if (cV.property === 'damage') {
-                  return b[cV.property] * b.gaugeNumber - a[cV.property] * a.gaugeNumber
-                } else if (cV.property === 'name') {
-                  if (a[cV.property] < b[cV.property]) return -1
-                  if (b[cV.property] < a[cV.property]) return 1
-                  return 0
-                } else return b[cV.property] - a[cV.property]
-              } else {
-                if (cV.property === 'magazineSize') {
-                  return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
-                } else if (cV.property === 'damage') {
-                  return a[cV.property] * a.gaugeNumber - b[cV.property] * b.gaugeNumber
-                } else if (cV.property === 'name') {
-                  if (b[cV.property] < a[cV.property]) return -1
-                  if (a[cV.property] < b[cV.property]) return 1
-                  return 0
-                } else return a[cV.property] - b[cV.property]
-              }
-            })
-            if (orderNumber === cI) isDescending = !isDescending
-            else isDescending = false
-            orderNumber = cI
-          }
-
-          // Sort label
-          if (downButton(box)) {
-            manipulateSortLabelIndex = cI
-            swapAbsoluteX = cursor.offsetX
-          }
-          // Start sort label mode if move 5px or more
-          if (
-            !isSortLabel &&
-            0 <= manipulateSortLabelIndex &&
-            isLeftMouseDown &&
-            5 <= Math.abs(swapAbsoluteX - cursor.offsetX)
-          ) isSortLabel = true
-
-          if (isSortLabel) {
-            if (cI === 0) {
-              if (cursor.offsetX < warehouseOffset.x + cV.width * .5) sendSortLabelIndex = cI
-            } else if (cI === array.length - 1) {
-              if (warehouseOffset.x + pV + array[cI].width * .5 < cursor.offsetX) sendSortLabelIndex = cI
-            } else if (
-              cI < manipulateSortLabelIndex &&
-              warehouseOffset.x + pV - array[cI - 1].width * .5 < cursor.offsetX &&
-              cursor.offsetX < warehouseOffset.x + pV + cV.width * .5
-            ) {
-              sendSortLabelIndex = cI
-            } else if (
-              manipulateSortLabelIndex < cI &&
-              warehouseOffset.x + pV + cV.width * .5 < cursor.offsetX &&
-              cursor.offsetX < warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
-            ) {
-              sendSortLabelIndex = cI
-            } else if (
-              cI === manipulateSortLabelIndex &&
-              warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
-              cursor.offsetX <= warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
-            ) {
-              sendSortLabelIndex = cI
-            }
-            if (
-              cursor.offsetY < warehouseOffset.y - size * .5 ||
-              warehouseOffset.y + size < cursor.offsetY
-            ) sendSortLabelIndex = -1
-          }
-          if(isSortLabel && isLeftMouseUpFirst && sendSortLabelIndex !== -1 && cI === array.length - 1) {
-            warehouseColumn.splice(
-              warehouseColumn.findIndex(v => v.label === array[sendSortLabelIndex].label),
-              0,
-              warehouseColumn.splice(
-                warehouseColumn.findIndex(v => v.label === array[manipulateSortLabelIndex].label), 1)[0]
-            )
-            if (orderNumber === manipulateSortLabelIndex) orderNumber = sendSortLabelIndex
-            else if (manipulateSortLabelIndex < orderNumber && orderNumber <= sendSortLabelIndex) orderNumber -= 1
-            else if (orderNumber < manipulateSortLabelIndex && sendSortLabelIndex <= orderNumber) orderNumber += 1
-          }
-
-          // Adjust width
-          const colResizeBox = {
-            absoluteX: warehouseOffset.x + pV + cV.width - padding,
-            absoluteY: warehouseOffset.y,
-            width: padding * 2,
-            height: size * .5
-          }
-
-          if (downButton(colResizeBox)) {
-            if (cV.width <= padding && isLeftMouseDownFirst) {
-              colResizeBox.absoluteX += padding
-              colResizeBox.width -= padding
-              if (isInner(colResizeBox, cursor)) {
-                manipulateColumnSizeNumber = -1
-                temporaryDiffX = -1
-              }
-            }
-            if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
-            if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
-          }
-          if (manipulateColumnSizeNumber === cI && isLeftMouseDown) {
-            const x = cursor.offsetX - temporaryDiffX
-            if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
-          }
-          if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
-            temporaryDiffX = -1
-            manipulateColumnSizeNumber = -1
-          }
-          return pV + cV.width
-        }, 0)
-        if((isSortLabel || sendSortLabelIndex === -1) && !isLeftMouseDown) { // Reset sort label
-          manipulateSortLabelIndex = -1
-          sendSortLabelIndex = -1
-          swapAbsoluteX = -1
-          isSortLabel = false
-        }
-        if (downButton(warehouseBox, cursor)) {
-          let bool = false
-          warehouse.forEach((v, i) => {
-            const box = {
-              absoluteX: warehouseOffset.x,
-              absoluteY: warehouseOffset.y + size * (1 + i * .5),
-              width: warehouseBox.width - size * .5,
-              height: size * .5
-            }
-            if (isInner(box, cursor)) {
-              if (code[action.shift].flag) {
-                let findIndex = -1
-                findIndex = inventory.findIndex((v, index) => {
-                  if (!inventoryFlag && mainSlotSize - 1 < index) return -1
-                  else return v.category === ''
-                })
-                if (findIndex !== -1) {
-                  inventory[findIndex] = warehouse.splice(i, 1)[0]
-                  bool = true
-                }
-              } else {
-                [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
-                if (warehouse[i].category === '') warehouse.splice(i, 1)
-                bool = true
-                orderNumber = -1
-                isDescending = false
-              }
-            }
-          })
-          if (!bool && holdSlot.category !== '') {
-            warehouse.push(holdSlot)
-            holdSlot = {category: ''}
-            orderNumber = -1
-            isDescending = false
-          }
-        }
-      } else isWarehouse = false
-    }
-    draw(cursor) {
-      const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-      if (isInner(this, offset)) {
-        context.save()
-        drawBox(saveBox, 1, cursor)
-        context.fillStyle = 'hsla(0, 0%, 50%, .5)'
+        context.fillStyle = 'hsla(300, 100%, 70%, .5)'
         context.fillRect(
-          warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
-        context.font = `${size * .5}px ${font}`
-        context.textBaseline = 'top'
-        context.fillStyle = 'hsla(0, 0%, 100%, .5)'
-        let isChangeCursorImage = false
-        warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
-          const getRistrictWidthText = (str, w) => {
-            for (let i = str.length; 0 <= i; i--) {
-              const text = i === str.length ? str : str.slice(0, i) + '...'
-              if (context.measureText(text).width + size * .25 <= w) return text
-            }
-            return ''
-          }
-          const box = {
-            absoluteX: warehouseOffset.x + pV + cV.width - 10,
-            absoluteY: warehouseOffset.y,
-            width: 20,
-            height: size * .5
-          }
-          if ((isInner(box, cursor) || manipulateColumnSizeNumber !== -1) && !isSortLabel) {
-            canvas.style.cursor = 'col-resize'
-            isChangeCursorImage = true
-          } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
-
-          const drawInterectBoxArea = (box) => {
-            context.save()
-            if (isInner(box, cursor)) {
-              if (isLeftMouseDown) context.globalAlpha = .5
-              else context.globalAlpha = .3
-            } else context.globalAlpha = .05
-            context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
-            context.restore()
-          }
-          const LABEL_BOX = {
-            absoluteX: warehouseOffset.x + pV,
-            absoluteY: warehouseOffset.y,
-            width: cV.width,
-            height: size * .5
-          }
-          if (!isSortLabel) drawInterectBoxArea(LABEL_BOX)
-
-          if (sendSortLabelIndex === cI) {
-            if (
-              cI < manipulateSortLabelIndex || (
-              cI === manipulateSortLabelIndex &&
-              warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
-              cursor.offsetX <= warehouseOffset.x + pV + cV.width * .5)
-            ) {
-              context.fillRect(warehouseOffset.x + pV - 1, warehouseOffset.y, 3, size / 2)
-            } else { // manipulateSortLabelIndex < cI
-              context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 3, size / 2)
-            }
-          }
-          context.fillRect(warehouseOffset.x + pV, warehouseOffset.y, 1, size / 2)
-          if (cI === array.length - 1) {
-            context.fillRect(warehouseOffset.x + pV + cV.width , warehouseOffset.y, 1, size / 2)
-          }
-
-          context.textAlign = 'left'
-          const padding = size / 8
-          context.fillText(
-            getRistrictWidthText(cV.label, cV.width), warehouseOffset.x + pV + padding, warehouseOffset.y)
-          if (isSortLabel && manipulateSortLabelIndex === cI && sendSortLabelIndex !== -1) {
-            context.fillText(
-              getRistrictWidthText(cV.label, cV.width),
-              warehouseOffset.x + pV + padding - swapAbsoluteX + cursor.offsetX,
-              warehouseOffset.y - size * .5
-            )
-          }
-          if (cI === orderNumber) {
-            context.textAlign = 'center'
-            if (isDescending) {
-              context.fillText('\u{2228}', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
-            } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
-
-          }
-          warehouse.filter(v => v.category !== '').forEach((v, i) => {
-            context.save()
-            let text = v[cV.property]
-            if (cV.property === 'damage') {
-              if (v.gaugeNumber !== 1) text += ` * ${v.gaugeNumber}`
-            } else if (cV.property === 'penetrationForce' || cV.property === 'effectiveRange') {
-              text = text.toPrecision(3)
-            } else if (cV.property === 'magazineSize') {
-              text += ` * ${v.magazines.length}`
-            }
-            let offsetY = warehouseOffset.x + pV + padding
-            context.textAlign = cV.align
-            if (cV.align === 'right') {
-              offsetY += cV.width - padding * 2
-            }
-            context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(v.rarity)]
-            context.globalAlpha = .75
-            context.fillText(
-              getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
-            context.restore()
-          })
-          return pV + cV.width
-        }, 0)
-        context.textAlign = 'left'
-        context.font = `${size * .5}px ${font}`
-        context.fillText('TODO: Context menu, Filter, Scroll overall', size * .5, canvas.offsetHeight - size)
-        context.restore()
-      } else canvas.style.cursor = 'default'
+          inventorySlotBox[selectSlot].absoluteX,
+          inventorySlotBox[selectSlot].absoluteY,
+          inventorySlotBox[selectSlot].width,
+          inventorySlotBox[selectSlot].height)
+      }
+      const cost = calcCost(inventory[selectSlot])
+      const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
+      context.font = `${size * .75}px ${font}`
+      context.textAlign = 'center'
+      context.textBaseline = 'middle'
+      context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
+      drawBox(fillAmmoBox, ammoAlpha, cursor)
+      if (cost !== 0) {
+        context.fillText(`Cost: ${cost}`, fillAmmoBox.offsetX, fillAmmoBox.offsetY + size * 1.5)
+      }
+      drawBox(fillAmmoAllBox, ammoAlpha, cursor)
+      const costAll = inventory.reduce((p, c, i) => {return p + calcCost(inventory[i])}, 0)
+      if (costAll !== 0) {
+        context.fillText(
+          `Cost: ${costAll}`, fillAmmoAllBox.offsetX, fillAmmoAllBox.offsetY + size * 1.5)
+      }
+      drawBox(limitBreakBox, ammoAlpha, cursor)
+      if (inventory[selectSlot].category !== '') {
+        context.fillText(
+          `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
+          limitBreakBox.offsetX,
+          limitBreakBox.offsetY + size * 1.5)
+      }
+      if (0 < afterglow.limitBreakSuccess) {
+        const ratio = afterglow.limitBreakSuccess / 2000
+        context.font = `${size * (1 + afterglow.limitBreakResult)}px ${font}`
+        context.strokeStyle = `hsla(0, 100%, 0%, ${ratio})`
+        context.fillStyle = `hsla(60, 100%, 70%, ${ratio})`
+        strokeText(
+          'x' + afterglow.limitBreakResult.toPrecision(3),
+          canvas.offsetWidth / 2,
+          canvas.offsetHeight * 3 / 4)
+      }
+      context.restore()
     }
   }
-  objects.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
-  objects.push(new ShopSpot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
-  objects.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
+}
+const saveBox = {
+  offsetX: canvas.offsetWidth / 2,
+  offsetY: canvas.offsetHeight / 4,
+  absoluteX: 0,
+  absoluteY: 0,
+  width: 0,
+  height: 0,
+  text: 'Save',
+  hue: 210
+}
+setAbsoluteBox(saveBox)
+const warehouseColumn = [
+  {
+    label: 'Level',
+    property: 'level',
+    width: 50,
+    align: 'right',
+    isShow: true
+  }, {
+    label: 'Name',
+    property: 'name',
+    width: 50,
+    align: 'left',
+    isShow: true
+  }, {
+    label: 'Category',
+    property: 'category',
+    width: 80,
+    align: 'left',
+    isShow: true
+  }, {
+    label: 'Mode',
+    property: 'mode',
+    width: 50,
+    align: 'left',
+    isShow: false
+  }, {
+    label: 'Damage',
+    property: 'damage',
+    width: 70,
+    align: 'right',
+    isShow: true
+  }, {
+    label: 'Mag. size',
+    property: 'magazineSize',
+    width: 80,
+    align: 'right',
+    isShow: true
+  }, {
+    label: 'Penetration force',
+    property: 'penetrationForce',
+    width: 140,
+    align: 'right',
+    isShow: true
+  }, {
+    label: 'Effective range',
+    property: 'effectiveRange',
+    width: 120,
+    align: 'right',
+    isShow: true
+  }
+]
+warehouseColumn.forEach(v => {
+  v.width = context.measureText(v.label).width + size * .25
+})
+const warehouseOffset = {
+  x: warehouseBox.absoluteX + size * .25,
+  y: warehouseBox.absoluteY + size * .25
+}
+
+let manipulateSortLabelIndex = -1
+let sendSortLabelIndex = -1
+let swapAbsoluteX = -1
+let isSortLabel = false
+
+let manipulateColumnSizeNumber = -1
+let temporaryDiffX = -1
+class SaveSpot extends Shop {
+  update(intervalDiffTime, cursor) {
+    const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+    if (isInner(this, offset)) {
+      isWarehouse = true
+      if (downButton(saveBox, cursor)) saveProcess()
+      warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
+        const padding = 10
+
+        const box = {
+          absoluteX: warehouseOffset.x + pV + padding,
+          absoluteY: warehouseOffset.y,
+          width: cV.width - padding * 2,
+          height: size / 2
+        }
+
+        // Sort weapon
+        if (button(box) && !isSortLabel) {
+          warehouse.sort((a, b) => {
+            if (orderNumber === cI && !isDescending) {
+              if (cV.property === 'magazineSize') {
+                return b[cV.property] * b.magazines.length - a[cV.property] * a.magazines.length
+              } else if (cV.property === 'damage') {
+                return b[cV.property] * b.gaugeNumber - a[cV.property] * a.gaugeNumber
+              } else if (cV.property === 'name') {
+                if (a[cV.property] < b[cV.property]) return -1
+                if (b[cV.property] < a[cV.property]) return 1
+                return 0
+              } else return b[cV.property] - a[cV.property]
+            } else {
+              if (cV.property === 'magazineSize') {
+                return a[cV.property] * a.magazines.length - b[cV.property] * b.magazines.length
+              } else if (cV.property === 'damage') {
+                return a[cV.property] * a.gaugeNumber - b[cV.property] * b.gaugeNumber
+              } else if (cV.property === 'name') {
+                if (b[cV.property] < a[cV.property]) return -1
+                if (a[cV.property] < b[cV.property]) return 1
+                return 0
+              } else return a[cV.property] - b[cV.property]
+            }
+          })
+          if (orderNumber === cI) isDescending = !isDescending
+          else isDescending = false
+          orderNumber = cI
+        }
+
+        // Sort label
+        if (downButton(box)) {
+          manipulateSortLabelIndex = cI
+          swapAbsoluteX = cursor.offsetX
+        }
+        // Start sort label mode if move 5px or more
+        if (
+          !isSortLabel &&
+          0 <= manipulateSortLabelIndex &&
+          isLeftMouseDown &&
+          5 <= Math.abs(swapAbsoluteX - cursor.offsetX)
+        ) isSortLabel = true
+
+        if (isSortLabel) {
+          if (cI === 0) {
+            if (cursor.offsetX < warehouseOffset.x + cV.width * .5) sendSortLabelIndex = cI
+          } else if (cI === array.length - 1) {
+            if (warehouseOffset.x + pV + array[cI].width * .5 < cursor.offsetX) sendSortLabelIndex = cI
+          } else if (
+            cI < manipulateSortLabelIndex &&
+            warehouseOffset.x + pV - array[cI - 1].width * .5 < cursor.offsetX &&
+            cursor.offsetX < warehouseOffset.x + pV + cV.width * .5
+          ) {
+            sendSortLabelIndex = cI
+          } else if (
+            manipulateSortLabelIndex < cI &&
+            warehouseOffset.x + pV + cV.width * .5 < cursor.offsetX &&
+            cursor.offsetX < warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
+          ) {
+            sendSortLabelIndex = cI
+          } else if (
+            cI === manipulateSortLabelIndex &&
+            warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
+            cursor.offsetX <= warehouseOffset.x + pV + cV.width + array[cI + 1].width * .5
+          ) {
+            sendSortLabelIndex = cI
+          }
+          if (
+            cursor.offsetY < warehouseOffset.y - size * .5 ||
+            warehouseOffset.y + size < cursor.offsetY
+          ) sendSortLabelIndex = -1
+        }
+        if(isSortLabel && isLeftMouseUpFirst && sendSortLabelIndex !== -1 && cI === array.length - 1) {
+          warehouseColumn.splice(
+            warehouseColumn.findIndex(v => v.label === array[sendSortLabelIndex].label),
+            0,
+            warehouseColumn.splice(
+              warehouseColumn.findIndex(v => v.label === array[manipulateSortLabelIndex].label), 1)[0]
+          )
+          if (orderNumber === manipulateSortLabelIndex) orderNumber = sendSortLabelIndex
+          else if (manipulateSortLabelIndex < orderNumber && orderNumber <= sendSortLabelIndex) orderNumber -= 1
+          else if (orderNumber < manipulateSortLabelIndex && sendSortLabelIndex <= orderNumber) orderNumber += 1
+        }
+
+        // Adjust width
+        const colResizeBox = {
+          absoluteX: warehouseOffset.x + pV + cV.width - padding,
+          absoluteY: warehouseOffset.y,
+          width: padding * 2,
+          height: size * .5
+        }
+
+        if (downButton(colResizeBox)) {
+          if (cV.width <= padding && isLeftMouseDownFirst) {
+            colResizeBox.absoluteX += padding
+            colResizeBox.width -= padding
+            if (isInner(colResizeBox, cursor)) {
+              manipulateColumnSizeNumber = -1
+              temporaryDiffX = -1
+            }
+          }
+          if (manipulateColumnSizeNumber === -1) manipulateColumnSizeNumber = cI
+          if (temporaryDiffX === -1) temporaryDiffX = cursor.offsetX - cV.width
+        }
+        if (manipulateColumnSizeNumber === cI && isLeftMouseDown) {
+          const x = cursor.offsetX - temporaryDiffX
+          if (0 < x && manipulateColumnSizeNumber === cI) cV.width = x
+        }
+        if (manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
+          temporaryDiffX = -1
+          manipulateColumnSizeNumber = -1
+        }
+        return pV + cV.width
+      }, 0)
+      if((isSortLabel || sendSortLabelIndex === -1) && !isLeftMouseDown) { // Reset sort label
+        manipulateSortLabelIndex = -1
+        sendSortLabelIndex = -1
+        swapAbsoluteX = -1
+        isSortLabel = false
+      }
+      if (downButton(warehouseBox, cursor)) {
+        let bool = false
+        warehouse.forEach((v, i) => {
+          const box = {
+            absoluteX: warehouseOffset.x,
+            absoluteY: warehouseOffset.y + size * (1 + i * .5),
+            width: warehouseBox.width - size * .5,
+            height: size * .5
+          }
+          if (isInner(box, cursor)) {
+            if (code[action.shift].flag) {
+              let findIndex = -1
+              findIndex = inventory.findIndex((v, index) => {
+                if (!inventoryFlag && mainSlotSize - 1 < index) return -1
+                else return v.category === ''
+              })
+              if (findIndex !== -1) {
+                inventory[findIndex] = warehouse.splice(i, 1)[0]
+                bool = true
+              }
+            } else {
+              [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
+              if (warehouse[i].category === '') warehouse.splice(i, 1)
+              bool = true
+              orderNumber = -1
+              isDescending = false
+            }
+          }
+        })
+        if (!bool && holdSlot.category !== '') {
+          warehouse.push(holdSlot)
+          holdSlot = {category: ''}
+          orderNumber = -1
+          isDescending = false
+        }
+      }
+    } else isWarehouse = false
+  }
+  render(cursor) {
+    this.drawShop()
+    const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
+    if (isInner(this, offset)) {
+      context.save()
+      drawBox(saveBox, 1, cursor)
+      context.fillStyle = 'hsla(0, 0%, 50%, .5)'
+      context.fillRect(
+        warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
+      context.font = `${size * .5}px ${font}`
+      context.textBaseline = 'top'
+      context.fillStyle = 'hsla(0, 0%, 100%, .5)'
+      let isChangeCursorImage = false
+      warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
+        const getRistrictWidthText = (str, w) => {
+          for (let i = str.length; 0 <= i; i--) {
+            const text = i === str.length ? str : str.slice(0, i) + '...'
+            if (context.measureText(text).width + size * .25 <= w) return text
+          }
+          return ''
+        }
+        const box = {
+          absoluteX: warehouseOffset.x + pV + cV.width - 10,
+          absoluteY: warehouseOffset.y,
+          width: 20,
+          height: size * .5
+        }
+        if ((isInner(box, cursor) || manipulateColumnSizeNumber !== -1) && !isSortLabel) {
+          canvas.style.cursor = 'col-resize'
+          isChangeCursorImage = true
+        } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
+
+        const drawInterectBoxArea = (box) => {
+          context.save()
+          if (isInner(box, cursor)) {
+            if (isLeftMouseDown) context.globalAlpha = .5
+            else context.globalAlpha = .3
+          } else context.globalAlpha = .05
+          context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
+          context.restore()
+        }
+        const LABEL_BOX = {
+          absoluteX: warehouseOffset.x + pV,
+          absoluteY: warehouseOffset.y,
+          width: cV.width,
+          height: size * .5
+        }
+        if (!isSortLabel) drawInterectBoxArea(LABEL_BOX)
+
+        if (sendSortLabelIndex === cI) {
+          if (
+            cI < manipulateSortLabelIndex || (
+            cI === manipulateSortLabelIndex &&
+            warehouseOffset.x + pV - array[cI - 1].width * .5 <= cursor.offsetX &&
+            cursor.offsetX <= warehouseOffset.x + pV + cV.width * .5)
+          ) {
+            context.fillRect(warehouseOffset.x + pV - 1, warehouseOffset.y, 3, size / 2)
+          } else { // manipulateSortLabelIndex < cI
+            context.fillRect(warehouseOffset.x + pV + cV.width - 1, warehouseOffset.y, 3, size / 2)
+          }
+        }
+        context.fillRect(warehouseOffset.x + pV, warehouseOffset.y, 1, size / 2)
+        if (cI === array.length - 1) {
+          context.fillRect(warehouseOffset.x + pV + cV.width , warehouseOffset.y, 1, size / 2)
+        }
+
+        context.textAlign = 'left'
+        const padding = size / 8
+        context.fillText(
+          getRistrictWidthText(cV.label, cV.width), warehouseOffset.x + pV + padding, warehouseOffset.y)
+        if (isSortLabel && manipulateSortLabelIndex === cI && sendSortLabelIndex !== -1) {
+          context.fillText(
+            getRistrictWidthText(cV.label, cV.width),
+            warehouseOffset.x + pV + padding - swapAbsoluteX + cursor.offsetX,
+            warehouseOffset.y - size * .5
+          )
+        }
+        if (cI === orderNumber) {
+          context.textAlign = 'center'
+          if (isDescending) {
+            context.fillText('\u{2228}', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+          } else context.fillText('∧', box.absoluteX + 10 - cV.width * .5, box.absoluteY - 10)
+
+        }
+        warehouse.filter(v => v.category !== '').forEach((v, i) => {
+          context.save()
+          let text = v[cV.property]
+          if (cV.property === 'damage') {
+            if (v.gaugeNumber !== 1) text += ` * ${v.gaugeNumber}`
+          } else if (cV.property === 'penetrationForce' || cV.property === 'effectiveRange') {
+            text = text.toPrecision(3)
+          } else if (cV.property === 'magazineSize') {
+            text += ` * ${v.magazines.length}`
+          }
+          let offsetY = warehouseOffset.x + pV + padding
+          context.textAlign = cV.align
+          if (cV.align === 'right') {
+            offsetY += cV.width - padding * 2
+          }
+          context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(v.rarity)]
+          context.globalAlpha = .75
+          context.fillText(
+            getRistrictWidthText(text.toString(), cV.width), offsetY, warehouseOffset.y + size * (1 + i * .5))
+          context.restore()
+        })
+        return pV + cV.width
+      }, 0)
+      context.textAlign = 'left'
+      context.font = `${size * .5}px ${font}`
+      context.fillText('TODO: Context menu, Filter, Scroll overall', size * .5, canvas.offsetHeight - size)
+      context.restore()
+    } else canvas.style.cursor = 'default'
+  }
+}
+
+if (false) { // TODO: Add to class
   const weapon = initWeapon()
   Object.assign(
     weapon, {
       type: 'weapon',
-      x: offset.offsetX - size * 3,
-      y: offset.offsetY + size * 6,
+      x: ownPosition.x - size * 3,
+      y: ownPosition.y + size * 6,
       unavailableTime: 30
     }
   )
   dropItems.push(weapon)
 }
+
 const upgradeExplosive = () => {
   if (holdTimeLimit <= code[action.lookDown].holdtime && inventory[selectSlot].explosive3 <= ammo) {
     homingFlag = false
@@ -3204,11 +3145,6 @@ const upgradeClone = ()  => {
   } else if (
     0 < afterglow.explosiveRange
   ) afterglow.explosiveRange = (afterglow.explosiveRange-1)|0
-}
-const storeProcess = (intervalDiffTime, cursor) => {
-  objects.forEach(object => {
-    object.process(intervalDiffTime, cursor)
-  })
 }
 const drawStore = (cursor) => {
   context.font = `${size}px ${font}`
@@ -3360,7 +3296,6 @@ const reset = () => {
   setWave()
   wave.roundInterval = 0
   defeatCount = 0
-  setStore()
 }; reset()
 let mapMode = false
 const swap = (get, set) => {
@@ -4225,7 +4160,6 @@ class ResultWindow extends Window {
       setWave()
       wave.roundInterval = 0
       defeatCount = 0
-      setStore()
     }
   }
   render (cursor) {
@@ -4268,6 +4202,10 @@ class Scene extends EventDispatcher {
 class LobbyScene extends Scene {
   constructor () {
     super()
+    this.shopArray = []
+    this.shopArray.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
+    this.shopArray.push(new ShopSpot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
+    this.shopArray.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
   }
   enemyProcess = (intervalDiffTime) => {
     enemies.forEach((enemy, index) => {
@@ -4403,6 +4341,52 @@ class LobbyScene extends Scene {
       }
     })
   }
+  portalProcess = () => {
+    if (!portalFlag) {
+      portalFlag = true
+      portalCooldinate.x = ownPosition.x|0
+      portalCooldinate.y = (ownPosition.y - size * 3)|0
+    }
+    if (
+      portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
+      portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
+    ) {
+      if (button(portalConfirmBox[0])) { // Return to Base
+        portalCooldinate.y += size * 3
+        location = locationList[0]
+        objects = []
+        dropItems = []
+        saveProcess()
+      }
+      if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) { // Continue
+        portalFlag = false
+        portalCooldinate.x = 0
+        portalCooldinate.y = 0
+        location = locationList[1]
+        objects = []
+        dropItems = []
+        saveProcess()
+        setWave()
+      }
+    }
+  }
+  waveProcess = (intervalDiffTime) => {
+    if (wave.enemyCount < wave.enemyLimit) {
+      if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
+        wave.enemySpawnInterval += intervalDiffTime
+      } else if (enemies.length <= 24) { // && wave.enemySpawnIntervalLimit <= wave.enemySpawnInterval
+        wave.enemySpawnInterval = 0
+        wave.enemyCount += 1
+        setEnemy()
+      }
+    } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
+      wave.roundInterval += intervalDiffTime
+      if (wave.roundIntervalLimit <= wave.roundInterval) {
+        if (wave.number % 5 === 0) this.portalProcess()
+        else setWave()
+      }
+    }
+  }
   combatProcess = (intervalDiffTime) => {
     enemyBulletArray.forEach(v => {
       if (((
@@ -4412,7 +4396,7 @@ class LobbyScene extends Scene {
     })
 
     if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
-    if (dungeon !== dungeonList[3]) waveProcess(intervalDiffTime)
+    if (dungeon !== dungeonList[3]) this.waveProcess(intervalDiffTime)
     if (0 < enemies.length) this.enemyProcess(intervalDiffTime)
     bullets.forEach((bullet, i) => {
       bullet.update()
@@ -4447,8 +4431,8 @@ class LobbyScene extends Scene {
       })
 
       if (location === locationList[0]) {
-        storeProcess(intervalDiffTime, cursor)
-        if (portalFlag) portalProcess()
+        this.shopArray.forEach(v => v.update(intervalDiffTime, cursor))
+        if (portalFlag) this.portalProcess()
       } else if (location === locationList[1]) this.combatProcess(intervalDiffTime)
     }
   }
@@ -4500,6 +4484,11 @@ class LobbyScene extends Scene {
     }
     array.forEach(v => {
       arrayRenderer(v)
+    })
+
+    this.shopArray.forEach(v => {
+      drawScreenEdge(v, 30)
+      v.render(cursor)
     })
 
     drawMyself(intervalDiffTime)
