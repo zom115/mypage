@@ -50,9 +50,6 @@ const isInner = (box, pos) => {
 const downButton = box => {
   return isInner(box, mouseDownPos) && isLeftMouseDownFirst
 }
-const button = box => {
-  return isInner(box, mouseDownPos) && isInner(box, mouseUpPos) && isLeftMouseUpFirst
-}
 
 class Button {
   isInner = (box, cursor) => {
@@ -2524,7 +2521,7 @@ const Shop = class {
     this.img = img
     this.button = new Button()
   }
-  update (intervalDiffTime, cursor) {}
+  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {}
 
   drawShop = () => {
     context.drawImage(IMAGE[this.img], ~~(relativeX(this.x)+.5), ~~(relativeY(this.y)+.5))
@@ -2557,13 +2554,13 @@ class StartSpot extends Shop {
     }
     setAbsoluteBox(this.selectBox)
   }
-  update(intervalDiffTime, cursor) {
+  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (!isInner(this, offset)) return
     const bossProcessFirst = () => {
       bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
     }
-    if (button(this.startBox)) {
+    if (this.button.isDownAndUpInBox(this.startBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       location = locationList[1]
       objects = []
       dropItems = []
@@ -2577,7 +2574,7 @@ class StartSpot extends Shop {
       }
       else bossProcessFirst()
     }
-    if (button(this.selectBox)) {
+    if (this.button.isDownAndUpInBox(this.selectBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
       dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
     }
@@ -2649,12 +2646,15 @@ class ShopSpot extends Shop {
     }
     return cost
   }
-  update(intervalDiffTime, cursor) {
+  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (!isInner(this, offset)) return
 
     const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
-    if (costAll <= point && button(this.fillAmmoAllBox)) {
+    if (
+      costAll <= point &&
+      this.button.isDownAndUpInBox(this.fillAmmoAllBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+    ) {
       point -= costAll
       inventory.forEach(v => {
         if (v.category !== '') v.magazines.fill(v.magazineSize)
@@ -2662,11 +2662,17 @@ class ShopSpot extends Shop {
     }
     if (inventory[selectSlot].category !== '') {
       const cost = this.calcCost(inventory[selectSlot])
-      if (cost <= point && button(this.fillAmmoBox)) {
+      if (
+        cost <= point &&
+        this.button.isDownAndUpInBox(this.fillAmmoBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+      ) {
         point -= cost
         inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
       }
-      if (inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point && button(this.limitBreakBox)) {
+      if (
+        inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point &&
+        this.button.isDownAndUpInBox(this.limitBreakBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+      ) {
         afterglow.limitBreakResult = .01 + Math.random() * 1.99
         inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
         point -= inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex
@@ -2809,7 +2815,7 @@ class SaveSpot extends Shop {
     this.manipulateColumnSizeNumber = -1
     this.temporaryDiffX = -1
   }
-  update(intervalDiffTime, cursor) {
+  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
       isWarehouse = true
@@ -2825,7 +2831,10 @@ class SaveSpot extends Shop {
         }
 
         // Sort weapon
-        if (button(box) && !this.isSortLabel) {
+        if (
+          this.button.isDownAndUpInBox(box, mouseInput.getKeyUp(0), cursor, mouseDownPosition) &&
+          !this.isSortLabel
+        ) {
           warehouse.sort((a, b) => {
             if (orderNumber === cI && !isDescending) {
               if (cV.property === 'magazineSize') {
@@ -4349,7 +4358,7 @@ class LobbyScene extends Scene {
       }
     })
   }
-  portalProcess = () => {
+  portalProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     if (!portalFlag) {
       portalFlag = true
       portalCooldinate.x = ownPosition.x|0
@@ -4359,14 +4368,19 @@ class LobbyScene extends Scene {
       portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
       portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
     ) {
-      if (button(portalConfirmBox[0])) { // Return to Base
+      // Return to Base
+      if (this.button.isDownAndUpInBox(portalConfirmBox[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
         portalCooldinate.y += size * 3
         location = locationList[0]
         objects = []
         dropItems = []
         saveProcess()
       }
-      if (button(portalConfirmBox[1]) || button(portalConfirmBox[2])) { // Continue
+      // Continue
+      if (
+        this.button.isDownAndUpInBox(portalConfirmBox[1], mouseInput.getKeyUp(0), cursor, mouseDownPosition) ||
+        this.button.isDownAndUpInBox(portalConfirmBox[2], mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+      ) {
         portalFlag = false
         portalCooldinate.x = 0
         portalCooldinate.y = 0
@@ -4378,7 +4392,7 @@ class LobbyScene extends Scene {
       }
     }
   }
-  waveProcess = (intervalDiffTime) => {
+  waveProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     if (wave.enemyCount < wave.enemyLimit) {
       if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
         wave.enemySpawnInterval += intervalDiffTime
@@ -4390,12 +4404,12 @@ class LobbyScene extends Scene {
     } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
       wave.roundInterval += intervalDiffTime
       if (wave.roundIntervalLimit <= wave.roundInterval) {
-        if (wave.number % 5 === 0) this.portalProcess()
+        if (wave.number % 5 === 0) this.portalProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
         else setWave()
       }
     }
   }
-  combatProcess = (intervalDiffTime) => {
+  combatProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     enemyBulletArray.forEach(v => {
       if (((
         ownPosition.x - v.x) ** 2 + (ownPosition.y - v.y) ** 2) ** .5 < v.radius + size * .2 &&
@@ -4404,7 +4418,7 @@ class LobbyScene extends Scene {
     })
 
     if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
-    if (dungeon !== dungeonList[3]) this.waveProcess(intervalDiffTime)
+    if (dungeon !== dungeonList[3]) this.waveProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     if (0 < enemies.length) this.enemyProcess(intervalDiffTime)
     bullets.forEach((bullet, i) => {
       bullet.update()
@@ -4439,9 +4453,9 @@ class LobbyScene extends Scene {
       })
 
       if (location === locationList[0]) {
-        this.shopArray.forEach(v => v.update(intervalDiffTime, cursor))
+        this.shopArray.forEach(v => v.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition))
         if (portalFlag) this.portalProcess()
-      } else if (location === locationList[1]) this.combatProcess(intervalDiffTime)
+      } else if (location === locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     }
   }
   render (cursor, intervalDiffTime) {
