@@ -1042,146 +1042,8 @@ const directionCalc = arg => {
   }
   return {dx, dy}
 }
-const mouseFiring = (cursor) => {
-  if (
-    inventory[selectSlot].reloadAuto === 'ON' &&
-    inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
-    inventory[selectSlot].reloadTime === 0 &&
-    0 < inventory[selectSlot].magazines[setMoreThanMagazine()] &&
-    !inventory[selectSlot].chamber &&
-    inventory[selectSlot].slideState === 'release'
-  ) {
-    inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed * 1.5
-    reloadProcess()
-    return
-  }
-  if (!inventory[selectSlot].chamber) return
-  /*
-  const theta = Math.atan2(
-    cursor.offsetY - canvas.offsetHeight / 2,
-    cursor.offsetX - canvas.offsetWidth / 2
-  )
-  let dx = Math.cos(theta)
-  let dy = Math.sin(theta)
-  if (dx === 0 && dy === 0) return
-  if (inventory[selectSlot].reloadState !== 'done') { // random direction when incomplete reload
-    const tmpDx = dx
-    const tmpDy = dy
-    const theta = (45 - Math.random() * 90) * (Math.PI / 180) // front 90 degrees
-    dx = tmpDx * Math.cos(theta) - tmpDy * Math.sin(theta)
-    dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
-  }
-  */
-  const shotBullet = () => {
-    const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
-    const randomError =
-      degreeRange * (Math.random() - .5) * (
-      1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
-    const theta =
-      Math.atan2(
-        cursor.offsetY - canvas.offsetHeight / 2,
-        cursor.offsetX - canvas.offsetWidth / 2) + randomError
-    const bulletRadius = inventory[selectSlot].category === weaponCategoryList[5] ? size / 8 : size / 6
-    bullets.push(new Bullet(
-      ownPosition.x,
-      ownPosition.y,
-      inventory[selectSlot].bulletSpeed,
-      theta,
-      inventory[selectSlot].bulletLife,
-      inventory[selectSlot].damage,
-      inventory[selectSlot].penetrationForce,
-      bulletRadius
-    ))
-  }
-  for (let i = 0; i < inventory[selectSlot].gaugeNumber; i++) shotBullet()
-
-  /*
-  { // recoil / blowback
-    differenceAddition(ownPosition, -dx * bulletRadius, -dy * bulletRadius)
-    recoilEffect.dx = dx * bulletRadius
-    recoilEffect.dy = dy * bulletRadius
-    afterglow.recoil = recoilEffect.flame
-  }
-  */
-
-  inventory[selectSlot].chamber = false
-  if (inventory[selectSlot].mode === weaponModeList[2]) inventory[selectSlot].round += 1
-  if (
-    inventory[selectSlot].mode === weaponModeList[1] || (
-    inventory[selectSlot].mode === weaponModeList[2] &&
-    inventory[selectSlot].round === inventory[selectSlot].roundLimit)
-  ) inventory[selectSlot].disconnector = true
-  const burstReduction = // TODO: FAMAS and AN-94 are not example of this
-    inventory[selectSlot].mode === weaponModeList[2] ? inventory[selectSlot].roundLimit / (inventory[selectSlot].roundLimit + 1) : 1
-  inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient * burstReduction
-}
-const firingProcess = () => {
-  if (
-    inventory[selectSlot].reloadAuto === 'ON' &&
-    inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
-    inventory[selectSlot].reloadTime === 0 &&
-    0 < inventory[selectSlot].magazines[setMoreThanMagazine()] &&
-    !inventory[selectSlot].chamber &&
-    inventory[selectSlot].slideState === 'release'
-  ) {
-    inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed * 1.5
-    reloadProcess()
-    return
-  }
-  if (!inventory[selectSlot].chamber) return
-  let {dx, dy} = (angle !== 0) ? directionCalc(angle) : directionCalc(currentDirection)
-  if (dx === 0 && dy === 0) return
-  [dx, dy] = [-dx, -dy]
-  if (inventory[selectSlot].reloadState !== 'done') { // random direction when incomplete reload
-    const tmpDx = dx
-    const tmpDy = dy
-    const theta = (45 - Math.random() * 90) * (Math.PI / 180) // front 90 degrees
-    dx = tmpDx * Math.cos(theta) - tmpDy * Math.sin(theta)
-    dy = tmpDx * Math.sin(theta) + tmpDy * Math.cos(theta)
-  }
-
-  // TODO: Homing?
-
-  if (homingFlag) {
-    const r =  size * 3
-    const theta = (5 - Math.random() * 10) * (Math.PI / 180) // front 10 degrees
-    bullets.push(
-      inventory[selectSlot].bulletLife + prepareTime,
-      ownPosition.x,
-      ownPosition.y,
-      r * (dx * Math.cos(theta) - dy * Math.sin(theta)) / prepareTime,
-      r * (dx * Math.sin(theta) + dy * Math.cos(theta)) / prepareTime
-    )
-  } else {
-    bullets.push(
-      inventory[selectSlot].bulletLife,
-      ownPosition.x,
-      ownPosition.y,
-      dx * inventory[selectSlot].bulletSpeed,
-      dy * inventory[selectSlot].bulletSpeed
-    )
-
-    // TODO: Clone?
-
-    if (0 < clonePosition.length) {
-      bullets.push(
-        inventory[selectSlot].bulletLife * clonePower,
-        clonePosition.reduce((pre, current) => {return pre + current.dx}, ownPosition.x),
-        clonePosition.reduce((pre, current) => {return pre + current.dy}, ownPosition.y),
-        dx * inventory[selectSlot].bulletSpeed,
-        dy * inventory[selectSlot].bulletSpeed
-      )
-    }
-    /*
-    // recoil / blowback
-    const bulletRadius = size / 6
-    differenceAddition(ownPosition, -dx * bulletRadius, -dy * bulletRadius)
-    recoilEffect.dx = dx * bulletRadius
-    recoilEffect.dy = dy * bulletRadius
-    afterglow.recoil = recoilEffect.flame
-    */
-  }
-  inventory[selectSlot].chamber = false
+const setMoreThanMagazine = () => {
+  return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
 }
 const setOtherMagazine = () => {
   const array = inventory[selectSlot].magazines.map((x, i) => {
@@ -1194,78 +1056,6 @@ const setOtherMagazine = () => {
     inventory[selectSlot].magazines[index] !== inventory[selectSlot].magazineSize
   ) return index
   else return -1
-}
-const setMoreThanMagazine = () => {
-  return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
-}
-const reloadProcess = () => {
-  inventory[selectSlot].reloadTime = (inventory[selectSlot].reloadTime+1)|0
-  if (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-    inventory[selectSlot].reloadState = 'putAway'
-  } else if (inventory[selectSlot].reloadState === 'putAway' && inventory[selectSlot].reloadPutAway * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-    inventory[selectSlot].reloadState = 'takeOut'
-    inventory[selectSlot].grip = setMoreThanMagazine()
-  } else if (inventory[selectSlot].reloadState === 'takeOut' && inventory[selectSlot].reloadTakeOut * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-      inventory[selectSlot].reloadState = 'unrelease'
-  } else if (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-      inventory[selectSlot].reloadState = 'done'
-      const unreleaseMagazine = () => {
-        if (!afterglow.chamberFlag) afterglow.reload = flashTimeLimit
-        inventory[selectSlot].gripFlag = true
-        combatReload.magFlag = true
-      }
-      unreleaseMagazine()
-  } else if (inventory[selectSlot].reloadState === 'done') {
-    if (0 <= inventory[selectSlot].reloadTime) {
-      inventory[selectSlot].reloadState = 'release'
-      inventory[selectSlot].gripFlag = false
-      if (!inventory[selectSlot].chamber) afterglow.chamberFlag = true
-    }
-  } else return
-  inventory[selectSlot].reloadTime = 0
-  if (inventory[selectSlot].mode === weaponModeList[2] && !isLeftMouseDown) {
-    inventory[selectSlot].round = 0
-  }
-}
-const loadingProcess = () => {
-  if (inventory[selectSlot].slideState !== 'done' && inventory[selectSlot].chamber) return
-  if (
-    setOtherMagazine() === -1 && (inventory[selectSlot].magazines.length !== 1 ||
-    inventory[selectSlot].magazines[0] === inventory[selectSlot].magazineSize)
-  ) return
-  if (ammo <= 0 && !loading.takeOutFlag) return
-  if (combatReload.flag) {
-    ammo = (loading.takeOutFlag) ? (ammo+1)|0 : ammo
-    return loading.time = 0 // TODO: after implementation multiple cartridges
-  } else if (inventory[selectSlot].reloadState !== 'done') {
-    return loading.time = (loading.time <= 0) ? 0 : (loading.time-1)|0
-  } else if (!inventory[selectSlot].gripFlag) { // equal reload or one magazine
-    let counter = 0
-    for (let i = 0; i < inventory[selectSlot].magazines.length; i=(i+1)|0) {
-      if (inventory[selectSlot].magazines[i] <= 0) counter = (counter+1)|0
-    }
-    if (1 < counter) return
-    if (1 < loading.time) { // TODO: to consider
-      loading.time = (loading.time+1)|0
-    }
-  }
-  const movingWeight = () => {
-    let {dx, dy} = directionCalc(direction)
-    return (dx === 0 && dy === 0) ? 1 : 1 / 3
-  }
-  loading.time = loading.time + movingWeight()
-  if (loading.time < loading.takeOut * inventory[selectSlot].loadingSpeed && loading.takeOutFlag) {
-    ammo = (ammo+1)|0
-    loading.takeOutFlag = false
-  } else if (loading.takeOut * inventory[selectSlot].loadingSpeed <= loading.time && !loading.takeOutFlag) {
-    ammo = (ammo-1)|0
-    loading.takeOutFlag = true
-  }
-  if (loading.time < loading.done * inventory[selectSlot].loadingSpeed) return
-  else if (inventory[selectSlot].magazines.length === 1) inventory[selectSlot].magazines[0] += 1
-  else inventory[selectSlot].magazines[setOtherMagazine()] = (inventory[selectSlot].magazines[setOtherMagazine()]+1)|0
-  loading.takeOutFlag = false
-  loading.time = 0
 }
 const magazineForword = () => {
   inventory[selectSlot].magazines.push(inventory[selectSlot].magazines[1])
@@ -1311,29 +1101,6 @@ const moving = (intervalDiffTime) => {
   else ownState.dx *= brake
   if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
   else ownState.dy *= brake
-
-  /*
-  if (cloneFlag) {
-    if (code[action.slow].flag) {
-      clonePosition.unshift({dx: dx * cloneSpeed, dy: dy * cloneSpeed})
-    } else {
-      if (ownSpeed.max < cloneSpeed && (
-        cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)
-      ) {
-        const tmp = directionCalc(currentDirection)
-        dx = -tmp.dx
-        dy = -tmp.dy
-      }
-      clonePosition.push({dx: dx * cloneSpeed, dy: dy * cloneSpeed})
-    }
-  }
-  */
-}
-const bomb = () => {
-  enemies.forEach(enemy => {
-    enemy.life = 0
-    enemy.timer = 30
-  })
 }
 const modeSelect = () => {
   if (code[action.modeSelect].isFirst()) {
@@ -1349,71 +1116,6 @@ const modeSelect = () => {
         inventory[selectSlot].modeList[0]
     }
   }
-}
-const weaponProcess = (cursor) => {
-  if (
-    code[action.reload].isFirst() &&
-    inventory[selectSlot].reloadTime === 0 &&
-    inventory[selectSlot].reloadState === 'done'
-  ) {
-    inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
-    reloadProcess()
-  } else if (0 < inventory[selectSlot].reloadTime || inventory[selectSlot].reloadState !== 'done') reloadProcess()
-
-  // if (key[action.fire].flag) firingProcess()
-
-  if (((
-    isLeftMouseDown && !inventoryFlag && !portalFlag) || (
-    inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
-    !inventory[selectSlot].disconnector
-  ) {
-    mouseFiring(cursor)
-  }
-  if (inventory[selectSlot].mode === weaponModeList[1] && !isLeftMouseDown) {
-    inventory[selectSlot].disconnector = false
-  }
-  if (
-    inventory[selectSlot].mode === weaponModeList[2] &&
-    inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
-    !isLeftMouseDown
-  ) {
-    inventory[selectSlot].disconnector = false
-    inventory[selectSlot].round = 0
-  }
-  // loadingProcess()
-  if (code[action.change].isFirst()) magazineForword() // TODO: to consider
-}
-const interfaceProcess = (intervalDiffTime, cursor) => {
-  if (code[action.pause].isFirst()) state = 'pause'
-  if (code[action.primary].isFirst()) selectSlot = 0
-  if (code[action.secondary].isFirst()) selectSlot = 1
-  if (code[action.tertiary].isFirst()) selectSlot = 2
-  if (code[action.rotateSlot].isFirst()) {
-    if (code[action.shift].flag) selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
-    else selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
-  }
-  if (wheelEvent.isFirst && 0 < wheelEvent.deltaY) {
-    selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
-  }
-  if (wheelEvent.isFirst && wheelEvent.deltaY < 0) {
-    selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
-  }
-  if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
-  if (code[action.lookUp].flag) angle = (angle+1)|0
-  if (code[action.lookRight].flag) angle = (angle+2)|0
-  if (code[action.lookDown].flag) angle = (angle+4)|0
-  if (code[action.lookLeft].flag) angle = (angle+8)|0
-  if (code[action.up].flag) direction = (direction+1)|0
-  if (code[action.right].flag) direction = (direction+2)|0
-  if (code[action.down].flag) direction = (direction+4)|0
-  if (code[action.left].flag) direction = (direction+8)|0
-  if (0 < angle) currentDirection = angle
-  else if (direction !== 0) currentDirection = direction
-  if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess(cursor)
-  if (inventory[selectSlot].category !== '') modeSelect()
-  if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess(intervalDiffTime)
-  moving(intervalDiffTime)
-  if (code[action.debug].isFirst()) debugMode = !debugMode
 }
 const cloneProcess = () => {
   if (
@@ -2359,7 +2061,7 @@ class RenderBox {
   constructor () {
     this.boxInterface = new BoxInterface()
   }
-  render (box, alpha = 1, cursor) {
+  render (box, mouseInput, cursor, alpha = 1) {
     context.save()
     // outline box
     const saturation = 90
@@ -2457,8 +2159,8 @@ class StartSpot extends Shop {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (this.boxInterface.isInner(this, offset)) {
-      this.renderBox.render(this.startBox, 1, cursor)
-      this.renderBox.render(this.selectBox, 1, cursor)
+      this.renderBox.render(this.startBox, mouseInput, cursor)
+      this.renderBox.render(this.selectBox, mouseInput, cursor)
       context.save()
       context.textAlign = 'center'
       context.fillStyle = 'hsl(210, 100%, 70%)'
@@ -2578,17 +2280,17 @@ class ShopSpot extends Shop {
       context.textAlign = 'center'
       context.textBaseline = 'middle'
       context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
-      this.renderBox.render(this.fillAmmoBox, ammoAlpha, cursor)
+      this.renderBox.render(this.fillAmmoBox, mouseInput, cursor, ammoAlpha)
       if (cost !== 0) {
         context.fillText(`Cost: ${cost}`, this.fillAmmoBox.offsetX, this.fillAmmoBox.offsetY + size * 1.5)
       }
-      this.renderBox.render(this.fillAmmoAllBox, ammoAlpha, cursor)
+      this.renderBox.render(this.fillAmmoAllBox, mouseInput, cursor, ammoAlpha)
       const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
       if (costAll !== 0) {
         context.fillText(
           `Cost: ${costAll}`, this.fillAmmoAllBox.offsetX, this.fillAmmoAllBox.offsetY + size * 1.5)
       }
-      this.renderBox.render(this.limitBreakBox, ammoAlpha, cursor)
+      this.renderBox.render(this.limitBreakBox, mouseInput, cursor, ammoAlpha)
       if (inventory[selectSlot].category !== '') {
         context.fillText(
           `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
@@ -2870,7 +2572,7 @@ class SaveSpot extends Shop {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (this.boxInterface.isInner(this, offset)) {
       context.save()
-      this.renderBox.render(this.saveBox, 1, cursor)
+      this.renderBox.render(this.saveBox, mouseInput, cursor)
       context.fillStyle = 'hsla(0, 0%, 50%, .5)'
       context.fillRect(
         warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
@@ -3974,7 +3676,7 @@ class ResultWindow extends Window {
     context.fillText(
       `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
     )
-    this.renderBox.render(resultBackBox, 1, cursor)
+    this.renderBox.render(resultBackBox, mouseInput, cursor)
     context.fillStyle = 'hsla(30, 100%, 50%, .5)'
     context.fillRect(
       canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
@@ -4001,6 +3703,7 @@ class Scene extends EventDispatcher {
   change (scene) {
     this.dispatchEvent('change', scene)
   }
+  render (intervalDiffTime, mouseInput, cursor) {}
 }
 class LobbyScene extends Scene {
   constructor () {
@@ -4009,6 +3712,147 @@ class LobbyScene extends Scene {
     this.shopArray.push(new SaveSpot(-size * 7, size, 1, 1, 0, 'images/st2v1.png'))
     this.shopArray.push(new ShopSpot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
     this.shopArray.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
+  }
+
+  reloadProcess = () => {
+    inventory[selectSlot].reloadTime = (inventory[selectSlot].reloadTime+1)|0
+    if (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
+      inventory[selectSlot].reloadState = 'putAway'
+    } else if (inventory[selectSlot].reloadState === 'putAway' && inventory[selectSlot].reloadPutAway * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
+      inventory[selectSlot].reloadState = 'takeOut'
+      inventory[selectSlot].grip = setMoreThanMagazine()
+    } else if (inventory[selectSlot].reloadState === 'takeOut' && inventory[selectSlot].reloadTakeOut * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
+        inventory[selectSlot].reloadState = 'unrelease'
+    } else if (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
+        inventory[selectSlot].reloadState = 'done'
+        const unreleaseMagazine = () => {
+          if (!afterglow.chamberFlag) afterglow.reload = flashTimeLimit
+          inventory[selectSlot].gripFlag = true
+          combatReload.magFlag = true
+        }
+        unreleaseMagazine()
+    } else if (inventory[selectSlot].reloadState === 'done') {
+      if (0 <= inventory[selectSlot].reloadTime) {
+        inventory[selectSlot].reloadState = 'release'
+        inventory[selectSlot].gripFlag = false
+        if (!inventory[selectSlot].chamber) afterglow.chamberFlag = true
+      }
+    } else return
+    inventory[selectSlot].reloadTime = 0
+    if (inventory[selectSlot].mode === weaponModeList[2] && !isLeftMouseDown) {
+      inventory[selectSlot].round = 0
+    }
+  }
+  mouseFiring = (cursor) => {
+    if (
+      inventory[selectSlot].reloadAuto === 'ON' &&
+      inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
+      inventory[selectSlot].reloadTime === 0 &&
+      0 < inventory[selectSlot].magazines[setMoreThanMagazine()] &&
+      !inventory[selectSlot].chamber &&
+      inventory[selectSlot].slideState === 'release'
+    ) {
+      inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed * 1.5
+      this.reloadProcess()
+      return
+    }
+    if (!inventory[selectSlot].chamber) return
+    const shotBullet = () => {
+      const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
+      const randomError =
+        degreeRange * (Math.random() - .5) * (
+        1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
+      const theta =
+        Math.atan2(
+          cursor.offsetY - canvas.offsetHeight / 2,
+          cursor.offsetX - canvas.offsetWidth / 2) + randomError
+      const bulletRadius = inventory[selectSlot].category === weaponCategoryList[5] ? size / 8 : size / 6
+      bullets.push(new Bullet(
+        ownPosition.x,
+        ownPosition.y,
+        inventory[selectSlot].bulletSpeed,
+        theta,
+        inventory[selectSlot].bulletLife,
+        inventory[selectSlot].damage,
+        inventory[selectSlot].penetrationForce,
+        bulletRadius
+      ))
+    }
+    for (let i = 0; i < inventory[selectSlot].gaugeNumber; i++) shotBullet()
+
+    inventory[selectSlot].chamber = false
+    if (inventory[selectSlot].mode === weaponModeList[2]) inventory[selectSlot].round += 1
+    if (
+      inventory[selectSlot].mode === weaponModeList[1] || (
+      inventory[selectSlot].mode === weaponModeList[2] &&
+      inventory[selectSlot].round === inventory[selectSlot].roundLimit)
+    ) inventory[selectSlot].disconnector = true
+    const burstReduction = // TODO: FAMAS and AN-94 are not example of this
+      inventory[selectSlot].mode === weaponModeList[2] ? inventory[selectSlot].roundLimit / (inventory[selectSlot].roundLimit + 1) : 1
+    inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient * burstReduction
+  }
+  weaponProcess = (cursor) => {
+    if (
+      code[action.reload].isFirst() &&
+      inventory[selectSlot].reloadTime === 0 &&
+      inventory[selectSlot].reloadState === 'done'
+    ) {
+      inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
+      this.reloadProcess()
+    } else if (0 < inventory[selectSlot].reloadTime || inventory[selectSlot].reloadState !== 'done') this.reloadProcess()
+
+    if (((
+      isLeftMouseDown && !inventoryFlag && !portalFlag) || (
+      inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
+      !inventory[selectSlot].disconnector
+    ) {
+      this.mouseFiring(cursor)
+    }
+    if (inventory[selectSlot].mode === weaponModeList[1] && !isLeftMouseDown) {
+      inventory[selectSlot].disconnector = false
+    }
+    if (
+      inventory[selectSlot].mode === weaponModeList[2] &&
+      inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
+      !isLeftMouseDown
+    ) {
+      inventory[selectSlot].disconnector = false
+      inventory[selectSlot].round = 0
+    }
+    // loadingProcess()
+    if (code[action.change].isFirst()) magazineForword() // TODO: to consider
+  }
+  interfaceProcess = (intervalDiffTime, cursor) => {
+    if (code[action.pause].isFirst()) state = 'pause'
+    if (code[action.primary].isFirst()) selectSlot = 0
+    if (code[action.secondary].isFirst()) selectSlot = 1
+    if (code[action.tertiary].isFirst()) selectSlot = 2
+    if (code[action.rotateSlot].isFirst()) {
+      if (code[action.shift].flag) selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
+      else selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
+    }
+    if (wheelEvent.isFirst && 0 < wheelEvent.deltaY) {
+      selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
+    }
+    if (wheelEvent.isFirst && wheelEvent.deltaY < 0) {
+      selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
+    }
+    if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
+    if (code[action.lookUp].flag) angle = (angle+1)|0
+    if (code[action.lookRight].flag) angle = (angle+2)|0
+    if (code[action.lookDown].flag) angle = (angle+4)|0
+    if (code[action.lookLeft].flag) angle = (angle+8)|0
+    if (code[action.up].flag) direction = (direction+1)|0
+    if (code[action.right].flag) direction = (direction+2)|0
+    if (code[action.down].flag) direction = (direction+4)|0
+    if (code[action.left].flag) direction = (direction+8)|0
+    if (0 < angle) currentDirection = angle
+    else if (direction !== 0) currentDirection = direction
+    if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess(cursor)
+    if (inventory[selectSlot].category !== '') modeSelect()
+    if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess(intervalDiffTime)
+    moving(intervalDiffTime)
+    if (code[action.debug].isFirst()) debugMode = !debugMode
   }
   enemyProcess = (intervalDiffTime) => {
     enemies.forEach((enemy, index) => {
@@ -4277,7 +4121,7 @@ class LobbyScene extends Scene {
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     if (location === locationList[1] && dungeon === dungeonList[4]) {
     } else {
-      interfaceProcess(intervalDiffTime, cursor)
+      this.interfaceProcess(intervalDiffTime, cursor)
       if (direction !== 0) direction = 0
       if (angle !== 0) angle = 0
       if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
@@ -4365,7 +4209,7 @@ class LobbyScene extends Scene {
       portalConfirmBox.forEach((v, i) => {
         if (location === locationList[0] && (i !== 2)) return
         if (location === locationList[1] && (i === 2)) return
-        this.renderBox.render(v, 1, cursor)
+        this.renderBox.render(v, mouseInput, cursor)
       })
       context.restore()
     }
@@ -4453,7 +4297,7 @@ class LobbyScene extends Scene {
     })
     context.restore()
   }
-  render (cursor, intervalDiffTime) {
+  render (intervalDiffTime, mouseInput, cursor) {
     // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
     const WIDTH_RANGE = 16
@@ -4525,7 +4369,7 @@ class TitleScene extends Scene {
       this.change(new LobbyScene)
     }
   }
-  render (cursor, intervalDiffTime) {
+  render (intervalDiffTime, mouseInput, cursor) {
     let nowTime = Date.now()
     let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
     let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
@@ -4533,7 +4377,7 @@ class TitleScene extends Scene {
       IMAGE['images/ROGOv1.2.png'],
       ~~(((canvas.offsetWidth - IMAGE['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
 
-    titleMenuWordArray.forEach(v => this.renderBox.render(v, 1, cursor))
+    titleMenuWordArray.forEach(v => this.renderBox.render(v, mouseInput, cursor))
 
     context.textAlign = 'right'
     context.fillStyle = 'hsla(30, 100%, 40%, .75)'
@@ -4582,7 +4426,7 @@ class WindowManager extends EventDispatcher {
       if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)}
       )
   }
-  update (input, mouseInput, intervalDiffTime, cursor, mouseDownPosition) {
+  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition) {
     if (input.getKeyDown('Escape')) {
       const index = this.floatWindowOrder.findIndex(v => v !== 'main')
       if (index === -1) {
@@ -4611,8 +4455,8 @@ class WindowManager extends EventDispatcher {
       this.scene.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     }
   }
-  render (cursor) {
-    this.scene.render(cursor)
+  render (intervalDiffTime, mouseInput, cursor) {
+    this.scene.render(intervalDiffTime, mouseInput, cursor)
     this.floatWindowOrder.forEach(v => {
       this.windows[v].render(cursor)
     })
@@ -4645,18 +4489,18 @@ class Entry {
     this.intervalDiffTime = this.timeStamp - this.currentTime
     this.currentTime = this.timeStamp
 
-    const input = this._inputReceiver.getKeyInput()
     const mouseInput = this._inputReceiver.getMouseButtonInput()
-    const mouseCursorInput = this._inputReceiver.getMouseCursorInput()
-    this.cursor = mouseCursorInput
-    if (mouseInput.getKeyDown(0)) this.mouseDownPosition = mouseCursorInput
-    if (mouseInput.getKeyDown(1)) console.log('MMB')
-    if (mouseInput.getKeyDown(2)) console.log('RMB')
-    if (mouseInput.getKeyDown(3)) console.log('4MB')
-    if (mouseInput.getKeyDown(4)) console.log('5MB')
+    if (mouseInput.getKeyDown(0)) this.mouseDownPosition = this._inputReceiver.getMouseCursorInput()
+
     const mouseWheelInput = this._inputReceiver.getMouseWheelInput()
     this.deltaY = mouseWheelInput
-    this._windowManager.update(input, mouseInput, this.intervalDiffTime, this.cursor, this.mouseDownPosition)
+    this._windowManager.update(
+      this.intervalDiffTime,
+      this._inputReceiver.getKeyInput(),
+      mouseInput,
+      this._inputReceiver.getMouseCursorInput(),
+      this.mouseDownPosition
+    )
 
     frameCounter(this.internalFrameArray)
 
@@ -4667,7 +4511,11 @@ class Entry {
     frameCounter(this.animationFrameArray)
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
-    this._windowManager.render(this.cursor, this.intervalDiffTime)
+    this._windowManager.render(
+      this.intervalDiffTime,
+      this._inputReceiver.getMouseButtonInput(),
+      this._inputReceiver.getMouseCursorInput()
+    )
 
     // Draw debug
     context.textAlign = 'right'
