@@ -7,7 +7,6 @@ const font = 'jkmarugo'
 
 const SIZE = 32
 
-let mouseDownPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseDownFirst = false
 let isLeftMouseDown = false
 let isRightMouseDownFirst = false
@@ -20,8 +19,6 @@ canvas.addEventListener('mouseover', () => {
 }, false)
 canvas.addEventListener('mousedown', e => {
   e.preventDefault()
-  mouseDownPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
-  mouseDownPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
   if (e.button === 0) {
     isLeftMouseDownFirst = true
     isLeftMouseDown = true
