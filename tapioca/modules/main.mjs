@@ -47,9 +47,6 @@ const isInner = (box, pos) => {
   return 0 <= offset.x && offset.x <= box.width &&
   0 <= offset.y && offset.y <= box.height
 }
-const downButton = box => {
-  return isInner(box, mouseDownPos) && isLeftMouseDownFirst
-}
 
 class Button {
   isInner = (box, cursor) => {
@@ -2767,7 +2764,7 @@ class SaveSpot extends Shop {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
       isWarehouse = true
-      if (downButton(this.saveBox, cursor)) saveProcess()
+      if (this.button.isDownInBox(this.saveBox, mouseInput.getKeyDown(0), cursor)) saveProcess()
       this.warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
         const padding = 10
 
@@ -2812,7 +2809,7 @@ class SaveSpot extends Shop {
         }
 
         // Sort label
-        if (downButton(box)) {
+        if (this.button.isDownInBox(box, mouseInput.getKeyDown(0), cursor)) {
           this.manipulateSortLabelIndex = cI
           this.swapAbsoluteX = cursor.offsetX
         }
@@ -2873,7 +2870,7 @@ class SaveSpot extends Shop {
           height: size * .5
         }
 
-        if (downButton(colResizeBox)) {
+        if (this.button.isDownInBox(colResizeBox, mouseInput.getKeyDown(0), cursor)) {
           if (cV.width <= padding && isLeftMouseDownFirst) {
             colResizeBox.absoluteX += padding
             colResizeBox.width -= padding
@@ -2901,7 +2898,7 @@ class SaveSpot extends Shop {
         this.swapAbsoluteX = -1
         this.isSortLabel = false
       }
-      if (downButton(warehouseBox, cursor)) {
+      if (this.button.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor)) {
         let bool = false
         warehouse.forEach((v, i) => {
           const box = {
@@ -4398,7 +4395,7 @@ class LobbyScene extends Scene {
     }
     inventorySlotBox.forEach((v, i) => {
       if (!inventoryFlag && mainSlotSize - 1 < i) return
-      if (downButton(v)) {
+      if (this.button.isDownInBox(v, mouseInput.getKeyDown(0), cursor)) {
         if (code[action.shift].flag) {
           if (isWarehouse) {
             warehouse.push(inventory[i])
@@ -4419,8 +4416,10 @@ class LobbyScene extends Scene {
       }
     })
     if (
-      holdSlot.category !== '' && !downButton(inventoryBox) && isLeftMouseDownFirst && (
-      !isWarehouse || !downButton(warehouseBox))
+      holdSlot.category !== '' &&
+      !this.button.isDownInBox(inventoryBox, mouseInput.getKeyDown(0), cursor) &&
+      isLeftMouseDownFirst && (
+      !isWarehouse || !this.button.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor))
     ) {
       holdSlot.type = 'weapon'
       holdSlot.unavailableTime = 30
