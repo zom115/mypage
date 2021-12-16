@@ -34,14 +34,6 @@ const DOM = {
   reload: document.getElementById`reload`,
   modeSelect: document.getElementById`modeSelect`,
   rotateSlot: document.getElementById`rotateSlot`,
-  // lookUp: document.getElementById`lookUp`,
-  // lookRight: document.getElementById`lookRight`,
-  // lookDown: document.getElementById`lookDown`,
-  // lookLeft: document.getElementById`lookLeft`,
-  // fire: document.getElementById`fire`,
-  // slow: document.getElementById`slow`,
-  // back: document.getElementById`back`,
-  // dash: document.getElementById`dash`,
   pause: document.getElementById`pause`,
   debug: document.getElementById`debug`,
   settings: document.getElementById`settings`,
@@ -322,7 +314,6 @@ const storeSize = size * 4.5
 const targetWidth = .7 // Unit: [m], for effective range
 const bulletSpeed = size / 8
 const minImgRadius = size / 4
-const holdTimeLimit = 14 * 60
 let explosiveRange = size * 2
 const explosiveLimit = 30
 let recoilEffect = {
@@ -368,7 +359,6 @@ const ownPosition = {x: 0, y: 0}
 const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2, step: 0, stepLimit: 300}
 let clonePosition = []
 let cloneFlag = false
-let clonePower = .8
 let reviveFlag = false
 let moreAwayCount = 0
 let moreAwayLimit
@@ -391,12 +381,10 @@ let cloneDashType2Flag = false
 let cloneDashType3Flag = false
 let cloneSpeed = 0
 let cloneReturnFlag = false
-let prepareTime = 90
 let homingFlag = false
 let explosive1Flag = false
 let explosive2Flag = false
 let explosive3Flag = false
-let collectRadius = size * 5
 let afterimage = []
 let objects, currentDirection
 let direction = 0
@@ -714,10 +702,6 @@ const setAngle = () => {
     action.lookDown = setStorage('lookDown', 'KeyK')
     action.lookLeft = setStorage('lookLeft', 'KeyJ')
   }
-}
-const getKeyName = key => {
-  if (key === ' ') return 'SPACE'
-  else return key.toUpperCase() // can't work in turco
 }
 
 // for settings
@@ -1743,154 +1727,6 @@ const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave
   if (isWarehouse) storage.setItem('warehouseArray', JSON.stringify(warehouse))
   afterglow.save = 1000
 }
-const setMap = () => {
-  const offset = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
-  const l = size/9.2
-  objects.push({x: offset.x - l*(251-0), y: offset.y - l*(435-10), width: l*9, height: l*7})
-  objects.push({x: offset.x - l*(251-9), y: offset.y - l*(435-10), width: l*36, height: l*2})
-  objects.push({x: offset.x - l*(251-45), y: offset.y - l*(435-10), width: l*42, height: l*7})
-  objects.push({x: offset.x - l*(251-85), y: offset.y - l*(435-15), width: l*17, height: l*16})
-  objects.push({x: offset.x - l*(251-74), y: offset.y - l*(435-65), width: l*13, height: l*27})
-  objects.push({x: offset.x - l*(251-40), y: offset.y - l*(435-40), width: l*27, height: l*12})
-  objects.push({x: offset.x - l*(251-80), y: offset.y - l*(435-30), width: l*5, height: l*1})
-  objects.push({x: offset.x - l*(251-80), y: offset.y - l*(435-41), width: l*5, height: l*11})
-  objects.push({x: offset.x - l*(251-85), y: offset.y - l*(435-41), width: l*2, height: l*24})
-  objects.push({x: offset.x - l*(251-100), y: offset.y - l*(435-31), width: l*2, height: l*21})
-  objects.push({x: offset.x - l*(251-118), y: offset.y - l*(435-31), width: l*1, height: l*21})
-  objects.push({x: offset.x - l*(251-102), y: offset.y - l*(435-15), width: l*33, height: l*2})
-  objects.push({x: offset.x - l*(251-0), y: offset.y - l*(435-17), width: l*2, height: l*200})
-  objects.push({x: offset.x - l*(251-2), y: offset.y - l*(435-215), width: l*28, height: l*2})
-  objects.push({x: offset.x - l*(251-30), y: offset.y - l*(435-215), width: l*2, height: l*60})
-  objects.push({x: offset.x - l*(251-32), y: offset.y - l*(435-225), width: l*40, height: l*2})
-  objects.push({x: offset.x - l*(251-0), y: offset.y - l*(435-275), width: l*52, height: l*2})
-  objects.push({x: offset.x - l*(251-0), y: offset.y - l*(435-277), width: l*2, height: l*53})
-  objects.push({x: offset.x - l*(251-0), y: offset.y - l*(435-330), width: l*20, height: l*2})
-  objects.push({x: offset.x - l*(251-20), y: offset.y - l*(435-320), width: l*2, height: l*12})
-  objects.push({x: offset.x - l*(251-22), y: offset.y - l*(435-320), width: l*28, height: l*2})
-  objects.push({x: offset.x - l*(251-50), y: offset.y - l*(435-316), width: l*2, height: l*71})
-  objects.push({x: offset.x - l*(251-52), y: offset.y - l*(435-385), width: l*38, height: l*2})
-  objects.push({x: offset.x - l*(251-90), y: offset.y - l*(435-385), width: l*7, height: l*12})
-  objects.push({x: offset.x - l*(251-85), y: offset.y - l*(435-390), width: l*5, height: l*2})
-  objects.push({x: offset.x - l*(251-85), y: offset.y - l*(435-392), width: l*2, height: l*15})
-  objects.push({x: offset.x - l*(251-87), y: offset.y - l*(435-405), width: l*33, height: l*2})
-  objects.push({x: offset.x - l*(251-120), y: offset.y - l*(435-390), width: l*2, height: l*17})
-  objects.push({x: offset.x - l*(251-115), y: offset.y - l*(435-385), width: l*2, height: l*7})
-  objects.push({x: offset.x - l*(251-117), y: offset.y - l*(435-390), width: l*3, height: l*2})
-  objects.push({x: offset.x - l*(251-117), y: offset.y - l*(435-385), width: l*48, height: l*2})
-  objects.push({x: offset.x - l*(251-165), y: offset.y - l*(435-359), width: l*2, height: l*28})
-  objects.push({x: offset.x - l*(251-167), y: offset.y - l*(435-365), width: l*13, height: l*2})
-  // stage
-  objects.push({x: offset.x - l*(251-135), y: offset.y - l*(435-37), width: l*2, height: l*41})
-  objects.push({x: offset.x - l*(251-80), y: offset.y - l*(435-41), width: l*7, height: l*11})
-  objects.push({x: offset.x - l*(251-85), y: offset.y - l*(435-52), width: l*2, height: l*13})
-  objects.push({x: offset.x - l*(251-60), y: offset.y - l*(435-65), width: l*2, height: l*6})
-  objects.push({x: offset.x - l*(251-87), y: offset.y - l*(435-65), width: l*15, height: l*12})
-  objects.push({x: offset.x - l*(251-118), y: offset.y - l*(435-65), width: l*17, height: l*9})
-  objects.push({x: offset.x - l*(251-118), y: offset.y - l*(435-74), width: l*1, height: l*3})
-  objects.push({x: offset.x - l*(251-87), y: offset.y - l*(435-90), width: l*48, height: l*2})
-  objects.push({x: offset.x - l*(251-62), y: offset.y - l*(435-90), width: l*12, height: l*2})
-  objects.push({x: offset.x - l*(251-60), y: offset.y - l*(435-86), width: l*2, height: l*116})
-  objects.push({x: offset.x - l*(251-62), y: offset.y - l*(435-200), width: l*23, height: l*2})
-  objects.push({x: offset.x - l*(251-85), y: offset.y - l*(435-200), width: l*2, height: l*100})
-  objects.push({x: offset.x - l*(251-21), y: offset.y - l*(435-300), width: l*99, height: l*2})
-  objects.push({x: offset.x - l*(251-50), y: offset.y - l*(435-302), width: l*2, height: l*4})
-  objects.push({x: offset.x - l*(251-120), y: offset.y - l*(435-300), width: l*17, height: l*22})
-  objects.push({x: offset.x - l*(251-125), y: offset.y - l*(435-322), width: l*12, height: l*10})
-  objects.push({x: offset.x - l*(251-135), y: offset.y - l*(435-89), width: l*2, height: l*211})
-  objects.push({x: offset.x - l*(251-137), y: offset.y - l*(435-155), width: l*50, height: l*177})
-  objects.push({x: offset.x - l*(251-165), y: offset.y - l*(435-332), width: l*2, height: l*6})
-  objects.push({x: offset.x - l*(251-137), y: offset.y - l*(435-45), width: l*5, height: l*27})
-  objects.push({x: offset.x - l*(251-155), y: offset.y - l*(435-37), width: l*17, height: l*10})
-  objects.push({x: offset.x - l*(251-270), y: offset.y - l*(435-2), width: l*22, height: l*10})
-  objects.push({x: offset.x - l*(251-317), y: offset.y - l*(435-2), width: l*18, height: l*27})
-  objects.push({x: offset.x - l*(251-181), y: offset.y - l*(435-64), width: l*13, height: l*14})
-  objects.push({x: offset.x - l*(251-204), y: offset.y - l*(435-41), width: l*39, height: l*24})
-  objects.push({x: offset.x - l*(251-260), y: offset.y - l*(435-41), width: l*38, height: l*22})
-  objects.push({x: offset.x - l*(251-276), y: offset.y - l*(435-63), width: l*14, height: l*15})
-  objects.push({x: offset.x - l*(251-318), y: offset.y - l*(435-71), width: l*19, height: l*19})
-  objects.push({x: offset.x - l*(251-137), y: offset.y - l*(435-90), width: l*54, height: l*32})
-  objects.push({x: offset.x - l*(251-310), y: offset.y - l*(435-90), width: l*54, height: l*32})
-  objects.push({x: offset.x - l*(251-215), y: offset.y - l*(435-125), width: l*2, height: l*11})
-  objects.push({x: offset.x - l*(251-217), y: offset.y - l*(435-125), width: l*70, height: l*2})
-  objects.push({x: offset.x - l*(251-285), y: offset.y - l*(435-127), width: l*2, height: l*9})
-  objects.push({x: offset.x - l*(251-360), y: offset.y - l*(435-60), width: l*7, height: l*62})
-  objects.push({x: offset.x - l*(251-187), y: offset.y - l*(435-155), width: l*45, height: l*112})
-  objects.push({x: offset.x - l*(251-220), y: offset.y - l*(435-280), width: l*22, height: l*52})
-  objects.push({x: offset.x - l*(251-187), y: offset.y - l*(435-330), width: l*33, height: l*2})
-  objects.push({x: offset.x - l*(251-260), y: offset.y - l*(435-280), width: l*10, height: l*52})
-  objects.push({x: offset.x - l*(251-270), y: offset.y - l*(435-155), width: l*95, height: l*137})
-  objects.push({x: offset.x - l*(251-270), y: offset.y - l*(435-292), width: l*42, height: l*40})
-  objects.push({x: offset.x - l*(251-312), y: offset.y - l*(435-330), width: l*25, height: l*2})
-  objects.push({x: offset.x - l*(251-335), y: offset.y - l*(435-332), width: l*2, height: l*7})
-  objects.push({x: offset.x - l*(251-115), y: offset.y - l*(435-355), width: l*27, height: l*12})
-  objects.push({x: offset.x - l*(251-75), y: offset.y - l*(435-335), width: l*5, height: l*7})
-  objects.push({x: offset.x - l*(251-80), y: offset.y - l*(435-320), width: l*7, height: l*47})
-  objects.push({x: offset.x - l*(251-87), y: offset.y - l*(435-345), width: l*5, height: l*12})
-  objects.push({x: offset.x - l*(251-70), y: offset.y - l*(435-302), width: l*12, height: l*5})
-  objects.push({x: offset.x - l*(251-365), y: offset.y - l*(435-122), width: l*2, height: l*180})
-  objects.push({x: offset.x - l*(251-210), y: offset.y - l*(435-345), width: l*52, height: l*7})
-  // lobby
-  objects.push({x: offset.x - l*(251-180), y: offset.y - l*(435-365), width: l*2, height: l*102})
-  objects.push({x: offset.x - l*(251-182), y: offset.y - l*(435-465), width: l*153, height: l*2})
-  objects.push({x: offset.x - l*(251-320), y: offset.y - l*(435-359), width: l*2, height: l*68})
-  objects.push({x: offset.x - l*(251-322), y: offset.y - l*(435-425), width: l*20, height: l*2})
-  objects.push({x: offset.x - l*(251-335), y: offset.y - l*(435-427), width: l*7, height: l*40})
-  objects.push({x: offset.x - l*(251-310), y: offset.y - l*(435-405), width: l*10, height: l*2})
-  objects.push({x: offset.x - l*(251-320), y: offset.y - l*(435-365), width: l*15, height: l*2})
-  objects.push({x: offset.x - l*(251-335), y: offset.y - l*(435-359), width: l*2, height: l*48})
-  objects.push({x: offset.x - l*(251-337), y: offset.y - l*(435-405), width: l*58, height: l*2})
-  objects.push({x: offset.x - l*(251-395), y: offset.y - l*(435-380), width: l*2, height: l*27})
-  objects.push({x: offset.x - l*(251-397), y: offset.y - l*(435-380), width: l*18, height: l*2})
-  objects.push({x: offset.x - l*(251-415), y: offset.y - l*(435-380), width: l*2, height: l*12})
-  objects.push({x: offset.x - l*(251-417), y: offset.y - l*(435-390), width: l*88, height: l*2})
-  objects.push({x: offset.x - l*(251-497), y: offset.y - l*(435-381), width: l*8, height: l*9})
-  objects.push({x: offset.x - l*(251-505), y: offset.y - l*(435-302), width: l*2, height: l*90})
-  objects.push({x: offset.x - l*(251-471), y: offset.y - l*(435-300), width: l*36, height: l*2})
-  objects.push({x: offset.x - l*(251-470), y: offset.y - l*(435-260), width: l*2, height: l*7})
-  objects.push({x: offset.x - l*(251-472), y: offset.y - l*(435-265), width: l*23, height: l*2})
-  objects.push({x: offset.x - l*(251-495), y: offset.y - l*(435-265), width: l*2, height: l*35})
-  objects.push({x: offset.x - l*(251-525), y: offset.y - l*(435-150), width: l*2, height: l*112})
-  objects.push({x: offset.x - l*(251-472), y: offset.y - l*(435-260), width: l*53, height: l*2})
-  objects.push({x: offset.x - l*(251-471), y: offset.y - l*(435-150), width: l*54, height: l*2})
-  objects.push({x: offset.x - l*(251-471), y: offset.y - l*(435-140), width: l*9, height: l*2})
-  objects.push({x: offset.x - l*(251-475), y: offset.y - l*(435-142), width: l*2, height: l*8})
-  objects.push({x: offset.x - l*(251-480), y: offset.y - l*(435-22), width: l*2, height: l*120})
-  objects.push({x: offset.x - l*(251-367), y: offset.y - l*(435-20), width: l*115, height: l*2})
-  objects.push({x: offset.x - l*(251-335), y: offset.y - l*(435-0), width: l*32, height: l*32})
-  objects.push({x: offset.x - l*(251-202), y: offset.y - l*(435-0), width: l*133, height: l*2})
-  objects.push({x: offset.x - l*(251-187), y: offset.y - l*(435-0), width: l*15, height: l*12})
-  objects.push({x: offset.x - l*(251-135), y: offset.y - l*(435-0), width: l*52, height: l*37})
-  objects.push({x: offset.x - l*(251-265), y: offset.y - l*(435-365), width: l*27, height: l*2})
-  objects.push({x: offset.x - l*(251-290), y: offset.y - l*(435-367), width: l*2, height: l*25})
-  objects.push({x: offset.x - l*(251-250), y: offset.y - l*(435-405), width: l*27, height: l*7})
-  objects.push({x: offset.x - l*(251-273), y: offset.y - l*(435-382), width: l*4, height: l*23})
-  objects.push({x: offset.x - l*(251-277), y: offset.y - l*(435-379), width: l*13, height: l*4})
-  objects.push({x: offset.x - l*(251-210), y: offset.y - l*(435-365), width: l*2, height: l*27})
-  objects.push({x: offset.x - l*(251-367), y: offset.y - l*(435-260), width: l*85, height: l*42})
-  objects.push({x: offset.x - l*(251-395), y: offset.y - l*(435-302), width: l*22, height: l*60})
-  objects.push({x: offset.x - l*(251-440), y: offset.y - l*(435-325), width: l*42, height: l*42})
-  objects.push({x: offset.x - l*(251-426), y: offset.y - l*(435-55), width: l*12, height: l*62})
-  objects.push({x: offset.x - l*(251-367), y: offset.y - l*(435-140), width: l*80, height: l*12})
-  objects.push({x: offset.x - l*(251-447), y: offset.y - l*(435-140), width: l*4, height: l*2})
-  objects.push({x: offset.x - l*(251-367), y: offset.y - l*(435-152), width: l*35, height: l*40})
-  objects.push({x: offset.x - l*(251-390), y: offset.y - l*(435-192), width: l*17, height: l*10})
-  objects.push({x: offset.x - l*(251-421), y: offset.y - l*(435-170), width: l*16, height: l*47})
-  objects.push({x: offset.x - l*(251-437), y: offset.y - l*(435-170), width: l*15, height: l*13})
-  objects.push({x: offset.x - l*(251-421), y: offset.y - l*(435-217), width: l*3, height: l*27})
-  objects.push({x: offset.x - l*(251-424), y: offset.y - l*(435-240), width: l*63, height: l*4})
-  objects.push({x: offset.x - l*(251-487), y: offset.y - l*(435-240), width: l*18, height: l*2})
-  objects.push({x: offset.x - l*(251-505), y: offset.y - l*(435-211), width: l*2, height: l*29})
-  objects.push({x: offset.x - l*(251-385), y: offset.y - l*(435-235), width: l*17, height: l*12})
-  objects.push({x: offset.x - l*(251-452), y: offset.y - l*(435-283), width: l*29, height: l*1})
-  objects.push({x: offset.x - l*(251-212), y: offset.y - l*(435-365), width: l*10, height: l*2})
-  objects.push({x: offset.x - l*(251-320), y: offset.y - l*(435-435), width: l*7, height: l*22})
-  objects.push({x: offset.x - l*(251-212), y: offset.y - l*(435-392), width: l*15, height: l*15})
-  objects.push({x: offset.x - l*(251-210), y: offset.y - l*(435-460), width: l*17, height: l*5})
-  objects.push({x: offset.x - l*(251-245), y: offset.y - l*(435-460), width: l*21, height: l*5})
-  objects.push({x: offset.x - l*(251-295), y: offset.y - l*(435-460), width: l*17, height: l*5})
-  objects.push({x: offset.x - l*(251-468), y: offset.y - l*(435-190), width: l*21, height: l*29})
-}
-let isDefeatBoss = false
 const warehouseBox = {
   absoluteX: size * .25,
   absoluteY: size * 6.75,
@@ -1941,7 +1777,7 @@ class RenderBox {
   }
 }
 
-const Shop = class {
+class Shop {
   constructor (dx, dy, w, h, Id, img) {
     this.x = ownPosition.x + dx // TODO: integrate x and absoluteX
     this.y = ownPosition.y + dy
@@ -2554,50 +2390,6 @@ if (false) { // TODO: Add to class
   dropItems.push(weapon)
 }
 
-const upgradeExplosive = () => {
-  if (holdTimeLimit <= code[action.lookDown].holdtime && inventory[selectSlot].explosive3 <= ammo) {
-    homingFlag = false
-    explosive1Flag = false
-    explosive2Flag = false
-    explosive3Flag = !explosive3Flag
-    ammo = (ammo - inventory[selectSlot].explosive3)|0
-    afterglow.explosive3 = holdTimeLimit
-  } else if (0 < afterglow.explosive3) afterglow.explosive3 = (afterglow.explosive3-1)|0
-}
-const upgradeTest = () => {
-  if (holdTimeLimit <= code[action.lookRight].holdtime && cost.clone <= point) {
-    cloneFlag = true
-    point = (point - cost.clone)|0
-    cost.clone = (cost.clone * 2)|0
-    afterglow.clone = holdTimeLimit
-  } else if (0 < afterglow.clone) afterglow.clone = (afterglow.clone-1)|0
-}
-const upgradeClone = ()  => {
-  if (holdTimeLimit <= code[action.lookUp].holdtime) {
-    cloneDashType1Flag = !cloneDashType1Flag
-    cloneDashType2Flag = false
-    cloneDashType3Flag = false
-    afterglow.explosive1 = holdTimeLimit
-  } else if (0 < afterglow.explosive1) afterglow.explosive1 = (afterglow.explosive1-1)|0
-  if (holdTimeLimit <= code[action.lookRight].holdtime) {
-    cloneDashType1Flag = false
-    cloneDashType2Flag = !cloneDashType2Flag
-    cloneDashType3Flag = false
-    afterglow.explosive2 = holdTimeLimit
-  } else if (0 < afterglow.explosive2) afterglow.explosive2 = (afterglow.explosive2-1)|0
-  if (holdTimeLimit <= code[action.lookDown].holdtime) {
-    cloneDashType1Flag = false
-    cloneDashType2Flag = false
-    cloneDashType3Flag = !cloneDashType3Flag
-    afterglow.explosive3 = holdTimeLimit
-  } else if (0 < afterglow.explosive3) afterglow.explosive3 = (afterglow.explosive3-1)|0
-  if (holdTimeLimit <= code[action.lookLeft].holdtime) {
-    cloneReturnFlag = !cloneReturnFlag
-    afterglow.explosiveRange = holdTimeLimit
-  } else if (
-    0 < afterglow.explosiveRange
-  ) afterglow.explosiveRange = (afterglow.explosiveRange-1)|0
-}
 const drawStore = (cursor) => {
   context.font = `${size}px ${font}`
   objects.forEach(object => {
@@ -2750,83 +2542,6 @@ const reset = () => {
   defeatCount = 0
 }; reset()
 let mapMode = false
-const swap = (get, set) => {
-  let before = Object.keys(action)[Object.values(action).indexOf(order[get])]
-  let after = Object.keys(action)[Object.values(action).indexOf(order[set])]
-  if(typeof before === 'string') action[before] = setStorage(before, order[set])
-  if(typeof after === 'string') action[after] = setStorage(after, order[get])
-}
-const order = [
-  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
-  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
-  'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'shift', 'space'
-]
-const keyInput = () => {
-  let aft = -2
-  let bfr = aft
-  return () => {
-    bfr = aft
-    aft = (
-    code.q.isFirst()) ? 0 :
-    (code.w.isFirst()) ? 1 :
-    (code.e.isFirst()) ? 2 :
-    (code.r.isFirst()) ? 3 :
-    (code.t.isFirst()) ? 4 :
-    (code.y.isFirst()) ? 5 :
-    (code.u.isFirst()) ? 6 :
-    (code.i.isFirst()) ? 7 :
-    (code.o.isFirst()) ? 8 :
-    (code.p.isFirst()) ? 9 :
-    (code.a.isFirst()) ? 10 :
-    (code.s.isFirst()) ? 11 :
-    (code.d.isFirst()) ? 12 :
-    (code.f.isFirst()) ? 13 :
-    (code.g.isFirst()) ? 14 :
-    (code.h.isFirst()) ? 15 :
-    (code.j.isFirst()) ? 16 :
-    (code.k.isFirst()) ? 17 :
-    (code.l.isFirst()) ? 18 :
-    (code.z.isFirst()) ? 20 :
-    (code.x.isFirst()) ? 21 :
-    (code.c.isFirst()) ? 22 :
-    (code.v.isFirst()) ? 23 :
-    (code.b.isFirst()) ? 24 :
-    (code.n.isFirst()) ? 25 :
-    (code.m.isFirst()) ? 26 :
-    (code.Shift.isFirst()) ? 30 :
-    (code[' '].isFirst()) ? 31 : -2
-    if (aft === -2) aft = bfr
-    else if (bfr === aft) aft = -2
-    if (
-      aft === order.indexOf(action.up) || aft === order.indexOf(action.right) ||
-      aft === order.indexOf(action.down) || aft === order.indexOf(action.left)
-    ) aft = -2
-    if (bfr !== -2 && bfr !== aft) {
-      if (aft !== -2) {
-        swap(bfr, aft)
-        aft = -2
-      }
-    }
-    if (state === 'title') bfr = aft = -2
-    return aft
-  }
-}; const input = keyInput()
-const menuColumn = () => {
-  const array = [0, 1]
-  let num = array[0]
-  return () => {
-    if (code[action.down].isFirst()) {
-      if (num === array.slice(-1)[0]) num = array[0]
-      else num = (num+1)|0
-    } else if (code[action.up].isFirst()) {
-      if (num === array[0]) num = array.slice(-1)[0]
-      else num = (num-1)|0
-    }
-    return num
-  }
-}; const rotate = menuColumn()
-let rowPosition = 0
-let keyPosition = -2
 
 class Input {
   constructor (keyMap, prevKeyMap) {
@@ -2922,7 +2637,6 @@ class Ownself {
     context.restore()
   }
 }
-const mapProcess = () => {}
 class Main {
   constructor () {
     this.timeStamp = Date.now()
@@ -3001,36 +2715,6 @@ class Main {
   }
 }
 
-const mainProcess = (intervalDiffTime, cursor) => {
-}
-const pauseProcess = () => {
-  if (code[action.pause].isFirst()) state = 'main'
-}
-const keyLayoutProcess = () => {
-  rowPosition = rotate()
-  keyPosition = input()
-  if (keyPosition === order.indexOf('w') && holdTimeLimit <= code.w.holdtime &&
-    !(Object.values(action).some(x => x === 'w' || x === 'a'))) {
-    operationMode = setStorage('operation', 'WASD')
-    setOperation()
-  }
-  if (keyPosition === order.indexOf('e') && holdTimeLimit <= code.e.holdtime &&
-    !(Object.values(action).some(x => x === 'e' || x === 'f'))) {
-    operationMode = setStorage('operation', 'ESDF')
-    setOperation()
-  }
-  if (rowPosition === 0 && (code[action.left].isFirst() || code[action.right].isFirst())) {
-    inventory[selectSlot].reloadAuto = (inventory[selectSlot].reloadAuto === 'ON') ? setStorage('autoReload', 'OFF') :
-    setStorage('autoReload', 'ON')
-  }
-  if (rowPosition === 1 && (code[action.left].isFirst() || code[action.right].isFirst())) {
-    combatReload.auto = (combatReload.auto === 'ON') ? setStorage('autoCombatReload', 'OFF') :
-    setStorage('autoCombatReload', 'ON')
-  }
-  if (
-    keyPosition === order.indexOf(action.back) && holdTimeLimit <= code[action.back].holdtime
-  ) state = 'title'
-}
 const frameResetProcess = (intervalDiffTime) => {
   if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
 
@@ -3038,8 +2722,6 @@ const frameResetProcess = (intervalDiffTime) => {
 }
 const drawImage = (img, x, y) => {
   context.drawImage(img, ~~(x+.5), ~~(y+.5))
-}
-const drawTitleScreen = (cursor) => {
 }
 const drawScreenEdge = (obj, hue) => {
   context.save()
@@ -3097,8 +2779,6 @@ const drawSaveCompleted = (intervalDiffTime) => {
   afterglow.save -= intervalDiffTime
 }
 
-const drawMain = (intervalDiffTime, timeStamp, cursor) => {
-}
 const drawPause = () => {
   let nowTime = Date.now()
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
@@ -3112,188 +2792,6 @@ const drawPause = () => {
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + size)
   context.restore()
 }
-const drawResult = (cursor) => {
-}
-const drawKeyLayout = () => {
-  // resetScreen()
-  const nowTime = Date.now()
-  const ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
-  const ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
-  context.font = `${size * .65}px ${font}`
-  context.fillStyle = 'hsl(210, 100%, 40%)'
-  let p = {x: canvas.offsetWidth * .56, y: canvas.offsetHeight * .3} // absolute coordinate
-  context.textAlign = 'right'
-  context.fillText('OPERATION MODE:', p.x, p.y - size * 2)
-  context.fillStyle = (ms < 500) ? `hsla(30, 100%, 45%, ${(1 - (ms / 1e3) - .25) * 2})` :
-  `hsla(30, 100%, 45%, ${((ms / 1e3) - .25) * 2})`
-  context.save()
-  if (rowPosition !== 0) context.fillStyle = 'hsl(210, 100%, 40%)'
-  context.fillText('AUTO RELOAD:', p.x, p.y)
-  context.restore()
-  context.save()
-  if (rowPosition !== 1) context.fillStyle = 'hsl(210, 100%, 40%)'
-  context.fillText('AUTO COMBAT RELOADING:', p.x, p.y + size)
-  context.restore()
-  p.x = p.x + size * 1.75
-  context.textAlign = 'center'
-  context.font = `bold ${size * .5}px ${font}`
-  context.fillText('＜', p.x - size * 1.4, p.y + size * rowPosition - size/16)
-  context.fillText('＞', p.x + size * 1.4, p.y + size * rowPosition - size/16)
-  context.fillStyle = 'hsl(210, 100%, 40%)'
-  context.font = `${size * .65}px ${font}`
-  if (operationMode === 'WASD') {
-    context.fillText('W', p.x, p.y - size * 2.4)
-    context.fillText('A', p.x - size * .6, p.y - size * 1.6)
-    context.fillText('S', p.x, p.y - size * 1.6)
-    context.fillText('D', p.x + size * .6, p.y - size * 1.6)
-  } else if (operationMode === 'ESDF') {
-    context.fillText('E', p.x, p.y - size * 2.4)
-    context.fillText('S', p.x - size * .6, p.y - size * 1.6)
-    context.fillText('D', p.x, p.y - size * 1.6)
-    context.fillText('F', p.x + size * .6, p.y - size * 1.6)
-  }
-  context.fillText(inventory[selectSlot].reloadAuto, p.x, p.y)
-  context.fillText(combatReload.auto, p.x, p.y + size)
-  p.x = p.x + size * 2
-  context.font = `${size * .65}px ${font}`
-  context.textAlign = 'left'
-  context.fillStyle = 'hsla(280, 100%, 50%, .5)'
-  const text = (action.up === 'w') ? '[HOLD "E"]' : '[HOLD "W"]'
-  context.fillText(text, p.x, p.y - size * 2)
-  context.font = `${size*2}px ${font}`
-  context.textAlign = 'center'
-  context.fillStyle = 'hsla(210, 100%, 40%, .3)'
-  let flag = false
-  for (let i = 0; i < 32; i=(i+1)|0) {
-    context.save()
-    if ((
-      i === order.indexOf('w') || i === order.indexOf('e')) &&
-      !Object.values(action).some(x => order[i] === x)
-    ) context.fillStyle = 'hsla(280, 100%, 50%, .4)'
-    if (
-      i === order.indexOf(action.up) || i === order.indexOf(action.right) ||
-      i === order.indexOf(action.down) || i === order.indexOf(action.left)
-    ) context.fillStyle = 'hsla(100, 100%, 35%, .5)'
-    if (i === order.indexOf(action.back)) context.fillStyle = 'hsla(340, 100%, 35%, .5)'
-    p = { // absolute coordinate
-      x: canvas.offsetWidth/30 * (
-        4.5 + ~~('0'+i%10).slice(-1)*2.5 + ~~('0'+i/10).slice(1)*.5
-      ),
-      y: canvas.offsetHeight/20 *(11 + ~~('0' + i / 10).slice(1) * 2)
-    }
-    if ((
-      action.up === 'e' && code.w.flag && code.w.holdtime < holdTimeLimit) &&
-      i === order.indexOf('w') &&
-      keyPosition === order.indexOf('w') || keyPosition === order.indexOf('e') &&
-      (action.up === 'w' && code.e.flag && code.e.holdtime < holdTimeLimit) &&
-      i === order.indexOf('e')
-    ) {
-      flag = true
-      const time = (action.up === 'e') ? code.w.flag : code.e.flag
-      context.fillStyle = 'hsla(280, 100%, 45%, .4)'
-      context.fillRect(
-        p.x - size * .86, p.y + size * .25,
-        size * 1.73, -size * 1.69 * time / holdTimeLimit
-      )
-    }
-    if (keyPosition !== -2 && keyPosition !== order.indexOf(action.up) && !flag) {
-      if (Object.values(action).some(x => order[keyPosition] === x)) {
-        context.fillStyle = ((
-          i === order.indexOf(action.up) || i === order.indexOf(action.right) ||
-          i === order.indexOf(action.down) || i === order.indexOf(action.left))
-        ) ? 'hsla(0, 0%, 35%, .3)' :
-        (Object.values(action).some(x => order[i] === x)) ? 'hsla(20, 100%, 50%, .5)' :
-        'hsla(20, 100%, 50%, .3)'
-      } else {
-        context.fillStyle = (
-          Object.values(action).some(x => order[i] === x) &&
-          !(i === order.indexOf(action.up) || i === order.indexOf(action.right) ||
-          i === order.indexOf(action.down) || i === order.indexOf(action.left))
-        ) ? 'hsla(20, 100%, 50%, .5)' : 'hsla(0, 0%, 35%, .3)'
-      }
-    }
-    if (i === keyPosition) {
-      context.fillStyle = (ss % 2 === 0) ? `hsl(60, 100%, ${45 + 5 * (1 - (ms / 1e3))}%)` :
-      `hsl(60, 100%, ${45 + 5 * (ms / 1e3)}%)`
-      context.font = (ss % 2 === 0) ? `${size * (2 - .1 * (1 - (ms / 1e3)))}px ${font}` :
-      `${size * (2 - .1 * (ms / 1e3))}px ${font}`
-    } else if (i === 19 || i === 27 || i === 28 || i === 29) {
-      context.fillStyle = 'hsla(210, 100%, 40%, .1)'
-    }
-    if (i < 30) {
-      context.fillText('[', p.x - size * .8, p.y)
-      context.fillText(']', p.x + size * .8, p.y)
-    } else if (i === 30) {
-      p = {x:p.x - canvas.offsetWidth * 3.5 / 30, y: p.y - canvas.offsetHeight * 2 / 20}
-      context.fillText('[', p.x - size * 1.3, p.y)
-      context.fillText(']', p.x + size * 1.3, p.y)
-    } else if (i === 31) {
-      p.x = p.x + canvas.offsetWidth * 7 / 30
-      context.fillText('[', p.x - size * 3, p.y)
-      context.fillText(']', p.x + size * 3, p.y)
-    }
-    context.font = `${size}px ${font}`
-    if (i === order.indexOf('f') || i === order.indexOf('j')) {
-      context.fillStyle = 'hsla(210, 100%, 40%, .3)'
-      context.fillText('_', p.x, p.y)
-    }
-    context.restore()
-    context.save()
-    p.y = p.y - size / 6
-    context.font = `bold ${size}px ${font}`
-    context.fillStyle = 'hsl(210, 100%, 40%)'
-    if (i === order.indexOf(action.up)) context.fillText('↑', p.x, p.y)
-    else if (i === order.indexOf(action.right)) context.fillText('→', p.x, p.y)
-    else if (i === order.indexOf(action.down)) context.fillText('↓', p.x, p.y)
-    else if (i === order.indexOf(action.left)) context.fillText('←', p.x, p.y)
-    else if (i === order.indexOf(action.lookUp)) context.fillText('∧', p.x, p.y)
-    else if (i === order.indexOf(action.lookRight)) context.fillText('>', p.x, p.y)
-    else if (i === order.indexOf(action.lookDown)) context.fillText('\u{2228}', p.x, p.y)
-    else if (i === order.indexOf(action.lookLeft)) context.fillText('<', p.x, p.y)
-    p.y = p.y - size / 6
-    context.font = `bold ${size / 2}px ${font}`
-    context.fillStyle = 'hsl(210, 100%, 40%)'
-    if (i === order.indexOf(action.fire)) context.fillText('FIRE', p.x, p.y)
-    else if (i === order.indexOf(action.slow)) context.fillText('SLOW', p.x, p.y)
-    else if (i === order.indexOf(action.dash)) context.fillText('DASH', p.x, p.y)
-    else if (i === order.indexOf(action.back)) context.fillText('BACK', p.x, p.y)
-    else if (i === order.indexOf(action.inventory)) context.fillText('INV.', p.x, p.y)
-    else if (i === order.indexOf(action.pause)) context.fillText('PAUSE', p.x, p.y)
-    context.restore()
-    context.save()
-    p.y = p.y - size / 12
-    context.font = `bold ${size / 3}px ${font}`
-    context.fillStyle = 'hsl(210, 100%, 40%)'
-    if (i === order.indexOf(action.reload)) context.fillText('RELOAD', p.x, p.y)
-    else if (i === order.indexOf(action.debug)) context.fillText('DEBUG', p.x, p.y)
-    context.fillStyle = 'hsla(210, 100%, 40%, .2)'
-    if (i === order.indexOf(action.change)) context.fillText('MAGCHG', p.x, p.y)
-    else if (i === order.indexOf(action.combatReload)) {
-      context.fillText('COMBAT', p.x, p.y - size / 4)
-      context.fillText('RELOAD', p.x, p.y + size / 4)
-    }
-    context.restore()
-  }
-  context.fillStyle = 'hsl(210, 100%, 40%)'
-  context.font = `${size}px ${font}`
-  context.textAlign = 'left'
-  context.fillText('KEY LAYOUT EDITOR', size, size * 1.75)
-  context.textAlign = 'right'
-  context.fillStyle = (
-      keyPosition === order.indexOf(action.back) && !code[action.back].flag
-    ) ? 'hsla(0, 0%, 35%, .3)' : 'hsla(340, 100%, 35%, .6)'
-  context.fillText(
-    `[HOLD "${getKeyName(action.back)}"] TO TITLE`,
-    canvas.offsetWidth - size, canvas.offsetHeight - size
-  )
-  if (keyPosition === order.indexOf(action.back)) {
-    context.fillRect(
-      canvas.offsetWidth - size * 11.5, canvas.offsetHeight - size,
-      size * 10.6 * code[action.back].holdtime / holdTimeLimit, size * .2
-    )
-  }
-}
-
 const RESOURCE_LIST = []
 
 const imagePathList = [
