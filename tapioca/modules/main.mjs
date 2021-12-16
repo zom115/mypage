@@ -2999,9 +2999,7 @@ class InputReceiver {
   constructor () {
     this._keyMap = new Map()
     this._prevKeyMap = new Map()
-    document.addEventListener('keydown', e => {
-      this._keyMap.set(e.code, true)
-    })
+    document.addEventListener('keydown', e => this._keyMap.set(e.code, true))
     document.addEventListener('keyup', e => this._keyMap.set(e.code, false))
     this._mouseButtonMap = new Map()
     this._prevMouseButtonMap = new Map()
@@ -3703,6 +3701,7 @@ class Scene extends EventDispatcher {
   change (scene) {
     this.dispatchEvent('change', scene)
   }
+  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {}
   render (intervalDiffTime, mouseInput, cursor) {}
 }
 class LobbyScene extends Scene {
@@ -4365,7 +4364,10 @@ class TitleScene extends Scene {
   //   super()
   // }
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
-    if (this.boxInterface.isDownAndUpInBox(titleMenuWordArray[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+    if (
+      mouseInput.getKeyUp(0) &&
+      this.boxInterface.isDownAndUpInBox(titleMenuWordArray[0], true, cursor, mouseDownPosition)
+    ) {
       this.change(new LobbyScene)
     }
   }
@@ -4489,16 +4491,17 @@ class Entry {
     this.intervalDiffTime = this.timeStamp - this.currentTime
     this.currentTime = this.timeStamp
 
-    const mouseInput = this._inputReceiver.getMouseButtonInput()
-    if (mouseInput.getKeyDown(0)) this.mouseDownPosition = this._inputReceiver.getMouseCursorInput()
+    this.cursor = this._inputReceiver.getMouseCursorInput()
+    this.mouseInput = this._inputReceiver.getMouseButtonInput()
+    if (this.mouseInput.getKeyDown(0)) this.mouseDownPosition = this.cursor
 
     const mouseWheelInput = this._inputReceiver.getMouseWheelInput()
     this.deltaY = mouseWheelInput
     this._windowManager.update(
       this.intervalDiffTime,
       this._inputReceiver.getKeyInput(),
-      mouseInput,
-      this._inputReceiver.getMouseCursorInput(),
+      this.mouseInput,
+      this.cursor,
       this.mouseDownPosition
     )
 
@@ -4513,7 +4516,7 @@ class Entry {
 
     this._windowManager.render(
       this.intervalDiffTime,
-      this._inputReceiver.getMouseButtonInput(),
+      this.mouseInput,
       this._inputReceiver.getMouseCursorInput()
     )
 
