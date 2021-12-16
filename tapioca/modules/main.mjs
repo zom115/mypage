@@ -12,19 +12,8 @@ canvas.addEventListener('mouseover', () => {
   canvas.draggable = false
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
-canvas.addEventListener('mousedown', e => e.preventDefault(), false)
-canvas.addEventListener('click', () => {}, false)
-
-let wheelEvent = {deltaY: 0, isFirst: false}
-canvas.addEventListener('wheel', e => {
-  e.preventDefault()
-  wheelEvent = e
-  wheelEvent.isFirst = true
-}, false)
-
-canvas.addEventListener('contextmenu', e => {
-  e.preventDefault()
-})
+canvas.addEventListener('wheel', e => e.preventDefault(), false)
+canvas.addEventListener('contextmenu', e => e.preventDefault())
 
 const context = canvas.getContext`2d`
 context.imageSmoothingEnabled =
@@ -3153,8 +3142,6 @@ const keyLayoutProcess = () => {
   ) state = 'title'
 }
 const frameResetProcess = (intervalDiffTime) => {
-  wheelEvent.isFirst = false
-
   if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
 
   if (ownState.stepLimit <= ownState.step) ownState.step = 0
@@ -3679,7 +3666,7 @@ class Scene extends EventDispatcher {
   change (scene) {
     this.dispatchEvent('change', scene)
   }
-  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {}
+  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput) {}
   render (intervalDiffTime, mouseInput, cursor) {}
 }
 class LobbyScene extends Scene {
@@ -3801,7 +3788,7 @@ class LobbyScene extends Scene {
     // loadingProcess()
     if (code[action.change].isFirst()) magazineForword() // TODO: to consider
   }
-  interfaceProcess = (intervalDiffTime, mouseInput, cursor) => {
+  interfaceProcess = (intervalDiffTime, mouseInput, cursor, wheelInput) => {
     if (code[action.pause].isFirst()) state = 'pause'
     if (code[action.primary].isFirst()) selectSlot = 0
     if (code[action.secondary].isFirst()) selectSlot = 1
@@ -3810,10 +3797,10 @@ class LobbyScene extends Scene {
       if (code[action.shift].flag) selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
       else selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
     }
-    if (wheelEvent.isFirst && 0 < wheelEvent.deltaY) {
+    if (0 < wheelInput) {
       selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
     }
-    if (wheelEvent.isFirst && wheelEvent.deltaY < 0) {
+    if (wheelInput < 0) {
       selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
     }
     if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
@@ -4097,10 +4084,10 @@ class LobbyScene extends Scene {
 
     if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
   }
-  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
+  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput) {
     if (location === locationList[1] && dungeon === dungeonList[4]) {
     } else {
-      this.interfaceProcess(intervalDiffTime, mouseInput, cursor)
+      this.interfaceProcess(intervalDiffTime, mouseInput, cursor, wheelInput)
       if (direction !== 0) direction = 0
       if (angle !== 0) angle = 0
       if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
@@ -4343,7 +4330,7 @@ class TitleScene extends Scene {
   // constructor () {
   //   super()
   // }
-  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
+  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput) {
     if (
       mouseInput.getKeyUp(0) &&
       this.boxInterface.isDownAndUpInBox(titleMenuWordArray[0], true, cursor, mouseDownPosition)
@@ -4408,7 +4395,7 @@ class WindowManager extends EventDispatcher {
       if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)}
       )
   }
-  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition) {
+  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
     if (input.getKeyDown('Escape')) {
       const index = this.floatWindowOrder.findIndex(v => v !== 'main')
       if (index === -1) {
@@ -4434,7 +4421,7 @@ class WindowManager extends EventDispatcher {
     }
 
     if (!this.floatWindowOrder.some(v => v === 'result')) {
-      this.scene.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
+      this.scene.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput)
     }
   }
   render (intervalDiffTime, mouseInput, cursor) {
@@ -4458,9 +4445,9 @@ class Entry {
     this.animationFrameArray = []
 
     this._inputReceiver = new InputReceiver()
-    this.cursor = {offsetX: 0, offsetY: 0}
-    this.mouseDownPosition = {offsetX: 0, offsetY: 0}
-    this.deltaY = 0
+    this.cursor = this._inputReceiver.getMouseCursorInput()
+    this.mouseDownPosition = this.cursor
+    this.wheelInput = this._inputReceiver.getMouseWheelInput()
     this._windowManager = new WindowManager()
   }
   change (scene) {
@@ -4474,15 +4461,15 @@ class Entry {
     this.cursor = this._inputReceiver.getMouseCursorInput()
     this.mouseInput = this._inputReceiver.getMouseButtonInput()
     if (this.mouseInput.getKeyDown(0)) this.mouseDownPosition = this.cursor
+    this.wheelInput = this._inputReceiver.getMouseWheelInput()
 
-    const mouseWheelInput = this._inputReceiver.getMouseWheelInput()
-    this.deltaY = mouseWheelInput
     this._windowManager.update(
       this.intervalDiffTime,
       this._inputReceiver.getKeyInput(),
       this.mouseInput,
       this.cursor,
-      this.mouseDownPosition
+      this.mouseDownPosition,
+      this.wheelInput
     )
 
     frameCounter(this.internalFrameArray)
