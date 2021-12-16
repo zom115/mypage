@@ -904,9 +904,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
   setAngle()
   setTitleMenuWord()
 })
-const setMoreThanMagazine = () => {
-  return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
-}
 const setOtherMagazine = () => {
   const array = inventory[selectSlot].magazines.map((x, i) => {
     if (x === inventory[selectSlot].magazineSize || i === inventory[selectSlot].grip) return -1
@@ -3570,14 +3567,16 @@ class LobbyScene extends Scene {
     this.shopArray.push(new ShopSpot(size * 4, size, 1, 1, 1, 'images/st1v2.png'))
     this.shopArray.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
   }
-
+  setMoreThanMagazine = () => {
+    return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
+  }
   reloadProcess = (mouseInput) => {
     inventory[selectSlot].reloadTime = (inventory[selectSlot].reloadTime+1)|0
     if (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
       inventory[selectSlot].reloadState = 'putAway'
     } else if (inventory[selectSlot].reloadState === 'putAway' && inventory[selectSlot].reloadPutAway * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
       inventory[selectSlot].reloadState = 'takeOut'
-      inventory[selectSlot].grip = setMoreThanMagazine()
+      inventory[selectSlot].grip = this.setMoreThanMagazine()
     } else if (inventory[selectSlot].reloadState === 'takeOut' && inventory[selectSlot].reloadTakeOut * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
         inventory[selectSlot].reloadState = 'unrelease'
     } else if (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
@@ -3605,7 +3604,7 @@ class LobbyScene extends Scene {
       inventory[selectSlot].reloadAuto === 'ON' &&
       inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
       inventory[selectSlot].reloadTime === 0 &&
-      0 < inventory[selectSlot].magazines[setMoreThanMagazine()] &&
+      0 < inventory[selectSlot].magazines[this.setMoreThanMagazine()] &&
       !inventory[selectSlot].chamber &&
       inventory[selectSlot].slideState === 'release'
     ) {
