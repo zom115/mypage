@@ -7,7 +7,6 @@ const font = 'jkmarugo'
 
 const SIZE = 32
 
-let isRightMouseDownFirst = false
 let mouseUpPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseUpFirst = false
 canvas.addEventListener('mouseover', () => {
@@ -15,12 +14,7 @@ canvas.addEventListener('mouseover', () => {
   canvas.draggable = false
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
-canvas.addEventListener('mousedown', e => {
-  e.preventDefault()
-  if (e.button === 2) {
-    isRightMouseDownFirst = true
-  }
-}, false)
+canvas.addEventListener('mousedown', e => e.preventDefault(), false)
 canvas.addEventListener('mouseup', e => {
   mouseUpPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
   mouseUpPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
@@ -3168,7 +3162,6 @@ const keyLayoutProcess = () => {
   ) state = 'title'
 }
 const frameResetProcess = (intervalDiffTime) => {
-  isRightMouseDownFirst = false
   isLeftMouseUpFirst = false
   wheelEvent.isFirst = false
 
@@ -3846,7 +3839,7 @@ class LobbyScene extends Scene {
     else if (direction !== 0) currentDirection = direction
     if (inventory[selectSlot].category !== '' && location === locationList[1]) this.weaponProcess(mouseInput, cursor)
     if (inventory[selectSlot].category !== '') modeSelect()
-    if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess(intervalDiffTime)
+    if (dash.coolTime <= 0 && (code[action.dash].isFirst() || mouseInput.getKeyDown(2))) dashProcess(intervalDiffTime)
     moving(intervalDiffTime)
     if (code[action.debug].isFirst()) debugMode = !debugMode
   }
