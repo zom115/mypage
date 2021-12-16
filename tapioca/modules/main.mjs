@@ -904,32 +904,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
   setAngle()
   setTitleMenuWord()
 })
-const differenceAddition = (position, dx, dy, intervalDiffTime) => {
-  let flag = {x: false, y: false}
-  objects.forEach((object) => { // only rectangle
-    const space = .1
-    if (mapMode || (object.ID === 3 && typeof position.imageID !== 'number')) {
-      if (
-        object.y <= position.y && position.y <= object.y + object.height &&
-        (object.x <= position.x && position.x <= object.x + object.width + dx ||
-        (position.x <= object.x + object.width && object.x + dx <= position.x))
-      ) {
-        position.x = (0 < dx) ? object.x + object.width + space : object.x - space
-        flag.x = true
-      }
-      if (
-        object.x <= position.x && position.x <= object.x + object.width &&
-        (object.y <= position.y && position.y <= object.y + object.height + dy ||
-        (position.y <= object.y + object.height && object.y + dy <= position.y))
-      ) {
-        position.y = (0 < dy) ? object.y + object.height + space : object.y - space
-        flag.y = true
-      }
-    }
-  })
-  if (!flag.x) position.x = position.x - dx * 60 / 1000 * intervalDiffTime
-  if (!flag.y) position.y = position.y - dy * 60 / 1000 * intervalDiffTime
-}
 const directionCalc = arg => {
   let dx = 0, dy = 0
   /*
@@ -3765,6 +3739,32 @@ class LobbyScene extends Scene {
     moving(intervalDiffTime)
     if (code[action.debug].isFirst()) debugMode = !debugMode
   }
+  differenceAddition = (position, dx, dy, intervalDiffTime) => {
+    let flag = {x: false, y: false}
+    objects.forEach((object) => { // only rectangle
+      const space = .1
+      if (mapMode || (object.ID === 3 && typeof position.imageID !== 'number')) {
+        if (
+          object.y <= position.y && position.y <= object.y + object.height &&
+          (object.x <= position.x && position.x <= object.x + object.width + dx ||
+          (position.x <= object.x + object.width && object.x + dx <= position.x))
+        ) {
+          position.x = (0 < dx) ? object.x + object.width + space : object.x - space
+          flag.x = true
+        }
+        if (
+          object.x <= position.x && position.x <= object.x + object.width &&
+          (object.y <= position.y && position.y <= object.y + object.height + dy ||
+          (position.y <= object.y + object.height && object.y + dy <= position.y))
+        ) {
+          position.y = (0 < dy) ? object.y + object.height + space : object.y - space
+          flag.y = true
+        }
+      }
+    })
+    if (!flag.x) position.x = position.x - dx * 60 / 1000 * intervalDiffTime
+    if (!flag.y) position.y = position.y - dy * 60 / 1000 * intervalDiffTime
+  }
   enemyProcess = (intervalDiffTime) => {
     enemies.forEach((enemy, index) => {
       if (0 < enemy.timer) enemy.timer = (enemy.timer-1)|0
@@ -3785,12 +3785,11 @@ class LobbyScene extends Scene {
       const width = ownPosition.x - enemy.x
       const height = ownPosition.y - enemy.y
       const length = Math.sqrt(width ** 2 + height ** 2)
-
       if (dungeon === dungeonList[0]) {
         if (0 < moreAwayCount) { // clone process
-          differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed, intervalDiffTime)
+          this.differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed, intervalDiffTime)
         } else { // close to myself
-          differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
+          this.differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
         }
         // if (
         //   Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2)*.7 < length &&
@@ -3805,7 +3804,7 @@ class LobbyScene extends Scene {
           enemies.some((e, i) => index !== i && 0 < e.life &&
           Math.sqrt((e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2) < size)
         ) {
-          differenceAddition(
+          this.differenceAddition(
             enemy,
             -width / length * enemy.speed + (size / 2 * (.5 - Math.random())),
             -height / length * enemy.speed + (size / 2 * (.5 - Math.random())),
