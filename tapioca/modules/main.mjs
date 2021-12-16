@@ -2107,98 +2107,15 @@ const drawIndicator = () => {
   }
   context.restore()
 }
-const drawWeaponCategory = (box, weapon) => {
-  context.save()
-  context.fillStyle= weaponRatiryColorList[weaponRarityList.indexOf(weapon.rarity)]
-  context.globalAlpha = weapon.level <= wave.number ? 1 : .5
-  context.textAlign = 'center'
-  context.font = `${size * .75}px ${font}`
-  context.fillText(weapon.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
-  if (weapon.category !== '') {
-    let totalAmmo = 0
-    totalAmmo += weapon.chamber ? 1 : 0
-    totalAmmo += weapon.magazines.reduce((p, c) => p + c)
-    let ratio = totalAmmo / (weapon.magazineSize * weapon.magazines.length + 1)
-    context.fillStyle =
-      ratio < .1 ? 'hsl(0, 100%, 60%)' :
-      ratio < .3 ? 'hsl(60, 100%, 70%)' : 'hsl(210, 100%, 50%)'
-    if (ratio === 0) ratio = 1
-    context.fillRect(box.absoluteX + size / 16, box.absoluteY + size * 1.4, size * 1.4 * ratio, size / 16)
-  }
-  context.restore()
-}
 const strokeText = (text, x, y, maxWidth) => {
   context.strokeText(text, x, y, maxWidth)
   context.fillText(text, x, y, maxWidth)
-}
-const drawWeaponDetail = (box, i, cursor) => {
-  if (inventory[i].category !== '' && isInner(box, cursor)) {
-    context.font = `${size*.75}px ${font}`
-    context.textAlign = 'left'
-    context.fillStyle = 'hsla(0, 0%, 0%, .6)'
-    context.strokeStyle = 'hsl(0, 0%, 100%)'
-    strokeText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
-    if (!inventoryFlag) return
-    const damage =
-      inventory[i].category === weaponCategoryList[5] ?
-        `${inventory[i].damage.toFixed(0)} * ${inventory[i].gaugeNumber}` :
-      inventory[i].damage.toFixed(0)
-    const dictionary = {
-      MODE: inventory[i].mode === weaponModeList[2] ? `${inventory[i].roundLimit}-R ${inventory[i].mode}` :
-        inventory[i].mode,
-      DAMAGE: damage,
-      'P. FORCE': inventory[i].penetrationForce.toFixed(2),
-      'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
-    }
-    Object.keys(dictionary).forEach((v, i) => {
-      strokeText(v, cursor.offsetX + size, cursor.offsetY + size * (2 + i), size * 3)
-      strokeText(dictionary[v], cursor.offsetX + size * 5, cursor.offsetY + size * (2 + i), size * 3)
-    })
-  }
 }
 const inventoryBox = {
   absoluteX: size * .25,
   absoluteY: size * .25,
   width: size * 10.5,
   height: size * 6.25
-}
-const drawSlot = (cursor) => {
-  context.save()
-  if (inventoryFlag) {
-    context.fillStyle = 'hsla(0, 0%, 50%, .2)'
-    context.fillRect(inventoryBox.absoluteX, inventoryBox.absoluteY, inventoryBox.width, inventoryBox.height)
-  }
-  const box = {
-    absoluteX: cursor.offsetX,
-    absoluteY: cursor.offsetY
-  }
-  drawWeaponCategory(box, holdSlot)
-  inventorySlotBox.forEach((v, i) => {
-    if (mainSlotSize - 1 < i && !inventoryFlag) return
-    context.fillStyle = 'hsla(210, 100%, 75%, .4)'
-    context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-    if (i === selectSlot) {
-      context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
-    }
-    drawWeaponCategory(v, inventory[i])
-    if (settingsObject.isManipulateCode && i < mainSlotSize) {
-      context.fillStyle = 'hsla(210, 100%, 75%, .4)'
-      context.fillRect(v.absoluteX + size * 1.15, v.absoluteY - size / 3, size * .6, size * .6)
-      context.font = `${size*.75}px ${font}`
-      context.fillStyle = 'hsla(0, 0%, 100%, .4)'
-      context.textAlign = 'center'
-      const text =
-        i === 0 ? extractCode(action.primary) :
-        i === 1 ? extractCode(action.secondary) :
-        i === 2 ? extractCode(action.tertiary) : ''
-      context.fillText(text, v.absoluteX + size * 1.45, v.absoluteY + size / 4)
-    }
-  })
-  inventorySlotBox.forEach((v, i) => {
-    if (mainSlotSize - 1 < i && !inventoryFlag) return
-    drawWeaponDetail(v, i, cursor)
-  })
-  context.restore()
 }
 const drawAim = (cursor) => { // Expected effective range
   const radius =
@@ -2452,6 +2369,28 @@ const warehouseBox = {
   height: size * 15.5
 }
 
+class RenderBox {
+  render (box, alpha = 1, cursor) {
+    context.save()
+    // outline box
+    const saturation = 90
+    context.strokeStyle = `hsl(${box.hue}, ${saturation}%, 60%)`
+    context.strokeRect(box.absoluteX, box.absoluteY, box.width, box.height)
+    // text highlight
+    if (isInner(box, cursor)) {
+      const lightness = isLeftMouseDown ? 70 : 75
+      context.fillStyle = `hsla(${box.hue}, ${saturation}%, ${lightness}%, .5)`
+      context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
+    }
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    context.font = `${size}px ${font}`
+    context.fillStyle = `hsla(${box.hue}, ${saturation}%, 50%, ${alpha})`
+    context.fillText(box.text, box.offsetX, box.offsetY)
+    context.restore()
+  }
+}
+
 const Shop = class {
   constructor(dx, dy, w, h, Id, img) {
     this.x = ownPosition.x + dx // TODO: integrate x and absoluteX
@@ -2465,6 +2404,7 @@ const Shop = class {
     this.Id = Id
     this.img = img
     this.boxInterface = new BoxInterface()
+    this.renderBox = new RenderBox()
   }
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {}
 
@@ -2528,8 +2468,8 @@ class StartSpot extends Shop {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
-      drawBox(this.startBox, 1, cursor)
-      drawBox(this.selectBox, 1, cursor)
+      this.renderBox.render(this.startBox, 1, cursor)
+      this.renderBox.render(this.selectBox, 1, cursor)
       context.save()
       context.textAlign = 'center'
       context.fillStyle = 'hsl(210, 100%, 70%)'
@@ -2649,17 +2589,17 @@ class ShopSpot extends Shop {
       context.textAlign = 'center'
       context.textBaseline = 'middle'
       context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
-      drawBox(this.fillAmmoBox, ammoAlpha, cursor)
+      this.renderBox.render(this.fillAmmoBox, ammoAlpha, cursor)
       if (cost !== 0) {
         context.fillText(`Cost: ${cost}`, this.fillAmmoBox.offsetX, this.fillAmmoBox.offsetY + size * 1.5)
       }
-      drawBox(this.fillAmmoAllBox, ammoAlpha, cursor)
+      this.renderBox.render(this.fillAmmoAllBox, ammoAlpha, cursor)
       const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
       if (costAll !== 0) {
         context.fillText(
           `Cost: ${costAll}`, this.fillAmmoAllBox.offsetX, this.fillAmmoAllBox.offsetY + size * 1.5)
       }
-      drawBox(this.limitBreakBox, ammoAlpha, cursor)
+      this.renderBox.render(this.limitBreakBox, ammoAlpha, cursor)
       if (inventory[selectSlot].category !== '') {
         context.fillText(
           `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
@@ -2941,7 +2881,7 @@ class SaveSpot extends Shop {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
       context.save()
-      drawBox(this.saveBox, 1, cursor)
+      this.renderBox.render(this.saveBox, 1, cursor)
       context.fillStyle = 'hsla(0, 0%, 50%, .5)'
       context.fillRect(
         warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
@@ -3553,25 +3493,6 @@ const frameResetProcess = (intervalDiffTime) => {
 
   if (ownState.stepLimit <= ownState.step) ownState.step = 0
 }
-const drawBox = (box, alpha = 1, cursor) => {
-  context.save()
-  // outline box
-  const saturation = 90
-  context.strokeStyle = `hsl(${box.hue}, ${saturation}%, 60%)`
-  context.strokeRect(box.absoluteX, box.absoluteY, box.width, box.height)
-  // text highlight
-  if (isInner(box, cursor)) {
-    const lightness = isLeftMouseDown ? 70 : 75
-    context.fillStyle = `hsla(${box.hue}, ${saturation}%, ${lightness}%, .5)`
-    context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
-  }
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  context.font = `${size}px ${font}`
-  context.fillStyle = `hsla(${box.hue}, ${saturation}%, 50%, ${alpha})`
-  context.fillText(box.text, box.offsetX, box.offsetY)
-  context.restore()
-}
 const drawImage = (img, x, y) => {
   context.drawImage(img, ~~(x+.5), ~~(y+.5))
 }
@@ -3606,76 +3527,6 @@ const drawScreenEdge = (obj, hue) => {
     context.fillRect(relativeX(obj.x - radius), canvas.offsetHeight - size, size, size)
   }
   context.restore()
-}
-const drawPortal = (intervalDiffTime, timeStamp, cursor) => {
-  const particle = class {
-    constructor(x, y, w, h, dx, dy, life, lightness) {
-      this.x = x
-      this.y = y
-      this.w = w
-      this.h = h
-      this.dx = dx
-      this.dy = dy
-      this.presetLife = life
-      this.life = life
-      this.lightness = lightness
-    }
-    lifeCycle(i) {
-      this.life -= intervalDiffTime
-      if (this.life <= 0) portalParticle.splice(i, 1)
-    }
-    setColor() {
-      const ms = 75
-      const alpha =
-        this.presetLife - ms < this.life ? (this.presetLife - this.life) / ms :
-        this.life < ms ? this.life / ms : 1
-      return `hsla(180, 100%, ${this.lightness}%, ${alpha})`
-    }
-  }
-  portalParticleTime += intervalDiffTime
-  const interval = 100 // ms
-  if (interval <= portalParticleTime) {
-    portalParticleTime -= interval + Math.random()
-    portalParticle.push(new particle(
-      portalCooldinate.x + (Math.random() - .5) * size, portalCooldinate.y + (Math.random() / 2 - .75) * size,
-      1, size / 2, 0, -.15,
-      600 + Math.random() * 300, 80 + Math.random() * 20))
-  }
-  context.fillStyle =
-    `hsl(180, 100%, ${85 + ((1 + Math.sin(timeStamp / 600)) / 2) * 15}%)`
-  context.beginPath()
-  context.ellipse(
-    relativeX(portalCooldinate.x), relativeY(portalCooldinate.y), size * .7, size * .3, 0, 0, 2 * Math.PI, false)
-  context.fill()
-  portalParticle.forEach((v, i) => {
-    v.lifeCycle(i)
-    context.fillStyle = v.setColor()
-    context.fillRect(relativeX(v.x), relativeY(v.y), v.w, v.h)
-    v.x += v.dx
-    v.y += v.dy
-  })
-
-  drawScreenEdge(portalCooldinate, 180)
-  if (
-    portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
-    portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
-  ) {
-    context.save()
-    context.textAlign = 'center'
-    context.fillStyle = ' hsl(30, 100%, 50%)'
-    context.font = `${size}px ${font}`
-    if (location === locationList[0]) {
-      context.fillText(`Continue to round ${wave.number + 1}`, canvas.offsetWidth / 2, canvas.offsetHeight * 3 / 8)
-    } else { // location === locationList[1]
-      context.fillText('Return to Base?', canvas.offsetWidth / 2, canvas.offsetHeight / 5)
-    }
-    portalConfirmBox.forEach((v, i) => {
-      if (location === locationList[0] && (i !== 2)) return
-      if (location === locationList[1] && (i === 2)) return
-      drawBox(v, 1, cursor)
-    })
-    context.restore()
-  }
 }
 const drawSaveCompleted = (intervalDiffTime) => {
   const ratio = afterglow.save / 1000
@@ -4035,6 +3886,7 @@ class Window extends EventDispatcher {
       this.is = !this.is
     })
     this.boxInterface = new BoxInterface()
+    this.renderBox = new RenderBox()
   }
   update (input) {
     if (input.getKeyDown('KeyR')) console.log(this.color)
@@ -4134,7 +3986,7 @@ class ResultWindow extends Window {
     context.fillText(
       `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
     )
-    drawBox(resultBackBox, 1, cursor)
+    this.renderBox.render(resultBackBox, 1, cursor)
     context.fillStyle = 'hsla(30, 100%, 50%, .5)'
     context.fillRect(
       canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
@@ -4156,6 +4008,7 @@ class Scene extends EventDispatcher {
   constructor () {
     super()
     this.boxInterface = new BoxInterface()
+    this.renderBox = new RenderBox()
   }
   change (scene) {
     this.dispatchEvent('change', scene)
@@ -4379,7 +4232,7 @@ class LobbyScene extends Scene {
     if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
   }
 
-  inventoryProcess = (cursor) => {
+  inventoryProcess = (mouseInput, cursor) => {
     inventory.forEach(v => {
       if (v.category !== '') v.recoilEffect *= v.recoilMultiple
     })
@@ -4440,7 +4293,7 @@ class LobbyScene extends Scene {
       if (direction !== 0) direction = 0
       if (angle !== 0) angle = 0
       if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
-      this.inventoryProcess(cursor)
+      this.inventoryProcess(mouseInput, cursor)
 
       const arrayUpdater = array => {
         array.forEach((v, i) => {
@@ -4457,6 +4310,160 @@ class LobbyScene extends Scene {
         if (portalFlag) this.portalProcess()
       } else if (location === locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     }
+  }
+
+  renderPortal = (intervalDiffTime, timeStamp, cursor) => {
+    const particle = class {
+      constructor(x, y, w, h, dx, dy, life, lightness) {
+        this.x = x
+        this.y = y
+        this.w = w
+        this.h = h
+        this.dx = dx
+        this.dy = dy
+        this.presetLife = life
+        this.life = life
+        this.lightness = lightness
+      }
+      lifeCycle(i) {
+        this.life -= intervalDiffTime
+        if (this.life <= 0) portalParticle.splice(i, 1)
+      }
+      setColor() {
+        const ms = 75
+        const alpha =
+          this.presetLife - ms < this.life ? (this.presetLife - this.life) / ms :
+          this.life < ms ? this.life / ms : 1
+        return `hsla(180, 100%, ${this.lightness}%, ${alpha})`
+      }
+    }
+    portalParticleTime += intervalDiffTime
+    const interval = 100 // ms
+    if (interval <= portalParticleTime) {
+      portalParticleTime -= interval + Math.random()
+      portalParticle.push(new particle(
+        portalCooldinate.x + (Math.random() - .5) * size, portalCooldinate.y + (Math.random() / 2 - .75) * size,
+        1, size / 2, 0, -.15,
+        600 + Math.random() * 300, 80 + Math.random() * 20))
+    }
+    context.fillStyle =
+      `hsl(180, 100%, ${85 + ((1 + Math.sin(timeStamp / 600)) / 2) * 15}%)`
+    context.beginPath()
+    context.ellipse(
+      relativeX(portalCooldinate.x), relativeY(portalCooldinate.y), size * .7, size * .3, 0, 0, 2 * Math.PI, false)
+    context.fill()
+    portalParticle.forEach((v, i) => {
+      v.lifeCycle(i)
+      context.fillStyle = v.setColor()
+      context.fillRect(relativeX(v.x), relativeY(v.y), v.w, v.h)
+      v.x += v.dx
+      v.y += v.dy
+    })
+
+    drawScreenEdge(portalCooldinate, 180)
+    if (
+      portalCooldinate.x - size <= ownPosition.x && ownPosition.x <= portalCooldinate.x + size &&
+      portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
+    ) {
+      context.save()
+      context.textAlign = 'center'
+      context.fillStyle = ' hsl(30, 100%, 50%)'
+      context.font = `${size}px ${font}`
+      if (location === locationList[0]) {
+        context.fillText(`Continue to round ${wave.number + 1}`, canvas.offsetWidth / 2, canvas.offsetHeight * 3 / 8)
+      } else { // location === locationList[1]
+        context.fillText('Return to Base?', canvas.offsetWidth / 2, canvas.offsetHeight / 5)
+      }
+      portalConfirmBox.forEach((v, i) => {
+        if (location === locationList[0] && (i !== 2)) return
+        if (location === locationList[1] && (i === 2)) return
+        this.renderBox.render(v, 1, cursor)
+      })
+      context.restore()
+    }
+  }
+  renderWeaponCategory = (box, weapon) => {
+    context.save()
+    context.fillStyle= weaponRatiryColorList[weaponRarityList.indexOf(weapon.rarity)]
+    context.globalAlpha = weapon.level <= wave.number ? 1 : .5
+    context.textAlign = 'center'
+    context.font = `${size * .75}px ${font}`
+    context.fillText(weapon.category, box.absoluteX + size * .75, box.absoluteY + size, size * 1.25)
+    if (weapon.category !== '') {
+      let totalAmmo = 0
+      totalAmmo += weapon.chamber ? 1 : 0
+      totalAmmo += weapon.magazines.reduce((p, c) => p + c)
+      let ratio = totalAmmo / (weapon.magazineSize * weapon.magazines.length + 1)
+      context.fillStyle =
+        ratio < .1 ? 'hsl(0, 100%, 60%)' :
+        ratio < .3 ? 'hsl(60, 100%, 70%)' : 'hsl(210, 100%, 50%)'
+      if (ratio === 0) ratio = 1
+      context.fillRect(box.absoluteX + size / 16, box.absoluteY + size * 1.4, size * 1.4 * ratio, size / 16)
+    }
+    context.restore()
+  }
+  renderWeaponDetail = (box, i, cursor) => {
+    if (inventory[i].category !== '' && isInner(box, cursor)) {
+      context.font = `${size*.75}px ${font}`
+      context.textAlign = 'left'
+      context.fillStyle = 'hsla(0, 0%, 0%, .6)'
+      context.strokeStyle = 'hsl(0, 0%, 100%)'
+      strokeText(inventory[i].name, cursor.offsetX + size, cursor.offsetY + size)
+      if (!inventoryFlag) return
+      const damage =
+        inventory[i].category === weaponCategoryList[5] ?
+          `${inventory[i].damage.toFixed(0)} * ${inventory[i].gaugeNumber}` :
+        inventory[i].damage.toFixed(0)
+      const dictionary = {
+        MODE: inventory[i].mode === weaponModeList[2] ? `${inventory[i].roundLimit}-R ${inventory[i].mode}` :
+          inventory[i].mode,
+        DAMAGE: damage,
+        'P. FORCE': inventory[i].penetrationForce.toFixed(2),
+        'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
+      }
+      Object.keys(dictionary).forEach((v, i) => {
+        strokeText(v, cursor.offsetX + size, cursor.offsetY + size * (2 + i), size * 3)
+        strokeText(dictionary[v], cursor.offsetX + size * 5, cursor.offsetY + size * (2 + i), size * 3)
+      })
+    }
+  }
+  renderSlot = (cursor) => {
+    context.save()
+    if (inventoryFlag) {
+      context.fillStyle = 'hsla(0, 0%, 50%, .2)'
+      context.fillRect(inventoryBox.absoluteX, inventoryBox.absoluteY, inventoryBox.width, inventoryBox.height)
+    }
+    const box = {
+      absoluteX: cursor.offsetX,
+      absoluteY: cursor.offsetY
+    }
+    this.renderWeaponCategory(box, holdSlot)
+    inventorySlotBox.forEach((v, i) => {
+      if (mainSlotSize - 1 < i && !inventoryFlag) return
+      context.fillStyle = 'hsla(210, 100%, 75%, .4)'
+      context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
+      if (i === selectSlot) {
+        context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
+      }
+      this.renderWeaponCategory(v, inventory[i])
+      if (settingsObject.isManipulateCode && i < mainSlotSize) {
+        context.fillStyle = 'hsla(210, 100%, 75%, .4)'
+        context.fillRect(v.absoluteX + size * 1.15, v.absoluteY - size / 3, size * .6, size * .6)
+        context.font = `${size*.75}px ${font}`
+        context.fillStyle = 'hsla(0, 0%, 100%, .4)'
+        context.textAlign = 'center'
+        const text =
+          i === 0 ? extractCode(action.primary) :
+          i === 1 ? extractCode(action.secondary) :
+          i === 2 ? extractCode(action.tertiary) : ''
+        context.fillText(text, v.absoluteX + size * 1.45, v.absoluteY + size / 4)
+      }
+    })
+    inventorySlotBox.forEach((v, i) => {
+      if (mainSlotSize - 1 < i && !inventoryFlag) return
+      this.renderWeaponDetail(v, i, cursor)
+    })
+    context.restore()
   }
   render (cursor, intervalDiffTime) {
     // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
@@ -4491,7 +4498,7 @@ class LobbyScene extends Scene {
         canvas.offsetHeight - cursor.offsetY
     }
     drawField()
-    if (portalFlag) drawPortal(intervalDiffTime, timeStamp, cursor)
+    if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
     if (0 < objects.length) drawObjects(cursor)
     if (0 < clonePosition.length) drawClone()
     if (0 < bullets.length) drawBullets()
@@ -4514,7 +4521,7 @@ class LobbyScene extends Scene {
     })
 
     drawMyself(intervalDiffTime)
-    drawSlot(cursor)
+    this.renderSlot(cursor)
     if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim(cursor)
     if (0 <= afterglow.save) drawSaveCompleted(intervalDiffTime)
     if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
@@ -4538,7 +4545,7 @@ class TitleScene extends Scene {
       IMAGE['images/ROGOv1.2.png'],
       ~~(((canvas.offsetWidth - IMAGE['images/ROGOv1.2.png'].width) / 2)+.5), ~~(size*4+.5))
 
-    titleMenuWordArray.forEach(v => drawBox(v, 1, cursor))
+    titleMenuWordArray.forEach(v => this.renderBox.render(v, 1, cursor))
 
     context.textAlign = 'right'
     context.fillStyle = 'hsla(30, 100%, 40%, .75)'
