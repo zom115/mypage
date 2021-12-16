@@ -308,10 +308,8 @@ let cost = {
   cloneIndex: 0
 }
 const radius = SIZE / 2
-const storeSize = SIZE * 4.5
 
 const targetWidth = .7 // Unit: [m], for effective range
-const bulletSpeed = SIZE / 8
 const minImgRadius = SIZE / 4
 let explosiveRange = SIZE * 2
 const explosiveLimit = 30
@@ -353,7 +351,6 @@ let afterglow = {
   explosiveRange: 0,
   reset: 0
 }
-const flashTimeLimit = 5
 const ownPosition = {x: 0, y: 0}
 const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2, step: 0, stepLimit: 300}
 let clonePosition = []
@@ -388,7 +385,6 @@ let afterimage = []
 let objects, currentDirection
 let direction = 0
 let angle = 0
-let ownStepLimit = 50
 
 const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
 const weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
@@ -480,6 +476,8 @@ const Bullet = class {
     this.detectID = -1
     this.bulletRadius = bulletRadius // size / 6
     this.isHoming = isHoming
+
+    this.bulletSpeed = SIZE / 8
   }
   update(intervalDiffTime) {
     this.life -= intervalDiffTime
@@ -519,8 +517,8 @@ const Bullet = class {
           bullet.dx = bullet.dx * Math.cos(maxTheta) - bullet.dy * Math.sin(maxTheta)
           bullet.dy = bullet.dx * Math.sin(maxTheta) + bullet.dy * Math.cos(maxTheta)
         }
-        bullet.x = bullet.x - bullet.dx * bulletSpeed
-        bullet.y = bullet.y - bullet.dy * bulletSpeed
+        bullet.x = bullet.x - bullet.dx * this.bulletSpeed
+        bullet.y = bullet.y - bullet.dy * this.bulletSpeed
         if (length < radius + this.bulletRadius){
           const damage = this.damage * bullet.life / this.baseLife
           enemies[index].life = enemies[index].life - damage
@@ -647,7 +645,6 @@ const Bullet = class {
   }
 }
 const magSizeInitial = 7
-const maxDamageInitial = 70
 let cartridgeInfo = {
   life: 1000, // ms
   speed: 1
@@ -811,57 +808,6 @@ let inventorySlotBox = []
         absoluteX: SIZE * (.75 + 2 * j), absoluteY: SIZE * (2.75 + 2 * i), width: SIZE * 1.5, height: SIZE * 1.5})}
   }
 }
-let settingsArray = [{
-  toggle: Object.keys(settingsObject)[0],
-  explain: 'Manipulate main slot when close inventory',
-  offsetX: 0,
-  offsetY: 0,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: ''
-}, {
-  toggle: Object.keys(settingsObject)[1],
-  explain: 'Show tutorial tooltip',
-  offsetX: 0,
-  offsetY: 0,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: ''
-}, {
-  toggle: Object.keys(settingsObject)[2],
-  explain: 'Show manipulate key',
-  offsetX: 0,
-  offsetY: 0,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: ''
-}, {
-  toggle: Object.keys(settingsObject)[3],
-  explain: 'Draw ownself relative to the cursor',
-  offsetX: 0,
-  offsetY: 0,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: ''
-}, {
-  toggle: Object.keys(settingsObject)[4],
-  explain: 'Reverse boundary if active above',
-  offsetX: 0,
-  offsetY: 0,
-  absoluteX: 0,
-  absoluteY: 0,
-  width: 0,
-  height: 0,
-  text: ''
-}]
 
 document.addEventListener('DOMContentLoaded', () => { // init
   action = {
@@ -990,6 +936,7 @@ const setOwnImage = arg => {
 }
 const drawClone = () => {
   const delayStep = 15
+  const ownStepLimit = 50
   const imgClone = ((
     ownStepLimit / 2 + delayStep <= ownState.step || ownState.step < delayStep) &&
     cloneSpeed <= ownSpeed.max
@@ -1782,10 +1729,11 @@ class Shop {
     this.y = ownPosition.y + dy
     this.absoluteX = ownPosition.x + dx
     this.absoluteY = ownPosition.y + dy
-    this.w = storeSize * w
-    this.h = storeSize * h
-    this.width = storeSize * w
-    this.height = storeSize * h
+    this.storeSize = SIZE * 4.5
+    this.w = this.storeSize * w
+    this.h = this.storeSize * h
+    this.width = this.storeSize * w
+    this.height = this.storeSize * h
     this.Id = Id
     this.img = img
     this.boxInterface = new BoxInterface()
@@ -2416,6 +2364,7 @@ const relativeY = (arg) => {
 }
 
 const initWeapon = () => {
+  const maxDamageInitial = 70
   return new Weapon(
     'T1911',
     'HG',
@@ -2943,9 +2892,60 @@ const resultProcess = () => {
 class SettingsWindow extends Window {
   constructor () {
     super()
+    this.itemsArray = [{
+      toggle: Object.keys(settingsObject)[0],
+      explain: 'Manipulate main slot when close inventory',
+      offsetX: 0,
+      offsetY: 0,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: ''
+    }, {
+      toggle: Object.keys(settingsObject)[1],
+      explain: 'Show tutorial tooltip',
+      offsetX: 0,
+      offsetY: 0,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: ''
+    }, {
+      toggle: Object.keys(settingsObject)[2],
+      explain: 'Show manipulate key',
+      offsetX: 0,
+      offsetY: 0,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: ''
+    }, {
+      toggle: Object.keys(settingsObject)[3],
+      explain: 'Draw ownself relative to the cursor',
+      offsetX: 0,
+      offsetY: 0,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: ''
+    }, {
+      toggle: Object.keys(settingsObject)[4],
+      explain: 'Reverse boundary if active above',
+      offsetX: 0,
+      offsetY: 0,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: ''
+    }]
   }
   update (mouseInput, cursor, mouseDownPosition) {
-    settingsArray.forEach((v, i) => {
+    this.itemsArray.forEach((v, i) => {
       if (this.boxInterface.isDownAndUpInBox(v, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
         settingsObject[v.toggle] = !settingsObject[v.toggle]
         storage.setItem(v.toggle, JSON.stringify(settingsObject[v.toggle]))
@@ -2962,7 +2962,7 @@ class SettingsWindow extends Window {
     }
     context.fillStyle = 'hsla(0, 0%, 0%, .5)'
     context.fillRect(frameOffset.x, frameOffset.y, frameOffset.w, frameOffset.h)
-    settingsArray.forEach((v, i) => {
+    this.itemsArray.forEach((v, i) => {
       v.offsetX = canvas.offsetWidth / 2
       v.offsetY = frameOffset.y + SIZE * 3 + i * SIZE * 2
       const toggleText = settingsObject[v.toggle] ? 'On' : 'Off'
@@ -3063,6 +3063,8 @@ class LobbyScene extends Scene {
     this.shopArray.push(new SaveSpot(-SIZE * 7, SIZE, 1, 1, 0, 'images/st2v1.png'))
     this.shopArray.push(new ShopSpot(SIZE * 4, SIZE, 1, 1, 1, 'images/st1v2.png'))
     this.shopArray.push(new StartSpot(-SIZE * 3, -SIZE * 10, 1.25, 1.25, 2, 'images/stv1.png'))
+
+    this.reloadFlashTimeLimit = 5
   }
   setMoreThanMagazine = () => {
     return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
@@ -3079,7 +3081,7 @@ class LobbyScene extends Scene {
     } else if (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
         inventory[selectSlot].reloadState = 'done'
         const unreleaseMagazine = () => {
-          if (!afterglow.chamberFlag) afterglow.reload = flashTimeLimit
+          if (!afterglow.chamberFlag) afterglow.reload = this.reloadFlashTimeLimit
           inventory[selectSlot].gripFlag = true
           combatReload.magFlag = true
         }
@@ -3445,7 +3447,7 @@ class LobbyScene extends Scene {
         }
         inventory[selectSlot].chamber = true
         if (afterglow.chamberFlag) {
-          afterglow.reload = flashTimeLimit
+          afterglow.reload = this.reloadFlashTimeLimit
           afterglow.chamberFlag = false
         }
         combatReload.magFlag = false
