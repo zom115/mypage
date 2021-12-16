@@ -7,7 +7,6 @@ const font = 'jkmarugo'
 
 const SIZE = 32
 
-let isLeftMouseDownFirst = false
 let isLeftMouseDown = false
 let isRightMouseDownFirst = false
 let mouseUpPos = {offsetX: 0, offsetY: 0}
@@ -20,7 +19,6 @@ canvas.addEventListener('mouseover', () => {
 canvas.addEventListener('mousedown', e => {
   e.preventDefault()
   if (e.button === 0) {
-    isLeftMouseDownFirst = true
     isLeftMouseDown = true
   }
   if (e.button === 2) {
@@ -2802,7 +2800,7 @@ class SaveSpot extends Shop {
         }
 
         if (this.boxInterface.isDownInBox(colResizeBox, mouseInput.getKeyDown(0), cursor)) {
-          if (cV.width <= padding && isLeftMouseDownFirst) {
+          if (cV.width <= padding && mouseInput.getKeyDown(0)) {
             colResizeBox.absoluteX += padding
             colResizeBox.width -= padding
             if (this.boxInterface.isInner(colResizeBox, cursor)) {
@@ -3475,7 +3473,6 @@ const keyLayoutProcess = () => {
   ) state = 'title'
 }
 const frameResetProcess = (intervalDiffTime) => {
-  isLeftMouseDownFirst = false
   isRightMouseDownFirst = false
   isLeftMouseUpFirst = false
   wheelEvent.isFirst = false
@@ -4262,7 +4259,7 @@ class LobbyScene extends Scene {
     if (
       holdSlot.category !== '' &&
       !this.boxInterface.isDownInBox(inventoryBox, mouseInput.getKeyDown(0), cursor) &&
-      isLeftMouseDownFirst && (
+      mouseInput.getKeyDown(0) && (
       !isWarehouse || !this.boxInterface.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor))
     ) {
       holdSlot.type = 'weapon'
