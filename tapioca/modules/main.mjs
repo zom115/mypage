@@ -60,8 +60,6 @@ const setStorage = (key, value) => {
 }
 let debugMode = true
 let operationMode = setStorageFirst('operation', 'WASD')
-let angleMode = setStorageFirst('angle', 'IJKL')
-let state = ''
 let locationList = ['bazaar', 'dungeon']
 let location = locationList[0]
 let dungeonList = ['Zombie', 'Homing', 'Ruins Star', 'Boss', 'Map Test']
@@ -313,24 +311,11 @@ let afterglow = {
   inventory: 0,
   recoil: 0,
   round: 0,
-  dashGauge: 0,
   limitBreakResult: 0,
   limitBreakSuccess: 0,
   limitBreakFailed: 0,
-  loading: 0,
-  homing: 0,
-  slide: 0,
-  bulletSpeed: 0,
-  bulletLife: 0,
-  slow: 0,
   chamberFlag: false,
-  reload: 0,
-  dashDamage: 0,
-  dashDistance: 0,
-  dashCooltime: 0,
-  dashSpeed: 0,
-  ammo: 0,
-  reset: 0
+  reload: 0
 }
 const ownPosition = {x: 0, y: 0}
 const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2, step: 0, stepLimit: 300}
@@ -341,10 +326,8 @@ let dash = {
   invincibleTime: 200,
   isAttack: false
 }
-let afterimage = []
 let objects, currentDirection
 let direction = 0
-let angle = 0
 
 const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
 const weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
@@ -515,14 +498,6 @@ const setOperation = () => {
     action.left = setStorage('left', 'KeyS')
   }
 }
-const setAngle = () => {
-  if (angleMode === 'IJKL') {
-    action.lookUp = setStorage('lookUp', 'KeyI')
-    action.lookRight = setStorage('lookRight', 'KeyL')
-    action.lookDown = setStorage('lookDown', 'KeyK')
-    action.lookLeft = setStorage('lookLeft', 'KeyJ')
-  }
-}
 
 // for settings
 
@@ -654,7 +629,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
     settings: setStorageFirst('settings', 'Escape')
   }
   setOperation()
-  setAngle()
   setTitleMenuWord()
 })
 const setTheta = d => {
@@ -1458,7 +1432,6 @@ const initWeapon = () => {
   )
 }
 const reset = () => {
-  state = 'title'
   location = locationList[0]
   objects = []
   dropItems = []
@@ -1989,7 +1962,6 @@ class ResultWindow extends Window {
       this.dispatchEvent('deleteMenu', 'result')
       this.dispatchEvent('change', new LobbyScene())
 
-      state = 'main'
       location = locationList[0]
       dropItems = []
       bullets = []
@@ -2060,6 +2032,7 @@ class LobbyScene extends Scene {
     this.shopArray.push(new StartSpot(-SIZE * 3, -SIZE * 10, 1.25, 1.25, 2, 'images/stv1.png'))
 
     this.reloadFlashTimeLimit = 5
+    this.afterimage = []
   }
   setMoreThanMagazine = () => {
     return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
@@ -2193,7 +2166,6 @@ class LobbyScene extends Scene {
     }
   }
   interfaceProcess = (intervalDiffTime, mouseInput, cursor, wheelInput) => {
-    if (code[action.pause].isFirst()) state = 'pause'
     if (code[action.primary].isFirst()) selectSlot = 0
     if (code[action.secondary].isFirst()) selectSlot = 1
     if (code[action.tertiary].isFirst()) selectSlot = 2
@@ -2208,15 +2180,10 @@ class LobbyScene extends Scene {
       selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
     }
     if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
-    if (code[action.lookUp].flag) angle = (angle+1)|0
-    if (code[action.lookRight].flag) angle = (angle+2)|0
-    if (code[action.lookDown].flag) angle = (angle+4)|0
-    if (code[action.lookLeft].flag) angle = (angle+8)|0
     if (code[action.up].flag) direction = (direction+1)|0
     if (code[action.right].flag) direction = (direction+2)|0
     if (code[action.down].flag) direction = (direction+4)|0
     if (code[action.left].flag) direction = (direction+8)|0
-    if (0 < angle) currentDirection = angle
     else if (direction !== 0) currentDirection = direction
     if (inventory[selectSlot].category !== '' && location === locationList[1]) this.weaponProcess(mouseInput, cursor)
     if (inventory[selectSlot].category !== '') this.modeSelect()
@@ -2754,7 +2721,6 @@ class LobbyScene extends Scene {
     } else {
       this.interfaceProcess(intervalDiffTime, mouseInput, cursor, wheelInput)
       if (direction !== 0) direction = 0
-      if (angle !== 0) angle = 0
       if (0 < dropItems.length) this.dropItemProcess(intervalDiffTime)
       this.inventoryProcess(mouseInput, cursor)
 
@@ -3284,11 +3250,11 @@ class LobbyScene extends Scene {
     }
     context.save()
     if (dash.coolTimeLimit - dash.invincibleTime < dash.coolTime) {
-      afterimage.push({
+      this.afterimage.push({
         x: ownPosition.x, y: ownPosition.y - jump, alpha: .5
       })
     }
-    afterimage.forEach((own, index) => {
+    this.afterimage.forEach((own, index) => {
       context.save()
       context.globalAlpha = own.alpha
       context.drawImage(IMAGE[imgMyself],
@@ -3297,7 +3263,7 @@ class LobbyScene extends Scene {
       )
       context.restore()
       own.alpha = own.alpha - .1
-      if (own.alpha <= 0) afterimage.splice(index, 1)
+      if (own.alpha <= 0) this.afterimage.splice(index, 1)
     })
     context.drawImage(IMAGE[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
     context.restore()
