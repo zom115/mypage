@@ -295,24 +295,10 @@ let portalCooldinate = {x: 0, y: 0}
 let portalParticleTime = 0
 let portalParticle = []
 
-let cost = {
-  dashDistance: 1000,
-  dashDistanceIndex: 0,
-  dashSpeed: 1000,
-  dashSpeedIndex: 0,
-  dashCooltime: 1000,
-  dashCooltimeIndex: 0,
-  dashDamage: 50,
-  dashDamageIndex: 0,
-  clone: 5000,
-  cloneIndex: 0
-}
 const radius = SIZE / 2
 
 const targetWidth = .7 // Unit: [m], for effective range
 const minImgRadius = SIZE / 4
-let explosiveRange = SIZE * 2
-const explosiveLimit = 30
 let recoilEffect = {
   flame: SIZE / 4,
   dx: 0,
@@ -344,27 +330,10 @@ let afterglow = {
   dashCooltime: 0,
   dashSpeed: 0,
   ammo: 0,
-  clone: 0,
-  explosive1: 0,
-  explosive2: 0,
-  explosive3: 0,
-  explosiveRange: 0,
   reset: 0
 }
 const ownPosition = {x: 0, y: 0}
 const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2, step: 0, stepLimit: 300}
-let clonePosition = []
-let cloneFlag = false
-let reviveFlag = false
-let moreAwayCount = 0
-let moreAwayLimit
-let ownSpeed = {
-  current: SIZE / 16,
-  min: SIZE / 32,
-  max: SIZE / 16,
-  dx: (SIZE / 32) * .05,
-  constDx: (SIZE / 32) * .05
-}
 let dash = {
   coolTime: 0,
   coolTimeLimit: 1000,
@@ -372,15 +341,6 @@ let dash = {
   invincibleTime: 200,
   isAttack: false
 }
-let cloneDashType1Flag = false
-let cloneDashType2Flag = false
-let cloneDashType3Flag = false
-let cloneSpeed = 0
-let cloneReturnFlag = false
-let homingFlag = false
-let explosive1Flag = false
-let explosive2Flag = false
-let explosive3Flag = false
 let afterimage = []
 let objects, currentDirection
 let direction = 0
@@ -483,165 +443,29 @@ class Bullet {
     this.life -= intervalDiffTime
     this.x += this.radius * Math.cos(this.theta) * intervalDiffTime
     this.y += this.radius * Math.sin(this.theta) * intervalDiffTime
-    if (homingFlag) {
-      bullets.forEach((bullet, i) => {
-        bullet.life = bullet.life - 1
-        if (this.baseLife < bullet.life) {
-          bullet.x = bullet.x - bullet.dx
-          bullet.y = bullet.y - bullet.dy
-          return
-        }
-        if (bullet.life < 0) {
-          bullets.splice(i, 1)
-          return
-        }
-        const distance = enemies.map(enemy => {
-          if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-        })
-        const index = distance.indexOf(Math.min(...distance))
-        if (index === -1) return
-        const width = bullet.x - enemies[index].x
-        const height = bullet.y - enemies[index].y
-        const length = Math.sqrt(width ** 2 + height ** 2)
-        const minTheta =  -degree * (Math.PI / 180)
-        const maxTheta = degree * (Math.PI / 180)
-        const bulletDegree = Math.atan2(bullet.dy, bullet.dx) * 180 / Math.PI + 180 + degree
-        const wishDegree = Math.atan2(height, width) * 180 / Math.PI + 180 + degree
-        if (wishDegree - degree < bulletDegree && bulletDegree < wishDegree + degree) { // inner
-          bullet.dx = width / length
-          bullet.dy = height / length
-        } else if (0) { // clockwork side
-          bullet.dx = bullet.dx * Math.cos(minTheta) - bullet.dy * Math.sin(minTheta)
-          bullet.dy = bullet.dx * Math.sin(minTheta) + bullet.dy * Math.cos(minTheta)
-        } else { // another clockwork side
-          bullet.dx = bullet.dx * Math.cos(maxTheta) - bullet.dy * Math.sin(maxTheta)
-          bullet.dy = bullet.dx * Math.sin(maxTheta) + bullet.dy * Math.cos(maxTheta)
-        }
-        bullet.x = bullet.x - bullet.dx * this.bulletSpeed
-        bullet.y = bullet.y - bullet.dy * this.bulletSpeed
-        if (length < radius + this.bulletRadius){
-          const damage = this.damage * bullet.life / this.baseLife
-          enemies[index].life = enemies[index].life - damage
-          bullet.life = 0
-          const additionalPoint = (enemies[index].life <= 0) ? 100 : 10
-          if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
-          point = (point+additionalPoint)|0
-          afterglow.point.push({number: additionalPoint, count: 30})
-          enemies[index].damage = damage
-          enemies[index].timer = damageTimerLimit
-        }
+    bullets.forEach((bullet, i) => {
+      const hit = enemies.findIndex((enemy, index) => {
+        return index !== bullet.detectID && 0 < enemy.life &&
+        Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2) < radius + this.bulletRadius
       })
-    } else {
-      bullets.forEach((bullet, i) => {
-        // let theta = key[action.combatReload].flag ?  -degree * (Math.PI / 180) :
-        // key[action.change].flag ? degree * (Math.PI / 180) : 0
-        // const oldDx = bullet.dx
-        // const oldDy = bullet.dy
-        // bullet.dx = oldDx * Math.cos(theta) - oldDy * Math.sin(theta)
-        // bullet.dy = oldDx * Math.sin(theta) + oldDy * Math.cos(theta)
-        // bullet.x = bullet.x + bullet.dx * bulletSpeed
-        // bullet.y = bullet.y + bullet.dy * bulletSpeed
-        if (explosive2Flag) {
-          if (bullet.life === 1) {
-            const distance = enemies.map(enemy => {
-              if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-            })
-            distance.forEach((radius, index) => {
-              if (radius < explosiveRange) {
-                const damage = this.damage * (1 - radius / explosiveRange)
-                enemies[index].life = enemies[index].life - damage
-                const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
-                if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
-                point = (point+additionalPoint)|0
-                afterglow.point.push({number: additionalPoint, count: 30})
-                enemies[index].damage = damage
-                enemies[index].timer = damageTimerLimit
-                dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
-              }
-            })
-          } else if (bullet.prepareFlag && code[action.fire].isFirst()) bullet.life = 2
-          else if (code[action.fire].isFirst()) bullet.prepareFlag = true
-          return false
-        }
-        const hit = enemies.findIndex((enemy, index) => {
-          return index !== bullet.detectID && 0 < enemy.life &&
-          Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2) < radius + this.bulletRadius
-        })
-        if (explosive3Flag) {
-          if (bullet.life === 1) {
-            const distance = enemies.map(enemy => {
-              if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-            })
-            distance.forEach((radius, index) => {
-              if (radius < explosiveRange) {
-                const damage = this.damage * (1 - radius / explosiveRange)
-                enemies[index].life = enemies[index].life - damage
-                const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
-                if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
-                point = (point+additionalPoint)|0
-                afterglow.point.push({number: additionalPoint, count: 30})
-                enemies[index].damage = damage
-                enemies[index].timer = damageTimerLimit
-                dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
-              }
-            })
-          } else if (bullet.prepareFlag && code[action.fire].isFirst()) {
-            bullet.life = 2
-            return
+      if (hit !== -1) {
+        if (!bullet.detectFlag && bullet.detectID !== hit) {
+          bullet.detectFlag = true
+          bullet.detectID = hit
+          let damage = this.damage * bullet.life / this.baseLife
+          enemies[hit].life = enemies[hit].life - damage
+          bullet.life = bullet.life * this.penetrationForce
+          if (inventory[selectSlot].level < wave.number) { // TODO: level infuse to bullet
+            const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
+            if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
+            point = (point+additionalPoint)|0
+            afterglow.point.push({number: additionalPoint, count: 30})
           }
-          else if (code[action.fire].isFirst()) bullet.prepareFlag = true
-          if (hit === -1) return
-          bullet.dx = 0
-          bullet.dy = 0
-          bullet.x = bullet.x - 1/(enemies[hit].x - bullet.x)
-          bullet.y = bullet.y - 1/(enemies[hit].y - bullet.y)
-          bullet.life = bullet.life + 1
-          return false
-        } else if (hit === -1) {
-          if (!explosive1Flag && !explosive2Flag && !explosive3Flag) bullet.detectFlag = false
-          return
-        } else {
-          if (!bullet.detectFlag && bullet.detectID !== hit) {
-            bullet.detectFlag = true
-            bullet.detectID = hit
-            let damage = this.damage * bullet.life / this.baseLife
-            if (explosive1Flag) {
-              dropItems.push({type: 'explosive', x: bullet.x, y: bullet.y, life: explosiveLimit})
-              bullet.dx = 0, bullet.dy = 0
-              if (typeof bullet.explosive1life !== 'number') {
-                bullet.explosive1life = bullet.life
-                const distance = enemies.map(enemy => {
-                  if (0 < enemy.life) return Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2)
-                })
-                distance.forEach((radius, index) => {
-                  if (radius < explosiveRange) {
-                    damage = this.damage * (1 - radius / explosiveRange)
-                    enemies[index].life = enemies[index].life - damage
-                    const additionalPoint = (enemies[index].life <= 0) ? 50 : 10
-                    if (additionalPoint === 50) defeatCount = (defeatCount+1)|0
-                    point = (point+additionalPoint)|0
-                    afterglow.point.push({number: additionalPoint, count: 30})
-                    enemies[index].damage = damage
-                    enemies[index].timer = damageTimerLimit
-                  }
-                })
-              }
-            } else {
-              enemies[hit].life = enemies[hit].life - damage
-              bullet.life = bullet.life * this.penetrationForce
-              if (inventory[selectSlot].level < wave.number) { // TODO: level infuse to bullet
-                const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
-                if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
-                point = (point+additionalPoint)|0
-                afterglow.point.push({number: additionalPoint, count: 30})
-              }
-              enemies[hit].damage = damage
-              enemies[hit].timer = damageTimerLimit
-            }
-          }
+          enemies[hit].damage = damage
+          enemies[hit].timer = damageTimerLimit
         }
-      })
-    }
+      }
+    })
   }
 }
 const magSizeInitial = 7
@@ -1652,51 +1476,9 @@ const reset = () => {
 
   ownPosition.x = canvas.offsetWidth / 2
   ownPosition.y = canvas.offsetHeight / 2
-  clonePosition = []
-  cloneFlag = false
-  cloneDashType1Flag = false
-  cloneDashType2Flag = false
-  cloneDashType3Flag = false
-  cloneReturnFlag = false
-  reviveFlag = false
-  moreAwayCount = 0
-  moreAwayLimit = 300
-  homingFlag = false
-  explosive1Flag = false
-  explosive2Flag = false
-  explosive3Flag = false
   currentDirection = 4
   bullets = []
   enemies = []
-  cost = {
-    dashDistance: 1000,
-    dashDistanceIndex: 0,
-    dashSpeed: 1000,
-    dashSpeedIndex: 0,
-    dashCooltime: 1000,
-    dashCooltimeIndex: 0,
-    dashDamage: 50,
-    dashDamageIndex: 0,
-    clone: 5000,
-    cloneIndex: 0,
-    collectRadius: 0,
-    reset: 0
-  }
-  ownSpeed = {
-    current: SIZE / 16,
-    min: SIZE / 32,
-    max: SIZE / 16,
-    dx: (SIZE / 32) * .05,
-    constDx: (SIZE / 32) * .05
-  }
-  // dash = {
-  //   attackFlag: false,
-  //   breakthrough: 10,
-  //   coolTime: 0,
-  //   damage: 150,
-  //   decrease: 10,
-  //   limit: 150
-  // }
   selectSlot = 0
   const temporaryWarehouse = JSON.parse(storage.getItem('warehouseArray'))
   if (temporaryWarehouse) warehouse = temporaryWarehouse
@@ -2445,22 +2227,18 @@ class LobbyScene extends Scene {
   dropItemProcess = (intervalDiffTime) => {
     const blankInventorySlot = inventory.findIndex(v => v.category === '')
     dropItems.forEach((item, index) => {
-      if (item.type === 'explosive' || item.type === 'droppedWeapon') {
+      if (item.type === 'droppedWeapon') {
         if (item.life <= 0)  {
-          if (item.type === 'explosive') dropItems.splice(index, 1)
-          else {
-            dropItems[index] = {
-              type: 'cartridge',
-              x: item.x,
-              y: item.y,
-              life: 630,
-              dissapearTime: 660,
-              amount: item.magazines.reduce((prev, current) => {return prev + current})
-            }
+          dropItems[index] = {
+            type: 'cartridge',
+            x: item.x,
+            y: item.y,
+            life: 630,
+            dissapearTime: 660,
+            amount: item.magazines.reduce((prev, current) => {return prev + current})
           }
         }
         item.life = (item.life-1)|0
-        if (item.type === 'explosive') return
       }
       const width = ownPosition.x - item.x
       const height = ownPosition.y - item.y
@@ -2684,20 +2462,7 @@ class LobbyScene extends Scene {
       const height = ownPosition.y - enemy.y
       const length = Math.sqrt(width ** 2 + height ** 2)
       if (dungeon === dungeonList[0]) {
-        if (0 < moreAwayCount) { // clone process
-          this.differenceAddition(enemy, width / length * enemy.speed, height / length * enemy.speed, intervalDiffTime)
-        } else { // close to myself
-          this.differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
-        }
-        // if (
-        //   Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2)*.7 < length &&
-        //   !reviveFlag
-        // ) { // repop
-        //   const r = Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
-        //   const a = ~~(Math.random() * 360 + 1)
-        //   enemy.x = ownPosition.x + r * Math.cos(a * (Math.PI / 180))
-        //   enemy.y = ownPosition.y + r * Math.sin(a * (Math.PI / 180))
-        // }
+        this.differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
         if (
           enemies.some((e, i) => index !== i && 0 < e.life &&
           Math.sqrt((e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2) < SIZE)
@@ -2764,34 +2529,8 @@ class LobbyScene extends Scene {
             afterglow.point.push({number: additionalPoint, count: 30})
           }
         } else {
-          if (cloneFlag) {
-            reviveFlag = true
-            moreAwayCount = moreAwayLimit
-          } else if (!reviveFlag) {
-            this.dispatchEvent('addMenu', 'result')
-            return
-          }
-        }
-      }
-      if (
-        ownSpeed.max < cloneSpeed && !dash.isAttack &&
-        (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)
-      ) {
-        const pos = {
-          x: clonePosition.reduce((a, v) => {return a + v.dx}, ownPosition.x),
-          y: clonePosition.reduce((a, v) => {return a + v.dy}, ownPosition.y)
-        }
-        if (((
-          pos.x - enemy.x) ** 2 + (pos.y - enemy.y) ** 2) ** .5 < minImgRadius * 2 + SIZE / 8 &&
-          0 < enemy.life
-        ) {
-          dash.isAttack = true
-          enemy.life = (enemy.life-dash.damage)|0
-          enemy.damage = dash.damage
-          enemy.timer = damageTimerLimit
-          const additionalPoint = (enemy.life <= 0) ? 130 : 10
-          point = (point+additionalPoint)|0
-          afterglow.point.push({number: additionalPoint, count: 30})
+          this.dispatchEvent('addMenu', 'result')
+          return
         }
       }
     })
@@ -2835,10 +2574,6 @@ class LobbyScene extends Scene {
       inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
       inventory[selectSlot].slideState === 'release') return
     if (inventory[selectSlot].reloadState !== 'done') return
-    if ((
-      explosive1Flag || explosive2Flag || explosive3Flag) &&
-      bullets.length !== 0 && inventory[selectSlot].slideState === 'release'
-    ) return
     inventory[selectSlot].slideTime = (
       combatReload.flag) ? (inventory[selectSlot].slideTime+1)|0 : (inventory[selectSlot].slideTime+1)|0
     if (
@@ -2957,20 +2692,6 @@ class LobbyScene extends Scene {
       bullet.update()
       if (bullet.life < 0) bullets.splice(i, 1)
     })
-    const cloneProcess = () => {
-      if (
-        cloneReturnFlag && direction === 0 && !code[action.slow].flag &&
-        cloneSpeed <= ownSpeed.max
-      ) clonePosition.shift()
-      if (60 < clonePosition.length) clonePosition.shift()
-    }
-    if (cloneFlag) cloneProcess()
-    if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
-    else if (reviveFlag) {
-      cloneFlag = false
-      clonePosition = []
-      reviveFlag = false
-    }
     if (afterglow.round < wave.roundIntervalLimit) afterglow.round += intervalDiffTime
   }
 
@@ -3169,54 +2890,8 @@ class LobbyScene extends Scene {
       })
     }
   }
-  drawClone = () => {
-    const delayStep = 15
-    const ownStepLimit = 50
-    const setOwnImage = arg => {
-      return (arg === 1) ? 'images/TP2U.png' :
-      (arg === 3) ? 'images/TP2RU.png' :
-      (arg === 2) ? 'images/TP2R.png' :
-      (arg === 6) ? 'images/TP2RD.png' :
-      (arg === 4) ? 'images/TP2D.png' :
-      (arg === 12) ? 'images/TP2LD.png' :
-      (arg === 8) ? 'images/TP2L.png' :
-      (arg === 9) ? 'images/TP2LU.png' : 'images/TP2F.png'
-    }
-    const imgClone = ((
-      ownStepLimit / 2 + delayStep <= ownState.step || ownState.step < delayStep) &&
-      cloneSpeed <= ownSpeed.max
-    ) ? 'images/TP2F.png' :
-    (0 < angle) ? setOwnImage(angle) : setOwnImage(direction)
-    const pos = {
-      x: clonePosition.reduce((a, v) => {return a + v.dx}, ownPosition.x),
-      y: clonePosition.reduce((a, v) => {return a + v.dy}, ownPosition.y)
-    }
-    context.save()
-    context.globalAlpha = (0 < moreAwayCount) ? .5 + .5 * (1 - moreAwayCount / moreAwayLimit) : .5
-    context.drawImage(
-      IMAGE[imgClone], ~~(relativeX(pos.x - radius)+.5), ~~(relativeY(pos.y - radius)+.5)
-    )
-    context.restore()
-    if (0 < dash.coolTime && (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)) { // clone dash
-      if (ownSpeed.max < cloneSpeed) afterimage.push({
-        x: pos.x, y: pos.y, alpha: .5
-      })
-      afterimage.forEach((clone, index) => {
-        context.save()
-        context.globalAlpha = clone.alpha
-        context.drawImage(IMAGE[imgClone],
-          ~~(relativeX(clone.x - SIZE / 2)+.5),
-          ~~(relativeY(clone.y - SIZE / 2)+.5)
-        )
-        context.restore()
-        clone.alpha = clone.alpha - .05
-        if (clone.alpha <= 0) afterimage.splice(index, 1)
-      })
-    }
-  }
   drawBullets = () => {
     bullets.forEach(bullet => {
-      if ((explosive1Flag || explosive2Flag || explosive3Flag) && bullet.detectFlag) return
       context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / bullet.baseLife})`
       context.beginPath()
       context.arc(relativeX(bullet.x), relativeY(bullet.y), bullet.bulletRadius, 0, Math.PI * 2, false)
@@ -3337,11 +3012,6 @@ class LobbyScene extends Scene {
       } else if (item.type === 'magazine') {
         context.fillStyle = 'hsl(120, 100%, 20%)'
         context.fillRect(relativeX(item.x), relativeY(item.y), SIZE / 3, SIZE * 2 / 3)
-      } else if (item.type === 'explosive') {
-        context.fillStyle = `hsla(0, 0%, 0%, ${.2 * (item.life / explosiveLimit)})`
-        context.beginPath()
-        context.arc(relativeX(item.x), relativeY(item.y), explosiveRange, 0, Math.PI * 2, false)
-        context.fill()
       } else if (item.type === 'droppedWeapon') {
         context.fillStyle = (item.type === 'droppedWeapon') ?
         `hsla(180, 100%, 30%, ${item.life/600})` :
@@ -3364,23 +3034,6 @@ class LobbyScene extends Scene {
       else return -1
     }
     let c = {x: canvas.offsetWidth - SIZE / 2, y: canvas.offsetHeight - SIZE}
-    context.save()
-    context.font = `${SIZE * .5}px ${font}`
-    context.fillStyle = 'hsl(330, 100%, 50%)'
-    context.globalAlpha = .7
-    if (homingFlag) {
-      context.drawImage(IMAGE['images/Homingv1.jpg'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-    } else if (explosive1Flag) {
-      context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-      context.fillText('1', c.x - SIZE * 2, c.y - SIZE * 8)
-    } else if (explosive2Flag) {
-      context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-      context.fillText('2', c.x - SIZE * 2, c.y - SIZE * 8)
-    } else if (explosive3Flag) {
-      context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-      context.fillText('3', c.x - SIZE * 2, c.y - SIZE * 8)
-    }
-      context.restore()
     context.font = `${SIZE}px ${font}`
     context.fillStyle = 'hsla(120, 100%, 30%, .7)'
     context.textAlign = 'right'
@@ -3646,7 +3299,6 @@ class LobbyScene extends Scene {
       own.alpha = own.alpha - .1
       if (own.alpha <= 0) afterimage.splice(index, 1)
     })
-    context.globalAlpha = (0 < moreAwayCount) ? moreAwayCount / moreAwayLimit : 1
     context.drawImage(IMAGE[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
     context.restore()
   }
@@ -3761,7 +3413,6 @@ class LobbyScene extends Scene {
     this.drawField()
     if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
     if (0 < objects.length) this.drawObjects(cursor)
-    if (0 < clonePosition.length) this.drawClone()
     if (0 < bullets.length) this.drawBullets()
     if (0 < enemies.length) this.drawEnemies()
     if (0 < dropItems.length) this.drawDropItems()
