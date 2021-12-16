@@ -71,7 +71,7 @@ let bossArray = []
 let enemyBulletArray = []
 let array = [enemyBulletArray, bossArray]
 
-const EnemyBullet = class {
+class EnemyBullet {
   constructor (life, x, y, radius, speed, theta, additionalRadius = 0, additionalSpeed = 0, additionalTheta = 0) {
     this.life = life
     this.x = x
@@ -100,7 +100,7 @@ const EnemyBullet = class {
     context.restore()
   }
 }
-const HomingBullet = class {
+class HomingBullet {
   constructor (life, x, y, radius, speed, theta, waitTime, homingSpeed, deltaTheta) {
     this.life = life
     this.x = x
@@ -135,7 +135,7 @@ const HomingBullet = class {
   }
 }
 
-const Boss = class {
+class Boss {
   constructor (x, y, life) {
     this.x = x,
     this.y = y,
@@ -396,7 +396,7 @@ const weaponRatiryColorList = [
   'hsl(30, 100%, 50%)',
 ]
 const weaponCategoryList = ['HG', 'SMG', 'AR', 'DMR', 'SR', 'SG']
-const Weapon = class {
+class Weapon {
   constructor (
     name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
     magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange, recoilCoefficient,
@@ -462,7 +462,7 @@ let inventoryFlag = false
 let selectSlot = 0
 let dropItems = []
 let bullets = []
-const Bullet = class {
+class Bullet {
   constructor (x, y, radius, theta, life, damage, penetrationForce, bulletRadius, isHoming) {
     this.x = x
     this.y = y
@@ -833,22 +833,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
   setAngle()
   setTitleMenuWord()
 })
-const setOtherMagazine = () => {
-  const array = inventory[selectSlot].magazines.map((x, i) => {
-    if (x === inventory[selectSlot].magazineSize || i === inventory[selectSlot].grip) return -1
-    else return x
-  })
-  const index = array.indexOf(Math.max(...array))
-  if (
-    index !== inventory[selectSlot].grip && // if only a magazine
-    inventory[selectSlot].magazines[index] !== inventory[selectSlot].magazineSize
-  ) return index
-  else return -1
-}
-const magazineForword = () => {
-  inventory[selectSlot].magazines.push(inventory[selectSlot].magazines[1])
-  inventory[selectSlot].magazines.splice(1, 1)
-}
 const setTheta = d => {
   /*
     6 4 12
@@ -890,682 +874,11 @@ const moving = (intervalDiffTime) => {
   if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
   else ownState.dy *= brake
 }
-const modeSelect = () => {
-  if (code[action.modeSelect].isFirst()) {
-    if (code[action.shift].flag) {
-      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) - 1
-      inventory[selectSlot].mode =
-        n < 0 ? inventory[selectSlot].modeList[inventory[selectSlot].modeList.length - 1] :
-        inventory[selectSlot].modeList[n]
-    } else {
-      const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) + 1
-      inventory[selectSlot].mode =
-        n < inventory[selectSlot].modeList.length ? inventory[selectSlot].modeList[n] :
-        inventory[selectSlot].modeList[0]
-    }
-  }
-}
-const cloneProcess = () => {
-  if (
-    cloneReturnFlag && direction === 0 && !code[action.slow].flag &&
-    cloneSpeed <= ownSpeed.max
-  ) clonePosition.shift()
-  if (60 < clonePosition.length) clonePosition.shift()
-}
-const setOwnImageFromDiff = (dx, dy) => {
-  const coefficient = .2
-  return false ? 'images/TP2F.png' : // TODO: Pre-check max diff
-    dy < 0 && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2U.png' :
-    0 < dx && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2R.png' :
-    0 < dy && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2D.png' :
-    dx < 0 && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2L.png' :
-    dy < 0 && 0 < dx ? 'images/TP2RU.png' :
-    0 < dy && 0 < dx ? 'images/TP2RD.png' :
-    0 < dy && dx < 0 ? 'images/TP2LD.png' :
-    dy < 0 && dx < 0 ? 'images/TP2LU.png' : 'images/TP2F.png'
-}
-const setOwnImage = arg => {
-  return (arg === 1) ? 'images/TP2U.png' :
-  (arg === 3) ? 'images/TP2RU.png' :
-  (arg === 2) ? 'images/TP2R.png' :
-  (arg === 6) ? 'images/TP2RD.png' :
-  (arg === 4) ? 'images/TP2D.png' :
-  (arg === 12) ? 'images/TP2LD.png' :
-  (arg === 8) ? 'images/TP2L.png' :
-  (arg === 9) ? 'images/TP2LU.png' : 'images/TP2F.png'
-}
-const drawClone = () => {
-  const delayStep = 15
-  const ownStepLimit = 50
-  const imgClone = ((
-    ownStepLimit / 2 + delayStep <= ownState.step || ownState.step < delayStep) &&
-    cloneSpeed <= ownSpeed.max
-  ) ? 'images/TP2F.png' :
-  (0 < angle) ? setOwnImage(angle) : setOwnImage(direction)
-  const pos = {
-    x: clonePosition.reduce((a, v) => {return a + v.dx}, ownPosition.x),
-    y: clonePosition.reduce((a, v) => {return a + v.dy}, ownPosition.y)
-  }
-  context.save()
-  context.globalAlpha = (0 < moreAwayCount) ? .5 + .5 * (1 - moreAwayCount / moreAwayLimit) : .5
-  context.drawImage(
-    IMAGE[imgClone], ~~(relativeX(pos.x - radius)+.5), ~~(relativeY(pos.y - radius)+.5)
-  )
-  context.restore()
-  if (0 < dash.coolTime && (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)) { // clone dash
-    if (ownSpeed.max < cloneSpeed) afterimage.push({
-      x: pos.x, y: pos.y, alpha: .5
-    })
-    afterimage.forEach((clone, index) => {
-      context.save()
-      context.globalAlpha = clone.alpha
-      context.drawImage(IMAGE[imgClone],
-        ~~(relativeX(clone.x - SIZE / 2)+.5),
-        ~~(relativeY(clone.y - SIZE / 2)+.5)
-      )
-      context.restore()
-      clone.alpha = clone.alpha - .05
-      if (clone.alpha <= 0) afterimage.splice(index, 1)
-    })
-  }
-}
-const drawMyself = (intervalDiffTime) => {
-  if (ownState.radius === 0) ownState.step = 0
-  else ownState.step += intervalDiffTime
-  // y = -4 * (x - .5) ** 2 + 1
-  const formula = -4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1
-  const isJumpImage = .3 < formula ? true : false
-  const jump = .8 < formula ? 1 : 0
-  const imgMyself =
-    ownState.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
 
-  const pos =
-    settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : { // recoil effect
-      x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
-      y: canvas.offsetHeight / 2 - jump + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
-    }
-  context.fillStyle = 'hsla(0, 0%, 0%, .2)' // shadow
-  context.beginPath()
-  context.arc(
-    pos.x + radius * .05, pos.y + radius * .6, SIZE / 4, 0, Math.PI * 2, false
-  )
-  context.fill()
-  if (0 < dash.coolTime) {
-    const angle =
-      dash.coolTime < dash.coolTimeLimit - dash.invincibleTime ?
-      dash.coolTime / (dash.coolTimeLimit - dash.invincibleTime) * Math.PI * 2 :
-      Math.PI * 2
-    context.fillStyle = 'hsla(0, 100%, 100%, .5)'
-    context.beginPath()
-    context.moveTo(pos.x, pos.y)
-    context.arc(
-      pos.x, pos.y, SIZE / 2, -Math.PI * .5, -angle - Math.PI * .5, true
-    )
-    context.fill()
-  }
-  context.save()
-  if (dash.coolTimeLimit - dash.invincibleTime < dash.coolTime) {
-    afterimage.push({
-      x: ownPosition.x, y: ownPosition.y - jump, alpha: .5
-    })
-  }
-  afterimage.forEach((own, index) => {
-    context.save()
-    context.globalAlpha = own.alpha
-    context.drawImage(IMAGE[imgMyself],
-      ~~(relativeX(own.x - SIZE / 2)+.5),
-      ~~(relativeY(own.y - SIZE / 2)+.5)
-    )
-    context.restore()
-    own.alpha = own.alpha - .1
-    if (own.alpha <= 0) afterimage.splice(index, 1)
-  })
-  context.globalAlpha = (0 < moreAwayCount) ? moreAwayCount / moreAwayLimit : 1
-  context.drawImage(IMAGE[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
-  context.restore()
-}
-const drawField = () => {
-  context.fillStyle = 'hsl(240, 100%, 60%)'
-  const width = SIZE * 7.5
-  const pos =
-    settingsObject.isMiddleView ? {x: ownPosition.x - screenOwnPos.x, y: ownPosition.y - screenOwnPos.y} :
-    0 < afterglow.recoil ? {
-      x: ownPosition.x - recoilEffect.dx * (afterglow.recoil/recoilEffect.flame),
-      y: ownPosition.y - recoilEffect.dy * (afterglow.recoil/recoilEffect.flame)
-    } : {x: ownPosition.x, y: ownPosition.y}
-  for (let i = -1, l = Math.ceil(canvas.offsetWidth / width) + 2; i < l; i=(i+1)|0) {
-    for (let j = -1, l = Math.ceil(canvas.offsetHeight / width) + 2; j < l; j=(j+1)|0) {
-      context.fillStyle = 'hsla(0, 0%, 50%, .5)'
-      context.beginPath()
-      context.arc(
-        i * width - pos.x % width + SIZE / 4, j * width - pos.y % width + SIZE / 4,
-        SIZE, 0, Math.PI * 2, false
-      )
-      context.fill()
-      context.fillStyle = 'hsl(300, 30%, 90%)'
-      context.beginPath()
-      context.arc(
-        i * width - pos.x % width, j * width - pos.y % width,
-        SIZE, 0, Math.PI * 2, false
-      )
-      context.fill()
-    }
-  }
-}
-const setWeapon = () => {
-  let rarityIndex = 0
-  const roundRistrict =
-    wave.number < 6 ? 3 :
-    wave.number < 11 ? 2 :
-    wave.number < 16 ? 1 : 0
-  for (let i = 0; i < weaponRarityList.length - (1 + roundRistrict); i++) {
-    if (.5 < Math.random()) rarityIndex += 1
-  }
-  let categoryIndex = 0
-  for (let i = 0; i < 3; i++) {
-    if (.5 < Math.random()) categoryIndex += 1
-  }
-  if (categoryIndex === 3) categoryIndex = 5
-  let modeList = [] // TODO: incomplete manual mode
-  // type:: SEMI : BURST : FULL AUTO
-  // HG:: 9 : 2 : 6
-  // SMG:: 5 : 4 : 10
-  // AR:: 7 : 3 : 7
-  // DMR
-  // SR
-  // SG:: 5 : 3 : 3
-  if ((
-    categoryIndex === 0 && Math.random() < .9) || (
-    categoryIndex === 1 && Math.random() < .5) || (
-    categoryIndex === 2 && Math.random() < .7) || (
-    categoryIndex === 5 && Math.random() < .5)
-  ) {
-    modeList.push(weaponModeList[1])
-  }
-  if ((
-    categoryIndex === 0 && Math.random() < .2) || (
-    categoryIndex === 1 && Math.random() < .4) || (
-    categoryIndex === 2 && Math.random() < .3) || (
-    categoryIndex === 5 && Math.random() < .3)
-  ) {
-    modeList.push(weaponModeList[2])
-  }
-  if ((
-    categoryIndex === 0 && Math.random() < .6) || (
-    categoryIndex === 1) || (
-    categoryIndex === 2 && Math.random() < .7) || (
-    categoryIndex === 5 && Math.random() < .3)
-  ) {
-    modeList.push(weaponModeList[3])
-  }
-  if (modeList.length === 0) modeList.push(weaponModeList[1])
-  if (categoryIndex === 2 && modeList.length === 3 && Math.random() < .5) { // like AK-47
-    modeList.push(...modeList.splice(1, 1))
-  }
-  let modeIndex = Math.floor(modeList.length * Math.random())
-  if (modeList.length - 1 < modeIndex) modeIndex -= 1
-  const HgMinmagazine = 5
-  const HgExtendMag = 28
-  const SmgMinMag = 15
-  const SmgExtendMag = 35
-  const ArMinmagazine = 10
-  const ArExtendMag = 65
-  const SgMinmagazine = 2
-  const SgExtendMag = 30
-  const magazineSize =
-    categoryIndex === 0 ? (HgMinmagazine + HgExtendMag * Math.random())|0 : // max 33
-    categoryIndex === 1 ? (SmgMinMag + SmgExtendMag * Math.random())|0 : // max 50
-    categoryIndex === 2 ? (ArMinmagazine + ArExtendMag * Math.random())|0 : // max 75
-    categoryIndex === 5 ? (SgMinmagazine + SgExtendMag * Math.random())|0 : // max 32
-    // TODO: slug barrels
-    0
-  const magazines = Array(10).fill(magazineSize, 0, 5).fill(0, 5, 10)
-  // Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
-  const HgBaseDamage = 70
-  const SmgBaseDamage = 100
-  const ArBaseDamage = 140
-  const SgBaseDamage = 20
-  const rarityMultiple = [
-    1 + Math.random() * .25, // Common
-    1 + Math.random() * .5, // Uncommon
-    1 + Math.random() * .75, // Rare
-    1 + Math.random() // Epic
-  ]
-  // TODO: Low mag(like revolver) bonus
-  // TODO: Semi auto(like FN FAL) bonus
-  const damage =
-    categoryIndex === 0 ? (HgBaseDamage * rarityMultiple[rarityIndex])|0 :
-    categoryIndex === 1 ? (SmgBaseDamage * rarityMultiple[rarityIndex])|0 :
-    categoryIndex === 2 ? (ArBaseDamage * rarityMultiple[rarityIndex])|0 :
-    categoryIndex === 5 ? (SgBaseDamage * rarityMultiple[rarityIndex])|0 : 0
 
-  const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
-  const slideSpeed = .75 + magSizeRatio + Math.random() * .25
-  const bulletSpeed = cartridgeInfo.speed * (.5 + Math.random() * 1.5)
-  const bulletLife = cartridgeInfo.life * (.5 + Math.random() * .5)
-  const reloadSpeed = .25 + (1 - magSizeRatio) / 2 + Math.random() * .25
-  // the smaller the bigger
-  const loadingSpeed = loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25)
-  const penetrationForce = Math.random()
-  const roundLimit = modeList.some(v => {return v === weaponModeList[2]}) ? (2 + 3 * Math.random())|0 : 0
-
-  // Expected effective range is halves the probability of hitting the target
-  // (Actual range) / 10 [m]
-  const effectiveRange =
-    categoryIndex === 0 ? 2.5 + 17.5 * Math.random() : // HG: 2.5 - 20
-    categoryIndex === 1 ? 5 + 20 * Math.random() : // SMG: 5 - 25
-    categoryIndex === 2 ? 15 + 30 * Math.random() : // AR: 15 - 45
-    categoryIndex === 5 ? 2 + 8 * Math.random() : 10 // SG: 2 - 10
-  const recoilCoefficient =
-    categoryIndex === 0 ? .1 + .5 * Math.random() : // HG: .1 - .6
-    categoryIndex === 1 ? .2 + 1.3 * Math.random() : // SMG: .2 - 1.5
-    categoryIndex === 2 ? 1 + 2 * Math.random() : // AR: 1 - 3
-    categoryIndex === 5 ? .3 + .2 * Math.random() : 10 // SR: .3 - .5
-  const gaugeNumber = categoryIndex === 5 ? 1 + 19 * Math.random()|0 : 1
-  const weapon = new Weapon(
-    `# ${wave.number}`,
-    weaponCategoryList[categoryIndex],
-    modeList,
-    modeList[modeIndex],
-    weaponRarityList[rarityIndex],
-    damage,
-    slideSpeed,
-    bulletSpeed,
-    bulletLife,
-    reloadSpeed,
-    magazineSize,
-    magazines,
-    loadingSpeed,
-    penetrationForce,
-    roundLimit,
-    effectiveRange,
-    recoilCoefficient,
-    gaugeNumber,
-
-    4000,
-    0,
-    wave.number
-  )
-  Object.assign(weapon, {type: 'weapon'})
-  return weapon
-}
-
-const drawEnemies = () => {
-  enemies.forEach(enemy => {
-    context.fillStyle = (enemy.imageID === 0) ? 'hsla(0, 100%, 50%, .5)' :
-    (enemy.imageID === 1) ? 'hsla(300, 100%, 50%, .5)' :
-    (enemy.imageID === 2) ? 'hsla(60, 100%, 60%, .5)' : 'hsla(0, 0%, 100%, .5)'
-    {
-      const imgPath = (enemy.imageID === 0) ?
-      {F: 'images/JK32F.png', L: 'images/JK32L.png', R: 'images/JK32R.png'} :
-      (enemy.imageID === 1) ?
-      {F: 'images/JK33F.png', L: 'images/JK33L.png', R: 'images/JK33R.png'} :
-      (enemy.imageID === 2) ?
-      {F: 'images/JK34F.png', L: 'images/JK34L.png', R: 'images/JK34R.png'} :
-      {F: 'images/JK35Fv1.png', L:'images/JK35Fv1.png', R: 'images/JK35Fv1.png'}
-      const imgEnemy = (enemy.step <= enemy.stepLimit * 3 / 8) ? imgPath.R :
-      (enemy.stepLimit / 2 <= enemy.step && enemy.step <= enemy.stepLimit * 7 / 8) ?
-      imgPath.L : imgPath.F
-      const coordinate = (enemy.life <= 0) ?
-      {x:enemy.x - radius, y:enemy.y - radius + (enemy.timer - damageTimerLimit) * .25} :
-      {x:enemy.x - radius, y:enemy.y - radius}
-        context.save()
-      if (enemy.life <= 0) context.globalAlpha = enemy.timer/damageTimerLimit
-      context.drawImage(
-        IMAGE[imgEnemy], ~~(relativeX(coordinate.x)+.5), ~~(relativeY(coordinate.y)+.5)
-      )
-      context.restore()
-      if (debugMode) {
-        if (0 < enemy.life) {
-          context.font = `${SIZE/2}px ${font}`
-          context.fillRect(relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2),
-          enemy.life / wave.enemyHitPoint * SIZE, SIZE / 16)
-          // context.fillText(Math.ceil(enemy.life) // numerical drawing
-          // , relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2))
-        }
-        // pop damage
-        context.font = `${SIZE * 2 / 3 * enemy.timer/damageTimerLimit}px ${font}`
-        context.fillStyle = `hsla(0, 0%, 50%, ${enemy.timer/damageTimerLimit})`
-        context.fillText(
-          Math.ceil(enemy.damage),
-          relativeX(enemy.x - radius - (damageTimerLimit - enemy.timer)),
-          relativeY(enemy.y - radius * 2 - (damageTimerLimit - enemy.timer))
-        )
-      }
-    }
-  })
-}
 const damageTimerLimit = 30
 let degree = 5
-const drawBullets = () => {
-  bullets.forEach(bullet => {
-    if ((explosive1Flag || explosive2Flag || explosive3Flag) && bullet.detectFlag) return
-    context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / bullet.baseLife})`
-    context.beginPath()
-    context.arc(relativeX(bullet.x), relativeY(bullet.y), bullet.bulletRadius, 0, Math.PI * 2, false)
-    context.fill()
-  })
-}
-const dropItemProcess = (intervalDiffTime) => {
-  const blankInventorySlot = inventory.findIndex(v => v.category === '')
-  dropItems.forEach((item, index) => {
-    if (item.type === 'explosive' || item.type === 'droppedWeapon') {
-      if (item.life <= 0)  {
-        if (item.type === 'explosive') dropItems.splice(index, 1)
-        else {
-          dropItems[index] = {
-            type: 'cartridge',
-            x: item.x,
-            y: item.y,
-            life: 630,
-            dissapearTime: 660,
-            amount: item.magazines.reduce((prev, current) => {return prev + current})
-          }
-        }
-      }
-      item.life = (item.life-1)|0
-      if (item.type === 'explosive') return
-    }
-    const width = ownPosition.x - item.x
-    const height = ownPosition.y - item.y
-    const distance = Math.sqrt(width ** 2 + height ** 2)
-    if (0 <= blankInventorySlot) { // vacuuming
-      let multiple = (
-        SIZE < distance || (
-        item.type === 'droppedWeapon')) &&
-        mainSlotSize + inventorySize <= inventory.length ? 0 : 1 / distance
-      item.x = item.x + width / distance * multiple * intervalDiffTime
-      item.y = item.y + height / distance * multiple * intervalDiffTime
-    }
-    if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
-    if (item.type === 'cartridge') {
-      const bulletRadius = SIZE / 6
-      if (distance < minImgRadius + bulletRadius) {
-        ammo = (ammo+item.amount)|0
-        dropItems.splice(index, 1)
-      }
-    } else if (item.type === 'magazine') {
-      if (inventory[selectSlot].category !== '' && item.unavailableTime <= 0 && distance < minImgRadius * 2) {
-        for (let i = 0; i < inventory[selectSlot].magazines.length + 1; i=(i+1)|0) {
-          if (inventory[selectSlot].magazines[i] === -1) return inventory[selectSlot].magazines[i] = item.amount
-          if (i === inventory[selectSlot].magazines.length + 1) inventory[selectSlot].magazines.push(item.amount)
-        }
-        dropItems.splice(index, 1)
-      }
-    } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
-      if (item.unavailableTime <= 0 && distance < minImgRadius * 2 && 0 <= blankInventorySlot) {
-        delete item.type,
-        delete item.unavailableTime,
-        delete item.x,
-        delete item.y
-        if (item.time) delete item.time
-        inventory[blankInventorySlot] = dropItems.splice(index, 1)[0]
-      }
-    }
-  })
-}
 
-const drawScreenEdgeArc = (item) => {
-  const testSize = SIZE / 3
-  context.save()
-  context.fillStyle =
-    item.rarity === weaponRarityList[0] ? weaponRatiryColorList[0] :
-    item.rarity === weaponRarityList[1] ? weaponRatiryColorList[1] :
-    item.rarity === weaponRarityList[2] ? weaponRatiryColorList[2] :
-    item.rarity === weaponRarityList[3] ? weaponRatiryColorList[3] : weaponRatiryColorList[4]
-  context.beginPath()
-  if ( // left & top
-    item.x < ownPosition.x - screenOwnPos.x + testSize / 2 &&
-    item.y < ownPosition.y - screenOwnPos.y + testSize / 2
-  ) context.arc(
-    testSize / 2, testSize / 2, testSize / 2, 0 / 2, Math.PI * 2, false
-  )
-  else if ( // left & bottom
-    item.x < ownPosition.x - screenOwnPos.x + testSize / 2 &&
-    ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
-  ) context.arc(
-    testSize / 2, canvas.offsetHeight - testSize / 2,
-    testSize / 2, 0, Math.PI * 2, false
-  )
-  else if ( // right & top
-    ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
-    item.y < ownPosition.y - screenOwnPos.y + testSize / 2
-  ) context.arc(
-    canvas.offsetWidth - testSize / 2, testSize / 2,
-    testSize / 2, 0, Math.PI * 2, false
-  )
-  else if ( // right & bottom
-    ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
-    ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
-  ) context.arc(
-    canvas.offsetWidth - testSize / 2,
-    canvas.offsetHeight - testSize / 2,
-    testSize / 2, 0, Math.PI * 2, false
-  )
-  else if (item.x < ownPosition.x - screenOwnPos.x + testSize / 2) { // out of left
-    context.arc(
-      testSize / 2, relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
-    )
-  } else if (ownPosition.x + canvas.offsetWidth - screenOwnPos.x + testSize / 2 < item.x) { // out of right
-    context.arc(
-      canvas.offsetWidth - testSize / 2, relativeY(item.y),
-      testSize / 2, 0, Math.PI * 2, false
-    )
-  } else if (item.y < ownPosition.y - screenOwnPos.y + testSize / 2) { // out of top
-    context.arc(
-      relativeX(item.x), testSize / 2,
-      testSize / 2, 0, Math.PI * 2, false
-    )
-  } else if (ownPosition.y + canvas.offsetHeight - screenOwnPos.y + testSize / 2 < item.y) { // out of bottom
-    context.arc(
-      relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
-      testSize / 2, 0, Math.PI * 2, false
-    )
-  } else {
-    context.arc(relativeX(item.x), relativeY(item.y), testSize, 0, Math.PI * 2, false)
-  }
-  context.fill()
-  context.restore()
-}
-const drawDropItems = () => {
-  dropItems.forEach(item => {
-    if (item.type === 'weapon') {
-      drawScreenEdgeArc(item)
-    } else if (item.type === 'magazine') {
-      context.fillStyle = 'hsl(120, 100%, 20%)'
-      context.fillRect(relativeX(item.x), relativeY(item.y), SIZE / 3, SIZE * 2 / 3)
-    } else if (item.type === 'explosive') {
-      context.fillStyle = `hsla(0, 0%, 0%, ${.2 * (item.life / explosiveLimit)})`
-      context.beginPath()
-      context.arc(relativeX(item.x), relativeY(item.y), explosiveRange, 0, Math.PI * 2, false)
-      context.fill()
-    } else if (item.type === 'droppedWeapon') {
-      context.fillStyle = (item.type === 'droppedWeapon') ?
-      `hsla(180, 100%, 30%, ${item.life/600})` :
-      'hsl(180, 100%, 40%)'
-      context.fillRect(relativeX(item.x), relativeY(item.y), SIZE * 2 / 3, SIZE * 2 / 3)
-    }
-  })
-}
-const drawText = (fontSize, align, content, coordinate) => {
-  context.font = `${fontSize}px ${font}`
-  context.textAlign = align
-  context.fillText(content, coordinate.x, coordinate.y)
-}
-const drawIndicator = () => {
-  let c = {x: canvas.offsetWidth - SIZE / 2, y: canvas.offsetHeight - SIZE}
-  context.save()
-  context.font = `${SIZE * .5}px ${font}`
-  context.fillStyle = 'hsl(330, 100%, 50%)'
-  context.globalAlpha = .7
-  if (homingFlag) {
-    context.drawImage(IMAGE['images/Homingv1.jpg'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-  } else if (explosive1Flag) {
-    context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-    context.fillText('1', c.x - SIZE * 2, c.y - SIZE * 8)
-  } else if (explosive2Flag) {
-    context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-    context.fillText('2', c.x - SIZE * 2, c.y - SIZE * 8)
-  } else if (explosive3Flag) {
-    context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
-    context.fillText('3', c.x - SIZE * 2, c.y - SIZE * 8)
-  }
-    context.restore()
-  context.font = `${SIZE}px ${font}`
-  context.fillStyle = 'hsla(120, 100%, 30%, .7)'
-  context.textAlign = 'right'
-  context.fillText(point, c.x, c.y - SIZE * 5)
-  context.fillStyle = 'hsla(60, 100%, 50%, .7)'
-  if (0 < afterglow.point.length) {
-    context.font = `${SIZE*.75}px ${font}`
-    afterglow.point.forEach((x, i) => {
-      context.fillText(`+${x.number}`, c.x - SIZE * 2 - (30 - x.count)/2, c.y - SIZE * 6)
-      x.count = (x.count-1)|0
-      if (x.count <= 0) afterglow.point.splice(i, 1)
-    })
-    context.font = `${SIZE}px ${font}`
-  }
-  if (inventory[selectSlot].category !== '') {
-    const cartridges = inventory[selectSlot].magazines[inventory[selectSlot].grip]
-    context.fillStyle = (cartridges < inventory[selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
-    (cartridges < inventory[selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
-    context.save()
-    inventory[selectSlot].modeList.forEach((v, i) => {
-      context.fillStyle = 'hsla(210, 100%, 50%, .7)'
-      if (inventory[selectSlot].mode === v) {
-        context.fillRect(c.x - SIZE * .8, c.y - SIZE * (9.7 - i), SIZE / 6, SIZE * .65)
-      }
-      const text =
-        v === weaponModeList[1] ? '1' : // SEMI AUTO
-        v === weaponModeList[2] ? inventory[selectSlot].roundLimit : // BURST
-        v === weaponModeList[3] ? 'F' : '' // FULL AUTO
-        context.fillText(text, c.x, c.y - SIZE * (9 - i))
-    })
-    if (settingsObject.isManipulateCode && 1 < inventory[selectSlot].modeList.length) {
-      context.fillStyle = 'hsla(210, 100%, 75%, .4)'
-      context.fillRect(c.x - SIZE * .55, c.y - SIZE * 10.6, SIZE * .6, SIZE * .6)
-      context.font = `${SIZE*.75}px ${font}`
-      context.fillStyle = 'hsla(0, 0%, 100%, .4)'
-      context.fillText(extractCode(action.modeSelect), c.x , c.y - SIZE * 10)
-    }
-    context.restore()
-    context.save()
-    const inChamber = (inventory[selectSlot].chamber) ? 1 : 0
-    context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - SIZE * 3)
-    // context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
-    // context.fillText(ammo, c.x, c.y)
-    context.restore()
-    const cartridgeSize = 1 / (inventory[selectSlot].magazineSize + 1)
-    const yOffset = canvas.offsetHeight - SIZE * .75
-    const yHeight = SIZE * 3
-    c.x = canvas.offsetWidth - SIZE * .75
-    c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-    if (0 < afterglow.reload) context.fillStyle = 'hsla(0, 100%, 100%, .7)'
-    context.fillRect(c.x, c.y, -SIZE / 4, -inChamber * cartridgeSize * yHeight) // chamber
-    const releaseTime = inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed
-    const putAwayTime = inventory[selectSlot].reloadPutAway * inventory[selectSlot].reloadSpeed
-    const takeOutTime = inventory[selectSlot].reloadTakeOut * inventory[selectSlot].reloadSpeed
-    const unreleaseTime = inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed
-    let ratio = (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadTime <= releaseTime) ?
-    1 - inventory[selectSlot].reloadTime / releaseTime : // 1
-    (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadTime <= unreleaseTime) ? // 2
-    inventory[selectSlot].reloadTime / unreleaseTime : 1
-    if (inventory[selectSlot].reloadState === 'done' || inventory[selectSlot].reloadState === 'release' || inventory[selectSlot].reloadState === 'unrelease') {
-      c.y = yOffset - (ratio - 1) * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-      if (inventory[selectSlot].slideState !== 'release' && inventory[selectSlot].slideTime === 0) { // slide gauge
-        context.fillRect(c.x - SIZE * 5 / 16, c.y, SIZE / 16, -yHeight) // full
-      } else if (inventory[selectSlot].slideState === 'pullBack') {
-        context.fillRect(
-          c.x - SIZE * 5 / 16,
-          c.y,
-          SIZE / 16,
-          -(1 - inventory[selectSlot].slideTime / (inventory[selectSlot].slideStop * inventory[selectSlot].slideSpeed)) * yHeight
-        )
-      } else if (inventory[selectSlot].slideState === 'release') {
-        context.fillRect(
-          c.x - SIZE * 5 / 16,
-          c.y,
-          SIZE / 16,
-          - (inventory[selectSlot].slideTime / (inventory[selectSlot].slideDone * inventory[selectSlot].slideSpeed)) * yHeight
-        )
-      }
-    }
-    ratio = (inventory[selectSlot].reloadState === 'release') ? 1 - inventory[selectSlot].reloadTime / releaseTime :
-    (inventory[selectSlot].reloadState === 'putAway') ? inventory[selectSlot].reloadTime / putAwayTime :
-    (inventory[selectSlot].reloadState === 'takeOut') ? 1 - inventory[selectSlot].reloadTime / takeOutTime :
-    (inventory[selectSlot].reloadState === 'unrelease') ? inventory[selectSlot].reloadTime / unreleaseTime : 1
-    inventory[selectSlot].magazines.forEach((magazine, index) => {
-      if (magazine !== -1) {
-        context.fillStyle = (0 < afterglow.reload && index === inventory[selectSlot].grip) ?
-        'hsla(0, 100%, 100%, .7)' :
-        (magazine < inventory[selectSlot].magazineSize * .1) ?
-        'hsla(0, 100%, 60%, .7)' :
-        (magazine < inventory[selectSlot].magazineSize * .3) ?
-        'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
-        if (
-          index === inventory[selectSlot].grip && !(inventory[selectSlot].reloadState === 'putAway' || inventory[selectSlot].reloadState === 'takeOut')
-        ) c.x = canvas.offsetWidth - SIZE * .75
-        else c.x = canvas.offsetWidth - SIZE * (1.75 + index)
-        if (index === inventory[selectSlot].grip) {
-          c.y = yOffset - ratio * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-        } else c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-        context.fillRect(c.x, c.y, -SIZE / 4, magazine * cartridgeSize * yHeight) // cartridges
-        context.fillRect( // magazine stop
-          c.x + SIZE / 16,
-          c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
-          -SIZE * 3 / 8, SIZE / 16
-        )
-        if (
-          index === inventory[selectSlot].grip &&
-          (inventory[selectSlot].reloadState === 'putAway' || inventory[selectSlot].reloadState === 'takeOut') ||
-          index !== inventory[selectSlot].grip
-        ) {
-          context.fillRect( // left width bar
-            c.x - SIZE / 4,
-            c.y, -SIZE / 16,
-            inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-          )
-        }
-        if ((
-          index === setOtherMagazine() || inventory[selectSlot].magazines.length === 1) &&
-          (loading.time !== 0 || magazine.magazines !== inventory[selectSlot].magazineSize)
-        ) {
-          context.fillRect( // loading gauge
-            c.x,
-            c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
-            SIZE / 16,
-            (-loading.time / (loading.done * inventory[selectSlot].loadingSpeed))
-            * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-          )
-        } else {
-          context.fillRect( // filled
-            c.x,
-            c.y,
-            SIZE / 16,
-            inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-          )
-        }
-      }
-    })
-  }
-  // context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)' :
-  // (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)' :
-  // 'hsla(210, 100%, 50%, .7)' // dash guage
-  // if (0 < afterglow.dashGauge) afterglow.dashGauge = (afterglow.dashGauge-1)|0
-  // c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
-  // context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
-  // context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
-  context.save()
-  if (dungeon !== dungeonList[3]) {
-    context.fillStyle =  // round number
-      0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
-      0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
-      'hsla(0, 100%, 30%, .7)'
-    c = {x: SIZE, y: canvas.offsetHeight - SIZE}
-    drawText(SIZE * 1.5, 'left', wave.number, c)
-  }
-  context.restore()
-}
 const strokeText = (text, x, y, maxWidth) => {
   context.strokeText(text, x, y, maxWidth)
   context.fillText(text, x, y, maxWidth)
@@ -1575,19 +888,6 @@ const inventoryBox = {
   absoluteY: SIZE * .25,
   width: SIZE * 10.5,
   height: SIZE * 6.25
-}
-const drawAim = (cursor) => { // Expected effective range
-  const radius =
-    Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
-  let aimRadius = (
-    targetWidth * radius / inventory[selectSlot].effectiveRange) * (
-    1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
-  context.save()
-  context.strokeStyle = 'hsl(0, 0%, 100%)'
-  context.beginPath()
-  context.arc(cursor.offsetX, cursor.offsetY, aimRadius * 20, 0, Math.PI * 2)
-  context.stroke()
-  context.restore()
 }
 const setWave = () => {
   if (wave.number === 0) dropItems = []
@@ -1624,46 +924,6 @@ const setWave = () => {
     wave.number === 9 ? 950 :
     wave.enemyHitPoint === 0 ? 950 * (1.1 ** (wave.number - 10)) :
     wave.enemyHitPoint * 1.1
-}
-const setEnemy = () => {
-  const setEnemySpeed = () => {
-    return (wave.number === 16) ? .95 + Math.random() * .05 : // pre
-    (wave.number === 15) ? .9 + Math.random() * .1 :
-    (wave.number === 14) ? .85 + Math.random() * .15 :
-    (wave.number === 13) ? .8 + Math.random() * .2 :
-    (wave.number === 12) ? .75 + Math.random() * .25 :
-    (wave.number === 11) ? .75 + Math.random() * .2 :
-    (wave.number === 10) ? .75 + Math.random() * .15 :
-    (wave.number === 9) ? .7 + Math.random() * .25 :
-    (wave.number === 8) ? .7 + Math.random() * .2 :
-    (wave.number === 7) ? .7 + Math.random() * .15 :
-    (wave.number === 6) ? .65 + Math.random() * .2 :
-    (wave.number === 5) ? .65 + Math.random() * .15 :
-    (wave.number === 4) ? .65 + Math.random() * .1 :
-    (wave.number === 3) ? .6 + Math.random() * .15 :
-    (wave.number === 2) ? .6 + Math.random() * .1 :
-    (wave.number === 1) ? .6 + Math.random() * .05 : 1
-  }
-  const type = dungeonList[0] ? dungeonList[0] : dungeonList[1]
-  const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
-  const a = 2 * Math.PI * Math.random()
-  const x = ownPosition.x + r * Math.cos(a)
-  const y = ownPosition.y + r * Math.sin(a)
-  const theta = a - Math.PI
-  enemies.push({
-    type: type,
-    life: wave.enemyHitPoint+.5|0,
-    x: x,
-    y: y,
-    theta: theta,
-    speed: setEnemySpeed(),
-    state: 'active',
-    fuel: 1000,
-    step: 0,
-    stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
-    imageID: ~~(Math.random() * enemyImageAmount)
-  })
-  if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
 }
 const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave = true, isWarehouse = true) => {
   if (isInventory) storage.setItem('inventoryArray', JSON.stringify(inventory))
@@ -2337,23 +1597,6 @@ if (false) { // TODO: Add to class
   dropItems.push(weapon)
 }
 
-const drawStore = (cursor) => {
-  context.font = `${SIZE}px ${font}`
-  objects.forEach(object => {
-    drawScreenEdge(object, 30)
-    context.drawImage(IMAGE[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
-    object.draw(cursor)
-  })
-}
-const drawObjects = (cursor) => {
-  if (!mapMode) drawStore(cursor)
-  else {
-    context.fillStyle = (mapMode) ? 'hsl(0, 0%, 50%)' : 'hsla(30, 100%, 85%)'
-    objects.forEach((object) => {
-      context.fillRect(relativeX(object.x), relativeY(object.y), object.width, object.height)
-    })
-  }
-}
 const relativeX = (arg) => {
   const a = settingsObject.isMiddleView ? screenOwnPos.x - ownPosition.x : canvas.offsetWidth / 2 - ownPosition.x
   return a + recoilEffect.dx * (afterglow.recoil/recoilEffect.flame) + arg
@@ -2663,11 +1906,6 @@ class Main {
   }
 }
 
-const frameResetProcess = (intervalDiffTime) => {
-  if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
-
-  if (ownState.stepLimit <= ownState.step) ownState.step = 0
-}
 const drawImage = (img, x, y) => {
   context.drawImage(img, ~~(x+.5), ~~(y+.5))
 }
@@ -2700,31 +1938,6 @@ const drawScreenEdge = (obj, hue) => {
     context.fillRect(relativeX(obj.x - radius), canvas.offsetHeight - SIZE, SIZE, SIZE)
   }
   context.restore()
-}
-const drawSaveCompleted = (intervalDiffTime) => {
-  const ratio = afterglow.save / 1000
-  context.save()
-  context.font = `${SIZE / 2}px ${font}`
-  context.textAlign = 'center'
-  context.textBaseline = 'bottom'
-  context.fillStyle = `hsla(0, 0%, 100%, ${ratio})`
-  const box = {
-    offsetX: canvas.offsetWidth / 2,
-    offsetY: canvas.offsetHeight - (1.5 - ratio) * SIZE,
-    absoluteX: 0,
-    absoluteY: 0,
-    width: 0,
-    height: 0,
-    text: 'Save complete.'
-  }
-  const measure = context.measureText(box.text)
-  box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft,
-  box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent,
-  box.width = measure.width
-  box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
-  context.fillText(box.text, box.offsetX, box.offsetY)
-  context.restore()
-  afterglow.save -= intervalDiffTime
 }
 
 const drawPause = () => {
@@ -3176,8 +2389,26 @@ class LobbyScene extends Scene {
       inventory[selectSlot].disconnector = false
       inventory[selectSlot].round = 0
     }
-    // loadingProcess()
+    const magazineForword = () => {
+      inventory[selectSlot].magazines.push(inventory[selectSlot].magazines[1])
+      inventory[selectSlot].magazines.splice(1, 1)
+    }
     if (code[action.change].isFirst()) magazineForword() // TODO: to consider
+  }
+  modeSelect = () => {
+    if (code[action.modeSelect].isFirst()) {
+      if (code[action.shift].flag) {
+        const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) - 1
+        inventory[selectSlot].mode =
+          n < 0 ? inventory[selectSlot].modeList[inventory[selectSlot].modeList.length - 1] :
+          inventory[selectSlot].modeList[n]
+      } else {
+        const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) + 1
+        inventory[selectSlot].mode =
+          n < inventory[selectSlot].modeList.length ? inventory[selectSlot].modeList[n] :
+          inventory[selectSlot].modeList[0]
+      }
+    }
   }
   interfaceProcess = (intervalDiffTime, mouseInput, cursor, wheelInput) => {
     if (code[action.pause].isFirst()) state = 'pause'
@@ -3206,10 +2437,205 @@ class LobbyScene extends Scene {
     if (0 < angle) currentDirection = angle
     else if (direction !== 0) currentDirection = direction
     if (inventory[selectSlot].category !== '' && location === locationList[1]) this.weaponProcess(mouseInput, cursor)
-    if (inventory[selectSlot].category !== '') modeSelect()
+    if (inventory[selectSlot].category !== '') this.modeSelect()
     if (dash.coolTime <= 0 && (code[action.dash].isFirst() || mouseInput.getKeyDown(2))) dashProcess(intervalDiffTime)
     moving(intervalDiffTime)
     if (code[action.debug].isFirst()) debugMode = !debugMode
+  }
+  dropItemProcess = (intervalDiffTime) => {
+    const blankInventorySlot = inventory.findIndex(v => v.category === '')
+    dropItems.forEach((item, index) => {
+      if (item.type === 'explosive' || item.type === 'droppedWeapon') {
+        if (item.life <= 0)  {
+          if (item.type === 'explosive') dropItems.splice(index, 1)
+          else {
+            dropItems[index] = {
+              type: 'cartridge',
+              x: item.x,
+              y: item.y,
+              life: 630,
+              dissapearTime: 660,
+              amount: item.magazines.reduce((prev, current) => {return prev + current})
+            }
+          }
+        }
+        item.life = (item.life-1)|0
+        if (item.type === 'explosive') return
+      }
+      const width = ownPosition.x - item.x
+      const height = ownPosition.y - item.y
+      const distance = Math.sqrt(width ** 2 + height ** 2)
+      if (0 <= blankInventorySlot) { // vacuuming
+        let multiple = (
+          SIZE < distance || (
+          item.type === 'droppedWeapon')) &&
+          mainSlotSize + inventorySize <= inventory.length ? 0 : 1 / distance
+        item.x = item.x + width / distance * multiple * intervalDiffTime
+        item.y = item.y + height / distance * multiple * intervalDiffTime
+      }
+      if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
+      if (item.type === 'cartridge') {
+        const bulletRadius = SIZE / 6
+        if (distance < minImgRadius + bulletRadius) {
+          ammo = (ammo+item.amount)|0
+          dropItems.splice(index, 1)
+        }
+      } else if (item.type === 'magazine') {
+        if (inventory[selectSlot].category !== '' && item.unavailableTime <= 0 && distance < minImgRadius * 2) {
+          for (let i = 0; i < inventory[selectSlot].magazines.length + 1; i=(i+1)|0) {
+            if (inventory[selectSlot].magazines[i] === -1) return inventory[selectSlot].magazines[i] = item.amount
+            if (i === inventory[selectSlot].magazines.length + 1) inventory[selectSlot].magazines.push(item.amount)
+          }
+          dropItems.splice(index, 1)
+        }
+      } else if (item.type === 'weapon' || item.type === 'droppedWeapon') {
+        if (item.unavailableTime <= 0 && distance < minImgRadius * 2 && 0 <= blankInventorySlot) {
+          delete item.type,
+          delete item.unavailableTime,
+          delete item.x,
+          delete item.y
+          if (item.time) delete item.time
+          inventory[blankInventorySlot] = dropItems.splice(index, 1)[0]
+        }
+      }
+    })
+  }
+  setWeapon = () => {
+    let rarityIndex = 0
+    const roundRistrict =
+      wave.number < 6 ? 3 :
+      wave.number < 11 ? 2 :
+      wave.number < 16 ? 1 : 0
+    for (let i = 0; i < weaponRarityList.length - (1 + roundRistrict); i++) {
+      if (.5 < Math.random()) rarityIndex += 1
+    }
+    let categoryIndex = 0
+    for (let i = 0; i < 3; i++) {
+      if (.5 < Math.random()) categoryIndex += 1
+    }
+    if (categoryIndex === 3) categoryIndex = 5
+    let modeList = [] // TODO: incomplete manual mode
+    // type:: SEMI : BURST : FULL AUTO
+    // HG:: 9 : 2 : 6
+    // SMG:: 5 : 4 : 10
+    // AR:: 7 : 3 : 7
+    // DMR
+    // SR
+    // SG:: 5 : 3 : 3
+    if ((
+      categoryIndex === 0 && Math.random() < .9) || (
+      categoryIndex === 1 && Math.random() < .5) || (
+      categoryIndex === 2 && Math.random() < .7) || (
+      categoryIndex === 5 && Math.random() < .5)
+    ) {
+      modeList.push(weaponModeList[1])
+    }
+    if ((
+      categoryIndex === 0 && Math.random() < .2) || (
+      categoryIndex === 1 && Math.random() < .4) || (
+      categoryIndex === 2 && Math.random() < .3) || (
+      categoryIndex === 5 && Math.random() < .3)
+    ) {
+      modeList.push(weaponModeList[2])
+    }
+    if ((
+      categoryIndex === 0 && Math.random() < .6) || (
+      categoryIndex === 1) || (
+      categoryIndex === 2 && Math.random() < .7) || (
+      categoryIndex === 5 && Math.random() < .3)
+    ) {
+      modeList.push(weaponModeList[3])
+    }
+    if (modeList.length === 0) modeList.push(weaponModeList[1])
+    if (categoryIndex === 2 && modeList.length === 3 && Math.random() < .5) { // like AK-47
+      modeList.push(...modeList.splice(1, 1))
+    }
+    let modeIndex = Math.floor(modeList.length * Math.random())
+    if (modeList.length - 1 < modeIndex) modeIndex -= 1
+    const HgMinmagazine = 5
+    const HgExtendMag = 28
+    const SmgMinMag = 15
+    const SmgExtendMag = 35
+    const ArMinmagazine = 10
+    const ArExtendMag = 65
+    const SgMinmagazine = 2
+    const SgExtendMag = 30
+    const magazineSize =
+      categoryIndex === 0 ? (HgMinmagazine + HgExtendMag * Math.random())|0 : // max 33
+      categoryIndex === 1 ? (SmgMinMag + SmgExtendMag * Math.random())|0 : // max 50
+      categoryIndex === 2 ? (ArMinmagazine + ArExtendMag * Math.random())|0 : // max 75
+      categoryIndex === 5 ? (SgMinmagazine + SgExtendMag * Math.random())|0 : // max 32
+      // TODO: slug barrels
+      0
+    const magazines = Array(10).fill(magazineSize, 0, 5).fill(0, 5, 10)
+    // Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
+    const HgBaseDamage = 70
+    const SmgBaseDamage = 100
+    const ArBaseDamage = 140
+    const SgBaseDamage = 20
+    const rarityMultiple = [
+      1 + Math.random() * .25, // Common
+      1 + Math.random() * .5, // Uncommon
+      1 + Math.random() * .75, // Rare
+      1 + Math.random() // Epic
+    ]
+    // TODO: Low mag(like revolver) bonus
+    // TODO: Semi auto(like FN FAL) bonus
+    const damage =
+      categoryIndex === 0 ? (HgBaseDamage * rarityMultiple[rarityIndex])|0 :
+      categoryIndex === 1 ? (SmgBaseDamage * rarityMultiple[rarityIndex])|0 :
+      categoryIndex === 2 ? (ArBaseDamage * rarityMultiple[rarityIndex])|0 :
+      categoryIndex === 5 ? (SgBaseDamage * rarityMultiple[rarityIndex])|0 : 0
+
+    const magSizeRatio = (magazineSize < magSizeInitial) ? 1 - magazineSize / magSizeInitial : 0
+    const slideSpeed = .75 + magSizeRatio + Math.random() * .25
+    const bulletSpeed = cartridgeInfo.speed * (.5 + Math.random() * 1.5)
+    const bulletLife = cartridgeInfo.life * (.5 + Math.random() * .5)
+    const reloadSpeed = .25 + (1 - magSizeRatio) / 2 + Math.random() * .25
+    // the smaller the bigger
+    const loadingSpeed = loading.weight * (.25 + magSizeRatio / 2 + Math.random() * .25)
+    const penetrationForce = Math.random()
+    const roundLimit = modeList.some(v => {return v === weaponModeList[2]}) ? (2 + 3 * Math.random())|0 : 0
+
+    // Expected effective range is halves the probability of hitting the target
+    // (Actual range) / 10 [m]
+    const effectiveRange =
+      categoryIndex === 0 ? 2.5 + 17.5 * Math.random() : // HG: 2.5 - 20
+      categoryIndex === 1 ? 5 + 20 * Math.random() : // SMG: 5 - 25
+      categoryIndex === 2 ? 15 + 30 * Math.random() : // AR: 15 - 45
+      categoryIndex === 5 ? 2 + 8 * Math.random() : 10 // SG: 2 - 10
+    const recoilCoefficient =
+      categoryIndex === 0 ? .1 + .5 * Math.random() : // HG: .1 - .6
+      categoryIndex === 1 ? .2 + 1.3 * Math.random() : // SMG: .2 - 1.5
+      categoryIndex === 2 ? 1 + 2 * Math.random() : // AR: 1 - 3
+      categoryIndex === 5 ? .3 + .2 * Math.random() : 10 // SR: .3 - .5
+    const gaugeNumber = categoryIndex === 5 ? 1 + 19 * Math.random()|0 : 1
+    const weapon = new Weapon(
+      `# ${wave.number}`,
+      weaponCategoryList[categoryIndex],
+      modeList,
+      modeList[modeIndex],
+      weaponRarityList[rarityIndex],
+      damage,
+      slideSpeed,
+      bulletSpeed,
+      bulletLife,
+      reloadSpeed,
+      magazineSize,
+      magazines,
+      loadingSpeed,
+      penetrationForce,
+      roundLimit,
+      effectiveRange,
+      recoilCoefficient,
+      gaugeNumber,
+
+      4000,
+      0,
+      wave.number
+    )
+    Object.assign(weapon, {type: 'weapon'})
+    return weapon
   }
   differenceAddition = (position, dx, dy, intervalDiffTime) => {
     let flag = {x: false, y: false}
@@ -3244,7 +2670,7 @@ class LobbyScene extends Scene {
         if (enemy.timer <= 0) {
           const c = {x: enemy.x, y: enemy.y}
           if (enemy.imageID === enemyImageAmount) {
-            enemies[index] = setWeapon()
+            enemies[index] = this.setWeapon()
             enemies[index].unavailableTime = 30
             enemies[index].x = c.x
             enemies[index].y = c.y
@@ -3459,6 +2885,46 @@ class LobbyScene extends Scene {
     } else return
     inventory[selectSlot].slideTime = 0
   }
+  setEnemy = () => {
+    const setEnemySpeed = () => {
+      return (wave.number === 16) ? .95 + Math.random() * .05 : // pre
+      (wave.number === 15) ? .9 + Math.random() * .1 :
+      (wave.number === 14) ? .85 + Math.random() * .15 :
+      (wave.number === 13) ? .8 + Math.random() * .2 :
+      (wave.number === 12) ? .75 + Math.random() * .25 :
+      (wave.number === 11) ? .75 + Math.random() * .2 :
+      (wave.number === 10) ? .75 + Math.random() * .15 :
+      (wave.number === 9) ? .7 + Math.random() * .25 :
+      (wave.number === 8) ? .7 + Math.random() * .2 :
+      (wave.number === 7) ? .7 + Math.random() * .15 :
+      (wave.number === 6) ? .65 + Math.random() * .2 :
+      (wave.number === 5) ? .65 + Math.random() * .15 :
+      (wave.number === 4) ? .65 + Math.random() * .1 :
+      (wave.number === 3) ? .6 + Math.random() * .15 :
+      (wave.number === 2) ? .6 + Math.random() * .1 :
+      (wave.number === 1) ? .6 + Math.random() * .05 : 1
+    }
+    const type = dungeonList[0] ? dungeonList[0] : dungeonList[1]
+    const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
+    const a = 2 * Math.PI * Math.random()
+    const x = ownPosition.x + r * Math.cos(a)
+    const y = ownPosition.y + r * Math.sin(a)
+    const theta = a - Math.PI
+    enemies.push({
+      type: type,
+      life: wave.enemyHitPoint+.5|0,
+      x: x,
+      y: y,
+      theta: theta,
+      speed: setEnemySpeed(),
+      state: 'active',
+      fuel: 1000,
+      step: 0,
+      stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
+      imageID: ~~(Math.random() * enemyImageAmount)
+    })
+    if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
+  }
   waveProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     if (wave.enemyCount < wave.enemyLimit) {
       if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
@@ -3466,7 +2932,7 @@ class LobbyScene extends Scene {
       } else if (enemies.length <= 24) { // && wave.enemySpawnIntervalLimit <= wave.enemySpawnInterval
         wave.enemySpawnInterval = 0
         wave.enemyCount += 1
-        setEnemy()
+        this.setEnemy()
       }
     } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
       wave.roundInterval += intervalDiffTime
@@ -3491,6 +2957,13 @@ class LobbyScene extends Scene {
       bullet.update()
       if (bullet.life < 0) bullets.splice(i, 1)
     })
+    const cloneProcess = () => {
+      if (
+        cloneReturnFlag && direction === 0 && !code[action.slow].flag &&
+        cloneSpeed <= ownSpeed.max
+      ) clonePosition.shift()
+      if (60 < clonePosition.length) clonePosition.shift()
+    }
     if (cloneFlag) cloneProcess()
     if (0 < moreAwayCount) moreAwayCount = (moreAwayCount-1)|0
     else if (reviveFlag) {
@@ -3561,7 +3034,7 @@ class LobbyScene extends Scene {
       this.interfaceProcess(intervalDiffTime, mouseInput, cursor, wheelInput)
       if (direction !== 0) direction = 0
       if (angle !== 0) angle = 0
-      if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
+      if (0 < dropItems.length) this.dropItemProcess(intervalDiffTime)
       this.inventoryProcess(mouseInput, cursor)
 
       const arrayUpdater = array => {
@@ -3581,6 +3054,34 @@ class LobbyScene extends Scene {
     }
   }
 
+  drawField = () => {
+    context.fillStyle = 'hsl(240, 100%, 60%)'
+    const width = SIZE * 7.5
+    const pos =
+      settingsObject.isMiddleView ? {x: ownPosition.x - screenOwnPos.x, y: ownPosition.y - screenOwnPos.y} :
+      0 < afterglow.recoil ? {
+        x: ownPosition.x - recoilEffect.dx * (afterglow.recoil/recoilEffect.flame),
+        y: ownPosition.y - recoilEffect.dy * (afterglow.recoil/recoilEffect.flame)
+      } : {x: ownPosition.x, y: ownPosition.y}
+    for (let i = -1, l = Math.ceil(canvas.offsetWidth / width) + 2; i < l; i=(i+1)|0) {
+      for (let j = -1, l = Math.ceil(canvas.offsetHeight / width) + 2; j < l; j=(j+1)|0) {
+        context.fillStyle = 'hsla(0, 0%, 50%, .5)'
+        context.beginPath()
+        context.arc(
+          i * width - pos.x % width + SIZE / 4, j * width - pos.y % width + SIZE / 4,
+          SIZE, 0, Math.PI * 2, false
+        )
+        context.fill()
+        context.fillStyle = 'hsl(300, 30%, 90%)'
+        context.beginPath()
+        context.arc(
+          i * width - pos.x % width, j * width - pos.y % width,
+          SIZE, 0, Math.PI * 2, false
+        )
+        context.fill()
+      }
+    }
+  }
   renderPortal = (intervalDiffTime, timeStamp, cursor) => {
     const particle = class {
       constructor (x, y, w, h, dx, dy, life, lightness) {
@@ -3651,6 +3152,392 @@ class LobbyScene extends Scene {
       context.restore()
     }
   }
+  drawStore = (cursor) => {
+    context.font = `${SIZE}px ${font}`
+    objects.forEach(object => {
+      drawScreenEdge(object, 30)
+      context.drawImage(IMAGE[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
+      object.draw(cursor)
+    })
+  }
+  drawObjects = (cursor) => {
+    if (!mapMode) this.drawStore(cursor)
+    else {
+      context.fillStyle = (mapMode) ? 'hsl(0, 0%, 50%)' : 'hsla(30, 100%, 85%)'
+      objects.forEach((object) => {
+        context.fillRect(relativeX(object.x), relativeY(object.y), object.width, object.height)
+      })
+    }
+  }
+  drawClone = () => {
+    const delayStep = 15
+    const ownStepLimit = 50
+    const setOwnImage = arg => {
+      return (arg === 1) ? 'images/TP2U.png' :
+      (arg === 3) ? 'images/TP2RU.png' :
+      (arg === 2) ? 'images/TP2R.png' :
+      (arg === 6) ? 'images/TP2RD.png' :
+      (arg === 4) ? 'images/TP2D.png' :
+      (arg === 12) ? 'images/TP2LD.png' :
+      (arg === 8) ? 'images/TP2L.png' :
+      (arg === 9) ? 'images/TP2LU.png' : 'images/TP2F.png'
+    }
+    const imgClone = ((
+      ownStepLimit / 2 + delayStep <= ownState.step || ownState.step < delayStep) &&
+      cloneSpeed <= ownSpeed.max
+    ) ? 'images/TP2F.png' :
+    (0 < angle) ? setOwnImage(angle) : setOwnImage(direction)
+    const pos = {
+      x: clonePosition.reduce((a, v) => {return a + v.dx}, ownPosition.x),
+      y: clonePosition.reduce((a, v) => {return a + v.dy}, ownPosition.y)
+    }
+    context.save()
+    context.globalAlpha = (0 < moreAwayCount) ? .5 + .5 * (1 - moreAwayCount / moreAwayLimit) : .5
+    context.drawImage(
+      IMAGE[imgClone], ~~(relativeX(pos.x - radius)+.5), ~~(relativeY(pos.y - radius)+.5)
+    )
+    context.restore()
+    if (0 < dash.coolTime && (cloneDashType1Flag || cloneDashType2Flag || cloneDashType3Flag)) { // clone dash
+      if (ownSpeed.max < cloneSpeed) afterimage.push({
+        x: pos.x, y: pos.y, alpha: .5
+      })
+      afterimage.forEach((clone, index) => {
+        context.save()
+        context.globalAlpha = clone.alpha
+        context.drawImage(IMAGE[imgClone],
+          ~~(relativeX(clone.x - SIZE / 2)+.5),
+          ~~(relativeY(clone.y - SIZE / 2)+.5)
+        )
+        context.restore()
+        clone.alpha = clone.alpha - .05
+        if (clone.alpha <= 0) afterimage.splice(index, 1)
+      })
+    }
+  }
+  drawBullets = () => {
+    bullets.forEach(bullet => {
+      if ((explosive1Flag || explosive2Flag || explosive3Flag) && bullet.detectFlag) return
+      context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / bullet.baseLife})`
+      context.beginPath()
+      context.arc(relativeX(bullet.x), relativeY(bullet.y), bullet.bulletRadius, 0, Math.PI * 2, false)
+      context.fill()
+    })
+  }
+  drawEnemies = () => {
+    enemies.forEach(enemy => {
+      context.fillStyle = (enemy.imageID === 0) ? 'hsla(0, 100%, 50%, .5)' :
+      (enemy.imageID === 1) ? 'hsla(300, 100%, 50%, .5)' :
+      (enemy.imageID === 2) ? 'hsla(60, 100%, 60%, .5)' : 'hsla(0, 0%, 100%, .5)'
+      {
+        const imgPath = (enemy.imageID === 0) ?
+        {F: 'images/JK32F.png', L: 'images/JK32L.png', R: 'images/JK32R.png'} :
+        (enemy.imageID === 1) ?
+        {F: 'images/JK33F.png', L: 'images/JK33L.png', R: 'images/JK33R.png'} :
+        (enemy.imageID === 2) ?
+        {F: 'images/JK34F.png', L: 'images/JK34L.png', R: 'images/JK34R.png'} :
+        {F: 'images/JK35Fv1.png', L:'images/JK35Fv1.png', R: 'images/JK35Fv1.png'}
+        const imgEnemy = (enemy.step <= enemy.stepLimit * 3 / 8) ? imgPath.R :
+        (enemy.stepLimit / 2 <= enemy.step && enemy.step <= enemy.stepLimit * 7 / 8) ?
+        imgPath.L : imgPath.F
+        const coordinate = (enemy.life <= 0) ?
+        {x:enemy.x - radius, y:enemy.y - radius + (enemy.timer - damageTimerLimit) * .25} :
+        {x:enemy.x - radius, y:enemy.y - radius}
+          context.save()
+        if (enemy.life <= 0) context.globalAlpha = enemy.timer/damageTimerLimit
+        context.drawImage(
+          IMAGE[imgEnemy], ~~(relativeX(coordinate.x)+.5), ~~(relativeY(coordinate.y)+.5)
+        )
+        context.restore()
+        if (debugMode) {
+          if (0 < enemy.life) {
+            context.font = `${SIZE/2}px ${font}`
+            context.fillRect(relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2),
+            enemy.life / wave.enemyHitPoint * SIZE, SIZE / 16)
+            // context.fillText(Math.ceil(enemy.life) // numerical drawing
+            // , relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2))
+          }
+          // pop damage
+          context.font = `${SIZE * 2 / 3 * enemy.timer/damageTimerLimit}px ${font}`
+          context.fillStyle = `hsla(0, 0%, 50%, ${enemy.timer/damageTimerLimit})`
+          context.fillText(
+            Math.ceil(enemy.damage),
+            relativeX(enemy.x - radius - (damageTimerLimit - enemy.timer)),
+            relativeY(enemy.y - radius * 2 - (damageTimerLimit - enemy.timer))
+          )
+        }
+      }
+    })
+  }
+  drawScreenEdgeArc = (item) => {
+    const testSize = SIZE / 3
+    context.save()
+    context.fillStyle =
+      item.rarity === weaponRarityList[0] ? weaponRatiryColorList[0] :
+      item.rarity === weaponRarityList[1] ? weaponRatiryColorList[1] :
+      item.rarity === weaponRarityList[2] ? weaponRatiryColorList[2] :
+      item.rarity === weaponRarityList[3] ? weaponRatiryColorList[3] : weaponRatiryColorList[4]
+    context.beginPath()
+    if ( // left & top
+      item.x < ownPosition.x - screenOwnPos.x + testSize / 2 &&
+      item.y < ownPosition.y - screenOwnPos.y + testSize / 2
+    ) context.arc(
+      testSize / 2, testSize / 2, testSize / 2, 0 / 2, Math.PI * 2, false
+    )
+    else if ( // left & bottom
+      item.x < ownPosition.x - screenOwnPos.x + testSize / 2 &&
+      ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
+    ) context.arc(
+      testSize / 2, canvas.offsetHeight - testSize / 2,
+      testSize / 2, 0, Math.PI * 2, false
+    )
+    else if ( // right & top
+      ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
+      item.y < ownPosition.y - screenOwnPos.y + testSize / 2
+    ) context.arc(
+      canvas.offsetWidth - testSize / 2, testSize / 2,
+      testSize / 2, 0, Math.PI * 2, false
+    )
+    else if ( // right & bottom
+      ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
+      ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
+    ) context.arc(
+      canvas.offsetWidth - testSize / 2,
+      canvas.offsetHeight - testSize / 2,
+      testSize / 2, 0, Math.PI * 2, false
+    )
+    else if (item.x < ownPosition.x - screenOwnPos.x + testSize / 2) { // out of left
+      context.arc(
+        testSize / 2, relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
+      )
+    } else if (ownPosition.x + canvas.offsetWidth - screenOwnPos.x + testSize / 2 < item.x) { // out of right
+      context.arc(
+        canvas.offsetWidth - testSize / 2, relativeY(item.y),
+        testSize / 2, 0, Math.PI * 2, false
+      )
+    } else if (item.y < ownPosition.y - screenOwnPos.y + testSize / 2) { // out of top
+      context.arc(
+        relativeX(item.x), testSize / 2,
+        testSize / 2, 0, Math.PI * 2, false
+      )
+    } else if (ownPosition.y + canvas.offsetHeight - screenOwnPos.y + testSize / 2 < item.y) { // out of bottom
+      context.arc(
+        relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
+        testSize / 2, 0, Math.PI * 2, false
+      )
+    } else {
+      context.arc(relativeX(item.x), relativeY(item.y), testSize, 0, Math.PI * 2, false)
+    }
+    context.fill()
+    context.restore()
+  }
+  drawDropItems = () => {
+    dropItems.forEach(item => {
+      if (item.type === 'weapon') {
+        this.drawScreenEdgeArc(item)
+      } else if (item.type === 'magazine') {
+        context.fillStyle = 'hsl(120, 100%, 20%)'
+        context.fillRect(relativeX(item.x), relativeY(item.y), SIZE / 3, SIZE * 2 / 3)
+      } else if (item.type === 'explosive') {
+        context.fillStyle = `hsla(0, 0%, 0%, ${.2 * (item.life / explosiveLimit)})`
+        context.beginPath()
+        context.arc(relativeX(item.x), relativeY(item.y), explosiveRange, 0, Math.PI * 2, false)
+        context.fill()
+      } else if (item.type === 'droppedWeapon') {
+        context.fillStyle = (item.type === 'droppedWeapon') ?
+        `hsla(180, 100%, 30%, ${item.life/600})` :
+        'hsl(180, 100%, 40%)'
+        context.fillRect(relativeX(item.x), relativeY(item.y), SIZE * 2 / 3, SIZE * 2 / 3)
+      }
+    })
+  }
+  drawIndicator = () => {
+    const setOtherMagazine = () => {
+      const array = inventory[selectSlot].magazines.map((x, i) => {
+        if (x === inventory[selectSlot].magazineSize || i === inventory[selectSlot].grip) return -1
+        else return x
+      })
+      const index = array.indexOf(Math.max(...array))
+      if (
+        index !== inventory[selectSlot].grip && // if only a magazine
+        inventory[selectSlot].magazines[index] !== inventory[selectSlot].magazineSize
+      ) return index
+      else return -1
+    }
+    let c = {x: canvas.offsetWidth - SIZE / 2, y: canvas.offsetHeight - SIZE}
+    context.save()
+    context.font = `${SIZE * .5}px ${font}`
+    context.fillStyle = 'hsl(330, 100%, 50%)'
+    context.globalAlpha = .7
+    if (homingFlag) {
+      context.drawImage(IMAGE['images/Homingv1.jpg'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
+    } else if (explosive1Flag) {
+      context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
+      context.fillText('1', c.x - SIZE * 2, c.y - SIZE * 8)
+    } else if (explosive2Flag) {
+      context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
+      context.fillText('2', c.x - SIZE * 2, c.y - SIZE * 8)
+    } else if (explosive3Flag) {
+      context.drawImage(IMAGE['images/TP2F.png'], ~~(c.x - SIZE * 2+.5), ~~(c.y - SIZE * 8+.5))
+      context.fillText('3', c.x - SIZE * 2, c.y - SIZE * 8)
+    }
+      context.restore()
+    context.font = `${SIZE}px ${font}`
+    context.fillStyle = 'hsla(120, 100%, 30%, .7)'
+    context.textAlign = 'right'
+    context.fillText(point, c.x, c.y - SIZE * 5)
+    context.fillStyle = 'hsla(60, 100%, 50%, .7)'
+    if (0 < afterglow.point.length) {
+      context.font = `${SIZE*.75}px ${font}`
+      afterglow.point.forEach((x, i) => {
+        context.fillText(`+${x.number}`, c.x - SIZE * 2 - (30 - x.count)/2, c.y - SIZE * 6)
+        x.count = (x.count-1)|0
+        if (x.count <= 0) afterglow.point.splice(i, 1)
+      })
+      context.font = `${SIZE}px ${font}`
+    }
+    if (inventory[selectSlot].category !== '') {
+      const cartridges = inventory[selectSlot].magazines[inventory[selectSlot].grip]
+      context.fillStyle = (cartridges < inventory[selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
+      (cartridges < inventory[selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
+      context.save()
+      inventory[selectSlot].modeList.forEach((v, i) => {
+        context.fillStyle = 'hsla(210, 100%, 50%, .7)'
+        if (inventory[selectSlot].mode === v) {
+          context.fillRect(c.x - SIZE * .8, c.y - SIZE * (9.7 - i), SIZE / 6, SIZE * .65)
+        }
+        const text =
+          v === weaponModeList[1] ? '1' : // SEMI AUTO
+          v === weaponModeList[2] ? inventory[selectSlot].roundLimit : // BURST
+          v === weaponModeList[3] ? 'F' : '' // FULL AUTO
+          context.fillText(text, c.x, c.y - SIZE * (9 - i))
+      })
+      if (settingsObject.isManipulateCode && 1 < inventory[selectSlot].modeList.length) {
+        context.fillStyle = 'hsla(210, 100%, 75%, .4)'
+        context.fillRect(c.x - SIZE * .55, c.y - SIZE * 10.6, SIZE * .6, SIZE * .6)
+        context.font = `${SIZE*.75}px ${font}`
+        context.fillStyle = 'hsla(0, 0%, 100%, .4)'
+        context.fillText(extractCode(action.modeSelect), c.x , c.y - SIZE * 10)
+      }
+      context.restore()
+      context.save()
+      const inChamber = (inventory[selectSlot].chamber) ? 1 : 0
+      context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - SIZE * 3)
+      // context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
+      // context.fillText(ammo, c.x, c.y)
+      context.restore()
+      const cartridgeSize = 1 / (inventory[selectSlot].magazineSize + 1)
+      const yOffset = canvas.offsetHeight - SIZE * .75
+      const yHeight = SIZE * 3
+      c.x = canvas.offsetWidth - SIZE * .75
+      c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+      if (0 < afterglow.reload) context.fillStyle = 'hsla(0, 100%, 100%, .7)'
+      context.fillRect(c.x, c.y, -SIZE / 4, -inChamber * cartridgeSize * yHeight) // chamber
+      const releaseTime = inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed
+      const putAwayTime = inventory[selectSlot].reloadPutAway * inventory[selectSlot].reloadSpeed
+      const takeOutTime = inventory[selectSlot].reloadTakeOut * inventory[selectSlot].reloadSpeed
+      const unreleaseTime = inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed
+      let ratio = (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadTime <= releaseTime) ?
+      1 - inventory[selectSlot].reloadTime / releaseTime : // 1
+      (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadTime <= unreleaseTime) ? // 2
+      inventory[selectSlot].reloadTime / unreleaseTime : 1
+      if (inventory[selectSlot].reloadState === 'done' || inventory[selectSlot].reloadState === 'release' || inventory[selectSlot].reloadState === 'unrelease') {
+        c.y = yOffset - (ratio - 1) * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+        if (inventory[selectSlot].slideState !== 'release' && inventory[selectSlot].slideTime === 0) { // slide gauge
+          context.fillRect(c.x - SIZE * 5 / 16, c.y, SIZE / 16, -yHeight) // full
+        } else if (inventory[selectSlot].slideState === 'pullBack') {
+          context.fillRect(
+            c.x - SIZE * 5 / 16,
+            c.y,
+            SIZE / 16,
+            -(1 - inventory[selectSlot].slideTime / (inventory[selectSlot].slideStop * inventory[selectSlot].slideSpeed)) * yHeight
+          )
+        } else if (inventory[selectSlot].slideState === 'release') {
+          context.fillRect(
+            c.x - SIZE * 5 / 16,
+            c.y,
+            SIZE / 16,
+            - (inventory[selectSlot].slideTime / (inventory[selectSlot].slideDone * inventory[selectSlot].slideSpeed)) * yHeight
+          )
+        }
+      }
+      ratio = (inventory[selectSlot].reloadState === 'release') ? 1 - inventory[selectSlot].reloadTime / releaseTime :
+      (inventory[selectSlot].reloadState === 'putAway') ? inventory[selectSlot].reloadTime / putAwayTime :
+      (inventory[selectSlot].reloadState === 'takeOut') ? 1 - inventory[selectSlot].reloadTime / takeOutTime :
+      (inventory[selectSlot].reloadState === 'unrelease') ? inventory[selectSlot].reloadTime / unreleaseTime : 1
+      inventory[selectSlot].magazines.forEach((magazine, index) => {
+        if (magazine !== -1) {
+          context.fillStyle = (0 < afterglow.reload && index === inventory[selectSlot].grip) ?
+          'hsla(0, 100%, 100%, .7)' :
+          (magazine < inventory[selectSlot].magazineSize * .1) ?
+          'hsla(0, 100%, 60%, .7)' :
+          (magazine < inventory[selectSlot].magazineSize * .3) ?
+          'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
+          if (
+            index === inventory[selectSlot].grip && !(inventory[selectSlot].reloadState === 'putAway' || inventory[selectSlot].reloadState === 'takeOut')
+          ) c.x = canvas.offsetWidth - SIZE * .75
+          else c.x = canvas.offsetWidth - SIZE * (1.75 + index)
+          if (index === inventory[selectSlot].grip) {
+            c.y = yOffset - ratio * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+          } else c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+          context.fillRect(c.x, c.y, -SIZE / 4, magazine * cartridgeSize * yHeight) // cartridges
+          context.fillRect( // magazine stop
+            c.x + SIZE / 16,
+            c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
+            -SIZE * 3 / 8, SIZE / 16
+          )
+          if (
+            index === inventory[selectSlot].grip &&
+            (inventory[selectSlot].reloadState === 'putAway' || inventory[selectSlot].reloadState === 'takeOut') ||
+            index !== inventory[selectSlot].grip
+          ) {
+            context.fillRect( // left width bar
+              c.x - SIZE / 4,
+              c.y, -SIZE / 16,
+              inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+            )
+          }
+          if ((
+            index === setOtherMagazine() || inventory[selectSlot].magazines.length === 1) &&
+            (loading.time !== 0 || magazine.magazines !== inventory[selectSlot].magazineSize)
+          ) {
+            context.fillRect( // loading gauge
+              c.x,
+              c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
+              SIZE / 16,
+              (-loading.time / (loading.done * inventory[selectSlot].loadingSpeed))
+              * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+            )
+          } else {
+            context.fillRect( // filled
+              c.x,
+              c.y,
+              SIZE / 16,
+              inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+            )
+          }
+        }
+      })
+    }
+    // context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)' :
+    // (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)' :
+    // 'hsla(210, 100%, 50%, .7)' // dash guage
+    // if (0 < afterglow.dashGauge) afterglow.dashGauge = (afterglow.dashGauge-1)|0
+    // c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
+    // context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
+    // context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
+    context.save()
+    if (dungeon !== dungeonList[3]) {
+      context.fillStyle =  // round number
+        0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
+        0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
+        'hsla(0, 100%, 30%, .7)'
+      c = {x: SIZE, y: canvas.offsetHeight - SIZE}
+      context.font = `${SIZE * 1.5}px ${font}`
+      context.textAlign = 'left'
+      context.fillText(wave.number, c.x, c.y)
+    }
+    context.restore()
+  }
   renderWeaponCategory = (box, weapon) => {
     context.save()
     context.fillStyle= weaponRatiryColorList[weaponRarityList.indexOf(weapon.rarity)]
@@ -3696,6 +3583,73 @@ class LobbyScene extends Scene {
       })
     }
   }
+  drawMyself = (intervalDiffTime) => {
+    if (ownState.radius === 0) ownState.step = 0
+    else ownState.step += intervalDiffTime
+    // y = -4 * (x - .5) ** 2 + 1
+    const formula = -4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1
+    const isJumpImage = .3 < formula ? true : false
+    const jump = .8 < formula ? 1 : 0
+    const setOwnImageFromDiff = (dx, dy) => {
+      const coefficient = .2
+      return false ? 'images/TP2F.png' : // TODO: Pre-check max diff
+        dy < 0 && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2U.png' :
+        0 < dx && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2R.png' :
+        0 < dy && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2D.png' :
+        dx < 0 && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2L.png' :
+        dy < 0 && 0 < dx ? 'images/TP2RU.png' :
+        0 < dy && 0 < dx ? 'images/TP2RD.png' :
+        0 < dy && dx < 0 ? 'images/TP2LD.png' :
+        dy < 0 && dx < 0 ? 'images/TP2LU.png' : 'images/TP2F.png'
+    }
+    const imgMyself =
+      ownState.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
+
+    const pos =
+      settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : { // recoil effect
+        x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
+        y: canvas.offsetHeight / 2 - jump + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
+      }
+    context.fillStyle = 'hsla(0, 0%, 0%, .2)' // shadow
+    context.beginPath()
+    context.arc(
+      pos.x + radius * .05, pos.y + radius * .6, SIZE / 4, 0, Math.PI * 2, false
+    )
+    context.fill()
+    if (0 < dash.coolTime) {
+      const angle =
+        dash.coolTime < dash.coolTimeLimit - dash.invincibleTime ?
+        dash.coolTime / (dash.coolTimeLimit - dash.invincibleTime) * Math.PI * 2 :
+        Math.PI * 2
+      context.fillStyle = 'hsla(0, 100%, 100%, .5)'
+      context.beginPath()
+      context.moveTo(pos.x, pos.y)
+      context.arc(
+        pos.x, pos.y, SIZE / 2, -Math.PI * .5, -angle - Math.PI * .5, true
+      )
+      context.fill()
+    }
+    context.save()
+    if (dash.coolTimeLimit - dash.invincibleTime < dash.coolTime) {
+      afterimage.push({
+        x: ownPosition.x, y: ownPosition.y - jump, alpha: .5
+      })
+    }
+    afterimage.forEach((own, index) => {
+      context.save()
+      context.globalAlpha = own.alpha
+      context.drawImage(IMAGE[imgMyself],
+        ~~(relativeX(own.x - SIZE / 2)+.5),
+        ~~(relativeY(own.y - SIZE / 2)+.5)
+      )
+      context.restore()
+      own.alpha = own.alpha - .1
+      if (own.alpha <= 0) afterimage.splice(index, 1)
+    })
+    context.globalAlpha = (0 < moreAwayCount) ? moreAwayCount / moreAwayLimit : 1
+    context.drawImage(IMAGE[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
+    context.restore()
+  }
   renderSlot = (cursor) => {
     context.save()
     if (inventoryFlag) {
@@ -3734,6 +3688,44 @@ class LobbyScene extends Scene {
     })
     context.restore()
   }
+  drawAim = (cursor) => { // Expected effective range
+    const radius =
+      Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
+    let aimRadius = (
+      targetWidth * radius / inventory[selectSlot].effectiveRange) * (
+      1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
+    context.save()
+    context.strokeStyle = 'hsl(0, 0%, 100%)'
+    context.beginPath()
+    context.arc(cursor.offsetX, cursor.offsetY, aimRadius * 20, 0, Math.PI * 2)
+    context.stroke()
+    context.restore()
+  }
+  drawSaveCompleted = (intervalDiffTime) => {
+    const ratio = afterglow.save / 1000
+    context.save()
+    context.font = `${SIZE / 2}px ${font}`
+    context.textAlign = 'center'
+    context.textBaseline = 'bottom'
+    context.fillStyle = `hsla(0, 0%, 100%, ${ratio})`
+    const box = {
+      offsetX: canvas.offsetWidth / 2,
+      offsetY: canvas.offsetHeight - (1.5 - ratio) * SIZE,
+      absoluteX: 0,
+      absoluteY: 0,
+      width: 0,
+      height: 0,
+      text: 'Save complete.'
+    }
+    const measure = context.measureText(box.text)
+    box.absoluteX = box.offsetX - measure.actualBoundingBoxLeft,
+    box.absoluteY = box.offsetY - measure.actualBoundingBoxAscent,
+    box.width = measure.width
+    box.height = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+    context.fillText(box.text, box.offsetX, box.offsetY)
+    context.restore()
+    afterglow.save -= intervalDiffTime
+  }
   render (intervalDiffTime, mouseInput, cursor) {
     // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
@@ -3766,14 +3758,14 @@ class LobbyScene extends Scene {
         canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE :
         canvas.offsetHeight - cursor.offsetY
     }
-    drawField()
+    this.drawField()
     if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
-    if (0 < objects.length) drawObjects(cursor)
-    if (0 < clonePosition.length) drawClone()
-    if (0 < bullets.length) drawBullets()
-    if (0 < enemies.length) drawEnemies()
-    if (0 < dropItems.length) drawDropItems()
-    drawIndicator()
+    if (0 < objects.length) this.drawObjects(cursor)
+    if (0 < clonePosition.length) this.drawClone()
+    if (0 < bullets.length) this.drawBullets()
+    if (0 < enemies.length) this.drawEnemies()
+    if (0 < dropItems.length) this.drawDropItems()
+    this.drawIndicator()
 
     const arrayRenderer = array => {
       array.forEach(v => {
@@ -3789,10 +3781,10 @@ class LobbyScene extends Scene {
       v.render(mouseInput, cursor)
     })
 
-    drawMyself(intervalDiffTime)
+    this.drawMyself(intervalDiffTime)
     this.renderSlot(cursor)
-    if (inventory[selectSlot].category !== '' && !inventoryFlag) drawAim(cursor)
-    if (0 <= afterglow.save) drawSaveCompleted(intervalDiffTime)
+    if (inventory[selectSlot].category !== '' && !inventoryFlag) this.drawAim(cursor)
+    if (0 <= afterglow.save) this.drawSaveCompleted(intervalDiffTime)
     if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
     if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
   }
@@ -3945,6 +3937,11 @@ class Entry {
 
     frameCounter(this.internalFrameArray)
 
+    const frameResetProcess = (intervalDiffTime) => {
+      if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
+
+      if (ownState.stepLimit <= ownState.step) ownState.step = 0
+    }
     frameResetProcess(this.intervalDiffTime)
   }, 0)
 
