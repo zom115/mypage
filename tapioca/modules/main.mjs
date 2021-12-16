@@ -7,7 +7,6 @@ const font = 'jkmarugo'
 
 const SIZE = 32
 
-let isLeftMouseDown = false
 let isRightMouseDownFirst = false
 let mouseUpPos = {offsetX: 0, offsetY: 0}
 let isLeftMouseUpFirst = false
@@ -18,9 +17,6 @@ canvas.addEventListener('mouseover', () => {
 }, false)
 canvas.addEventListener('mousedown', e => {
   e.preventDefault()
-  if (e.button === 0) {
-    isLeftMouseDown = true
-  }
   if (e.button === 2) {
     isRightMouseDownFirst = true
   }
@@ -30,7 +26,6 @@ canvas.addEventListener('mouseup', e => {
   mouseUpPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
   if (e.button === 0) {
     isLeftMouseUpFirst = true
-    isLeftMouseDown = false
   }
 }, false)
 canvas.addEventListener('click', () => {}, false)
@@ -2069,7 +2064,7 @@ class RenderBox {
     context.strokeRect(box.absoluteX, box.absoluteY, box.width, box.height)
     // text highlight
     if (this.boxInterface.isInner(box, cursor)) {
-      const lightness = isLeftMouseDown ? 70 : 75
+      const lightness = mouseInput.getKeyDown(0) ? 70 : 75
       context.fillStyle = `hsla(${box.hue}, ${saturation}%, ${lightness}%, .5)`
       context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
     }
@@ -2102,7 +2097,7 @@ const Shop = class {
   drawShop = () => {
     context.drawImage(IMAGE[this.img], ~~(relativeX(this.x)+.5), ~~(relativeY(this.y)+.5))
   }
-  render (cursor) {}
+  render (mouseInput, cursor) {}
 }
 class StartSpot extends Shop {
   constructor (dx, dy, w, h, Id, img) {
@@ -2155,7 +2150,7 @@ class StartSpot extends Shop {
       dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
     }
   }
-  render(cursor) {
+  render(mouseInput, cursor) {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (this.boxInterface.isInner(this, offset)) {
@@ -2261,7 +2256,7 @@ class ShopSpot extends Shop {
     if (0 < afterglow.limitBreakFailed) afterglow.limitBreakFailed -= intervalDiffTime
 
   }
-  render(cursor) {
+  render(mouseInput, cursor) {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (this.boxInterface.isInner(this, offset)) {
@@ -2448,7 +2443,7 @@ class SaveSpot extends Shop {
         if (
           !this.isSortLabel &&
           0 <= this.manipulateSortLabelIndex &&
-          isLeftMouseDown &&
+          mouseInput.getKeyDown(0) &&
           5 <= Math.abs(this.swapAbsoluteX - cursor.offsetX)
         ) this.isSortLabel = true
 
@@ -2513,17 +2508,17 @@ class SaveSpot extends Shop {
           if (this.manipulateColumnSizeNumber === -1) this.manipulateColumnSizeNumber = cI
           if (this.temporaryDiffX === -1) this.temporaryDiffX = cursor.offsetX - cV.width
         }
-        if (this.manipulateColumnSizeNumber === cI && isLeftMouseDown) {
+        if (this.manipulateColumnSizeNumber === cI && mouseInput.getKeyDown(0)) {
           const x = cursor.offsetX - this.temporaryDiffX
           if (0 < x && this.manipulateColumnSizeNumber === cI) cV.width = x
         }
-        if (this.manipulateColumnSizeNumber !== -1 && !isLeftMouseDown) {
+        if (this.manipulateColumnSizeNumber !== -1 && !mouseInput.getKeyDown(0)) {
           this.temporaryDiffX = -1
           this.manipulateColumnSizeNumber = -1
         }
         return pV + cV.width
       }, 0)
-      if((this.isSortLabel || this.sendSortLabelIndex === -1) && !isLeftMouseDown) { // Reset sort label
+      if((this.isSortLabel || this.sendSortLabelIndex === -1) && !mouseInput.getKeyDown(0)) { // Reset sort label
         this.manipulateSortLabelIndex = -1
         this.sendSortLabelIndex = -1
         this.swapAbsoluteX = -1
@@ -2567,7 +2562,7 @@ class SaveSpot extends Shop {
       }
     } else isWarehouse = false
   }
-  render(cursor) {
+  render(mouseInput, cursor) {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (this.boxInterface.isInner(this, offset)) {
@@ -2602,7 +2597,7 @@ class SaveSpot extends Shop {
         const drawInterectBoxArea = (box) => {
           context.save()
           if (this.boxInterface.isInner(box, cursor)) {
-            if (isLeftMouseDown) context.globalAlpha = .5
+            if (mouseInput.getKeyDown(0)) context.globalAlpha = .5
             else context.globalAlpha = .3
           } else context.globalAlpha = .05
           context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
@@ -3713,7 +3708,7 @@ class LobbyScene extends Scene {
     this.shopArray.push(new StartSpot(-size * 3, -size * 10, 1.25, 1.25, 2, 'images/stv1.png'))
   }
 
-  reloadProcess = () => {
+  reloadProcess = (mouseInput) => {
     inventory[selectSlot].reloadTime = (inventory[selectSlot].reloadTime+1)|0
     if (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
       inventory[selectSlot].reloadState = 'putAway'
@@ -3738,11 +3733,11 @@ class LobbyScene extends Scene {
       }
     } else return
     inventory[selectSlot].reloadTime = 0
-    if (inventory[selectSlot].mode === weaponModeList[2] && !isLeftMouseDown) {
+    if (inventory[selectSlot].mode === weaponModeList[2] && !mouseInput.getKeyDown(0)) {
       inventory[selectSlot].round = 0
     }
   }
-  mouseFiring = (cursor) => {
+  mouseFiring = (mouseInput, cursor) => {
     if (
       inventory[selectSlot].reloadAuto === 'ON' &&
       inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
@@ -3752,7 +3747,7 @@ class LobbyScene extends Scene {
       inventory[selectSlot].slideState === 'release'
     ) {
       inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed * 1.5
-      this.reloadProcess()
+      this.reloadProcess(mouseInput)
       return
     }
     if (!inventory[selectSlot].chamber) return
@@ -3790,30 +3785,32 @@ class LobbyScene extends Scene {
       inventory[selectSlot].mode === weaponModeList[2] ? inventory[selectSlot].roundLimit / (inventory[selectSlot].roundLimit + 1) : 1
     inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient * burstReduction
   }
-  weaponProcess = (cursor) => {
+  weaponProcess = (mouseInput, cursor) => {
     if (
       code[action.reload].isFirst() &&
       inventory[selectSlot].reloadTime === 0 &&
       inventory[selectSlot].reloadState === 'done'
     ) {
       inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
-      this.reloadProcess()
-    } else if (0 < inventory[selectSlot].reloadTime || inventory[selectSlot].reloadState !== 'done') this.reloadProcess()
+      this.reloadProcess(mouseInput)
+    } else if (0 < inventory[selectSlot].reloadTime || inventory[selectSlot].reloadState !== 'done') {
+      this.reloadProcess(mouseInput)
+    }
 
     if (((
-      isLeftMouseDown && !inventoryFlag && !portalFlag) || (
+      mouseInput.getKeyDown(0) && !inventoryFlag && !portalFlag) || (
       inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
       !inventory[selectSlot].disconnector
     ) {
-      this.mouseFiring(cursor)
+      this.mouseFiring(mouseInput, cursor)
     }
-    if (inventory[selectSlot].mode === weaponModeList[1] && !isLeftMouseDown) {
+    if (inventory[selectSlot].mode === weaponModeList[1] && !mouseInput.getKeyDown(0)) {
       inventory[selectSlot].disconnector = false
     }
     if (
       inventory[selectSlot].mode === weaponModeList[2] &&
       inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
-      !isLeftMouseDown
+      !mouseInput.getKeyDown(0)
     ) {
       inventory[selectSlot].disconnector = false
       inventory[selectSlot].round = 0
@@ -3821,7 +3818,7 @@ class LobbyScene extends Scene {
     // loadingProcess()
     if (code[action.change].isFirst()) magazineForword() // TODO: to consider
   }
-  interfaceProcess = (intervalDiffTime, cursor) => {
+  interfaceProcess = (intervalDiffTime, mouseInput, cursor) => {
     if (code[action.pause].isFirst()) state = 'pause'
     if (code[action.primary].isFirst()) selectSlot = 0
     if (code[action.secondary].isFirst()) selectSlot = 1
@@ -3847,7 +3844,7 @@ class LobbyScene extends Scene {
     if (code[action.left].flag) direction = (direction+8)|0
     if (0 < angle) currentDirection = angle
     else if (direction !== 0) currentDirection = direction
-    if (inventory[selectSlot].category !== '' && location === locationList[1]) weaponProcess(cursor)
+    if (inventory[selectSlot].category !== '' && location === locationList[1]) this.weaponProcess(mouseInput, cursor)
     if (inventory[selectSlot].category !== '') modeSelect()
     if (dash.coolTime <= 0 && (code[action.dash].isFirst() || isRightMouseDownFirst)) dashProcess(intervalDiffTime)
     moving(intervalDiffTime)
@@ -4120,7 +4117,7 @@ class LobbyScene extends Scene {
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     if (location === locationList[1] && dungeon === dungeonList[4]) {
     } else {
-      this.interfaceProcess(intervalDiffTime, cursor)
+      this.interfaceProcess(intervalDiffTime, mouseInput, cursor)
       if (direction !== 0) direction = 0
       if (angle !== 0) angle = 0
       if (0 < dropItems.length) dropItemProcess(intervalDiffTime)
@@ -4348,7 +4345,7 @@ class LobbyScene extends Scene {
 
     this.shopArray.forEach(v => {
       drawScreenEdge(v, 30)
-      v.render(cursor)
+      v.render(mouseInput, cursor)
     })
 
     drawMyself(intervalDiffTime)
