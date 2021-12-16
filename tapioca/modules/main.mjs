@@ -904,61 +904,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
   setAngle()
   setTitleMenuWord()
 })
-const slideProcess = () => {
-  if (
-    inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
-    inventory[selectSlot].slideState === 'release') return
-  if (inventory[selectSlot].reloadState !== 'done') return
-  if ((
-    explosive1Flag || explosive2Flag || explosive3Flag) &&
-    bullets.length !== 0 && inventory[selectSlot].slideState === 'release'
-  ) return
-  inventory[selectSlot].slideTime = (
-    combatReload.flag) ? (inventory[selectSlot].slideTime+1)|0 : (inventory[selectSlot].slideTime+1)|0
-  if (
-    inventory[selectSlot].slideState === 'pullBack' &&
-    inventory[selectSlot].slideStop * inventory[selectSlot].slideSpeed <= inventory[selectSlot].slideTime
-  ) {
-    if (!inventory[selectSlot].gripFlag) return
-    inventory[selectSlot].slideState = 'release'
-    const stopSlide = () => {
-      if (inventory[selectSlot].magazines[inventory[selectSlot].grip] === 0) return // cocking postponement
-      if ((code[action.combatReload].flag || combatReload.auto === 'ON') && combatReload.magFlag) {
-        combatReload.flag = true
-        combatReload.weight = (!code[action.combatReload].flag) ? 8 : 4
-      }
-    }
-    stopSlide()
-  } else if (
-    inventory[selectSlot].slideState === 'release' &&
-    inventory[selectSlot].slideDone * inventory[selectSlot].slideSpeed <= inventory[selectSlot].slideTime
-  ) {
-    inventory[selectSlot].slideState = 'done'
-    const doneSlide = () => {
-      if (combatReload.flag) {
-        ammo = (ammo-1)|0
-        combatReload.flag = false
-      } else if (
-        0 < inventory[selectSlot].magazines[inventory[selectSlot].grip] &&
-        !inventory[selectSlot].chamber
-      ) {
-        inventory[selectSlot].magazines[inventory[selectSlot].grip] =
-          (inventory[selectSlot].magazines[inventory[selectSlot].grip]-1)|0 // semi automatic mechanism
-      }
-      inventory[selectSlot].chamber = true
-      if (afterglow.chamberFlag) {
-        afterglow.reload = flashTimeLimit
-        afterglow.chamberFlag = false
-      }
-      combatReload.magFlag = false
-      combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
-    }
-    doneSlide()
-  } else if (inventory[selectSlot].slideState === 'done') {
-    if (0 <= inventory[selectSlot].slideTime) return inventory[selectSlot].slideState = 'pullBack'
-  } else return
-  inventory[selectSlot].slideTime = 0
-}
 const differenceAddition = (position, dx, dy, intervalDiffTime) => {
   let flag = {x: false, y: false}
   objects.forEach((object) => { // only rectangle
@@ -3988,6 +3933,61 @@ class LobbyScene extends Scene {
       }
     }
   }
+  slideProcess = () => {
+    if (
+      inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
+      inventory[selectSlot].slideState === 'release') return
+    if (inventory[selectSlot].reloadState !== 'done') return
+    if ((
+      explosive1Flag || explosive2Flag || explosive3Flag) &&
+      bullets.length !== 0 && inventory[selectSlot].slideState === 'release'
+    ) return
+    inventory[selectSlot].slideTime = (
+      combatReload.flag) ? (inventory[selectSlot].slideTime+1)|0 : (inventory[selectSlot].slideTime+1)|0
+    if (
+      inventory[selectSlot].slideState === 'pullBack' &&
+      inventory[selectSlot].slideStop * inventory[selectSlot].slideSpeed <= inventory[selectSlot].slideTime
+    ) {
+      if (!inventory[selectSlot].gripFlag) return
+      inventory[selectSlot].slideState = 'release'
+      const stopSlide = () => {
+        if (inventory[selectSlot].magazines[inventory[selectSlot].grip] === 0) return // cocking postponement
+        if ((code[action.combatReload].flag || combatReload.auto === 'ON') && combatReload.magFlag) {
+          combatReload.flag = true
+          combatReload.weight = (!code[action.combatReload].flag) ? 8 : 4
+        }
+      }
+      stopSlide()
+    } else if (
+      inventory[selectSlot].slideState === 'release' &&
+      inventory[selectSlot].slideDone * inventory[selectSlot].slideSpeed <= inventory[selectSlot].slideTime
+    ) {
+      inventory[selectSlot].slideState = 'done'
+      const doneSlide = () => {
+        if (combatReload.flag) {
+          ammo = (ammo-1)|0
+          combatReload.flag = false
+        } else if (
+          0 < inventory[selectSlot].magazines[inventory[selectSlot].grip] &&
+          !inventory[selectSlot].chamber
+        ) {
+          inventory[selectSlot].magazines[inventory[selectSlot].grip] =
+            (inventory[selectSlot].magazines[inventory[selectSlot].grip]-1)|0 // semi automatic mechanism
+        }
+        inventory[selectSlot].chamber = true
+        if (afterglow.chamberFlag) {
+          afterglow.reload = flashTimeLimit
+          afterglow.chamberFlag = false
+        }
+        combatReload.magFlag = false
+        combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
+      }
+      doneSlide()
+    } else if (inventory[selectSlot].slideState === 'done') {
+      if (0 <= inventory[selectSlot].slideTime) return inventory[selectSlot].slideState = 'pullBack'
+    } else return
+    inventory[selectSlot].slideTime = 0
+  }
   waveProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     if (wave.enemyCount < wave.enemyLimit) {
       if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
@@ -4013,7 +4013,7 @@ class LobbyScene extends Scene {
       ) this.dispatchEvent('addMenu', 'result')
     })
 
-    if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) slideProcess()
+    if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) this.slideProcess()
     if (dungeon !== dungeonList[3]) this.waveProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     if (0 < enemies.length) this.enemyProcess(intervalDiffTime)
     bullets.forEach((bullet, i) => {
