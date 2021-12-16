@@ -39,33 +39,6 @@ canvas.addEventListener('mouseup', e => {
   }
 }, false)
 canvas.addEventListener('click', () => {}, false)
-const isInner = (box, pos) => {
-  const offset = {
-    x: pos.offsetX - box.absoluteX,
-    y: pos.offsetY - box.absoluteY
-  }
-  return 0 <= offset.x && offset.x <= box.width &&
-  0 <= offset.y && offset.y <= box.height
-}
-
-class BoxInterface {
-  isInner = (box, cursor) => {
-    const offset = {
-      x: cursor.offsetX - box.absoluteX,
-      y: cursor.offsetY - box.absoluteY
-    }
-    return 0 <= offset.x && offset.x <= box.width &&
-    0 <= offset.y && offset.y <= box.height
-  }
-  isDownInBox = (box, isLeftMouseDown, cursor) => {
-    if (!isLeftMouseDown) return false
-    return this.isInner(box, cursor)
-  }
-  isDownAndUpInBox = (box, isLeftMouseUp, cursor, mouseDownPos) => {
-    if (!isLeftMouseUp) return false
-    return this.isInner(box, mouseDownPos) && this.isInner(box, cursor)
-  }
-}
 
 let wheelEvent = {deltaY: 0, isFirst: false}
 canvas.addEventListener('wheel', e => {
@@ -477,7 +450,7 @@ const weaponRatiryColorList = [
 ]
 const weaponCategoryList = ['HG', 'SMG', 'AR', 'DMR', 'SR', 'SG']
 const Weapon = class {
-  constructor(
+  constructor (
     name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
     magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange, recoilCoefficient,
     gaugeNumber, limitBreak, limitBreakIndex, level
@@ -543,7 +516,7 @@ let selectSlot = 0
 let dropItems = []
 let bullets = []
 const Bullet = class {
-  constructor(x, y, radius, theta, life, damage, penetrationForce, bulletRadius, isHoming) {
+  constructor (x, y, radius, theta, life, damage, penetrationForce, bulletRadius, isHoming) {
     this.x = x
     this.y = y
     this.radius = radius
@@ -2369,7 +2342,28 @@ const warehouseBox = {
   height: size * 15.5
 }
 
+class BoxInterface {
+  isInner = (box, cursor) => {
+    const offset = {
+      x: cursor.offsetX - box.absoluteX,
+      y: cursor.offsetY - box.absoluteY
+    }
+    return 0 <= offset.x && offset.x <= box.width &&
+    0 <= offset.y && offset.y <= box.height
+  }
+  isDownInBox = (box, isLeftMouseDown, cursor) => {
+    if (!isLeftMouseDown) return false
+    return this.isInner(box, cursor)
+  }
+  isDownAndUpInBox = (box, isLeftMouseUp, cursor, mouseDownPos) => {
+    if (!isLeftMouseUp) return false
+    return this.isInner(box, mouseDownPos) && this.isInner(box, cursor)
+  }
+}
 class RenderBox {
+  constructor () {
+    this.boxInterface = new BoxInterface()
+  }
   render (box, alpha = 1, cursor) {
     context.save()
     // outline box
@@ -2377,7 +2371,7 @@ class RenderBox {
     context.strokeStyle = `hsl(${box.hue}, ${saturation}%, 60%)`
     context.strokeRect(box.absoluteX, box.absoluteY, box.width, box.height)
     // text highlight
-    if (isInner(box, cursor)) {
+    if (this.boxInterface.isInner(box, cursor)) {
       const lightness = isLeftMouseDown ? 70 : 75
       context.fillStyle = `hsla(${box.hue}, ${saturation}%, ${lightness}%, .5)`
       context.fillRect(box.absoluteX, box.absoluteY, box.width, box.height)
@@ -2392,7 +2386,7 @@ class RenderBox {
 }
 
 const Shop = class {
-  constructor(dx, dy, w, h, Id, img) {
+  constructor (dx, dy, w, h, Id, img) {
     this.x = ownPosition.x + dx // TODO: integrate x and absoluteX
     this.y = ownPosition.y + dy
     this.absoluteX = ownPosition.x + dx
@@ -2414,7 +2408,7 @@ const Shop = class {
   render (cursor) {}
 }
 class StartSpot extends Shop {
-  constructor(dx, dy, w, h, Id, img) {
+  constructor (dx, dy, w, h, Id, img) {
     super(dx, dy, w, h, Id, img)
     this.startBox = {
       offsetX: canvas.offsetWidth / 2,
@@ -2441,7 +2435,7 @@ class StartSpot extends Shop {
   }
   update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (!isInner(this, offset)) return
+    if (!this.boxInterface.isInner(this, offset)) return
     const bossProcessFirst = () => {
       bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
     }
@@ -2467,7 +2461,7 @@ class StartSpot extends Shop {
   render(cursor) {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (isInner(this, offset)) {
+    if (this.boxInterface.isInner(this, offset)) {
       this.renderBox.render(this.startBox, 1, cursor)
       this.renderBox.render(this.selectBox, 1, cursor)
       context.save()
@@ -2479,7 +2473,7 @@ class StartSpot extends Shop {
   }
 }
 class ShopSpot extends Shop {
-  constructor(dx, dy, w, h, Id, img) {
+  constructor (dx, dy, w, h, Id, img) {
     super(dx, dy, w, h, Id, img)
     this.fillAmmoBox = {
       offsetX: canvas.offsetWidth * 4 / 7,
@@ -2533,7 +2527,7 @@ class ShopSpot extends Shop {
   }
   update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (!isInner(this, offset)) return
+    if (!this.boxInterface.isInner(this, offset)) return
 
     const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
     if (
@@ -2573,7 +2567,7 @@ class ShopSpot extends Shop {
   render(cursor) {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (isInner(this, offset)) {
+    if (this.boxInterface.isInner(this, offset)) {
       context.save()
       if (inventory[selectSlot].category !== '') {
         context.fillStyle = 'hsla(300, 100%, 70%, .5)'
@@ -2621,7 +2615,7 @@ class ShopSpot extends Shop {
   }
 }
 class SaveSpot extends Shop {
-  constructor(dx, dy, w, h, Id, img) {
+  constructor (dx, dy, w, h, Id, img) {
     super(dx, dy, w, h, Id, img)
     this.saveBox = {
       offsetX: canvas.offsetWidth / 2,
@@ -2702,7 +2696,7 @@ class SaveSpot extends Shop {
   }
   update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (isInner(this, offset)) {
+    if (this.boxInterface.isInner(this, offset)) {
       isWarehouse = true
       if (this.boxInterface.isDownInBox(this.saveBox, mouseInput.getKeyDown(0), cursor)) saveProcess()
       this.warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
@@ -2814,7 +2808,7 @@ class SaveSpot extends Shop {
           if (cV.width <= padding && isLeftMouseDownFirst) {
             colResizeBox.absoluteX += padding
             colResizeBox.width -= padding
-            if (isInner(colResizeBox, cursor)) {
+            if (this.boxInterface.isInner(colResizeBox, cursor)) {
               this.manipulateColumnSizeNumber = -1
               this.temporaryDiffX = -1
             }
@@ -2847,7 +2841,7 @@ class SaveSpot extends Shop {
             width: warehouseBox.width - size * .5,
             height: size * .5
           }
-          if (isInner(box, cursor)) {
+          if (this.boxInterface.isInner(box, cursor)) {
             if (code[action.shift].flag) {
               let findIndex = -1
               findIndex = inventory.findIndex((v, index) => {
@@ -2879,7 +2873,7 @@ class SaveSpot extends Shop {
   render(cursor) {
     this.drawShop()
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (isInner(this, offset)) {
+    if (this.boxInterface.isInner(this, offset)) {
       context.save()
       this.renderBox.render(this.saveBox, 1, cursor)
       context.fillStyle = 'hsla(0, 0%, 50%, .5)'
@@ -2903,14 +2897,14 @@ class SaveSpot extends Shop {
           width: 20,
           height: size * .5
         }
-        if ((isInner(box, cursor) || this.manipulateColumnSizeNumber !== -1) && !this.isSortLabel) {
+        if ((this.boxInterface.isInner(box, cursor) || this.manipulateColumnSizeNumber !== -1) && !this.isSortLabel) {
           canvas.style.cursor = 'col-resize'
           isChangeCursorImage = true
         } else if (isChangeCursorImage === false) canvas.style.cursor = 'default'
 
         const drawInterectBoxArea = (box) => {
           context.save()
-          if (isInner(box, cursor)) {
+          if (this.boxInterface.isInner(box, cursor)) {
             if (isLeftMouseDown) context.globalAlpha = .5
             else context.globalAlpha = .3
           } else context.globalAlpha = .05
@@ -3279,7 +3273,7 @@ let rowPosition = 0
 let keyPosition = -2
 
 class Input {
-  constructor(keyMap, prevKeyMap) {
+  constructor (keyMap, prevKeyMap) {
     this.keyMap = keyMap
     this.prevKeyMap = prevKeyMap
   }
@@ -3928,9 +3922,9 @@ class SettingsWindow extends Window {
       const toggleText = settingsObject[v.toggle] ? 'On' : 'Off'
       v.text = `${v.explain}: ${toggleText}`
       setAbsoluteBox(v)
-      context.font = isInner(v, cursor) ? `bold ${size}px ${font}` : `${size}px ${font}`
-      context.fillStyle = isInner(v, cursor) ? 'hsl(0, 0%, 90%)' : 'hsl(0, 0%, 80%)'
-      context.strokeStyle = isInner(v, cursor) ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 0%)'
+      context.font = this.boxInterface.isInner(v, cursor) ? `bold ${size}px ${font}` : `${size}px ${font}`
+      context.fillStyle = this.boxInterface.isInner(v, cursor) ? 'hsl(0, 0%, 90%)' : 'hsl(0, 0%, 80%)'
+      context.strokeStyle = this.boxInterface.isInner(v, cursor) ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 0%)'
       context.textAlign = 'center'
       strokeText(v.text, canvas.offsetWidth / 2, frameOffset.y + size * 3 + i * size * 2)
     })
@@ -4314,7 +4308,7 @@ class LobbyScene extends Scene {
 
   renderPortal = (intervalDiffTime, timeStamp, cursor) => {
     const particle = class {
-      constructor(x, y, w, h, dx, dy, life, lightness) {
+      constructor (x, y, w, h, dx, dy, life, lightness) {
         this.x = x
         this.y = y
         this.w = w
@@ -4403,7 +4397,7 @@ class LobbyScene extends Scene {
     context.restore()
   }
   renderWeaponDetail = (box, i, cursor) => {
-    if (inventory[i].category !== '' && isInner(box, cursor)) {
+    if (inventory[i].category !== '' && this.boxInterface.isInner(box, cursor)) {
       context.font = `${size*.75}px ${font}`
       context.textAlign = 'left'
       context.fillStyle = 'hsla(0, 0%, 0%, .6)'
