@@ -904,32 +904,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
   setAngle()
   setTitleMenuWord()
 })
-const directionCalc = arg => {
-  let dx = 0, dy = 0
-  /*
-    6 4 12
-    2 0 8
-    3 1 9
-  */
-  if (arg === 1) dy = 1
-  else if (arg === 3) {
-    dx = -1 / Math.SQRT2
-    dy = 1 / Math.SQRT2
-  } else if (arg === 2) dx = -1
-  else if (arg === 6) {
-    dx = -1 / Math.SQRT2
-    dy = -1 / Math.SQRT2
-  } else if (arg === 4) dy = -1
-  else if (arg === 12) {
-    dx = 1 / Math.SQRT2
-    dy = -1 / Math.SQRT2
-  } else if (arg === 8) dx = 1
-  else if (arg === 9) {
-    dx = 1 / Math.SQRT2
-    dy = 1 / Math.SQRT2
-  }
-  return {dx, dy}
-}
 const setMoreThanMagazine = () => {
   return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
 }
