@@ -48,7 +48,7 @@ const isInner = (box, pos) => {
   0 <= offset.y && offset.y <= box.height
 }
 
-class Button {
+class BoxInterface {
   isInner = (box, cursor) => {
     const offset = {
       x: cursor.offsetX - box.absoluteX,
@@ -2464,7 +2464,7 @@ const Shop = class {
     this.height = storeSize * h
     this.Id = Id
     this.img = img
-    this.button = new Button()
+    this.boxInterface = new BoxInterface()
   }
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {}
 
@@ -2505,7 +2505,7 @@ class StartSpot extends Shop {
     const bossProcessFirst = () => {
       bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
     }
-    if (this.button.isDownAndUpInBox(this.startBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+    if (this.boxInterface.isDownAndUpInBox(this.startBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       location = locationList[1]
       objects = []
       dropItems = []
@@ -2519,7 +2519,7 @@ class StartSpot extends Shop {
       }
       else bossProcessFirst()
     }
-    if (this.button.isDownAndUpInBox(this.selectBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+    if (this.boxInterface.isDownAndUpInBox(this.selectBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
       dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
     }
@@ -2598,7 +2598,7 @@ class ShopSpot extends Shop {
     const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
     if (
       costAll <= point &&
-      this.button.isDownAndUpInBox(this.fillAmmoAllBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+      this.boxInterface.isDownAndUpInBox(this.fillAmmoAllBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
     ) {
       point -= costAll
       inventory.forEach(v => {
@@ -2609,14 +2609,14 @@ class ShopSpot extends Shop {
       const cost = this.calcCost(inventory[selectSlot])
       if (
         cost <= point &&
-        this.button.isDownAndUpInBox(this.fillAmmoBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+        this.boxInterface.isDownAndUpInBox(this.fillAmmoBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
       ) {
         point -= cost
         inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
       }
       if (
         inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point &&
-        this.button.isDownAndUpInBox(this.limitBreakBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+        this.boxInterface.isDownAndUpInBox(this.limitBreakBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
       ) {
         afterglow.limitBreakResult = .01 + Math.random() * 1.99
         inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
@@ -2764,7 +2764,7 @@ class SaveSpot extends Shop {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (isInner(this, offset)) {
       isWarehouse = true
-      if (this.button.isDownInBox(this.saveBox, mouseInput.getKeyDown(0), cursor)) saveProcess()
+      if (this.boxInterface.isDownInBox(this.saveBox, mouseInput.getKeyDown(0), cursor)) saveProcess()
       this.warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
         const padding = 10
 
@@ -2777,7 +2777,7 @@ class SaveSpot extends Shop {
 
         // Sort weapon
         if (
-          this.button.isDownAndUpInBox(box, mouseInput.getKeyUp(0), cursor, mouseDownPosition) &&
+          this.boxInterface.isDownAndUpInBox(box, mouseInput.getKeyUp(0), cursor, mouseDownPosition) &&
           !this.isSortLabel
         ) {
           warehouse.sort((a, b) => {
@@ -2809,7 +2809,7 @@ class SaveSpot extends Shop {
         }
 
         // Sort label
-        if (this.button.isDownInBox(box, mouseInput.getKeyDown(0), cursor)) {
+        if (this.boxInterface.isDownInBox(box, mouseInput.getKeyDown(0), cursor)) {
           this.manipulateSortLabelIndex = cI
           this.swapAbsoluteX = cursor.offsetX
         }
@@ -2870,7 +2870,7 @@ class SaveSpot extends Shop {
           height: size * .5
         }
 
-        if (this.button.isDownInBox(colResizeBox, mouseInput.getKeyDown(0), cursor)) {
+        if (this.boxInterface.isDownInBox(colResizeBox, mouseInput.getKeyDown(0), cursor)) {
           if (cV.width <= padding && isLeftMouseDownFirst) {
             colResizeBox.absoluteX += padding
             colResizeBox.width -= padding
@@ -2898,7 +2898,7 @@ class SaveSpot extends Shop {
         this.swapAbsoluteX = -1
         this.isSortLabel = false
       }
-      if (this.button.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor)) {
+      if (this.boxInterface.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor)) {
         let bool = false
         warehouse.forEach((v, i) => {
           const box = {
@@ -4034,7 +4034,7 @@ class Window extends EventDispatcher {
     this.addEventListener('active', () => {
       this.is = !this.is
     })
-    this.button = new Button()
+    this.boxInterface = new BoxInterface()
   }
   update (input) {
     if (input.getKeyDown('KeyR')) console.log(this.color)
@@ -4054,7 +4054,7 @@ class SettingsWindow extends Window {
   }
   update (mouseInput, cursor, mouseDownPosition) {
     settingsArray.forEach((v, i) => {
-      if (this.button.isDownAndUpInBox(v, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+      if (this.boxInterface.isDownAndUpInBox(v, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
         settingsObject[v.toggle] = !settingsObject[v.toggle]
         storage.setItem(v.toggle, JSON.stringify(settingsObject[v.toggle]))
       }
@@ -4098,7 +4098,7 @@ class ResultWindow extends Window {
       afterglow.save = 1000
       resultFlag = true
     }
-    if (this.button.isDownAndUpInBox(resultBackBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+    if (this.boxInterface.isDownAndUpInBox(resultBackBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       this.dispatchEvent('deleteMenu', 'result')
       this.dispatchEvent('change', new LobbyScene())
 
@@ -4155,7 +4155,7 @@ class ResultWindow extends Window {
 class Scene extends EventDispatcher {
   constructor () {
     super()
-    this.button = new Button()
+    this.boxInterface = new BoxInterface()
   }
   change (scene) {
     this.dispatchEvent('change', scene)
@@ -4314,7 +4314,7 @@ class LobbyScene extends Scene {
       portalCooldinate.y - size <= ownPosition.y && ownPosition.y <= portalCooldinate.y + size
     ) {
       // Return to Base
-      if (this.button.isDownAndUpInBox(portalConfirmBox[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+      if (this.boxInterface.isDownAndUpInBox(portalConfirmBox[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
         portalCooldinate.y += size * 3
         location = locationList[0]
         objects = []
@@ -4323,8 +4323,8 @@ class LobbyScene extends Scene {
       }
       // Continue
       if (
-        this.button.isDownAndUpInBox(portalConfirmBox[1], mouseInput.getKeyUp(0), cursor, mouseDownPosition) ||
-        this.button.isDownAndUpInBox(portalConfirmBox[2], mouseInput.getKeyUp(0), cursor, mouseDownPosition)
+        this.boxInterface.isDownAndUpInBox(portalConfirmBox[1], mouseInput.getKeyUp(0), cursor, mouseDownPosition) ||
+        this.boxInterface.isDownAndUpInBox(portalConfirmBox[2], mouseInput.getKeyUp(0), cursor, mouseDownPosition)
       ) {
         portalFlag = false
         portalCooldinate.x = 0
@@ -4395,7 +4395,7 @@ class LobbyScene extends Scene {
     }
     inventorySlotBox.forEach((v, i) => {
       if (!inventoryFlag && mainSlotSize - 1 < i) return
-      if (this.button.isDownInBox(v, mouseInput.getKeyDown(0), cursor)) {
+      if (this.boxInterface.isDownInBox(v, mouseInput.getKeyDown(0), cursor)) {
         if (code[action.shift].flag) {
           if (isWarehouse) {
             warehouse.push(inventory[i])
@@ -4417,9 +4417,9 @@ class LobbyScene extends Scene {
     })
     if (
       holdSlot.category !== '' &&
-      !this.button.isDownInBox(inventoryBox, mouseInput.getKeyDown(0), cursor) &&
+      !this.boxInterface.isDownInBox(inventoryBox, mouseInput.getKeyDown(0), cursor) &&
       isLeftMouseDownFirst && (
-      !isWarehouse || !this.button.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor))
+      !isWarehouse || !this.boxInterface.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor))
     ) {
       holdSlot.type = 'weapon'
       holdSlot.unavailableTime = 30
@@ -4526,7 +4526,7 @@ class TitleScene extends Scene {
   //   super()
   // }
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
-    if (this.button.isDownAndUpInBox(titleMenuWordArray[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+    if (this.boxInterface.isDownAndUpInBox(titleMenuWordArray[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       this.change(new LobbyScene)
     }
   }
