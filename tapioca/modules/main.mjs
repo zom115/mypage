@@ -7,21 +7,12 @@ const font = 'jkmarugo'
 
 const SIZE = 32
 
-let mouseUpPos = {offsetX: 0, offsetY: 0}
-let isLeftMouseUpFirst = false
 canvas.addEventListener('mouseover', () => {
   document.draggable = false
   canvas.draggable = false
   // document.getElementById`canvas`.style.cursor = 'none'
 }, false)
 canvas.addEventListener('mousedown', e => e.preventDefault(), false)
-canvas.addEventListener('mouseup', e => {
-  mouseUpPos.offsetX = JSON.parse(JSON.stringify(e.offsetX))
-  mouseUpPos.offsetY = JSON.parse(JSON.stringify(e.offsetY))
-  if (e.button === 0) {
-    isLeftMouseUpFirst = true
-  }
-}, false)
 canvas.addEventListener('click', () => {}, false)
 
 let wheelEvent = {deltaY: 0, isFirst: false}
@@ -2470,7 +2461,7 @@ class SaveSpot extends Shop {
             this.warehouseOffset.y + size < cursor.offsetY
           ) this.sendSortLabelIndex = -1
         }
-        if(this.isSortLabel && isLeftMouseUpFirst && this.sendSortLabelIndex !== -1 && cI === array.length - 1) {
+        if(this.isSortLabel && mouseInput.getKeyUp(0) && this.sendSortLabelIndex !== -1 && cI === array.length - 1) {
           this.warehouseColumn.splice(
             this.warehouseColumn.findIndex(v => v.label === array[this.sendSortLabelIndex].label),
             0,
@@ -3162,7 +3153,6 @@ const keyLayoutProcess = () => {
   ) state = 'title'
 }
 const frameResetProcess = (intervalDiffTime) => {
-  isLeftMouseUpFirst = false
   wheelEvent.isFirst = false
 
   if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
