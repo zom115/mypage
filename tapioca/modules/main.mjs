@@ -58,8 +58,7 @@ const setStorage = (key, value) => {
   setDOM(key, value)
   return value
 }
-let debugMode = true
-let operationMode = setStorageFirst('operation', 'WASD')
+
 let locationList = ['bazaar', 'dungeon']
 let location = locationList[0]
 let dungeonList = ['Zombie', 'Homing', 'Ruins Star', 'Boss', 'Map Test']
@@ -485,19 +484,6 @@ let wave = {
 }
 let defeatCount
 let action
-const setOperation = () => {
-  if (operationMode === 'WASD') {
-    action.up = setStorage('up', 'KeyW')
-    action.right = setStorage('right', 'KeyD')
-    action.down = setStorage('down', 'KeyS')
-    action.left = setStorage('left', 'KeyA')
-  } else if (operationMode === 'ESDF') {
-    action.up = setStorage('up', 'KeyE')
-    action.right = setStorage('right', 'KeyF')
-    action.down = setStorage('down', 'KeyD')
-    action.left = setStorage('left', 'KeyS')
-  }
-}
 
 // for settings
 
@@ -628,7 +614,18 @@ document.addEventListener('DOMContentLoaded', () => { // init
     debug: setStorageFirst('debug', 'KeyG'),
     settings: setStorageFirst('settings', 'Escape')
   }
-  setOperation()
+  const operationMode = setStorageFirst('operation', 'WASD')
+  if (operationMode === 'WASD') {
+    action.up = setStorage('up', 'KeyW')
+    action.right = setStorage('right', 'KeyD')
+    action.down = setStorage('down', 'KeyS')
+    action.left = setStorage('left', 'KeyA')
+  } else if (operationMode === 'ESDF') {
+    action.up = setStorage('up', 'KeyE')
+    action.right = setStorage('right', 'KeyF')
+    action.down = setStorage('down', 'KeyD')
+    action.left = setStorage('left', 'KeyS')
+  }
   setTitleMenuWord()
 })
 const setTheta = d => {
@@ -675,7 +672,6 @@ const moving = (intervalDiffTime) => {
 
 
 const damageTimerLimit = 30
-let degree = 5
 
 const strokeText = (text, x, y, maxWidth) => {
   context.strokeText(text, x, y, maxWidth)
@@ -2032,7 +2028,9 @@ class LobbyScene extends Scene {
     this.shopArray.push(new StartSpot(-SIZE * 3, -SIZE * 10, 1.25, 1.25, 2, 'images/stv1.png'))
 
     this.reloadFlashTimeLimit = 5
+    this.isShowDamage = true
     this.afterimage = []
+    this.a
   }
   setMoreThanMagazine = () => {
     return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
@@ -2189,7 +2187,7 @@ class LobbyScene extends Scene {
     if (inventory[selectSlot].category !== '') this.modeSelect()
     if (dash.coolTime <= 0 && (code[action.dash].isFirst() || mouseInput.getKeyDown(2))) dashProcess(intervalDiffTime)
     moving(intervalDiffTime)
-    if (code[action.debug].isFirst()) debugMode = !debugMode
+    if (code[action.debug].isFirst()) this.isShowDamage = !this.isShowDamage
   }
   dropItemProcess = (intervalDiffTime) => {
     const blankInventorySlot = inventory.findIndex(v => v.category === '')
@@ -2889,7 +2887,7 @@ class LobbyScene extends Scene {
           IMAGE[imgEnemy], ~~(relativeX(coordinate.x)+.5), ~~(relativeY(coordinate.y)+.5)
         )
         context.restore()
-        if (debugMode) {
+        if (this.isShowDamage) {
           if (0 < enemy.life) {
             context.font = `${SIZE/2}px ${font}`
             context.fillRect(relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2),
