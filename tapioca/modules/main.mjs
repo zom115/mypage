@@ -1845,8 +1845,74 @@ class Window extends EventDispatcher {
   }
 }
 
-let resultFlag = false
 const resultProcess = () => {
+}
+class ResultWindow extends Window {
+  constructor () {
+    super()
+    this.isPenalty = false
+  }
+  update (mouseInput, cursor, mouseDownPosition) {
+    if (!this.isPenalty) {
+      point = (point / 100)|0
+      point *= 10
+      saveProcess(true, true, false, false)
+      afterglow.save = 1000
+      this.isPenalty = true
+    }
+    if (this.boxInterface.isDownAndUpInBox(resultBackBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
+      this.dispatchEvent('deleteMenu', 'result')
+      this.dispatchEvent('change', new LobbyScene())
+
+      location = locationList[0]
+      dropItems = []
+      bullets = []
+      enemies = []
+      objects = []
+      bossArray.forEach(v => {
+        v.life = 0
+      })
+      enemyBulletArray.forEach(v => {
+        v.life = 0
+      })
+      wave.number = 0
+      wave.enemySpawnInterval = 0
+      wave.enemySpawnIntervalLimit = 0
+      wave.enemyCount = 0
+      wave.enemyLimit = 0
+      setWave()
+      wave.roundInterval = 0
+      defeatCount = 0
+      this.isPenalty = false
+    }
+  }
+  render (cursor) {
+    context.font = `${SIZE}px ${font}`
+    context.fillStyle = 'hsl(0, 100%, 40%)'
+    context.textAlign = 'center'
+    context.fillText('YOU WERE DRUNK', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + SIZE)
+    context.font = `${SIZE * 2 / 3}px ${font}`
+    context.fillStyle = 'hsl(30, 100%, 40%)'
+    context.fillText(
+      `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
+    )
+    this.renderBox.render(resultBackBox, mouseInput, cursor)
+    context.fillStyle = 'hsla(30, 100%, 50%, .5)'
+    context.fillRect(
+      canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
+    )
+    context.save()
+    let nowTime = Date.now()
+    let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
+    const imgCutin = (ss % 3 === 0) ? 'images/drinking.png' : 'images/drinkSmile.png'
+    context.scale(3, 3)
+    context.drawImage(
+      IMAGE[imgCutin],
+      ~~((canvas.offsetWidth / 6 - IMAGE[imgCutin].width / 2)+.5),
+      ~~((canvas.offsetHeight / 6 - IMAGE[imgCutin].height / 2)+.5)
+    )
+    context.restore()
+  }
 }
 class SettingsWindow extends Window {
   constructor () {
@@ -1933,72 +1999,6 @@ class SettingsWindow extends Window {
       context.textAlign = 'center'
       strokeText(v.text, canvas.offsetWidth / 2, frameOffset.y + SIZE * 3 + i * SIZE * 2)
     })
-    context.restore()
-  }
-}
-
-class ResultWindow extends Window {
-  constructor () {
-    super()
-  }
-  update (mouseInput, cursor, mouseDownPosition) {
-    if (!resultFlag) {
-      point = (point / 100)|0
-      point *= 10
-      saveProcess(true, true, false, false)
-      afterglow.save = 1000
-      resultFlag = true
-    }
-    if (this.boxInterface.isDownAndUpInBox(resultBackBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
-      this.dispatchEvent('deleteMenu', 'result')
-      this.dispatchEvent('change', new LobbyScene())
-
-      location = locationList[0]
-      dropItems = []
-      bullets = []
-      enemies = []
-      objects = []
-      bossArray.forEach(v => {
-        v.life = 0
-      })
-      enemyBulletArray.forEach(v => {
-        v.life = 0
-      })
-      wave.number = 0
-      wave.enemySpawnInterval = 0
-      wave.enemySpawnIntervalLimit = 0
-      wave.enemyCount = 0
-      wave.enemyLimit = 0
-      setWave()
-      wave.roundInterval = 0
-      defeatCount = 0
-    }
-  }
-  render (cursor) {
-    context.font = `${SIZE}px ${font}`
-    context.fillStyle = 'hsl(0, 100%, 40%)'
-    context.textAlign = 'center'
-    context.fillText('YOU WERE DRUNK', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + SIZE)
-    context.font = `${SIZE * 2 / 3}px ${font}`
-    context.fillStyle = 'hsl(30, 100%, 40%)'
-    context.fillText(
-      `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
-    )
-    this.renderBox.render(resultBackBox, mouseInput, cursor)
-    context.fillStyle = 'hsla(30, 100%, 50%, .5)'
-    context.fillRect(
-      canvas.offsetWidth/3, canvas.offsetHeight/3, canvas.offsetWidth/3, canvas.offsetHeight/3
-    )
-    context.save()
-    let nowTime = Date.now()
-    let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
-    const imgCutin = (ss % 3 === 0) ? 'images/drinking.png' : 'images/drinkSmile.png'
-    context.scale(3, 3)
-    context.drawImage(
-      IMAGE[imgCutin],
-      ~~((canvas.offsetWidth / 6 - IMAGE[imgCutin].width / 2)+.5),
-      ~~((canvas.offsetHeight / 6 - IMAGE[imgCutin].height / 2)+.5)
-    )
     context.restore()
   }
 }
