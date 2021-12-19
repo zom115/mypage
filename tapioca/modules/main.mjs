@@ -296,11 +296,6 @@ const radius = SIZE / 2
 
 const targetWidth = .7 // Unit: [m], for effective range
 const minImgRadius = SIZE / 4
-let recoilEffect = {
-  flame: SIZE / 4,
-  dx: 0,
-  dy: 0
-}
 let afterglow = {
   startBoss: 0,
   startBossLimit: 3000,
@@ -1393,11 +1388,11 @@ if (false) { // TODO: Add to class
 
 const relativeX = (arg) => {
   const a = settingsObject.isMiddleView ? screenOwnPos.x - ownPosition.x : canvas.offsetWidth / 2 - ownPosition.x
-  return a + recoilEffect.dx * (afterglow.recoil/recoilEffect.flame) + arg
+  return a + arg
 }
 const relativeY = (arg) => {
   const a = settingsObject.isMiddleView ? screenOwnPos.y - ownPosition.y : canvas.offsetHeight / 2 - ownPosition.y
-  return a + recoilEffect.dy * (afterglow.recoil/recoilEffect.flame) + arg
+  return a + arg
 }
 
 const initWeapon = () => {
@@ -2745,8 +2740,8 @@ class LobbyScene extends Scene {
     const pos =
       settingsObject.isMiddleView ? {x: ownPosition.x - screenOwnPos.x, y: ownPosition.y - screenOwnPos.y} :
       0 < afterglow.recoil ? {
-        x: ownPosition.x - recoilEffect.dx * (afterglow.recoil/recoilEffect.flame),
-        y: ownPosition.y - recoilEffect.dy * (afterglow.recoil/recoilEffect.flame)
+        x: ownPosition.x,
+        y: ownPosition.y
       } : {x: ownPosition.x, y: ownPosition.y}
     for (let i = -1, l = Math.ceil(canvas.offsetWidth / width) + 2; i < l; i=(i+1)|0) {
       for (let j = -1, l = Math.ceil(canvas.offsetHeight / width) + 2; j < l; j=(j+1)|0) {
@@ -3223,9 +3218,9 @@ class LobbyScene extends Scene {
       ownState.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
 
     const pos =
-      settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : { // recoil effect
-        x: canvas.offsetWidth / 2 + recoilEffect.dx * (afterglow.recoil / recoilEffect.flame),
-        y: canvas.offsetHeight / 2 - jump + recoilEffect.dy * (afterglow.recoil / recoilEffect.flame)
+      settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : {
+        x: canvas.offsetWidth / 2,
+        y: canvas.offsetHeight / 2
       }
     context.fillStyle = 'hsla(0, 0%, 0%, .2)' // shadow
     context.beginPath()
