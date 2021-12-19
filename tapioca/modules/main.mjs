@@ -1821,7 +1821,7 @@ class EventDispatcher {
   }
 }
 class Window extends EventDispatcher {
-  constructor (x, y, w, h, color, alpha, is = false) {
+  constructor (x = -1, y = -1, w = 0, h = 0, color = 0, alpha = 1, is = false) {
     super()
     this.x = x
     this.y = y
@@ -1845,8 +1845,6 @@ class Window extends EventDispatcher {
   }
 }
 
-const resultProcess = () => {
-}
 class ResultWindow extends Window {
   constructor () {
     super()
@@ -2000,6 +1998,32 @@ class SettingsWindow extends Window {
       strokeText(v.text, canvas.offsetWidth / 2, frameOffset.y + SIZE * 3 + i * SIZE * 2)
     })
     context.restore()
+  }
+}
+
+class DebugWindow extends Window {
+  constructor () {
+    super()
+    this.internalFrameArray = []
+    this.animationFrameArray = []
+  }
+  update () {
+    frameCounter(this.internalFrameArray)
+  }
+  render () {
+    frameCounter(this.animationFrameArray)
+
+    context.textAlign = 'right'
+    context.font = `${SIZE / 2}px ${font}`
+    context.fillStyle = 'hsl(0, 0%, 50%)'
+    const dictionary = {
+      internalFps: this.internalFrameArray.length - 1,
+      screenFps: this.animationFrameArray.length - 1
+    }
+    Object.entries(dictionary).forEach((v, i) => {
+      context.fillText(`${v[0]}:`, canvas.width - SIZE / 2 * 5, SIZE / 2 * (i + 1))
+      context.fillText(v[1], canvas.width, SIZE / 2 * (i + 1))
+    })
   }
 }
 class Scene extends EventDispatcher {
@@ -3460,6 +3484,7 @@ class WindowManager extends EventDispatcher {
     this.windows.result.addEventListener('deleteMenu', e => {
       this.floatWindowOrder.splice(this.floatWindowOrder.indexOf(e), 1)
     })
+    this.debugWindow = new DebugWindow()
   }
   change (scene) {
     this.scene = scene
@@ -3496,6 +3521,8 @@ class WindowManager extends EventDispatcher {
     if (!this.floatWindowOrder.some(v => v === 'result')) {
       this.scene.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput)
     }
+
+    this.debugWindow.update()
   }
   render (intervalDiffTime, mouseInput, cursor) {
     this.scene.render(intervalDiffTime, mouseInput, cursor)
@@ -3505,6 +3532,8 @@ class WindowManager extends EventDispatcher {
     context.textAlign = 'left'
     context.fillStyle = 'hsl(0, 0%, 0%)'
     context.fillText(this.floatWindowOrder, SIZE, SIZE)
+
+    this.debugWindow.render()
   }
 }
 
@@ -3513,9 +3542,6 @@ class Entry {
     this.timeStamp = Date.now()
     this.currentTime = Date.now()
     this.intervalDiffTime = this.timeStamp - this.currentTime
-
-    this.internalFrameArray = []
-    this.animationFrameArray = []
 
     this._inputReceiver = new InputReceiver()
     this.cursor = this._inputReceiver.getMouseCursorInput()
@@ -3545,7 +3571,6 @@ class Entry {
       this.wheelInput
     )
 
-    frameCounter(this.internalFrameArray)
 
     const frameResetProcess = (intervalDiffTime) => {
       if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
@@ -3556,7 +3581,6 @@ class Entry {
   }, 0)
 
   render () {
-    frameCounter(this.animationFrameArray)
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
     this._windowManager.render(
@@ -3564,20 +3588,6 @@ class Entry {
       this.mouseInput,
       this._inputReceiver.getMouseCursorInput()
     )
-
-    // Draw debug
-    context.textAlign = 'right'
-    context.font = `${SIZE / 2}px ${font}`
-    context.fillStyle = 'hsl(0, 0%, 50%)'
-    const dictionary = {
-      internalFps: this.internalFrameArray.length - 1,
-      screenFps: this.animationFrameArray.length - 1,
-      pos: `${this.mouseDownPosition.offsetX} ${this.mouseDownPosition.offsetY}`
-    }
-    Object.entries(dictionary).forEach((v, i) => {
-      context.fillText(`${v[0]}:`, canvas.width - SIZE / 2 * 5, SIZE / 2 * (i + 1))
-      context.fillText(v[1], canvas.width, SIZE / 2 * (i + 1))
-    })
 
     requestAnimationFrame(this.render.bind(this))
   }
