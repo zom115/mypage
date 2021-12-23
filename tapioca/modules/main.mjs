@@ -599,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
     modeSelect: setStorageFirst('modeSelect', 'KeyB'),
     dash: setStorageFirst('dash', 'KeyN'),
     back: setStorageFirst('back', 'KeyB'),
-    change: setStorageFirst('change', 'KeyM'),
+    change: setStorageFirst('changescene', 'KeyM'),
     primary: setStorageFirst('primary', 'Digit1'),
     secondary: setStorageFirst('secondary', 'Digit2'),
     tertiary: setStorageFirst('tertiary', 'Digit3'),
@@ -1759,7 +1759,10 @@ imagePathList.forEach(path => {
 })
 const TILESET_DATA_ARRAY = []
 const TILESET_IMAGE_ARRAY = []
-const MAP_PATH_ARRAY = ['resources/map_test.json']
+const MAP_PATH_ARRAY = [
+  'resources/map_Lobby.json',
+  'resources/map_Test.json'
+]
 const MAP = []
 MAP_PATH_ARRAY.forEach(path => {
   RESOURCE_LIST.push((async () => {
@@ -1860,7 +1863,7 @@ class ResultWindow extends Window {
     }
     if (this.boxInterface.isDownAndUpInBox(resultBackBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       this.dispatchEvent('deleteMenu', 'result')
-      this.dispatchEvent('change', new LobbyScene())
+      this.dispatchEvent('changescene', new MainScene())
 
       location = locationList[0]
       dropItems = []
@@ -2031,14 +2034,15 @@ class Scene extends EventDispatcher {
     super()
     this.boxInterface = new BoxInterface()
     this.renderBox = new RenderBox()
-  }
-  change (scene) {
-    this.dispatchEvent('change', scene)
+
+    this.map = MAP[0]
+    this.addEventListener('changemap', e => {this.map = e
+    console.log(e)})
   }
   update (intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput) {}
   render (intervalDiffTime, mouseInput, cursor) {}
 }
-class LobbyScene extends Scene {
+class MainScene extends Scene {
   constructor () {
     super()
     this.shopArray = []
@@ -2049,7 +2053,6 @@ class LobbyScene extends Scene {
     this.reloadFlashTimeLimit = 5
     this.isShowDamage = true
     this.afterimage = []
-    this.a
   }
   setMoreThanMagazine = () => {
     return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
@@ -2758,33 +2761,45 @@ class LobbyScene extends Scene {
     }
   }
 
-  drawField = () => {
-    context.fillStyle = 'hsl(240, 100%, 60%)'
-    const width = SIZE * 7.5
+  renderMap = () => {
     const pos =
-      settingsObject.isMiddleView ? {x: ownPosition.x - screenOwnPos.x, y: ownPosition.y - screenOwnPos.y} :
-      0 < afterglow.recoil ? {
-        x: ownPosition.x,
-        y: ownPosition.y
-      } : {x: ownPosition.x, y: ownPosition.y}
-    for (let i = -1, l = Math.ceil(canvas.offsetWidth / width) + 2; i < l; i=(i+1)|0) {
-      for (let j = -1, l = Math.ceil(canvas.offsetHeight / width) + 2; j < l; j=(j+1)|0) {
-        context.fillStyle = 'hsla(0, 0%, 50%, .5)'
-        context.beginPath()
-        context.arc(
-          i * width - pos.x % width + SIZE / 4, j * width - pos.y % width + SIZE / 4,
-          SIZE, 0, Math.PI * 2, false
-        )
-        context.fill()
-        context.fillStyle = 'hsl(300, 30%, 90%)'
-        context.beginPath()
-        context.arc(
-          i * width - pos.x % width, j * width - pos.y % width,
-          SIZE, 0, Math.PI * 2, false
-        )
-        context.fill()
+      settingsObject.isMiddleView ? {
+        x: ownPosition.x - screenOwnPos.x,
+        y: ownPosition.y - screenOwnPos.y
+      } : {
+        x: ownPosition.x - canvas.offsetWidth * .5,
+        y: ownPosition.y - canvas.offsetHeight * .5
       }
-    }
+    console.log(pos.x)
+    this.map.layers.filter(v => v.name.includes('tileset_')).forEach(v => {
+      for (let x = 0; x < v.width; x++) {
+        for (let y = 0; y < v.height; y++) {
+          let id = v.data[v.width * y + x]
+          if (0 < id) {
+            let flag = false
+            this.map.tilesets.forEach((vl, i, a) => {
+              if (flag) return
+              if (id < vl.firstgid) {
+                const diff = i === 0 ? 0 : a[i - 1].firstgid
+                context.drawImage(
+                  TILESET_IMAGE_ARRAY[a[i - 1].source],
+                  ((id - diff) % TILESET_DATA_ARRAY[a[i - 1].source].columns) * SIZE,
+                  ((id - diff) - (id - diff) % TILESET_DATA_ARRAY[a[i - 1].source].columns) /
+                    TILESET_DATA_ARRAY[a[i - 1].source].columns * SIZE,
+                  SIZE,
+                  SIZE,
+                  (x * SIZE - pos.x)|0,
+                  (y * SIZE - pos.y)|0,
+                  SIZE,
+                  SIZE
+                  )
+                flag = true
+              }
+            }, 0)
+          }
+        }
+      }
+    })
   }
   renderPortal = (intervalDiffTime, timeStamp, cursor) => {
     const particle = class {
@@ -3362,8 +3377,6 @@ class LobbyScene extends Scene {
     afterglow.save -= intervalDiffTime
   }
   render (intervalDiffTime, mouseInput, cursor) {
-    // context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-
     const WIDTH_RANGE = 16
     const WIDTH_RATIO = 1.5
     const HEIGHT_RANGE = 9
@@ -3393,7 +3406,9 @@ class LobbyScene extends Scene {
         canvas.offsetHeight * WIDTH_RATIO / HEIGHT_RANGE :
         canvas.offsetHeight - cursor.offsetY
     }
-    this.drawField()
+
+    this.renderMap()
+
     if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
     if (0 < objects.length) this.drawObjects(cursor)
     if (0 < bullets.length) this.drawBullets()
@@ -3432,7 +3447,7 @@ class TitleScene extends Scene {
       mouseInput.getKeyUp(0) &&
       this.boxInterface.isDownAndUpInBox(titleMenuWordArray[0], true, cursor, mouseDownPosition)
     ) {
-      this.change(new LobbyScene)
+      this.dispatchEvent('changescene', new MainScene)
     }
   }
   render (intervalDiffTime, mouseInput, cursor) {
@@ -3486,12 +3501,12 @@ class WindowManager extends EventDispatcher {
     })
     this.debugWindow = new DebugWindow()
   }
-  change (scene) {
+  changeScene (scene) {
+    scene.addEventListener('changescene', e => this.changeScene(e))
+    scene.addEventListener('addMenu', e => {
+      if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)
+    })
     this.scene = scene
-    this.scene.addEventListener('change', e => this.change(e))
-    this.scene.addEventListener('addMenu', e => {
-      if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)}
-      )
   }
   update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
     if (input.getKeyDown('Escape')) {
@@ -3549,8 +3564,8 @@ class Entry {
     this.wheelInput = this._inputReceiver.getMouseWheelInput()
     this._windowManager = new WindowManager()
   }
-  change (scene) {
-    this._windowManager.change(scene)
+  changeScene (scene) {
+    this._windowManager.changeScene(scene)
   }
   loop = setInterval (() => {
     this.timeStamp = Date.now()
@@ -3595,6 +3610,6 @@ class Entry {
 
 Promise.all(RESOURCE_LIST).then(() => {
   const ENTRY_POINT = new Entry()
-  ENTRY_POINT.change(new TitleScene())
+  ENTRY_POINT.changeScene(new TitleScene())
   ENTRY_POINT.render()
 })
