@@ -2774,6 +2774,8 @@ class MainScene extends Scene {
       }
     })
     this.map.layers.filter(v => v.name.includes('image_')).forEach(v => {
+      const IMG = v.image.replace('../', '')
+      context.drawImage(IMAGE[IMG], relativeX(v.offsetx), relativeY(v.offsety))
     })
   }
   renderPortal = (intervalDiffTime, timeStamp, cursor) => {
