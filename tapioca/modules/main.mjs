@@ -320,7 +320,7 @@ let dash = {
   invincibleTime: 200,
   isAttack: false
 }
-let objects, currentDirection
+let currentDirection
 let direction = 0
 
 const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
@@ -829,7 +829,6 @@ class StartSpot extends Shop {
     }
     if (this.boxInterface.isDownAndUpInBox(this.startBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       location = locationList[1]
-      objects = []
       dropItems = []
       portalFlag = false
       saveProcess()
@@ -1424,7 +1423,6 @@ const initWeapon = () => {
 }
 const reset = () => {
   location = locationList[0]
-  objects = []
   dropItems = []
   // if (mapMode) setMap()
 
@@ -1869,7 +1867,6 @@ class ResultWindow extends Window {
       dropItems = []
       bullets = []
       enemies = []
-      objects = []
       bossArray.forEach(v => {
         v.life = 0
       })
@@ -2404,27 +2401,6 @@ class MainScene extends Scene {
   }
   differenceAddition = (position, dx, dy, intervalDiffTime) => {
     let flag = {x: false, y: false}
-    objects.forEach((object) => { // only rectangle
-      const space = .1
-      if (mapMode || (object.ID === 3 && typeof position.imageID !== 'number')) {
-        if (
-          object.y <= position.y && position.y <= object.y + object.height &&
-          (object.x <= position.x && position.x <= object.x + object.width + dx ||
-          (position.x <= object.x + object.width && object.x + dx <= position.x))
-        ) {
-          position.x = (0 < dx) ? object.x + object.width + space : object.x - space
-          flag.x = true
-        }
-        if (
-          object.x <= position.x && position.x <= object.x + object.width &&
-          (object.y <= position.y && position.y <= object.y + object.height + dy ||
-          (position.y <= object.y + object.height && object.y + dy <= position.y))
-        ) {
-          position.y = (0 < dy) ? object.y + object.height + space : object.y - space
-          flag.y = true
-        }
-      }
-    })
     if (!flag.x) position.x = position.x - dx * 60 / 1000 * intervalDiffTime
     if (!flag.y) position.y = position.y - dy * 60 / 1000 * intervalDiffTime
   }
@@ -2536,7 +2512,6 @@ class MainScene extends Scene {
       if (this.boxInterface.isDownAndUpInBox(portalConfirmBox[0], mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
         portalCooldinate.y += SIZE * 3
         location = locationList[0]
-        objects = []
         dropItems = []
         saveProcess()
       }
@@ -2549,7 +2524,6 @@ class MainScene extends Scene {
         portalCooldinate.x = 0
         portalCooldinate.y = 0
         location = locationList[1]
-        objects = []
         dropItems = []
         saveProcess()
         setWave()
@@ -2770,7 +2744,6 @@ class MainScene extends Scene {
         x: ownPosition.x - canvas.offsetWidth * .5,
         y: ownPosition.y - canvas.offsetHeight * .5
       }
-    console.log(pos.x)
     this.map.layers.filter(v => v.name.includes('tileset_')).forEach(v => {
       for (let x = 0; x < v.width; x++) {
         for (let y = 0; y < v.height; y++) {
@@ -2799,6 +2772,8 @@ class MainScene extends Scene {
           }
         }
       }
+    })
+    this.map.layers.filter(v => v.name.includes('image_')).forEach(v => {
     })
   }
   renderPortal = (intervalDiffTime, timeStamp, cursor) => {
@@ -2869,23 +2844,6 @@ class MainScene extends Scene {
         this.renderBox.render(v, mouseInput, cursor)
       })
       context.restore()
-    }
-  }
-  drawStore = (cursor) => {
-    context.font = `${SIZE}px ${font}`
-    objects.forEach(object => {
-      drawScreenEdge(object, 30)
-      context.drawImage(IMAGE[object.img], ~~(relativeX(object.x)+.5), ~~(relativeY(object.y)+.5))
-      object.draw(cursor)
-    })
-  }
-  drawObjects = (cursor) => {
-    if (!mapMode) this.drawStore(cursor)
-    else {
-      context.fillStyle = (mapMode) ? 'hsl(0, 0%, 50%)' : 'hsla(30, 100%, 85%)'
-      objects.forEach((object) => {
-        context.fillRect(relativeX(object.x), relativeY(object.y), object.width, object.height)
-      })
     }
   }
   drawBullets = () => {
@@ -3410,7 +3368,6 @@ class MainScene extends Scene {
     this.renderMap()
 
     if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
-    if (0 < objects.length) this.drawObjects(cursor)
     if (0 < bullets.length) this.drawBullets()
     if (0 < enemies.length) this.drawEnemies()
     if (0 < dropItems.length) this.drawDropItems()
