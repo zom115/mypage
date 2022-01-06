@@ -1001,9 +1001,8 @@ class ShopSpot extends Shop {
     }
   }
 }
-class SaveSpot extends Shop {
-  constructor (dx, dy, w, h, Id, img) {
-    super(dx, dy, w, h, Id, img)
+class SaveSpot {
+  constructor () {
     this.saveBox = {
       offsetX: canvas.offsetWidth / 2,
       offsetY: canvas.offsetHeight / 4,
@@ -1080,10 +1079,15 @@ class SaveSpot extends Shop {
 
     this.manipulateColumnSizeNumber = -1
     this.temporaryDiffX = -1
+
+    this.boxInterface = new BoxInterface()
+    this.renderBox = new RenderBox()
   }
-  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
+  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData) {
+    const areaBox = {absoluteX: spotData.x, absoluteY: spotData.y, width: spotData.width, height: spotData.height}
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (this.boxInterface.isInner(this, offset)) {
+    if (this.boxInterface.isInner(areaBox, offset)) {console.log('a')}
+    if (this.boxInterface.isInner(areaBox, offset)) {
       isWarehouse = true
       if (this.boxInterface.isDownInBox(this.saveBox, mouseInput.getKeyDown(0), cursor)) saveProcess()
       this.warehouseColumn.filter(v => v.isShow).reduce((pV, cV, cI, array) => {
@@ -1257,10 +1261,10 @@ class SaveSpot extends Shop {
       }
     } else isWarehouse = false
   }
-  render(mouseInput, cursor) {
-    this.drawShop()
+  render(mouseInput, cursor, spotData) {
+    const areaBox = {absoluteX: spotData.x, absoluteY: spotData.y, width: spotData.width, height: spotData.height}
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (this.boxInterface.isInner(this, offset)) {
+    if (this.boxInterface.isInner(areaBox, offset)) {
       context.save()
       this.renderBox.render(this.saveBox, mouseInput, cursor)
       context.fillStyle = 'hsla(0, 0%, 50%, .5)'
@@ -2043,9 +2047,11 @@ class MainScene extends Scene {
   constructor () {
     super()
     this.shopArray = []
-    this.shopArray.push(new SaveSpot(-SIZE * 7, SIZE, 1, 1, 0, 'images/st2v1.png'))
+    // this.shopArray.push(new SaveSpot(-SIZE * 7, SIZE, 1, 1, 0, 'images/st2v1.png'))
     this.shopArray.push(new ShopSpot(SIZE * 4, SIZE, 1, 1, 1, 'images/st1v2.png'))
     this.shopArray.push(new StartSpot(-SIZE * 3, -SIZE * 10, 1.25, 1.25, 2, 'images/stv1.png'))
+
+    this.saveSpot = new SaveSpot()
 
     this.reloadFlashTimeLimit = 5
     this.isShowDamage = true
@@ -2733,9 +2739,15 @@ class MainScene extends Scene {
         if (portalFlag) this.portalProcess()
       } else if (location === locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     }
+
+    this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
+      v.objects.filter(a => a.name.includes('save')).forEach(b => {
+        this.saveSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, b)
+      })
+    })
   }
 
-  renderMap = () => {
+  renderMap = (mouseInput, cursor) => {
     const pos =
       settingsObject.isMiddleView ? {
         x: ownPosition.x - screenOwnPos.x,
@@ -2776,6 +2788,11 @@ class MainScene extends Scene {
     this.map.layers.filter(v => v.name.includes('image_')).forEach(v => {
       const IMG = v.image.replace('../', '')
       context.drawImage(IMAGE[IMG], relativeX(v.offsetx), relativeY(v.offsety))
+    })
+    this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
+      v.objects.filter(a => a.name.includes('save')).forEach(b => {
+        this.saveSpot.render(mouseInput, cursor, b)
+      })
     })
   }
   renderPortal = (intervalDiffTime, timeStamp, cursor) => {
@@ -3367,7 +3384,7 @@ class MainScene extends Scene {
         canvas.offsetHeight - cursor.offsetY
     }
 
-    this.renderMap()
+    this.renderMap(mouseInput, cursor)
 
     if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
     if (0 < bullets.length) this.drawBullets()
