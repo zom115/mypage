@@ -859,9 +859,8 @@ class StartSpot extends Shop {
     }
   }
 }
-class ShopSpot extends Shop {
-  constructor (dx, dy, w, h, Id, img) {
-    super(dx, dy, w, h, Id, img)
+class ShopSpot {
+  constructor () {
     this.fillAmmoBox = {
       offsetX: canvas.offsetWidth * 4 / 7,
       offsetY: canvas.offsetHeight / 5,
@@ -895,6 +894,8 @@ class ShopSpot extends Shop {
       hue: 0
     }
     setAbsoluteBox(this.limitBreakBox)
+    this.boxInterface = new BoxInterface()
+    this.renderBox = new RenderBox()
   }
   calcCost = slot => {
     let cost = 0
@@ -912,9 +913,10 @@ class ShopSpot extends Shop {
     }
     return cost
   }
-  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
+  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData) {
+    const areaBox = {absoluteX: spotData.x, absoluteY: spotData.y, width: spotData.width, height: spotData.height}
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (!this.boxInterface.isInner(this, offset)) return
+    if (!this.boxInterface.isInner(areaBox, offset)) return
 
     const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
     if (
@@ -951,10 +953,10 @@ class ShopSpot extends Shop {
     if (0 < afterglow.limitBreakFailed) afterglow.limitBreakFailed -= intervalDiffTime
 
   }
-  render(mouseInput, cursor) {
-    this.drawShop()
+  render(mouseInput, cursor, spotData) {
+    const areaBox = {absoluteX: spotData.x, absoluteY: spotData.y, width: spotData.width, height: spotData.height}
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (this.boxInterface.isInner(this, offset)) {
+    if (this.boxInterface.isInner(areaBox, offset)) {
       context.save()
       if (inventory[selectSlot].category !== '') {
         context.fillStyle = 'hsla(300, 100%, 70%, .5)'
@@ -1086,7 +1088,6 @@ class SaveSpot {
   update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData) {
     const areaBox = {absoluteX: spotData.x, absoluteY: spotData.y, width: spotData.width, height: spotData.height}
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (this.boxInterface.isInner(areaBox, offset)) {console.log('a')}
     if (this.boxInterface.isInner(areaBox, offset)) {
       isWarehouse = true
       if (this.boxInterface.isDownInBox(this.saveBox, mouseInput.getKeyDown(0), cursor)) saveProcess()
@@ -2048,10 +2049,11 @@ class MainScene extends Scene {
     super()
     this.shopArray = []
     // this.shopArray.push(new SaveSpot(-SIZE * 7, SIZE, 1, 1, 0, 'images/st2v1.png'))
-    this.shopArray.push(new ShopSpot(SIZE * 4, SIZE, 1, 1, 1, 'images/st1v2.png'))
+    // this.shopArray.push(new ShopSpot(SIZE * 4, SIZE, 1, 1, 1, 'images/st1v2.png'))
     this.shopArray.push(new StartSpot(-SIZE * 3, -SIZE * 10, 1.25, 1.25, 2, 'images/stv1.png'))
 
     this.saveSpot = new SaveSpot()
+    this.shopSpot = new ShopSpot()
 
     this.reloadFlashTimeLimit = 5
     this.isShowDamage = true
@@ -2741,8 +2743,11 @@ class MainScene extends Scene {
     }
 
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
-      v.objects.filter(a => a.name.includes('save')).forEach(b => {
-        this.saveSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, b)
+      v.objects.filter(a => a.name.includes('save')).forEach(spotData => {
+        this.saveSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData)
+      })
+      v.objects.filter(a => a.name.includes('shop')).forEach(spotData => {
+        this.shopSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData)
       })
     })
   }
@@ -2790,8 +2795,11 @@ class MainScene extends Scene {
       context.drawImage(IMAGE[IMG], relativeX(v.offsetx), relativeY(v.offsety))
     })
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
-      v.objects.filter(a => a.name.includes('save')).forEach(b => {
-        this.saveSpot.render(mouseInput, cursor, b)
+      v.objects.filter(a => a.name.includes('save')).forEach(spotData => {
+        this.saveSpot.render(mouseInput, cursor, spotData)
+      })
+      v.objects.filter(a => a.name.includes('shop')).forEach(spotData => {
+        this.shopSpot.render(mouseInput, cursor, spotData)
       })
     })
   }
