@@ -68,26 +68,37 @@
          "name":"event_objectsLayer",
          "objects":[
                 {
-                 "height":33,
+                 "height":87.6666666666667,
                  "id":6,
                  "name":"save",
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":63,
-                 "x":144,
-                 "y":176
+                 "width":80.3333333333333,
+                 "x":136.666666666667,
+                 "y":129.333333333333
                 }, 
                 {
-                 "height":40,
+                 "height":105.333333333333,
                  "id":15,
                  "name":"shop",
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":78,
-                 "x":136,
-                 "y":368
+                 "width":95.3333333333333,
+                 "x":128,
+                 "y":312.666666666667
+                }, 
+                {
+                 "height":179.333333333333,
+                 "id":16,
+                 "name":"start",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":206.666666666667,
+                 "x":413.333333333333,
+                 "y":156
                 }],
          "opacity":1,
          "properties":[
@@ -100,9 +111,21 @@
          "visible":true,
          "x":0,
          "y":0
+        }, 
+        {
+         "id":8,
+         "image":"..\/images\/stv1.png",
+         "name":"image_stv1",
+         "offsetx":420,
+         "offsety":160,
+         "opacity":1,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":8,
- "nextobjectid":16,
+ "nextlayerid":9,
+ "nextobjectid":17,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.2",

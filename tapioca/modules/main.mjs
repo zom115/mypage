@@ -820,10 +820,13 @@ class StartSpot extends Shop {
       hue: 300
     }
     setAbsoluteBox(this.selectBox)
+    this.boxInterface = new BoxInterface()
+    this.renderBox = new RenderBox()
   }
-  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition) {
+  update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData) {
+    const areaBox = {absoluteX: spotData.x, absoluteY: spotData.y, width: spotData.width, height: spotData.height}
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (!this.boxInterface.isInner(this, offset)) return
+    if (!this.boxInterface.isInner(areaBox, offset)) return
     const bossProcessFirst = () => {
       bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
     }
@@ -845,10 +848,10 @@ class StartSpot extends Shop {
       dungeon = n === dungeonList[dungeonList.length] ? dungeonList[0] : n
     }
   }
-  render(mouseInput, cursor) {
-    this.drawShop()
+  render(mouseInput, cursor, spotData) {
+    const areaBox = {absoluteX: spotData.x, absoluteY: spotData.y, width: spotData.width, height: spotData.height}
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
-    if (this.boxInterface.isInner(this, offset)) {
+    if (this.boxInterface.isInner(areaBox, offset)) {
       this.renderBox.render(this.startBox, mouseInput, cursor)
       this.renderBox.render(this.selectBox, mouseInput, cursor)
       context.save()
@@ -2047,11 +2050,8 @@ class Scene extends EventDispatcher {
 class MainScene extends Scene {
   constructor () {
     super()
-    this.shopArray = []
-    // this.shopArray.push(new SaveSpot(-SIZE * 7, SIZE, 1, 1, 0, 'images/st2v1.png'))
-    // this.shopArray.push(new ShopSpot(SIZE * 4, SIZE, 1, 1, 1, 'images/st1v2.png'))
-    this.shopArray.push(new StartSpot(-SIZE * 3, -SIZE * 10, 1.25, 1.25, 2, 'images/stv1.png'))
 
+    this.startSpot = new StartSpot()
     this.saveSpot = new SaveSpot()
     this.shopSpot = new ShopSpot()
 
@@ -2735,14 +2735,14 @@ class MainScene extends Scene {
       array.forEach(v => {
         arrayUpdater(v)
       })
-
-      if (location === locationList[0]) {
-        this.shopArray.forEach(v => v.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition))
-        if (portalFlag) this.portalProcess()
-      } else if (location === locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     }
+    if (portalFlag) this.portalProcess()
+    if (location === locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
 
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
+      v.objects.filter(a => a.name.includes('start')).forEach(spotData => {
+        this.startSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData)
+      })
       v.objects.filter(a => a.name.includes('save')).forEach(spotData => {
         this.saveSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData)
       })
@@ -2795,6 +2795,9 @@ class MainScene extends Scene {
       context.drawImage(IMAGE[IMG], relativeX(v.offsetx), relativeY(v.offsety))
     })
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
+      v.objects.filter(a => a.name.includes('start')).forEach(spotData => {
+        this.startSpot.render(mouseInput, cursor, spotData)
+      })
       v.objects.filter(a => a.name.includes('save')).forEach(spotData => {
         this.saveSpot.render(mouseInput, cursor, spotData)
       })
@@ -3407,11 +3410,6 @@ class MainScene extends Scene {
     }
     array.forEach(v => {
       arrayRenderer(v)
-    })
-
-    this.shopArray.forEach(v => {
-      drawScreenEdge(v, 30)
-      v.render(mouseInput, cursor)
     })
 
     this.drawMyself(intervalDiffTime)
