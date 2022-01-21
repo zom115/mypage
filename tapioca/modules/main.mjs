@@ -695,32 +695,8 @@ class RenderBox {
   }
 }
 
-class Shop {
-  constructor (dx, dy, w, h, Id, img) {
-    this.x = ownPosition.x + dx // TODO: integrate x and absoluteX
-    this.y = ownPosition.y + dy
-    this.absoluteX = ownPosition.x + dx
-    this.absoluteY = ownPosition.y + dy
-    this.storeSize = SIZE * 4.5
-    this.w = this.storeSize * w
-    this.h = this.storeSize * h
-    this.width = this.storeSize * w
-    this.height = this.storeSize * h
-    this.Id = Id
-    this.img = img
-    this.boxInterface = new BoxInterface()
-    this.renderBox = new RenderBox()
-  }
-  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition) {}
-
-  drawShop = () => {
-    context.drawImage(IMAGE[this.img], ~~(relativeX(this.x)+.5), ~~(relativeY(this.y)+.5))
-  }
-  render (mouseInput, cursor) {}
-}
-class StartSpot extends Shop {
-  constructor (dx, dy, w, h, Id, img) {
-    super(dx, dy, w, h, Id, img)
+class StartSpot {
+  constructor () {
     this.startBox = {
       offsetX: canvas.offsetWidth / 2,
       offsetY: canvas.offsetHeight / 5,
