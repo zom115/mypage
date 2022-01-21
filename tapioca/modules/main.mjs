@@ -286,12 +286,6 @@ class Boss {
   }
 }
 
-let point = 0
-let portalFlag = false
-let portalCooldinate = {x: 0, y: 0}
-let portalParticleTime = 0
-let portalParticle = []
-
 const radius = SIZE / 2
 
 const targetWidth = .7 // Unit: [m], for effective range
@@ -311,7 +305,7 @@ let afterglow = {
   chamberFlag: false,
   reload: 0
 }
-const ownPosition = {x: 0, y: 0}
+const ownPosition = {x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2}
 const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2, step: 0, stepLimit: 300}
 let dash = {
   coolTime: 0,
@@ -322,6 +316,12 @@ let dash = {
 }
 let currentDirection
 let direction = 0
+
+let point = 0
+let portalFlag = false
+let portalCooldinate = {x: ownPosition.x|0, y: (ownPosition.y + SIZE * 3)|0}
+let portalParticleTime = 0
+let portalParticle = []
 
 const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
 const weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
@@ -588,49 +588,6 @@ let inventorySlotBox = []
         absoluteX: SIZE * (.75 + 2 * j), absoluteY: SIZE * (2.75 + 2 * i), width: SIZE * 1.5, height: SIZE * 1.5})}
   }
 }
-
-const setTheta = d => {
-  /*
-    6 4 12
-    2 0 8
-    3 1 9
-  */
-  if (d === 1) ownState.theta = -Math.PI / 2
-  else if (d === 3) ownState.theta = -Math.PI / 4
-  else if (d === 2) ownState.theta = 0
-  else if (d === 6) ownState.theta = Math.PI / 4
-  else if (d === 4) ownState.theta = Math.PI / 2
-  else if (d === 12) ownState.theta = Math.PI * .75
-  else if (d === 8) ownState.theta = Math.PI
-  else if (d === 9) ownState.theta = -Math.PI * .75
-}
-const dashProcess = (intervalDiffTime) => {
-  const d = direction === 0 ? currentDirection : direction
-  setTheta(d)
-  ownState.radius = 1
-  const multiple = 0.3
-  ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
-  ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
-  dash.isAttack = false
-  dash.coolTime = dash.coolTimeLimit
-}
-const moving = (intervalDiffTime) => {
-  setTheta(direction)
-  if (direction === 0) ownState.radius = 0
-  else ownState.radius = 1
-  const multiple = 0.0008
-  ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
-  ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
-
-  ownPosition.x += ownState.dx * intervalDiffTime
-  ownPosition.y += ownState.dy * intervalDiffTime
-  const brake = .98
-  if (Math.abs(ownState.dx) < 1e-5) ownState.dx = 0
-  else ownState.dx *= brake
-  if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
-  else ownState.dy *= brake
-}
-
 
 const damageTimerLimit = 30
 
@@ -2071,6 +2028,49 @@ class MainScene extends Scene {
       }
     }
   }
+
+  setTheta = d => {
+    /*
+      6 4 12
+      2 0 8
+      3 1 9
+    */
+    if (d === 1) ownState.theta = -Math.PI / 2
+    else if (d === 3) ownState.theta = -Math.PI / 4
+    else if (d === 2) ownState.theta = 0
+    else if (d === 6) ownState.theta = Math.PI / 4
+    else if (d === 4) ownState.theta = Math.PI / 2
+    else if (d === 12) ownState.theta = Math.PI * .75
+    else if (d === 8) ownState.theta = Math.PI
+    else if (d === 9) ownState.theta = -Math.PI * .75
+  }
+  dashProcess = (intervalDiffTime) => {
+    const d = direction === 0 ? currentDirection : direction
+    this.setTheta(d)
+    ownState.radius = 1
+    const multiple = 0.3
+    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
+    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+    dash.isAttack = false
+    dash.coolTime = dash.coolTimeLimit
+  }
+  moving = (intervalDiffTime) => {
+    this.setTheta(direction)
+    if (direction === 0) ownState.radius = 0
+    else ownState.radius = 1
+    const multiple = 0.0008
+    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
+    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+
+    ownPosition.x += ownState.dx * intervalDiffTime
+    ownPosition.y += ownState.dy * intervalDiffTime
+    const brake = .98
+    if (Math.abs(ownState.dx) < 1e-5) ownState.dx = 0
+    else ownState.dx *= brake
+    if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
+    else ownState.dy *= brake
+  }
+
   interfaceProcess = (intervalDiffTime, mouseInput, cursor, wheelInput) => {
     if (code[action.primary].isFirst()) selectSlot = 0
     if (code[action.secondary].isFirst()) selectSlot = 1
@@ -2093,8 +2093,10 @@ class MainScene extends Scene {
     else if (direction !== 0) currentDirection = direction
     if (inventory[selectSlot].category !== '' && location === locationList[1]) this.weaponProcess(mouseInput, cursor)
     if (inventory[selectSlot].category !== '') this.modeSelect()
-    if (dash.coolTime <= 0 && (code[action.dash].isFirst() || mouseInput.getKeyDown(2))) dashProcess(intervalDiffTime)
-    moving(intervalDiffTime)
+    if (dash.coolTime <= 0 && (code[action.dash].isFirst() || mouseInput.getKeyDown(2))) {
+      this.dashProcess(intervalDiffTime)
+    }
+    this.moving(intervalDiffTime)
     if (code[action.debug].isFirst()) this.isShowDamage = !this.isShowDamage
   }
   dropItemProcess = (intervalDiffTime) => {
@@ -3544,13 +3546,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
 
     const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
     portalFlag = temporaryPortalFlag ? true : false
-    if (portalFlag) {
-      portalCooldinate.x = ownPosition.x|0
-      portalCooldinate.y = (ownPosition.y + SIZE * 3)|0
-    }
 
-    ownPosition.x = canvas.offsetWidth / 2
-    ownPosition.y = canvas.offsetHeight / 2
     currentDirection = 4
     bullets = []
     enemies = []
