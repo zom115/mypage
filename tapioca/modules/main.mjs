@@ -68,6 +68,7 @@ let bossArray = []
 let enemyBulletArray = []
 let array = [enemyBulletArray, bossArray]
 
+/*
 class EnemyBullet {
   constructor (life, x, y, radius, speed, theta, additionalRadius = 0, additionalSpeed = 0, additionalTheta = 0) {
     this.life = life
@@ -285,6 +286,7 @@ class Boss {
     context.restore()
   }
 }
+*/
 
 const radius = SIZE / 2
 
@@ -559,8 +561,6 @@ const setTitleMenuWord = () => {
     text: `Start`,
     hue: 10
   }
-    // {text: `PRESS [${getKeyName(action.slow)}] TO EDIT KEY LAYOUT`, hue: 210},
-    // {text: `[${getKeyName(action.change)}]MAP: ${mapMode}`, hue: 210}
   ]
   titleMenuWordArray.forEach((v, i) => {
     const property = {
@@ -727,7 +727,7 @@ class StartSpot {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (!this.boxInterface.isInner(areaBox, offset)) return
     const bossProcessFirst = () => {
-      bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
+      // bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
     }
     if (this.boxInterface.isDownAndUpInBox(this.startBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       location = locationList[1]
@@ -740,7 +740,9 @@ class StartSpot {
         const MAIN_TEST = new Main()
         MAIN_TEST.render()
       }
-      else bossProcessFirst()
+      else {
+        // bossProcessFirst()
+      }
     }
     if (this.boxInterface.isDownAndUpInBox(this.selectBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
@@ -1279,56 +1281,6 @@ class SaveSpot {
   }
 }
 
-if (false) { // TODO: Add to class
-  const weapon = initWeapon()
-  Object.assign(
-    weapon, {
-      type: 'weapon',
-      x: ownPosition.x - SIZE * 3,
-      y: ownPosition.y + SIZE * 6,
-      unavailableTime: 30
-    }
-  )
-  dropItems.push(weapon)
-}
-
-const relativeX = (arg) => {
-  const a = settingsObject.isMiddleView ? screenOwnPos.x - ownPosition.x : canvas.offsetWidth / 2 - ownPosition.x
-  return a + arg
-}
-const relativeY = (arg) => {
-  const a = settingsObject.isMiddleView ? screenOwnPos.y - ownPosition.y : canvas.offsetHeight / 2 - ownPosition.y
-  return a + arg
-}
-
-const initWeapon = () => {
-  const maxDamageInitial = 70
-  return new Weapon(
-    'T1911',
-    'HG',
-    [weaponModeList[1]],
-    weaponModeList[1],
-    weaponRarityList[0],
-    maxDamageInitial,
-    1,
-    cartridgeInfo.speed,
-    cartridgeInfo.life,
-    1,
-    magSizeInitial,
-    Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
-    loading.weight,
-    .2,
-    0,
-    10,
-    .2,
-    1,
-
-    4000,
-    0,
-    0
-  )
-}
-let mapMode = false
 
 class Input {
   constructor (keyMap, prevKeyMap) {
@@ -2611,6 +2563,14 @@ class MainScene extends Scene {
     })
   }
 
+  relativeX = (arg) => {
+    const a = settingsObject.isMiddleView ? screenOwnPos.x - ownPosition.x : canvas.offsetWidth / 2 - ownPosition.x
+    return a + arg
+  }
+  relativeY = (arg) => {
+    const a = settingsObject.isMiddleView ? screenOwnPos.y - ownPosition.y : canvas.offsetHeight / 2 - ownPosition.y
+    return a + arg
+  }
   renderMap = (mouseInput, cursor) => {
     const pos =
       settingsObject.isMiddleView ? {
@@ -2651,7 +2611,7 @@ class MainScene extends Scene {
     })
     this.map.layers.filter(v => v.name.includes('image_')).forEach(v => {
       const IMG = v.image.replace('../', '')
-      context.drawImage(IMAGE[IMG], relativeX(v.offsetx), relativeY(v.offsety))
+      context.drawImage(IMAGE[IMG], this.relativeX(v.offsetx), this.relativeY(v.offsety))
     })
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
       v.objects.filter(a => a.name.includes('start')).forEach(spotData => {
@@ -2703,12 +2663,12 @@ class MainScene extends Scene {
       `hsl(180, 100%, ${85 + ((1 + Math.sin(timeStamp / 600)) / 2) * 15}%)`
     context.beginPath()
     context.ellipse(
-      relativeX(portalCooldinate.x), relativeY(portalCooldinate.y), SIZE * .7, SIZE * .3, 0, 0, 2 * Math.PI, false)
+      this.relativeX(portalCooldinate.x), this.relativeY(portalCooldinate.y), SIZE * .7, SIZE * .3, 0, 0, 2 * Math.PI, false)
     context.fill()
     portalParticle.forEach((v, i) => {
       v.lifeCycle(i)
       context.fillStyle = v.setColor()
-      context.fillRect(relativeX(v.x), relativeY(v.y), v.w, v.h)
+      context.fillRect(this.relativeX(v.x), this.relativeY(v.y), v.w, v.h)
       v.x += v.dx
       v.y += v.dy
     })
@@ -2733,13 +2693,13 @@ class MainScene extends Scene {
         ownPosition.y + canvas.offsetHeight - screenOwnPos.y - SIZE + radius < obj.y // right & bottom
       ) context.fillRect(canvas.offsetWidth - SIZE, canvas.offsetHeight - SIZE, SIZE, SIZE)
       else if (obj.x < ownPosition.x - screenOwnPos.x + radius) { // out of left
-        context.fillRect(0, relativeY(obj.y - radius), SIZE, SIZE)
+        context.fillRect(0, this.relativeY(obj.y - radius), SIZE, SIZE)
       } else if (ownPosition.x + canvas.offsetWidth - screenOwnPos.x + radius < obj.x) { // out of right
-        context.fillRect(canvas.offsetWidth-SIZE, relativeY(obj.y - radius), SIZE, SIZE)
+        context.fillRect(canvas.offsetWidth-SIZE, this.relativeY(obj.y - radius), SIZE, SIZE)
       } else if (obj.y < ownPosition.y - screenOwnPos.y + radius) { // out of top
-        context.fillRect(relativeX(obj.x - radius), 0, SIZE, SIZE)
+        context.fillRect(this.relativeX(obj.x - radius), 0, SIZE, SIZE)
       } else if (ownPosition.y + canvas.offsetHeight - screenOwnPos.y + radius < obj.y) { // out of bottom
-        context.fillRect(relativeX(obj.x - radius), canvas.offsetHeight - SIZE, SIZE, SIZE)
+        context.fillRect(this.relativeX(obj.x - radius), canvas.offsetHeight - SIZE, SIZE, SIZE)
       }
       context.restore()
     }
@@ -2769,7 +2729,7 @@ class MainScene extends Scene {
     bullets.forEach(bullet => {
       context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / bullet.baseLife})`
       context.beginPath()
-      context.arc(relativeX(bullet.x), relativeY(bullet.y), bullet.bulletRadius, 0, Math.PI * 2, false)
+      context.arc(this.relativeX(bullet.x), this.relativeY(bullet.y), bullet.bulletRadius, 0, Math.PI * 2, false)
       context.fill()
     })
   }
@@ -2795,13 +2755,13 @@ class MainScene extends Scene {
           context.save()
         if (enemy.life <= 0) context.globalAlpha = enemy.timer/damageTimerLimit
         context.drawImage(
-          IMAGE[imgEnemy], ~~(relativeX(coordinate.x)+.5), ~~(relativeY(coordinate.y)+.5)
+          IMAGE[imgEnemy], ~~(this.relativeX(coordinate.x)+.5), ~~(this.relativeY(coordinate.y)+.5)
         )
         context.restore()
         if (this.isShowDamage) {
           if (0 < enemy.life) {
             context.font = `${SIZE/2}px ${font}`
-            context.fillRect(relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2),
+            context.fillRect(this.relativeX(enemy.x - radius), this.relativeY(enemy.y - radius * 1.2),
             enemy.life / wave.enemyHitPoint * SIZE, SIZE / 16)
             // context.fillText(Math.ceil(enemy.life) // numerical drawing
             // , relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2))
@@ -2811,8 +2771,8 @@ class MainScene extends Scene {
           context.fillStyle = `hsla(0, 0%, 50%, ${enemy.timer/damageTimerLimit})`
           context.fillText(
             Math.ceil(enemy.damage),
-            relativeX(enemy.x - radius - (damageTimerLimit - enemy.timer)),
-            relativeY(enemy.y - radius * 2 - (damageTimerLimit - enemy.timer))
+            this.relativeX(enemy.x - radius - (damageTimerLimit - enemy.timer)),
+            this.relativeY(enemy.y - radius * 2 - (damageTimerLimit - enemy.timer))
           )
         }
       }
@@ -2857,25 +2817,25 @@ class MainScene extends Scene {
     )
     else if (item.x < ownPosition.x - screenOwnPos.x + testSize / 2) { // out of left
       context.arc(
-        testSize / 2, relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
+        testSize / 2, this.relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
       )
     } else if (ownPosition.x + canvas.offsetWidth - screenOwnPos.x + testSize / 2 < item.x) { // out of right
       context.arc(
-        canvas.offsetWidth - testSize / 2, relativeY(item.y),
+        canvas.offsetWidth - testSize / 2, this.relativeY(item.y),
         testSize / 2, 0, Math.PI * 2, false
       )
     } else if (item.y < ownPosition.y - screenOwnPos.y + testSize / 2) { // out of top
       context.arc(
-        relativeX(item.x), testSize / 2,
+        this.relativeX(item.x), testSize / 2,
         testSize / 2, 0, Math.PI * 2, false
       )
     } else if (ownPosition.y + canvas.offsetHeight - screenOwnPos.y + testSize / 2 < item.y) { // out of bottom
       context.arc(
-        relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
+        this.relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
         testSize / 2, 0, Math.PI * 2, false
       )
     } else {
-      context.arc(relativeX(item.x), relativeY(item.y), testSize, 0, Math.PI * 2, false)
+      context.arc(this.relativeX(item.x), this.relativeY(item.y), testSize, 0, Math.PI * 2, false)
     }
     context.fill()
     context.restore()
@@ -2886,12 +2846,12 @@ class MainScene extends Scene {
         this.drawScreenEdgeArc(item)
       } else if (item.type === 'magazine') {
         context.fillStyle = 'hsl(120, 100%, 20%)'
-        context.fillRect(relativeX(item.x), relativeY(item.y), SIZE / 3, SIZE * 2 / 3)
+        context.fillRect(this.relativeX(item.x), this.relativeY(item.y), SIZE / 3, SIZE * 2 / 3)
       } else if (item.type === 'droppedWeapon') {
         context.fillStyle = (item.type === 'droppedWeapon') ?
         `hsla(180, 100%, 30%, ${item.life/600})` :
         'hsl(180, 100%, 40%)'
-        context.fillRect(relativeX(item.x), relativeY(item.y), SIZE * 2 / 3, SIZE * 2 / 3)
+        context.fillRect(this.relativeX(item.x), this.relativeY(item.y), SIZE * 2 / 3, SIZE * 2 / 3)
       }
     })
   }
@@ -3167,8 +3127,8 @@ class MainScene extends Scene {
       context.save()
       context.globalAlpha = own.alpha
       context.drawImage(IMAGE[imgMyself],
-        ~~(relativeX(own.x - SIZE / 2)+.5),
-        ~~(relativeY(own.y - SIZE / 2)+.5)
+        ~~(this.relativeX(own.x - SIZE / 2)+.5),
+        ~~(this.relativeY(own.y - SIZE / 2)+.5)
       )
       context.restore()
       own.alpha = own.alpha - .1
@@ -3515,7 +3475,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
 
   const reset = () => {
     dropItems = []
-    // if (mapMode) setMap()
 
     const temporaryPoint = JSON.parse(storage.getItem('point'))
     point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
@@ -3535,6 +3494,33 @@ document.addEventListener('DOMContentLoaded', () => { // init
       inventory = []
       for (let i = 0; i < mainSlotSize + inventorySize; i++) {
         inventory.push({category: ''})
+      }
+      const initWeapon = () => {
+        const maxDamageInitial = 70
+        return new Weapon(
+          'T1911',
+          'HG',
+          [weaponModeList[1]],
+          weaponModeList[1],
+          weaponRarityList[0],
+          maxDamageInitial,
+          1,
+          cartridgeInfo.speed,
+          cartridgeInfo.life,
+          1,
+          magSizeInitial,
+          Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
+          loading.weight,
+          .2,
+          0,
+          10,
+          .2,
+          1,
+
+          4000,
+          0,
+          0
+        )
       }
       inventory[selectSlot] = initWeapon()
     }
