@@ -589,40 +589,6 @@ let inventorySlotBox = []
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => { // init
-  action = {
-    fire: setStorageFirst('fire', 'Space'),
-    reload: setStorageFirst('reload', 'KeyR'),
-    combatReload: setStorageFirst('combatReload', 'KeyC'),
-    slow: setStorageFirst('slow', 'ShiftLeft'),
-    shift: setStorageFirst('shift', 'ShiftLeft'),
-    modeSelect: setStorageFirst('modeSelect', 'KeyB'),
-    dash: setStorageFirst('dash', 'KeyN'),
-    back: setStorageFirst('back', 'KeyB'),
-    change: setStorageFirst('changescene', 'KeyM'),
-    primary: setStorageFirst('primary', 'Digit1'),
-    secondary: setStorageFirst('secondary', 'Digit2'),
-    tertiary: setStorageFirst('tertiary', 'Digit3'),
-    rotateSlot: setStorageFirst('rotateSlot', 'KeyQ'),
-    inventory: setStorageFirst('inventory', 'KeyE'),
-    pause: setStorageFirst('pause', 'KeyP'),
-    debug: setStorageFirst('debug', 'KeyG'),
-    settings: setStorageFirst('settings', 'Escape')
-  }
-  const operationMode = setStorageFirst('operation', 'WASD')
-  if (operationMode === 'WASD') {
-    action.up = setStorage('up', 'KeyW')
-    action.right = setStorage('right', 'KeyD')
-    action.down = setStorage('down', 'KeyS')
-    action.left = setStorage('left', 'KeyA')
-  } else if (operationMode === 'ESDF') {
-    action.up = setStorage('up', 'KeyE')
-    action.right = setStorage('right', 'KeyF')
-    action.down = setStorage('down', 'KeyD')
-    action.left = setStorage('left', 'KeyS')
-  }
-  setTitleMenuWord()
-})
 const setTheta = d => {
   /*
     6 4 12
@@ -1429,61 +1395,6 @@ const initWeapon = () => {
     0
   )
 }
-const reset = () => {
-  location = locationList[0]
-  dropItems = []
-  // if (mapMode) setMap()
-
-  const temporaryPoint = JSON.parse(storage.getItem('point'))
-  point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
-
-  const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
-  portalFlag = temporaryPortalFlag ? true : false
-  if (portalFlag) {
-    portalCooldinate.x = ownPosition.x|0
-    portalCooldinate.y = (ownPosition.y + SIZE * 3)|0
-  }
-
-  ownPosition.x = canvas.offsetWidth / 2
-  ownPosition.y = canvas.offsetHeight / 2
-  currentDirection = 4
-  bullets = []
-  enemies = []
-  selectSlot = 0
-  const temporaryWarehouse = JSON.parse(storage.getItem('warehouseArray'))
-  if (temporaryWarehouse) warehouse = temporaryWarehouse
-  inventoryFlag = false
-  inventory = JSON.parse(storage.getItem('inventoryArray'))
-  if (!inventory || inventory.every(v => v.category === '')) {
-    inventory = []
-    for (let i = 0; i < mainSlotSize + inventorySize; i++) {
-      inventory.push({category: ''})
-    }
-    inventory[selectSlot] = initWeapon()
-  }
-  ammo = 24
-  loading = {
-    time: 0,
-    takeOut: 15,
-    takeOutFlag: false,
-    done: 60,
-    weight: 1
-  }
-  combatReload.flag = false
-  combatReload.magFlag = false
-  combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
-  afterglow.point = []
-  afterglow.round = 0
-  const temporaryWaveNumber = JSON.parse(storage.getItem('waveNumber'))
-  wave.number = temporaryWaveNumber ? temporaryWaveNumber - 1 : 0
-  wave.enemySpawnInterval = 0
-  wave.enemySpawnIntervalLimit = 0
-  wave.enemyCount = 0
-  wave.enemyLimit = 0
-  setWave()
-  wave.roundInterval = 0
-  defeatCount = 0
-}; reset()
 let mapMode = false
 
 class Input {
@@ -3589,6 +3500,97 @@ class Entry {
     requestAnimationFrame(this.render.bind(this))
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => { // init
+  action = {
+    fire: setStorageFirst('fire', 'Space'),
+    reload: setStorageFirst('reload', 'KeyR'),
+    combatReload: setStorageFirst('combatReload', 'KeyC'),
+    slow: setStorageFirst('slow', 'ShiftLeft'),
+    shift: setStorageFirst('shift', 'ShiftLeft'),
+    modeSelect: setStorageFirst('modeSelect', 'KeyB'),
+    dash: setStorageFirst('dash', 'KeyN'),
+    back: setStorageFirst('back', 'KeyB'),
+    change: setStorageFirst('changescene', 'KeyM'),
+    primary: setStorageFirst('primary', 'Digit1'),
+    secondary: setStorageFirst('secondary', 'Digit2'),
+    tertiary: setStorageFirst('tertiary', 'Digit3'),
+    rotateSlot: setStorageFirst('rotateSlot', 'KeyQ'),
+    inventory: setStorageFirst('inventory', 'KeyE'),
+    pause: setStorageFirst('pause', 'KeyP'),
+    debug: setStorageFirst('debug', 'KeyG'),
+    settings: setStorageFirst('settings', 'Escape')
+  }
+  const operationMode = setStorageFirst('operation', 'WASD')
+  if (operationMode === 'WASD') {
+    action.up = setStorage('up', 'KeyW')
+    action.right = setStorage('right', 'KeyD')
+    action.down = setStorage('down', 'KeyS')
+    action.left = setStorage('left', 'KeyA')
+  } else if (operationMode === 'ESDF') {
+    action.up = setStorage('up', 'KeyE')
+    action.right = setStorage('right', 'KeyF')
+    action.down = setStorage('down', 'KeyD')
+    action.left = setStorage('left', 'KeyS')
+  }
+  setTitleMenuWord()
+
+  const reset = () => {
+    dropItems = []
+    // if (mapMode) setMap()
+
+    const temporaryPoint = JSON.parse(storage.getItem('point'))
+    point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
+
+    const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
+    portalFlag = temporaryPortalFlag ? true : false
+    if (portalFlag) {
+      portalCooldinate.x = ownPosition.x|0
+      portalCooldinate.y = (ownPosition.y + SIZE * 3)|0
+    }
+
+    ownPosition.x = canvas.offsetWidth / 2
+    ownPosition.y = canvas.offsetHeight / 2
+    currentDirection = 4
+    bullets = []
+    enemies = []
+    selectSlot = 0
+    const temporaryWarehouse = JSON.parse(storage.getItem('warehouseArray'))
+    if (temporaryWarehouse) warehouse = temporaryWarehouse
+    inventoryFlag = false
+    inventory = JSON.parse(storage.getItem('inventoryArray'))
+    if (!inventory || inventory.every(v => v.category === '')) {
+      inventory = []
+      for (let i = 0; i < mainSlotSize + inventorySize; i++) {
+        inventory.push({category: ''})
+      }
+      inventory[selectSlot] = initWeapon()
+    }
+    ammo = 24
+    loading = {
+      time: 0,
+      takeOut: 15,
+      takeOutFlag: false,
+      done: 60,
+      weight: 1
+    }
+    combatReload.flag = false
+    combatReload.magFlag = false
+    combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
+    afterglow.point = []
+    afterglow.round = 0
+    const temporaryWaveNumber = JSON.parse(storage.getItem('waveNumber'))
+    wave.number = temporaryWaveNumber ? temporaryWaveNumber - 1 : 0
+    wave.enemySpawnInterval = 0
+    wave.enemySpawnIntervalLimit = 0
+    wave.enemyCount = 0
+    wave.enemyLimit = 0
+    setWave()
+    wave.roundInterval = 0
+    defeatCount = 0
+  }
+  reset()
+})
 
 Promise.all(RESOURCE_LIST).then(() => {
   const ENTRY_POINT = new Entry()
