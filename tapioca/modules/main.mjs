@@ -317,13 +317,66 @@ class Ownself {
     this.speed = .05
 
     this.afterimage = []
+    this.direction = 0
+    this.currentDirection = 4
   }
-  update = (input, elapsedTime) => {
-    if (input.getKey('KeyW')) this.y -= this.speed * elapsedTime
-    if (input.getKey('KeyS')) this.y += this.speed * elapsedTime
-    if (input.getKey('KeyD')) this.x += this.speed * elapsedTime
-    if (input.getKey('KeyA')) this.x -= this.speed * elapsedTime
+
+  setTheta = d => {
+    /*
+      6 4 12
+      2 0 8
+      3 1 9
+    */
+    if (d === 1) ownState.theta = -Math.PI / 2
+    else if (d === 3) ownState.theta = -Math.PI / 4
+    else if (d === 2) ownState.theta = 0
+    else if (d === 6) ownState.theta = Math.PI / 4
+    else if (d === 4) ownState.theta = Math.PI / 2
+    else if (d === 12) ownState.theta = Math.PI * .75
+    else if (d === 8) ownState.theta = Math.PI
+    else if (d === 9) ownState.theta = -Math.PI * .75
   }
+  dashProcess = (intervalDiffTime) => {
+    const d = this.direction === 0 ? this.currentDirection : this.direction
+    this.setTheta(d)
+    ownState.radius = 1
+    const multiple = 0.3
+    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
+    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+    dash.isAttack = false
+    dash.coolTime = dash.coolTimeLimit
+  }
+  moving = (intervalDiffTime) => {
+    this.setTheta(this.direction)
+    if (this.direction === 0) ownState.radius = 0
+    else ownState.radius = 1
+    const multiple = 0.0008
+    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
+    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+
+    this.x += ownState.dx * intervalDiffTime
+    this.y += ownState.dy * intervalDiffTime
+    const brake = .98
+    if (Math.abs(ownState.dx) < 1e-5) ownState.dx = 0
+    else ownState.dx *= brake
+    if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
+    else ownState.dy *= brake
+  }
+
+  update = (intervalDiffTime, input) => {
+    if (input.getKey('KeyW')) this.direction = (this.direction + 1)|0
+    if (input.getKey('KeyD')) this.direction = (this.direction + 2)|0
+    if (input.getKey('KeyS')) this.direction = (this.direction + 4)|0
+    if (input.getKey('KeyA')) this.direction = (this.direction + 8)|0
+    else if (this.direction !== 0) this.currentDirection = this.direction
+
+    if (dash.coolTime <= 0 && code[action.dash].isFirst()) {
+      this.dashProcess(intervalDiffTime)
+    }
+    this.moving(intervalDiffTime)
+    if (this.direction !== 0) this.direction = 0
+  }
+
   drawAim = (cursor) => { // Expected effective range
     const radius =
       Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
@@ -412,8 +465,6 @@ let dash = {
   invincibleTime: 200,
   isAttack: false
 }
-let currentDirection
-let direction = 0
 
 let point = 0
 
@@ -1454,7 +1505,6 @@ class Main {
     this.timeStamp = Date.now()
     this.currentTime = Date.now()
     this.elapsedTime = this.timeStamp - this.currentTime
-    this._inputReceiver = new InputReceiver()
     this.array = []
     this.array.push(new Ownself)
 
@@ -1469,11 +1519,6 @@ class Main {
     this.elapsedTime = this.timeStamp - this.currentTime
     this.currentTime = this.timeStamp
 
-    const input = this._inputReceiver.getInput()
-    this.array.forEach((v, i) => {
-      v.update(input, this.elapsedTime)
-      if (v.life <= 0) array.splice(i, 1)
-    })
   })
   setMap = () => {
     return this.mapArray.filter(v => {
@@ -1883,7 +1928,7 @@ class Scene extends EventDispatcher {
     this.addEventListener('changemap', e => {this.map = e
     console.log(e)})
   }
-  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput) {}
+  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {}
   render (intervalDiffTime, mouseInput, cursor) {}
 }
 class MainScene extends Scene {
@@ -2031,49 +2076,10 @@ class MainScene extends Scene {
     }
   }
 
-  setTheta = d => {
-    /*
-      6 4 12
-      2 0 8
-      3 1 9
-    */
-    if (d === 1) ownState.theta = -Math.PI / 2
-    else if (d === 3) ownState.theta = -Math.PI / 4
-    else if (d === 2) ownState.theta = 0
-    else if (d === 6) ownState.theta = Math.PI / 4
-    else if (d === 4) ownState.theta = Math.PI / 2
-    else if (d === 12) ownState.theta = Math.PI * .75
-    else if (d === 8) ownState.theta = Math.PI
-    else if (d === 9) ownState.theta = -Math.PI * .75
-  }
-  dashProcess = (intervalDiffTime) => {
-    const d = direction === 0 ? currentDirection : direction
-    this.setTheta(d)
-    ownState.radius = 1
-    const multiple = 0.3
-    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
-    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
-    dash.isAttack = false
-    dash.coolTime = dash.coolTimeLimit
-  }
-  moving = (intervalDiffTime) => {
-    this.setTheta(direction)
-    if (direction === 0) ownState.radius = 0
-    else ownState.radius = 1
-    const multiple = 0.0008
-    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
-    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+  interfaceProcess = (intervalDiffTime, input , mouseInput, cursor, wheelInput) => {
 
-    this.ownPosition.x += ownState.dx * intervalDiffTime
-    this.ownPosition.y += ownState.dy * intervalDiffTime
-    const brake = .98
-    if (Math.abs(ownState.dx) < 1e-5) ownState.dx = 0
-    else ownState.dx *= brake
-    if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
-    else ownState.dy *= brake
-  }
+    this.ownPosition.update(intervalDiffTime, input)
 
-  interfaceProcess = (intervalDiffTime, mouseInput, cursor, wheelInput) => {
     if (code[action.primary].isFirst()) selectSlot = 0
     if (code[action.secondary].isFirst()) selectSlot = 1
     if (code[action.tertiary].isFirst()) selectSlot = 2
@@ -2088,17 +2094,9 @@ class MainScene extends Scene {
       selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
     }
     if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
-    if (code[action.up].flag) direction = (direction+1)|0
-    if (code[action.right].flag) direction = (direction+2)|0
-    if (code[action.down].flag) direction = (direction+4)|0
-    if (code[action.left].flag) direction = (direction+8)|0
-    else if (direction !== 0) currentDirection = direction
     if (inventory[selectSlot].category !== '' && location === locationList[1]) this.weaponProcess(mouseInput, cursor)
     if (inventory[selectSlot].category !== '') this.modeSelect()
-    if (dash.coolTime <= 0 && (code[action.dash].isFirst() || mouseInput.getKeyDown(2))) {
-      this.dashProcess(intervalDiffTime)
-    }
-    this.moving(intervalDiffTime)
+
     if (code[action.debug].isFirst()) this.isShowDamage = !this.isShowDamage
   }
   dropItemProcess = (intervalDiffTime) => {
@@ -2605,11 +2603,10 @@ class MainScene extends Scene {
 
     if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
   }
-  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput) {
+  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
     if (location === locationList[1] && dungeon === dungeonList[4]) {
     } else {
-      this.interfaceProcess(intervalDiffTime, mouseInput, cursor, wheelInput)
-      if (direction !== 0) direction = 0
+      this.interfaceProcess(intervalDiffTime, input, mouseInput, cursor, wheelInput)
       if (0 < dropItems.length) this.dropItemProcess(intervalDiffTime)
       this.inventoryProcess(mouseInput, cursor)
 
@@ -3272,7 +3269,7 @@ class TitleScene extends Scene {
   // constructor () {
   //   super()
   // }
-  update (intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput) {
+  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
     if (
       mouseInput.getKeyUp(0) &&
       this.boxInterface.isDownAndUpInBox(titleMenuWordArray[0], true, cursor, mouseDownPosition)
@@ -3364,7 +3361,7 @@ class WindowManager extends EventDispatcher {
     }
 
     if (!this.floatWindowOrder.some(v => v === 'result')) {
-      this.scene.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, wheelInput)
+      this.scene.update(intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput)
     }
 
     this.debugWindow.update()
@@ -3481,7 +3478,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
     // const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
     // portalFlag = temporaryPortalFlag ? true : false
 
-    currentDirection = 4
     bullets = []
     enemies = []
     selectSlot = 0
