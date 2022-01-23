@@ -1,6 +1,8 @@
 import {code, keydownTimeStamp} from '../../modules/code.mjs'
 import {frameCounter} from '../../modules/frameCounter.mjs'
 
+window.addEventListener('keydown', e => e.preventDefault())
+
 const version = 'v.0.9'
 const canvas = document.getElementById`canvas`
 const font = 'jkmarugo'
