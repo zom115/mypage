@@ -1515,8 +1515,6 @@ class Main {
     this.timeStamp = Date.now()
     this.currentTime = Date.now()
     this.elapsedTime = this.timeStamp - this.currentTime
-    this.array = []
-    this.array.push(new Ownself)
 
     this.mapArray = []
     this.mapArray.push(MAP[0])
@@ -1577,7 +1575,6 @@ class Main {
 
     this.renderMap()
 
-    this.array.forEach(v => v.render())
     requestAnimationFrame(this.render.bind(this))
   }
 }
@@ -1952,7 +1949,7 @@ class MainScene extends Scene {
     this.reloadFlashTimeLimit = 5
     this.isShowDamage = true
     this.afterimage = []
-    this.ownPosition = new Ownself()
+    this.ownself = new Ownself()
   }
   setMoreThanMagazine = () => {
     return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
@@ -2005,15 +2002,15 @@ class MainScene extends Scene {
       const randomError =
         degreeRange * (Math.random() - .5) * (
         1 + inventory[selectSlot].recoilEffect + Math.sqrt(
-        this.ownPosition.dx ** 2 + this.ownPosition.dy ** 2) * this.ownPosition.moveRecoil)
+        this.ownself.dx ** 2 + this.ownself.dy ** 2) * this.ownself.moveRecoil)
       const theta =
         Math.atan2(
           cursor.offsetY - canvas.offsetHeight / 2,
           cursor.offsetX - canvas.offsetWidth / 2) + randomError
       const bulletRadius = inventory[selectSlot].category === weaponCategoryList[5] ? SIZE / 8 : SIZE / 6
       bullets.push(new Bullet(
-        this.ownPosition.x,
-        this.ownPosition.y,
+        this.ownself.x,
+        this.ownself.y,
         inventory[selectSlot].bulletSpeed,
         theta,
         inventory[selectSlot].bulletLife,
@@ -2089,7 +2086,7 @@ class MainScene extends Scene {
 
   interfaceProcess = (intervalDiffTime, input , mouseInput, cursor, wheelInput) => {
 
-    this.ownPosition.update(intervalDiffTime, input)
+    this.ownself.update(intervalDiffTime, input)
 
     if (code[action.primary].isFirst()) selectSlot = 0
     if (code[action.secondary].isFirst()) selectSlot = 1
@@ -2126,8 +2123,8 @@ class MainScene extends Scene {
         }
         item.life = (item.life-1)|0
       }
-      const width = this.ownPosition.x - item.x
-      const height = this.ownPosition.y - item.y
+      const width = this.ownself.x - item.x
+      const height = this.ownself.y - item.y
       const distance = Math.sqrt(width ** 2 + height ** 2)
       if (0 <= blankInventorySlot) { // vacuuming
         let multiple = (
@@ -2323,8 +2320,8 @@ class MainScene extends Scene {
           }
         } return
       }
-      const width = this.ownPosition.x - enemy.x
-      const height = this.ownPosition.y - enemy.y
+      const width = this.ownself.x - enemy.x
+      const height = this.ownself.y - enemy.y
       const length = Math.sqrt(width ** 2 + height ** 2)
       if (dungeon === dungeonList[0]) {
         this.differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
@@ -2345,7 +2342,7 @@ class MainScene extends Scene {
         const y = enemy.y + r * Math.sin(enemy.theta)
         const DELTA_THETA = .001 * intervalDiffTime
         enemy.theta +=
-          (x - enemy.x) * (this.ownPosition.y - enemy.y) - (this.ownPosition.x - enemy.x) * (y - enemy.y) < 0 ?  // Cross product
+          (x - enemy.x) * (this.ownself.y - enemy.y) - (this.ownself.x - enemy.x) * (y - enemy.y) < 0 ?  // Cross product
           -DELTA_THETA : DELTA_THETA
         enemy.x += r * Math.cos(enemy.theta)
         enemy.y += r * Math.sin(enemy.theta)
@@ -2356,7 +2353,7 @@ class MainScene extends Scene {
           const x = enemy.x + r * Math.cos(enemy.theta)
           const y = enemy.y + r * Math.sin(enemy.theta)
           const DELTA_THETA = .0004 * intervalDiffTime
-          const CROSS_PRODUCT = (x - enemy.x) * (this.ownPosition.y - enemy.y) - (this.ownPosition.x - enemy.x) * (y - enemy.y)
+          const CROSS_PRODUCT = (x - enemy.x) * (this.ownself.y - enemy.y) - (this.ownself.x - enemy.x) * (y - enemy.y)
           enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
 
           enemy.x += r * Math.cos(enemy.theta)
@@ -2368,7 +2365,7 @@ class MainScene extends Scene {
           const x = enemy.x + r * Math.cos(enemy.theta)
           const y = enemy.y + r * Math.sin(enemy.theta)
           const DELTA_THETA = .002 * intervalDiffTime
-          const CROSS_PRODUCT = (x - enemy.x) * (this.ownPosition.y - enemy.y) - (this.ownPosition.x - enemy.x) * (y - enemy.y)
+          const CROSS_PRODUCT = (x - enemy.x) * (this.ownself.y - enemy.y) - (this.ownself.x - enemy.x) * (y - enemy.y)
           enemy.theta += CROSS_PRODUCT < 0 ? -DELTA_THETA : DELTA_THETA
           if (Math.abs(CROSS_PRODUCT) <= 1) {
             enemy.state = 'active'
@@ -2379,7 +2376,7 @@ class MainScene extends Scene {
       enemy.step = (enemy.stepLimit <= enemy.step) ? enemy.step = 0 : (enemy.step+1)|0
       // collisionDetect
       if (((
-          this.ownPosition.x - enemy.x) ** 2 + (this.ownPosition.y - enemy.y) ** 2
+          this.ownself.x - enemy.x) ** 2 + (this.ownself.y - enemy.y) ** 2
         ) ** .5 < minImgRadius * 2 + SIZE / 8 && 0 < enemy.life
       ) {
         if (dash.coolTimeLimit - dash.coolTime < dash.invincibleTime) {
@@ -2507,8 +2504,8 @@ class MainScene extends Scene {
     const type = dungeonList[0] ? dungeonList[0] : dungeonList[1]
     const r =  Math.sqrt(canvas.offsetWidth ** 2 + canvas.offsetHeight ** 2) / 2
     const a = 2 * Math.PI * Math.random()
-    const x = this.ownPosition.x + r * Math.cos(a)
-    const y = this.ownPosition.y + r * Math.sin(a)
+    const x = this.ownself.x + r * Math.cos(a)
+    const y = this.ownself.y + r * Math.sin(a)
     const theta = a - Math.PI
     enemies.push({
       type: type,
@@ -2545,7 +2542,7 @@ class MainScene extends Scene {
   combatProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     enemyBulletArray.forEach(v => {
       if (((
-        this.ownPosition.x - v.x) ** 2 + (this.ownPosition.y - v.y) ** 2) ** .5 < v.radius + SIZE * .2 &&
+        this.ownself.x - v.x) ** 2 + (this.ownself.y - v.y) ** 2) ** .5 < v.radius + SIZE * .2 &&
         dash.coolTime < dash.coolTimeLimit - dash.invincibleTime
       ) this.dispatchEvent('addMenu', 'result')
     })
@@ -2606,8 +2603,8 @@ class MainScene extends Scene {
       holdSlot.unavailableTime = 30
       const r = SIZE * 3
       const theta = Math.atan2(cursor.offsetY - canvas.offsetHeight / 2, cursor.offsetX - canvas.offsetWidth / 2)
-      holdSlot.x = this.ownPosition.x + r * Math.cos(theta)
-      holdSlot.y = this.ownPosition.y + r * Math.sin(theta)
+      holdSlot.x = this.ownself.x + r * Math.cos(theta)
+      holdSlot.y = this.ownself.y + r * Math.sin(theta)
       dropItems.push(holdSlot)
       holdSlot = {category: ''}
     }
@@ -2636,33 +2633,33 @@ class MainScene extends Scene {
 
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
       v.objects.filter(a => a.name.includes('start')).forEach(spotData => {
-        this.startSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData, this.ownPosition)
+        this.startSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData, this.ownself)
       })
       v.objects.filter(a => a.name.includes('save')).forEach(spotData => {
-        this.saveSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData, this.ownPosition)
+        this.saveSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData, this.ownself)
       })
       v.objects.filter(a => a.name.includes('shop')).forEach(spotData => {
-        this.shopSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData, this.ownPosition)
+        this.shopSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData, this.ownself)
       })
     })
   }
 
   relativeX = (arg) => {
-    const a = settingsObject.isMiddleView ? screenOwnPos.x - this.ownPosition.x : canvas.offsetWidth / 2 - this.ownPosition.x
+    const a = settingsObject.isMiddleView ? screenOwnPos.x - this.ownself.x : canvas.offsetWidth / 2 - this.ownself.x
     return a + arg
   }
   relativeY = (arg) => {
-    const a = settingsObject.isMiddleView ? screenOwnPos.y - this.ownPosition.y : canvas.offsetHeight / 2 - this.ownPosition.y
+    const a = settingsObject.isMiddleView ? screenOwnPos.y - this.ownself.y : canvas.offsetHeight / 2 - this.ownself.y
     return a + arg
   }
   renderMap = (mouseInput, cursor) => {
     const pos =
       settingsObject.isMiddleView ? {
-        x: this.ownPosition.x - screenOwnPos.x,
-        y: this.ownPosition.y - screenOwnPos.y
+        x: this.ownself.x - screenOwnPos.x,
+        y: this.ownself.y - screenOwnPos.y
       } : {
-        x: this.ownPosition.x - canvas.offsetWidth * .5,
-        y: this.ownPosition.y - canvas.offsetHeight * .5
+        x: this.ownself.x - canvas.offsetWidth * .5,
+        y: this.ownself.y - canvas.offsetHeight * .5
       }
     this.map.layers.filter(v => v.name.includes('tileset_')).forEach(v => {
       for (let x = 0; x < v.width; x++) {
@@ -2699,13 +2696,13 @@ class MainScene extends Scene {
     })
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
       v.objects.filter(a => a.name.includes('start')).forEach(spotData => {
-        this.startSpot.render(mouseInput, cursor, spotData, this.ownPosition)
+        this.startSpot.render(mouseInput, cursor, spotData, this.ownself)
       })
       v.objects.filter(a => a.name.includes('save')).forEach(spotData => {
-        this.saveSpot.render(mouseInput, cursor, spotData, this.ownPosition)
+        this.saveSpot.render(mouseInput, cursor, spotData, this.ownself)
       })
       v.objects.filter(a => a.name.includes('shop')).forEach(spotData => {
-        this.shopSpot.render(mouseInput, cursor, spotData, this.ownPosition)
+        this.shopSpot.render(mouseInput, cursor, spotData, this.ownself)
       })
     })
   }
@@ -2874,48 +2871,48 @@ class MainScene extends Scene {
       item.rarity === weaponRarityList[3] ? weaponRatiryColorList[3] : weaponRatiryColorList[4]
     context.beginPath()
     if ( // left & top
-      item.x < this.ownPosition.x - screenOwnPos.x + testSize / 2 &&
-      item.y < this.ownPosition.y - screenOwnPos.y + testSize / 2
+      item.x < this.ownself.x - screenOwnPos.x + testSize / 2 &&
+      item.y < this.ownself.y - screenOwnPos.y + testSize / 2
     ) context.arc(
       testSize / 2, testSize / 2, testSize / 2, 0 / 2, Math.PI * 2, false
     )
     else if ( // left & bottom
-      item.x < this.ownPosition.x - screenOwnPos.x + testSize / 2 &&
-      this.ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
+      item.x < this.ownself.x - screenOwnPos.x + testSize / 2 &&
+      this.ownself.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
     ) context.arc(
       testSize / 2, canvas.offsetHeight - testSize / 2,
       testSize / 2, 0, Math.PI * 2, false
     )
     else if ( // right & top
-      this.ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
-      item.y < this.ownPosition.y - screenOwnPos.y + testSize / 2
+      this.ownself.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
+      item.y < this.ownself.y - screenOwnPos.y + testSize / 2
     ) context.arc(
       canvas.offsetWidth - testSize / 2, testSize / 2,
       testSize / 2, 0, Math.PI * 2, false
     )
     else if ( // right & bottom
-      this.ownPosition.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
-      this.ownPosition.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
+      this.ownself.x + canvas.offsetWidth - screenOwnPos.x - testSize / 2 < item.x &&
+      this.ownself.y + canvas.offsetHeight - screenOwnPos.y - testSize / 2 < item.y
     ) context.arc(
       canvas.offsetWidth - testSize / 2,
       canvas.offsetHeight - testSize / 2,
       testSize / 2, 0, Math.PI * 2, false
     )
-    else if (item.x < this.ownPosition.x - screenOwnPos.x + testSize / 2) { // out of left
+    else if (item.x < this.ownself.x - screenOwnPos.x + testSize / 2) { // out of left
       context.arc(
         testSize / 2, this.relativeY(item.y), testSize / 2, 0, Math.PI * 2, false
       )
-    } else if (this.ownPosition.x + canvas.offsetWidth - screenOwnPos.x + testSize / 2 < item.x) { // out of right
+    } else if (this.ownself.x + canvas.offsetWidth - screenOwnPos.x + testSize / 2 < item.x) { // out of right
       context.arc(
         canvas.offsetWidth - testSize / 2, this.relativeY(item.y),
         testSize / 2, 0, Math.PI * 2, false
       )
-    } else if (item.y < this.ownPosition.y - screenOwnPos.y + testSize / 2) { // out of top
+    } else if (item.y < this.ownself.y - screenOwnPos.y + testSize / 2) { // out of top
       context.arc(
         this.relativeX(item.x), testSize / 2,
         testSize / 2, 0, Math.PI * 2, false
       )
-    } else if (this.ownPosition.y + canvas.offsetHeight - screenOwnPos.y + testSize / 2 < item.y) { // out of bottom
+    } else if (this.ownself.y + canvas.offsetHeight - screenOwnPos.y + testSize / 2 < item.y) { // out of bottom
       context.arc(
         this.relativeX(item.x), canvas.offsetHeight - testSize  + testSize / 2,
         testSize / 2, 0, Math.PI * 2, false
@@ -3273,7 +3270,7 @@ class MainScene extends Scene {
     if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
     if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
 
-    this.ownPosition.render(intervalDiffTime, cursor)
+    this.ownself.render(intervalDiffTime, cursor)
   }
 }
 class TitleScene extends Scene {
