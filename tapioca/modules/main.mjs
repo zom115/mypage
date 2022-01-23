@@ -315,6 +315,8 @@ class Ownself {
     this.x = canvas.offsetWidth * .5
     this.y = canvas.offsetHeight * .5
     this.speed = .05
+
+    this.afterimage = []
   }
   update = (input, elapsedTime) => {
     if (input.getKey('KeyW')) this.y -= this.speed * elapsedTime
@@ -322,14 +324,83 @@ class Ownself {
     if (input.getKey('KeyD')) this.x += this.speed * elapsedTime
     if (input.getKey('KeyA')) this.x -= this.speed * elapsedTime
   }
-  render = () => {
+  drawAim = (cursor) => { // Expected effective range
+    const radius =
+      Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
+    let aimRadius = (
+      targetWidth * radius / inventory[selectSlot].effectiveRange) * (
+      1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
     context.save()
-    context.fillStyle = 'hsl(50, 100%, 90%)'
+    context.strokeStyle = 'hsl(0, 0%, 100%)'
+    context.beginPath()
+    context.arc(cursor.offsetX, cursor.offsetY, aimRadius * 20, 0, Math.PI * 2)
+    context.stroke()
+    context.restore()
+  }
+  render = (intervalDiffTime, cursor) => {
+    if (inventory[selectSlot].category !== '' && !inventoryFlag) this.drawAim(cursor)
+
+    if (ownState.radius === 0) ownState.step = 0
+    else ownState.step += intervalDiffTime
+    // y = -4 * (x - .5) ** 2 + 1
+    const formula = -4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1
+    const isJumpImage = .3 < formula ? true : false
+    const jump = .8 < formula ? 1 : 0
+    const setOwnImageFromDiff = (dx, dy) => {
+      const coefficient = .2
+      return false ? 'images/TP2F.png' : // TODO: Pre-check max diff
+        dy < 0 && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2U.png' :
+        0 < dx && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2R.png' :
+        0 < dy && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2D.png' :
+        dx < 0 && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2L.png' :
+        dy < 0 && 0 < dx ? 'images/TP2RU.png' :
+        0 < dy && 0 < dx ? 'images/TP2RD.png' :
+        0 < dy && dx < 0 ? 'images/TP2LD.png' :
+        dy < 0 && dx < 0 ? 'images/TP2LU.png' : 'images/TP2F.png'
+    }
+    const imgMyself =
+      ownState.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
+
+    const pos =
+      settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : {
+        x: canvas.offsetWidth / 2,
+        y: canvas.offsetHeight / 2
+      }
+    context.fillStyle = 'hsla(0, 0%, 0%, .2)' // shadow
     context.beginPath()
     context.arc(
-      this.x,
-      this.y, SIZE * .5, 0, 2 * Math.PI)
+      pos.x + radius * .05, pos.y + radius * .6, SIZE / 4, 0, Math.PI * 2, false
+    )
     context.fill()
+    if (0 < dash.coolTime) {
+      const angle =
+        dash.coolTime < dash.coolTimeLimit - dash.invincibleTime ?
+        dash.coolTime / (dash.coolTimeLimit - dash.invincibleTime) * Math.PI * 2 :
+        Math.PI * 2
+      context.fillStyle = 'hsla(0, 100%, 100%, .5)'
+      context.beginPath()
+      context.moveTo(pos.x, pos.y)
+      context.arc(
+        pos.x, pos.y, SIZE / 2, -Math.PI * .5, -angle - Math.PI * .5, true
+      )
+      context.fill()
+    }
+    context.save()
+    if (dash.coolTimeLimit - dash.invincibleTime < dash.coolTime) {
+      this.afterimage.push({x: this.x, y: this.y - jump, alpha: .5})
+    }
+    this.afterimage.forEach((own, index) => {
+      context.save()
+      context.globalAlpha = own.alpha
+      context.drawImage(IMAGE[imgMyself],
+        ~~(this.relativeX(own.x - SIZE / 2)+.5),
+        ~~(this.relativeY(own.y - SIZE / 2)+.5)
+      )
+      context.restore()
+      own.alpha = own.alpha - .1
+      if (own.alpha <= 0) this.afterimage.splice(index, 1)
+    })
+    context.drawImage(IMAGE[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
     context.restore()
   }
 }
@@ -3078,72 +3149,6 @@ class MainScene extends Scene {
       })
     }
   }
-  drawMyself = (intervalDiffTime) => {
-    if (ownState.radius === 0) ownState.step = 0
-    else ownState.step += intervalDiffTime
-    // y = -4 * (x - .5) ** 2 + 1
-    const formula = -4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1
-    const isJumpImage = .3 < formula ? true : false
-    const jump = .8 < formula ? 1 : 0
-    const setOwnImageFromDiff = (dx, dy) => {
-      const coefficient = .2
-      return false ? 'images/TP2F.png' : // TODO: Pre-check max diff
-        dy < 0 && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2U.png' :
-        0 < dx && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2R.png' :
-        0 < dy && dx ** 2 < coefficient * dy ** 2 ? 'images/TP2D.png' :
-        dx < 0 && dy ** 2 < coefficient * dx ** 2 ? 'images/TP2L.png' :
-        dy < 0 && 0 < dx ? 'images/TP2RU.png' :
-        0 < dy && 0 < dx ? 'images/TP2RD.png' :
-        0 < dy && dx < 0 ? 'images/TP2LD.png' :
-        dy < 0 && dx < 0 ? 'images/TP2LU.png' : 'images/TP2F.png'
-    }
-    const imgMyself =
-      ownState.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
-
-    const pos =
-      settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : {
-        x: canvas.offsetWidth / 2,
-        y: canvas.offsetHeight / 2
-      }
-    context.fillStyle = 'hsla(0, 0%, 0%, .2)' // shadow
-    context.beginPath()
-    context.arc(
-      pos.x + radius * .05, pos.y + radius * .6, SIZE / 4, 0, Math.PI * 2, false
-    )
-    context.fill()
-    if (0 < dash.coolTime) {
-      const angle =
-        dash.coolTime < dash.coolTimeLimit - dash.invincibleTime ?
-        dash.coolTime / (dash.coolTimeLimit - dash.invincibleTime) * Math.PI * 2 :
-        Math.PI * 2
-      context.fillStyle = 'hsla(0, 100%, 100%, .5)'
-      context.beginPath()
-      context.moveTo(pos.x, pos.y)
-      context.arc(
-        pos.x, pos.y, SIZE / 2, -Math.PI * .5, -angle - Math.PI * .5, true
-      )
-      context.fill()
-    }
-    context.save()
-    if (dash.coolTimeLimit - dash.invincibleTime < dash.coolTime) {
-      this.afterimage.push({
-        x: this.ownPosition.x, y: this.ownPosition.y - jump, alpha: .5
-      })
-    }
-    this.afterimage.forEach((own, index) => {
-      context.save()
-      context.globalAlpha = own.alpha
-      context.drawImage(IMAGE[imgMyself],
-        ~~(this.relativeX(own.x - SIZE / 2)+.5),
-        ~~(this.relativeY(own.y - SIZE / 2)+.5)
-      )
-      context.restore()
-      own.alpha = own.alpha - .1
-      if (own.alpha <= 0) this.afterimage.splice(index, 1)
-    })
-    context.drawImage(IMAGE[imgMyself], ~~(pos.x - radius+.5), ~~(pos.y - radius+.5))
-    context.restore()
-  }
   renderSlot = (cursor) => {
     context.save()
     if (inventoryFlag) {
@@ -3180,19 +3185,6 @@ class MainScene extends Scene {
       if (mainSlotSize - 1 < i && !inventoryFlag) return
       this.renderWeaponDetail(v, i, cursor)
     })
-    context.restore()
-  }
-  drawAim = (cursor) => { // Expected effective range
-    const radius =
-      Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
-    let aimRadius = (
-      targetWidth * radius / inventory[selectSlot].effectiveRange) * (
-      1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
-    context.save()
-    context.strokeStyle = 'hsl(0, 0%, 100%)'
-    context.beginPath()
-    context.arc(cursor.offsetX, cursor.offsetY, aimRadius * 20, 0, Math.PI * 2)
-    context.stroke()
     context.restore()
   }
   drawSaveCompleted = (intervalDiffTime) => {
@@ -3268,12 +3260,12 @@ class MainScene extends Scene {
       arrayRenderer(v)
     })
 
-    this.drawMyself(intervalDiffTime)
     this.renderSlot(cursor)
-    if (inventory[selectSlot].category !== '' && !inventoryFlag) this.drawAim(cursor)
     if (0 <= afterglow.save) this.drawSaveCompleted(intervalDiffTime)
     if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
     if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
+
+    this.ownPosition.render(intervalDiffTime, cursor)
   }
 }
 class TitleScene extends Scene {
