@@ -320,10 +320,13 @@ let currentDirection
 let direction = 0
 
 let point = 0
+
+/*
 let portalFlag = false
 let portalCooldinate = {x: ownPosition.x|0, y: (ownPosition.y + SIZE * 3)|0}
 let portalParticleTime = 0
 let portalParticle = []
+*/
 
 const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
 const weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
@@ -640,7 +643,7 @@ const setWave = () => {
 const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave = true, isWarehouse = true) => {
   if (isInventory) storage.setItem('inventoryArray', JSON.stringify(inventory))
   if (isPoint) storage.setItem('point', JSON.stringify(point))
-  if (isPortal) storage.setItem('portalFlag', JSON.stringify(portalFlag))
+  // if (isPortal) storage.setItem('portalFlag', JSON.stringify(portalFlag))
   if (isWave) storage.setItem('waveNumber', JSON.stringify(wave.number))
   if (isWarehouse) storage.setItem('warehouseArray', JSON.stringify(warehouse))
   afterglow.save = 1000
@@ -732,7 +735,6 @@ class StartSpot {
     if (this.boxInterface.isDownAndUpInBox(this.startBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       location = locationList[1]
       dropItems = []
-      portalFlag = false
       saveProcess()
       wave.number = 0
       if (dungeon !== dungeonList[3]) setWave()
@@ -1918,7 +1920,7 @@ class MainScene extends Scene {
     }
 
     if (((
-      mouseInput.getKeyDown(0) && !inventoryFlag && !portalFlag) || (
+      mouseInput.getKeyDown(0) && !inventoryFlag) || (
       inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
       !inventory[selectSlot].disconnector
     ) {
@@ -2317,6 +2319,7 @@ class MainScene extends Scene {
       }
     })
   }
+  /*
   portalProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     if (!portalFlag) {
       portalFlag = true
@@ -2349,6 +2352,7 @@ class MainScene extends Scene {
       }
     }
   }
+  */
   slideProcess = () => {
     if (
       inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
@@ -2547,7 +2551,7 @@ class MainScene extends Scene {
         arrayUpdater(v)
       })
     }
-    if (portalFlag) this.portalProcess()
+    // if (portalFlag) this.portalProcess()
     if (location === locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
 
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
@@ -2625,6 +2629,7 @@ class MainScene extends Scene {
       })
     })
   }
+  /*
   renderPortal = (intervalDiffTime, timeStamp, cursor) => {
     const particle = class {
       constructor (x, y, w, h, dx, dy, life, lightness) {
@@ -2725,6 +2730,7 @@ class MainScene extends Scene {
       context.restore()
     }
   }
+  */
   drawBullets = () => {
     bullets.forEach(bullet => {
       context.fillStyle = `hsla(0, 0%, 0%, ${bullet.life / bullet.baseLife})`
@@ -3246,7 +3252,7 @@ class MainScene extends Scene {
 
     this.renderMap(mouseInput, cursor)
 
-    if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
+    // if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
     if (0 < bullets.length) this.drawBullets()
     if (0 < enemies.length) this.drawEnemies()
     if (0 < dropItems.length) this.drawDropItems()
@@ -3479,8 +3485,8 @@ document.addEventListener('DOMContentLoaded', () => { // init
     const temporaryPoint = JSON.parse(storage.getItem('point'))
     point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
 
-    const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
-    portalFlag = temporaryPortalFlag ? true : false
+    // const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
+    // portalFlag = temporaryPortalFlag ? true : false
 
     currentDirection = 4
     bullets = []
