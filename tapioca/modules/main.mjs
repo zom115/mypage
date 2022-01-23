@@ -319,6 +319,13 @@ class Ownself {
     this.afterimage = []
     this.direction = 0
     this.currentDirection = 4
+    this.dx = 0
+    this.dy = 0
+    this.radius = 0
+    this.theta = 0
+    this.moveRecoil = 2
+    this.step = 0
+    this.stepLimit = 300
   }
 
   setTheta = d => {
@@ -327,40 +334,40 @@ class Ownself {
       2 0 8
       3 1 9
     */
-    if (d === 1) ownState.theta = -Math.PI / 2
-    else if (d === 3) ownState.theta = -Math.PI / 4
-    else if (d === 2) ownState.theta = 0
-    else if (d === 6) ownState.theta = Math.PI / 4
-    else if (d === 4) ownState.theta = Math.PI / 2
-    else if (d === 12) ownState.theta = Math.PI * .75
-    else if (d === 8) ownState.theta = Math.PI
-    else if (d === 9) ownState.theta = -Math.PI * .75
+    if (d === 1) this.theta = -Math.PI / 2
+    else if (d === 3) this.theta = -Math.PI / 4
+    else if (d === 2) this.theta = 0
+    else if (d === 6) this.theta = Math.PI / 4
+    else if (d === 4) this.theta = Math.PI / 2
+    else if (d === 12) this.theta = Math.PI * .75
+    else if (d === 8) this.theta = Math.PI
+    else if (d === 9) this.theta = -Math.PI * .75
   }
   dashProcess = (intervalDiffTime) => {
     const d = this.direction === 0 ? this.currentDirection : this.direction
     this.setTheta(d)
-    ownState.radius = 1
+    this.radius = 1
     const multiple = 0.3
-    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
-    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+    this.dx += multiple * this.radius * Math.cos(this.theta) * intervalDiffTime
+    this.dy += multiple * this.radius * Math.sin(this.theta) * intervalDiffTime
     dash.isAttack = false
     dash.coolTime = dash.coolTimeLimit
   }
   moving = (intervalDiffTime) => {
     this.setTheta(this.direction)
-    if (this.direction === 0) ownState.radius = 0
-    else ownState.radius = 1
+    if (this.direction === 0) this.radius = 0
+    else this.radius = 1
     const multiple = 0.0008
-    ownState.dx += multiple * ownState.radius * Math.cos(ownState.theta) * intervalDiffTime
-    ownState.dy += multiple * ownState.radius * Math.sin(ownState.theta) * intervalDiffTime
+    this.dx += multiple * this.radius * Math.cos(this.theta) * intervalDiffTime
+    this.dy += multiple * this.radius * Math.sin(this.theta) * intervalDiffTime
 
-    this.x += ownState.dx * intervalDiffTime
-    this.y += ownState.dy * intervalDiffTime
+    this.x += this.dx * intervalDiffTime
+    this.y += this.dy * intervalDiffTime
     const brake = .98
-    if (Math.abs(ownState.dx) < 1e-5) ownState.dx = 0
-    else ownState.dx *= brake
-    if (Math.abs(ownState.dy) < 1e-5) ownState.dy = 0
-    else ownState.dy *= brake
+    if (Math.abs(this.dx) < 1e-5) this.dx = 0
+    else this.dx *= brake
+    if (Math.abs(this.dy) < 1e-5) this.dy = 0
+    else this.dy *= brake
   }
 
   update = (intervalDiffTime, input) => {
@@ -384,7 +391,7 @@ class Ownself {
       Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
     let aimRadius = (
       targetWidth * radius / inventory[selectSlot].effectiveRange) * (
-      1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
+      1 + inventory[selectSlot].recoilEffect + Math.sqrt(this.dx ** 2 + this.dy ** 2) * this.moveRecoil)
     context.save()
     context.strokeStyle = 'hsl(0, 0%, 100%)'
     context.beginPath()
@@ -395,11 +402,11 @@ class Ownself {
   render = (intervalDiffTime, cursor) => {
     if (inventory[selectSlot].category !== '' && !inventoryFlag) this.drawAim(cursor)
 
-    if (ownState.stepLimit <= ownState.step) ownState.step = 0 // reset
-    if (ownState.radius === 0) ownState.step = 0
-    else ownState.step += intervalDiffTime
+    if (this.stepLimit <= this.step) this.step = 0 // reset
+    if (this.radius === 0) this.step = 0
+    else this.step += intervalDiffTime
     // y = -4 * (x - .5) ** 2 + 1
-    const formula = -4 * (ownState.step / ownState.stepLimit - .5) ** 2 + 1
+    const formula = -4 * (this.step / this.stepLimit - .5) ** 2 + 1
     const isJumpImage = .3 < formula ? true : false
     const jump = .8 < formula ? 1 : 0
     const setOwnImageFromDiff = (dx, dy) => {
@@ -415,7 +422,7 @@ class Ownself {
         dy < 0 && dx < 0 ? 'images/TP2LU.png' : 'images/TP2F.png'
     }
     const imgMyself =
-      ownState.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(ownState.dx, ownState.dy)
+      this.radius === 0 || !isJumpImage ? 'images/TP2F.png' : setOwnImageFromDiff(this.dx, this.dy)
 
     const pos =
       settingsObject.isMiddleView ? {x: screenOwnPos.x, y: screenOwnPos.y - jump} : {
@@ -460,7 +467,7 @@ class Ownself {
     context.restore()
   }
 }
-const ownState = {dx: 0, dy: 0, radius: 0, theta: 0, moveRecoil: 2, step: 0, stepLimit: 300}
+
 let dash = {
   coolTime: 0,
   coolTimeLimit: 1000,
@@ -1997,7 +2004,8 @@ class MainScene extends Scene {
       const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
       const randomError =
         degreeRange * (Math.random() - .5) * (
-        1 + inventory[selectSlot].recoilEffect + Math.sqrt(ownState.dx ** 2 + ownState.dy ** 2) * ownState.moveRecoil)
+        1 + inventory[selectSlot].recoilEffect + Math.sqrt(
+        this.ownPosition.dx ** 2 + this.ownPosition.dy ** 2) * this.ownPosition.moveRecoil)
       const theta =
         Math.atan2(
           cursor.offsetY - canvas.offsetHeight / 2,
