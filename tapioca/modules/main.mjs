@@ -373,6 +373,8 @@ class Ownself {
     if (dash.coolTime <= 0 && code[action.dash].isFirst()) {
       this.dashProcess(intervalDiffTime)
     }
+    if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime // reset
+
     this.moving(intervalDiffTime)
     if (this.direction !== 0) this.direction = 0
   }
@@ -393,6 +395,7 @@ class Ownself {
   render = (intervalDiffTime, cursor) => {
     if (inventory[selectSlot].category !== '' && !inventoryFlag) this.drawAim(cursor)
 
+    if (ownState.stepLimit <= ownState.step) ownState.step = 0 // reset
     if (ownState.radius === 0) ownState.step = 0
     else ownState.step += intervalDiffTime
     // y = -4 * (x - .5) ** 2 + 1
@@ -3412,14 +3415,6 @@ class Entry {
       this.mouseDownPosition,
       this.wheelInput
     )
-
-
-    const frameResetProcess = (intervalDiffTime) => {
-      if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
-
-      if (ownState.stepLimit <= ownState.step) ownState.step = 0
-    }
-    frameResetProcess(this.intervalDiffTime)
   }, 0)
 
   render () {
