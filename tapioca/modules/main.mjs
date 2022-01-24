@@ -327,7 +327,6 @@ class Ownself {
     this.step = 0
     this.stepLimit = 300
   }
-
   setTheta = d => {
     /*
       6 4 12
@@ -343,17 +342,28 @@ class Ownself {
     else if (d === 8) this.theta = Math.PI
     else if (d === 9) this.theta = -Math.PI * .75
   }
-  dashProcess = (intervalDiffTime) => {
-    const d = this.direction === 0 ? this.currentDirection : this.direction
-    this.setTheta(d)
-    this.radius = 1
-    const multiple = 0.3
-    this.dx += multiple * this.radius * Math.cos(this.theta) * intervalDiffTime
-    this.dy += multiple * this.radius * Math.sin(this.theta) * intervalDiffTime
-    dash.isAttack = false
-    dash.coolTime = dash.coolTimeLimit
+  inputProcess = (input) => {
+    if (input.getKey('KeyW')) this.direction = (this.direction + 1)|0
+    if (input.getKey('KeyD')) this.direction = (this.direction + 2)|0
+    if (input.getKey('KeyS')) this.direction = (this.direction + 4)|0
+    if (input.getKey('KeyA')) this.direction = (this.direction + 8)|0
+    else if (this.direction !== 0) this.currentDirection = this.direction
   }
-  moving = (intervalDiffTime) => {
+  dashProcess = (intervalDiffTime) => {
+    if (dash.coolTime <= 0 && code[action.dash].isFirst()) {
+      const d = this.direction === 0 ? this.currentDirection : this.direction
+      this.setTheta(d)
+      this.radius = 1
+      const multiple = 0.3
+      this.dx += multiple * this.radius * Math.cos(this.theta) * intervalDiffTime
+      this.dy += multiple * this.radius * Math.sin(this.theta) * intervalDiffTime
+      dash.isAttack = false
+      dash.coolTime = dash.coolTimeLimit
+    }
+    // Reset
+    if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
+  }
+  moveProcess = (intervalDiffTime) => {
     this.setTheta(this.direction)
     if (this.direction === 0) this.radius = 0
     else this.radius = 1
@@ -361,29 +371,26 @@ class Ownself {
     this.dx += multiple * this.radius * Math.cos(this.theta) * intervalDiffTime
     this.dy += multiple * this.radius * Math.sin(this.theta) * intervalDiffTime
 
+    // Collision detect
+    // Collision responce
     this.x += this.dx * intervalDiffTime
     this.y += this.dy * intervalDiffTime
+
+    // Normal force
     const brake = .98
     if (Math.abs(this.dx) < 1e-5) this.dx = 0
     else this.dx *= brake
     if (Math.abs(this.dy) < 1e-5) this.dy = 0
     else this.dy *= brake
+
+    // Reset
+    if (this.direction !== 0) this.direction = 0
   }
 
   update = (intervalDiffTime, input) => {
-    if (input.getKey('KeyW')) this.direction = (this.direction + 1)|0
-    if (input.getKey('KeyD')) this.direction = (this.direction + 2)|0
-    if (input.getKey('KeyS')) this.direction = (this.direction + 4)|0
-    if (input.getKey('KeyA')) this.direction = (this.direction + 8)|0
-    else if (this.direction !== 0) this.currentDirection = this.direction
-
-    if (dash.coolTime <= 0 && code[action.dash].isFirst()) {
-      this.dashProcess(intervalDiffTime)
-    }
-    if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime // reset
-
-    this.moving(intervalDiffTime)
-    if (this.direction !== 0) this.direction = 0
+    this.inputProcess(input)
+    this.dashProcess(intervalDiffTime, input)
+    this.moveProcess(intervalDiffTime)
   }
 
   drawAim = (cursor) => { // Expected effective range
