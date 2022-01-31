@@ -326,6 +326,8 @@ class Ownself {
     this.moveRecoil = 2
     this.step = 0
     this.stepLimit = 300
+
+    this.r = SIZE * .25
   }
   setTheta = d => {
     /*
@@ -363,7 +365,7 @@ class Ownself {
     // Reset
     if (0 < dash.coolTime) dash.coolTime -= intervalDiffTime
   }
-  moveProcess = (intervalDiffTime) => {
+  moveProcess = (intervalDiffTime, map) => {
     this.setTheta(this.direction)
     if (this.direction === 0) this.radius = 0
     else this.radius = 1
@@ -371,10 +373,96 @@ class Ownself {
     this.dx += multiple * this.radius * Math.cos(this.theta) * intervalDiffTime
     this.dy += multiple * this.radius * Math.sin(this.theta) * intervalDiffTime
 
-    // Collision detect
-    // Collision responce
-    this.x += this.dx * intervalDiffTime
-    this.y += this.dy * intervalDiffTime
+    const collisionDetect = () => {
+      let cross = []
+
+      const terrainObject = {'0': [[0, 1], [0, 0], [1, 0], [1, 1]]}
+      const collisionCheck = collision => {
+        for (let x = 0; x < collision.width; x++) {
+          if (x * SIZE + SIZE * 2 < this.x) continue
+          if (this.x < x * SIZE - SIZE) break
+          for (let y = 0; y < collision.height; y++) {
+            const id =
+              collision.data[collision.width * y + x] -
+              map.tilesets.filter(v =>v.source.includes('collision'))[0].firstgid
+            if (id < 0) continue
+            terrainObject[id].forEach((ro, i) => { // relative origin
+              const rn = // relative next
+                i === terrainObject[id].length - 1 ? terrainObject[id][0] :
+                terrainObject[id].slice(i + 1)[0]
+              let tilt = Math.atan2(rn[1] - ro[1], rn[0] - ro[0])
+              const ox = this.x
+              const oy = this.y
+              const dx = this.dx * intervalDiffTime
+              const dy = this.dy * intervalDiffTime
+              const ax = x * SIZE + ro[0] * SIZE
+              const ay = y * SIZE + ro[1] * SIZE
+              const bx = x * SIZE + rn[0] * SIZE
+              const by = y * SIZE + rn[1] * SIZE
+              const abx = bx - ax
+              const aby = by - ay
+              let nx = -aby
+              let ny = abx
+              let length = (nx ** 2 + ny ** 2) ** .5
+              if (0 < length) length = 1 / length
+              nx *= length
+              ny *= length
+              let nax = ax - nx * this.r
+              let nay = ay - ny * this.r
+              let nbx = bx - nx * this.r
+              let nby = by - ny * this.r
+              const d = -(nax * nx + nay * ny)
+              const t = -(nx * ox + ny * oy + d) / (nx * dx + ny * dy)
+              if (0 < t && t <= 1) {
+                const cx = ox + dx * t
+                const cy = oy + dy * t
+                const acx = cx - nax
+                const acy = cy - nay
+                const bcx = cx - nbx
+                const bcy = cy - nby
+                const doc = acx * bcx + acy * bcy
+                if (doc <= 0) {
+                  cross.push([t, tilt])
+                }
+              }
+            })
+          }
+        }
+      }
+      const collisionResponse = tilt => {
+        const nX = Math.sin(tilt)
+        const nY = Math.cos(tilt)
+        const t = -(this.dx * nX + this.dy * nY) / (nX ** 2 + nY ** 2)
+        this.dx = t * nX
+        this.dy = t * nY
+      }
+      let count = 0
+      let isRepeat
+      do {
+        isRepeat = false
+        count++
+        if (3 < count) {
+          this.dx = 0
+          this.dy = 0
+          console.log('Catched an unexpected error. Collision detect loop forever.')
+          break
+        }
+        map.layers.filter(v => v.name.includes('collision_')).forEach(collision => {
+          collisionCheck(collision)
+        })
+        // 周辺全件判定して一番近い交点をresponse
+        if (cross.length != 0) {
+          const max = cross.reduce((p, c) => {
+            if (c[0] < p[0]) return p
+            return c
+          })
+          collisionResponse(max[1])
+        }
+        this.x += this.dx * intervalDiffTime
+        this.y += this.dy * intervalDiffTime
+      } while(isRepeat)
+    }
+    collisionDetect()
 
     // Normal force
     const brake = .98
@@ -387,10 +475,10 @@ class Ownself {
     if (this.direction !== 0) this.direction = 0
   }
 
-  update = (intervalDiffTime, input) => {
+  update = (intervalDiffTime, input, map) => {
     this.inputProcess(input)
     this.dashProcess(intervalDiffTime, input)
-    this.moveProcess(intervalDiffTime)
+    this.moveProcess(intervalDiffTime, map)
   }
 
   drawAim = (cursor) => { // Expected effective range
@@ -1939,8 +2027,7 @@ class Scene extends EventDispatcher {
     this.renderBox = new RenderBox()
 
     this.map = MAP[0]
-    this.addEventListener('changemap', e => {this.map = e
-    console.log(e)})
+    this.addEventListener('changemap', e => {this.map = e})
   }
   update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {}
   render (intervalDiffTime, mouseInput, cursor) {}
@@ -2093,7 +2180,7 @@ class MainScene extends Scene {
 
   interfaceProcess = (intervalDiffTime, input , mouseInput, cursor, wheelInput) => {
 
-    this.ownself.update(intervalDiffTime, input)
+    this.ownself.update(intervalDiffTime, input, this.map)
 
     if (code[action.primary].isFirst()) selectSlot = 0
     if (code[action.secondary].isFirst()) selectSlot = 1
