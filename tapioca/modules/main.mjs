@@ -310,6 +310,25 @@ let afterglow = {
   reload: 0
 }
 
+class EventDispatcher {
+  constructor () {
+    this._eventListeners = {}
+  }
+
+  addEventListener (type, callback) {
+    if (this._eventListeners[type] === undefined) {
+      this._eventListeners[type] = []
+    }
+
+    this._eventListeners[type].push(callback)
+  }
+
+  dispatchEvent (type, event) {
+    const listeners = this._eventListeners[type]
+    if (listeners !== undefined) listeners.forEach((callback) => callback(event))
+  }
+}
+
 class Ownself {
   constructor () {
     this.x = canvas.offsetWidth * .5
@@ -950,8 +969,9 @@ class RenderBox {
   }
 }
 
-class StartSpot {
+class StartSpot extends EventDispatcher {
   constructor () {
+    super()
     this.startBox = {
       offsetX: canvas.offsetWidth / 2,
       offsetY: canvas.offsetHeight / 5,
@@ -989,14 +1009,13 @@ class StartSpot {
       dropItems = []
       saveProcess()
       wave.number = 0
-      if (dungeon !== dungeonList[3]) setWave()
-      if (dungeon === dungeonList[4]) {
-        const MAIN_TEST = new Main()
-        MAIN_TEST.render()
-      }
-      else {
-        // bossProcessFirst()
-      }
+      this.dispatchEvent('changemap', MAP[1])
+      console.log('b')
+      // if (dungeon !== dungeonList[3]) setWave()
+      // if (dungeon === dungeonList[4]) {
+      // } else {
+      //   // bossProcessFirst()
+      // }
     }
     if (this.boxInterface.isDownAndUpInBox(this.selectBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
       const n = dungeonList[dungeonList.indexOf(dungeon) + 1]
@@ -1605,74 +1624,6 @@ class InputReceiver {
     return mouseWheelMap
   }
 }
-class Main {
-  constructor () {
-    this.timeStamp = Date.now()
-    this.currentTime = Date.now()
-    this.elapsedTime = this.timeStamp - this.currentTime
-
-    this.mapArray = []
-    this.mapArray.push(MAP[0])
-    this.location = 'map_Test'
-    this.SELECTED_MAP = this.setMap()
-  }
-  start = () => this.render()
-  update = setInterval (() => {
-    this.timeStamp = Date.now()
-    this.elapsedTime = this.timeStamp - this.currentTime
-    this.currentTime = this.timeStamp
-
-  })
-  setMap = () => {
-    return this.mapArray.filter(v => {
-      const OBJECTGROUP_ID = v.layers.findIndex(v => v.type === 'objectgroup')
-      const ADDRESS_ID = v.layers[OBJECTGROUP_ID].properties.findIndex(v => v.name === 'address')
-      return this.location === v.layers[OBJECTGROUP_ID].properties[ADDRESS_ID].value
-    })[0]
-  }
-  setLocation = str => this.location = str
-  renderMap = () => {
-    this.SELECTED_MAP.layers.filter(v => v.name.includes('tileset_')).forEach(v => {
-      for (let x = 0; x < v.width; x++) {
-        for (let y = 0; y < v.height; y++) {
-          let id = v.data[v.width * y + x]
-          if (0 < id) {
-            let flag = false
-            this.SELECTED_MAP.tilesets.forEach((vl, i, a) => {
-              if (flag) return
-              if (id < vl.firstgid) {
-                const diff = i === 0 ? 0 : a[i - 1].firstgid
-                context.drawImage(
-                  TILESET_IMAGE_ARRAY[a[i - 1].source],
-                  ((id - diff) % TILESET_DATA_ARRAY[a[i - 1].source].columns) * SIZE,
-                  ((id - diff) - (id - diff) % TILESET_DATA_ARRAY[a[i - 1].source].columns) /
-                    TILESET_DATA_ARRAY[a[i - 1].source].columns * SIZE,
-                  SIZE,
-                  SIZE,
-                  (x * SIZE)|0,
-                  (y * SIZE)|0,
-                  SIZE,
-                  SIZE
-                  )
-                flag = true
-              }
-            }, 0)
-          }
-        }
-      }
-    })
-  }
-  render = () => {
-    context.fillStyle = 'hsl(0, 0%, 60%)'
-    context.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-    context.fillStyle = 'hsl(0, 0%, 0%)'
-    context.textAlign = 'left'
-
-    this.renderMap()
-
-    requestAnimationFrame(this.render.bind(this))
-  }
-}
 
 const drawImage = (img, x, y) => {
   context.drawImage(img, ~~(x+.5), ~~(y+.5))
@@ -1797,24 +1748,6 @@ context.textBaseline = 'middle'
 context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
 context.restore()
 
-class EventDispatcher {
-  constructor () {
-    this._eventListeners = {}
-  }
-
-  addEventListener (type, callback) {
-    if (this._eventListeners[type] === undefined) {
-      this._eventListeners[type] = []
-    }
-
-    this._eventListeners[type].push(callback)
-  }
-
-  dispatchEvent (type, event) {
-    const listeners = this._eventListeners[type]
-    if (listeners !== undefined) listeners.forEach((callback) => callback(event))
-  }
-}
 class Window extends EventDispatcher {
   constructor (x = -1, y = -1, w = 0, h = 0, color = 0, alpha = 1, is = false) {
     super()
@@ -2027,7 +1960,7 @@ class Scene extends EventDispatcher {
     this.renderBox = new RenderBox()
 
     this.map = MAP[0]
-    this.addEventListener('changemap', e => {this.map = e})
+
   }
   update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {}
   render (intervalDiffTime, mouseInput, cursor) {}
@@ -2037,6 +1970,8 @@ class MainScene extends Scene {
     super()
 
     this.startSpot = new StartSpot()
+    this.startSpot.addEventListener('changemap', e => {this.map = e
+    console.log('a')})
     this.saveSpot = new SaveSpot()
     this.shopSpot = new ShopSpot()
 
