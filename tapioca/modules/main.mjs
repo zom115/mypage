@@ -77,12 +77,12 @@ class SpotField {
   ]
   dungeon = ''
 }
-const spot = new SpotField()
-spot.location = SpotField.locationList[0]
-spot.dungeon = SpotField.dungeonList[0]
+const spotInfo = new SpotField()
+spotInfo.location = SpotField.locationList[0]
+spotInfo.dungeon = SpotField.dungeonList[0]
 
 class EnemyField {
-  static Enemy_Image_Amount = 3
+  static ENEMY_IMAGE_AMOUNT = 3
   enemies = []
   defeatCount = 0
 }
@@ -1025,7 +1025,7 @@ class StartSpot extends EventDispatcher {
       // bossArray.push(new Boss(ownPosition.x, ownPosition.y - canvas.offsetHeight * .4, 128000))
     }
     if (this.boxInterface.isDownAndUpInBox(this.startBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
-      spot.location = SpotField.locationList[1]
+      spotInfo.location = SpotField.locationList[1]
       dropItems = []
       saveProcess()
       wave.number = 0
@@ -1038,8 +1038,8 @@ class StartSpot extends EventDispatcher {
       // }
     }
     if (this.boxInterface.isDownAndUpInBox(this.selectBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
-      const n = SpotField.dungeonList[SpotField.dungeonList.indexOf(spot.dungeon) + 1]
-      spot.dungeon = n === SpotField.dungeonList[SpotField.dungeonList.length] ? SpotField.dungeonList[0] : n
+      const n = SpotField.dungeonList[SpotField.dungeonList.indexOf(spotInfo.dungeon) + 1]
+      spotInfo.dungeon = n === SpotField.dungeonList[SpotField.dungeonList.length] ? SpotField.dungeonList[0] : n
     }
   }
   render(mouseInput, cursor, spotData, ownPosition) {
@@ -1051,7 +1051,7 @@ class StartSpot extends EventDispatcher {
       context.save()
       context.textAlign = 'center'
       context.fillStyle = 'hsl(210, 100%, 70%)'
-      context.fillText(spot.dungeon, this.selectBox.offsetX, this.selectBox.offsetY + SIZE * 2)
+      context.fillText(spotInfo.dungeon, this.selectBox.offsetX, this.selectBox.offsetY + SIZE * 2)
       context.restore()
     }
   }
@@ -1810,7 +1810,7 @@ class ResultWindow extends Window {
       this.dispatchEvent('deleteMenu', 'result')
       this.dispatchEvent('changescene', new MainScene())
 
-      spot.location = SpotField.locationList[0]
+      spotInfo.location = SpotField.locationList[0]
       dropItems = []
       bullets = []
       enemyInfo.enemies = []
@@ -2151,7 +2151,7 @@ class MainScene extends Scene {
       selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
     }
     if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
-    if (inventory[selectSlot].category !== '' && spot.location === SpotField.locationList[1]) this.weaponProcess(mouseInput, cursor)
+    if (inventory[selectSlot].category !== '' && spotInfo.location === SpotField.locationList[1]) this.weaponProcess(mouseInput, cursor)
     if (inventory[selectSlot].category !== '') this.modeSelect()
 
     if (code[action.debug].isFirst()) this.isShowDamage = !this.isShowDamage
@@ -2358,7 +2358,7 @@ class MainScene extends Scene {
       if (enemy.life <= 0) {
         if (enemy.timer <= 0) {
           const c = {x: enemy.x, y: enemy.y}
-          if (enemy.imageID === EnemyField.Enemy_Image_Amount) {
+          if (enemy.imageID === EnemyField.ENEMY_IMAGE_AMOUNT) {
             enemyInfo.enemies[index] = this.setWeapon()
             enemyInfo.enemies[index].unavailableTime = 30
             enemyInfo.enemies[index].x = c.x
@@ -2372,7 +2372,7 @@ class MainScene extends Scene {
       const width = this.ownself.x - enemy.x
       const height = this.ownself.y - enemy.y
       const length = Math.sqrt(width ** 2 + height ** 2)
-      if (spot.dungeon === SpotField.dungeonList[0]) {
+      if (spotInfo.dungeon === SpotField.dungeonList[0]) {
         this.differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
         if (
           enemyInfo.enemies.some((e, i) => index !== i && 0 < e.life &&
@@ -2385,7 +2385,7 @@ class MainScene extends Scene {
             intervalDiffTime
           )
         }
-      } else if (spot.dungeon === SpotField.dungeonList[1]) {
+      } else if (spotInfo.dungeon === SpotField.dungeonList[1]) {
         const r = .17 * intervalDiffTime
         const x = enemy.x + r * Math.cos(enemy.theta)
         const y = enemy.y + r * Math.sin(enemy.theta)
@@ -2395,7 +2395,7 @@ class MainScene extends Scene {
           -DELTA_THETA : DELTA_THETA
         enemy.x += r * Math.cos(enemy.theta)
         enemy.y += r * Math.sin(enemy.theta)
-      } else if (spot.dungeon === SpotField.dungeonList[2]) {
+      } else if (spotInfo.dungeon === SpotField.dungeonList[2]) {
         if (enemy.state === 'active') {
           const r = .275 * intervalDiffTime
 
@@ -2567,9 +2567,9 @@ class MainScene extends Scene {
       fuel: 1000,
       step: 0,
       stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
-      imageID: ~~(Math.random() * EnemyField.Enemy_Image_Amount)
+      imageID: ~~(Math.random() * EnemyField.ENEMY_IMAGE_AMOUNT)
     })
-    if (wave.enemyCount === wave.enemyLimit) enemyInfo.enemies[enemyInfo.enemies.length-1].imageID = EnemyField.Enemy_Image_Amount
+    if (wave.enemyCount === wave.enemyLimit) enemyInfo.enemies[enemyInfo.enemies.length-1].imageID = EnemyField.ENEMY_IMAGE_AMOUNT
   }
   waveProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     if (wave.enemyCount < wave.enemyLimit) {
@@ -2597,7 +2597,7 @@ class MainScene extends Scene {
     })
 
     if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) this.slideProcess()
-    if (spot.dungeon !== SpotField.dungeonList[3]) this.waveProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
+    if (spotInfo.dungeon !== SpotField.dungeonList[3]) this.waveProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     if (0 < enemyInfo.enemies.length) this.enemyProcess(intervalDiffTime)
     bullets.forEach((bullet, i) => {
       bullet.update()
@@ -2661,7 +2661,7 @@ class MainScene extends Scene {
     if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
   }
   update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
-    if (spot.location === SpotField.locationList[1] && spot.dungeon === SpotField.dungeonList[4]) {
+    if (spotInfo.location === SpotField.locationList[1] && spotInfo.dungeon === SpotField.dungeonList[4]) {
     } else {
       this.interfaceProcess(intervalDiffTime, input, mouseInput, cursor, wheelInput)
       if (0 < dropItems.length) this.dropItemProcess(intervalDiffTime)
@@ -2678,7 +2678,7 @@ class MainScene extends Scene {
       })
     }
     // if (portalFlag) this.portalProcess()
-    if (spot.location === SpotField.locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
+    if (spotInfo.location === SpotField.locationList[1]) this.combatProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
 
     this.map.layers.filter(v => v.name.includes('event_')).forEach(v => {
       v.objects.filter(a => a.name.includes('start')).forEach(spotData => {
@@ -3146,7 +3146,7 @@ class MainScene extends Scene {
     // context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
     // context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
     context.save()
-    if (spot.dungeon !== SpotField.dungeonList[3]) {
+    if (spotInfo.dungeon !== SpotField.dungeonList[3]) {
       context.fillStyle =  // round number
         0 < wave.roundInterval ? `hsla(0, 100%, 30%, ${(1 - wave.roundInterval / wave.roundIntervalLimit) * .7})` :
         0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
