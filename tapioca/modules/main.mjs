@@ -81,6 +81,24 @@ const spot = new SpotField()
 spot.location = SpotField.locationList[0]
 spot.dungeon = SpotField.dungeonList[0]
 
+class EnemyField {
+  static Enemy_Image_Amount = 3
+  enemies = []
+  defeatCount = 0
+}
+const enemyInfo = new EnemyField()
+
+let wave = {
+  number: 0,
+  enemySpawnInterval: 0, // ms
+  enemySpawnIntervalLimit: 0, // ms
+  enemyCount: 0,
+  enemyLimit: 0,
+  roundInterval: 0, // ms
+  roundIntervalLimit: 2000, // ms
+  enemyHitPoint: 0
+}
+
 let bossArray = []
 let enemyBulletArray = []
 let array = [enemyBulletArray, bossArray]
@@ -712,7 +730,7 @@ class Bullet {
     this.x += this.radius * Math.cos(this.theta) * intervalDiffTime
     this.y += this.radius * Math.sin(this.theta) * intervalDiffTime
     bullets.forEach((bullet, i) => {
-      const hit = enemies.findIndex((enemy, index) => {
+      const hit = enemyInfo.enemies.findIndex((enemy, index) => {
         return index !== bullet.detectID && 0 < enemy.life &&
         Math.sqrt((bullet.x - enemy.x) ** 2 + (bullet.y - enemy.y) ** 2) < radius + this.bulletRadius
       })
@@ -721,16 +739,16 @@ class Bullet {
           bullet.detectFlag = true
           bullet.detectID = hit
           let damage = this.damage * bullet.life / this.baseLife
-          enemies[hit].life = enemies[hit].life - damage
+          enemyInfo.enemies[hit].life = enemyInfo.enemies[hit].life - damage
           bullet.life = bullet.life * this.penetrationForce
           if (inventory[selectSlot].level < wave.number) { // TODO: level infuse to bullet
-            const additionalPoint = (enemies[hit].life <= 0) ? 100 : 10
-            if (additionalPoint === 100) defeatCount = (defeatCount+1)|0
+            const additionalPoint = (enemyInfo.enemies[hit].life <= 0) ? 100 : 10
+            if (additionalPoint === 100) enemyInfo.defeatCount = (enemyInfo.defeatCount+1)|0
             point = (point+additionalPoint)|0
             afterglow.point.push({number: additionalPoint, count: 30})
           }
-          enemies[hit].damage = damage
-          enemies[hit].timer = damageTimerLimit
+          enemyInfo.enemies[hit].damage = damage
+          enemyInfo.enemies[hit].timer = damageTimerLimit
         }
       }
     })
@@ -756,19 +774,6 @@ let combatReload = {
   auto: setStorageFirst('autoCombatReload', 'OFF')
 }
 
-let enemies
-const enemyImageAmount = 3
-let wave = {
-  number: 0,
-  enemySpawnInterval: 0, // ms
-  enemySpawnIntervalLimit: 0, // ms
-  enemyCount: 0,
-  enemyLimit: 0,
-  roundInterval: 0, // ms
-  roundIntervalLimit: 2000, // ms
-  enemyHitPoint: 0
-}
-let defeatCount
 let action
 
 // for settings
@@ -1808,7 +1813,7 @@ class ResultWindow extends Window {
       spot.location = SpotField.locationList[0]
       dropItems = []
       bullets = []
-      enemies = []
+      enemyInfo.enemies = []
       bossArray.forEach(v => {
         v.life = 0
       })
@@ -1822,7 +1827,7 @@ class ResultWindow extends Window {
       wave.enemyLimit = 0
       setWave()
       wave.roundInterval = 0
-      defeatCount = 0
+      enemyInfo.defeatCount = 0
       this.isPenalty = false
     }
   }
@@ -1834,7 +1839,7 @@ class ResultWindow extends Window {
     context.font = `${SIZE * 2 / 3}px ${font}`
     context.fillStyle = 'hsl(30, 100%, 40%)'
     context.fillText(
-      `YOU SATISFIED ${defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
+      `YOU SATISFIED ${enemyInfo.defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
     )
     this.renderBox.render(resultBackBox, mouseInput, cursor)
     context.fillStyle = 'hsla(30, 100%, 50%, .5)'
@@ -2348,19 +2353,19 @@ class MainScene extends Scene {
     if (!flag.y) position.y = position.y - dy * 60 / 1000 * intervalDiffTime
   }
   enemyProcess = (intervalDiffTime) => {
-    enemies.forEach((enemy, index) => {
+    enemyInfo.enemies.forEach((enemy, index) => {
       if (0 < enemy.timer) enemy.timer = (enemy.timer-1)|0
       if (enemy.life <= 0) {
         if (enemy.timer <= 0) {
           const c = {x: enemy.x, y: enemy.y}
-          if (enemy.imageID === enemyImageAmount) {
-            enemies[index] = this.setWeapon()
-            enemies[index].unavailableTime = 30
-            enemies[index].x = c.x
-            enemies[index].y = c.y
-            dropItems.push(enemies.splice(index, 1)[0])
+          if (enemy.imageID === EnemyField.Enemy_Image_Amount) {
+            enemyInfo.enemies[index] = this.setWeapon()
+            enemyInfo.enemies[index].unavailableTime = 30
+            enemyInfo.enemies[index].x = c.x
+            enemyInfo.enemies[index].y = c.y
+            dropItems.push(enemyInfo.enemies.splice(index, 1)[0])
           } else {
-            enemies.splice(index, 1)
+            enemyInfo.enemies.splice(index, 1)
           }
         } return
       }
@@ -2370,7 +2375,7 @@ class MainScene extends Scene {
       if (spot.dungeon === SpotField.dungeonList[0]) {
         this.differenceAddition(enemy, -width / length * enemy.speed, -height / length * enemy.speed, intervalDiffTime)
         if (
-          enemies.some((e, i) => index !== i && 0 < e.life &&
+          enemyInfo.enemies.some((e, i) => index !== i && 0 < e.life &&
           Math.sqrt((e.x - enemy.x) ** 2 + (e.y - enemy.y) ** 2) < SIZE)
         ) {
           this.differenceAddition(
@@ -2430,7 +2435,7 @@ class MainScene extends Scene {
             enemy.damage = dash.damage
             enemy.timer = damageTimerLimit
             const additionalPoint = (enemy.life <= 0) ? 130 : 10
-            if (additionalPoint === 130) defeatCount = (defeatCount+1)|0
+            if (additionalPoint === 130) enemyInfo.defeatCount = (enemyInfo.defeatCount+1)|0
             point = (point+additionalPoint)|0
             afterglow.point.push({number: additionalPoint, count: 30})
           }
@@ -2551,7 +2556,7 @@ class MainScene extends Scene {
     const x = this.ownself.x + r * Math.cos(a)
     const y = this.ownself.y + r * Math.sin(a)
     const theta = a - Math.PI
-    enemies.push({
+    enemyInfo.enemies.push({
       type: type,
       life: wave.enemyHitPoint+.5|0,
       x: x,
@@ -2562,20 +2567,20 @@ class MainScene extends Scene {
       fuel: 1000,
       step: 0,
       stepLimit: wave.enemySpawnIntervalLimit - ~~(Math.random() * 5),
-      imageID: ~~(Math.random() * enemyImageAmount)
+      imageID: ~~(Math.random() * EnemyField.Enemy_Image_Amount)
     })
-    if (wave.enemyCount === wave.enemyLimit) enemies[enemies.length-1].imageID = enemyImageAmount
+    if (wave.enemyCount === wave.enemyLimit) enemyInfo.enemies[enemyInfo.enemies.length-1].imageID = EnemyField.Enemy_Image_Amount
   }
   waveProcess = (intervalDiffTime, mouseInput, cursor, mouseDownPosition) => {
     if (wave.enemyCount < wave.enemyLimit) {
       if (wave.enemySpawnInterval < wave.enemySpawnIntervalLimit) {
         wave.enemySpawnInterval += intervalDiffTime
-      } else if (enemies.length <= 24) { // && wave.enemySpawnIntervalLimit <= wave.enemySpawnInterval
+      } else if (enemyInfo.enemies.length <= 24) { // && wave.enemySpawnIntervalLimit <= wave.enemySpawnInterval
         wave.enemySpawnInterval = 0
         wave.enemyCount += 1
         this.setEnemy()
       }
-    } else if (enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
+    } else if (enemyInfo.enemies.length === 0) { // && wave.enemyLimit <= wave.enemyCount
       wave.roundInterval += intervalDiffTime
       if (wave.roundIntervalLimit <= wave.roundInterval) {
         if (wave.number % 5 === 0) this.portalProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
@@ -2593,7 +2598,7 @@ class MainScene extends Scene {
 
     if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) this.slideProcess()
     if (spot.dungeon !== SpotField.dungeonList[3]) this.waveProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
-    if (0 < enemies.length) this.enemyProcess(intervalDiffTime)
+    if (0 < enemyInfo.enemies.length) this.enemyProcess(intervalDiffTime)
     bullets.forEach((bullet, i) => {
       bullet.update()
       if (bullet.life < 0) bullets.splice(i, 1)
@@ -2861,7 +2866,7 @@ class MainScene extends Scene {
     })
   }
   drawEnemies = () => {
-    enemies.forEach(enemy => {
+    enemyInfo.enemies.forEach(enemy => {
       context.fillStyle = (enemy.imageID === 0) ? 'hsla(0, 100%, 50%, .5)' :
       (enemy.imageID === 1) ? 'hsla(300, 100%, 50%, .5)' :
       (enemy.imageID === 2) ? 'hsla(60, 100%, 60%, .5)' : 'hsla(0, 0%, 100%, .5)'
@@ -3296,7 +3301,7 @@ class MainScene extends Scene {
 
     // if (portalFlag) this.renderPortal(intervalDiffTime, timeStamp, cursor)
     if (0 < bullets.length) this.drawBullets()
-    if (0 < enemies.length) this.drawEnemies()
+    if (0 < enemyInfo.enemies.length) this.drawEnemies()
     if (0 < dropItems.length) this.drawDropItems()
     this.drawIndicator()
 
@@ -3523,7 +3528,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
     // portalFlag = temporaryPortalFlag ? true : false
 
     bullets = []
-    enemies = []
     selectSlot = 0
     const temporaryWarehouse = JSON.parse(storage.getItem('warehouseArray'))
     if (temporaryWarehouse) warehouse = temporaryWarehouse
@@ -3584,7 +3588,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
     wave.enemyLimit = 0
     setWave()
     wave.roundInterval = 0
-    defeatCount = 0
+    enemyInfo.defeatCount = 0
   }
   reset()
 })
