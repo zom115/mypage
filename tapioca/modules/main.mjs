@@ -88,6 +88,16 @@ class EnemyField {
 }
 const enemyInfo = new EnemyField()
 
+class InventoryField {
+  inventory = []
+  holdSlot = {category: ''}
+  mainSlotSize = 3
+  inventorySize = 10
+  inventoryFlag = false
+  selectSlot = 0
+}
+const inventoryInfo = new InventoryField()
+
 let wave = {
   number: 0,
   enemySpawnInterval: 0, // ms
@@ -537,8 +547,8 @@ class Ownself {
     const radius =
       Math.sqrt((screenOwnPos.x - cursor.offsetX) ** 2 + (screenOwnPos.y - cursor.offsetY) ** 2) / 20
     let aimRadius = (
-      targetWidth * radius / inventory[selectSlot].effectiveRange) * (
-      1 + inventory[selectSlot].recoilEffect + Math.sqrt(this.dx ** 2 + this.dy ** 2) * this.moveRecoil)
+      targetWidth * radius / inventoryInfo.inventory[inventoryInfo.selectSlot].effectiveRange) * (
+      1 + inventoryInfo.inventory[inventoryInfo.selectSlot].recoilEffect + Math.sqrt(this.dx ** 2 + this.dy ** 2) * this.moveRecoil)
     context.save()
     context.strokeStyle = 'hsl(0, 0%, 100%)'
     context.beginPath()
@@ -547,7 +557,7 @@ class Ownself {
     context.restore()
   }
   render = (intervalDiffTime, cursor) => {
-    if (inventory[selectSlot].category !== '' && !inventoryFlag) this.drawAim(cursor)
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && !inventoryInfo.inventoryFlag) this.drawAim(cursor)
 
     if (this.stepLimit <= this.step) this.step = 0 // reset
     if (this.radius === 0) this.step = 0
@@ -700,12 +710,6 @@ let warehouse = []
 let isWarehouse = false
 let orderNumber = -1
 let isDescending = false
-let inventory = []
-let holdSlot = {category: ''}
-let mainSlotSize = 3
-let inventorySize = 10
-let inventoryFlag = false
-let selectSlot = 0
 let dropItems = []
 let bullets = []
 class Bullet {
@@ -741,7 +745,7 @@ class Bullet {
           let damage = this.damage * bullet.life / this.baseLife
           enemyInfo.enemies[hit].life = enemyInfo.enemies[hit].life - damage
           bullet.life = bullet.life * this.penetrationForce
-          if (inventory[selectSlot].level < wave.number) { // TODO: level infuse to bullet
+          if (inventoryInfo.inventory[inventoryInfo.selectSlot].level < wave.number) { // TODO: level infuse to bullet
             const additionalPoint = (enemyInfo.enemies[hit].life <= 0) ? 100 : 10
             if (additionalPoint === 100) enemyInfo.defeatCount = (enemyInfo.defeatCount+1)|0
             point = (point+additionalPoint)|0
@@ -872,11 +876,11 @@ const setTitleMenuWord = () => {
 }
 let inventorySlotBox = []
 {
-  for (let i = 0; i < mainSlotSize; i++) {
+  for (let i = 0; i < inventoryInfo.mainSlotSize; i++) {
     inventorySlotBox.push({absoluteX: SIZE * (.75 + 2 * i), absoluteY: SIZE * .5, width: SIZE * 1.5, height: SIZE * 1.5})
   }
   const columnSize = 5
-  for (let i = 0; i < Math.ceil(inventorySize / columnSize); i++) {
+  for (let i = 0; i < Math.ceil(inventoryInfo.inventorySize / columnSize); i++) {
     for (let j = 0; j < columnSize; j++) {
       inventorySlotBox.push({
         absoluteX: SIZE * (.75 + 2 * j), absoluteY: SIZE * (2.75 + 2 * i), width: SIZE * 1.5, height: SIZE * 1.5})}
@@ -932,7 +936,7 @@ const setWave = () => {
     wave.enemyHitPoint * 1.1
 }
 const saveProcess = (isInventory = true, isPoint = true, isPortal = true, isWave = true, isWarehouse = true) => {
-  if (isInventory) storage.setItem('inventoryArray', JSON.stringify(inventory))
+  if (isInventory) storage.setItem('inventoryArray', JSON.stringify(inventoryInfo.inventory))
   if (isPoint) storage.setItem('point', JSON.stringify(point))
   // if (isPortal) storage.setItem('portalFlag', JSON.stringify(portalFlag))
   if (isWave) storage.setItem('waveNumber', JSON.stringify(wave.number))
@@ -1115,33 +1119,33 @@ class ShopSpot {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (!this.boxInterface.isInner(areaBox, offset)) return
 
-    const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
+    const costAll = inventoryInfo.inventory.reduce((p, c, i) => {return p + this.calcCost(inventoryInfo.inventory[i])}, 0)
     if (
       costAll <= point &&
       this.boxInterface.isDownAndUpInBox(this.fillAmmoAllBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
     ) {
       point -= costAll
-      inventory.forEach(v => {
+      inventoryInfo.inventory.forEach(v => {
         if (v.category !== '') v.magazines.fill(v.magazineSize)
       })
     }
-    if (inventory[selectSlot].category !== '') {
-      const cost = this.calcCost(inventory[selectSlot])
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '') {
+      const cost = this.calcCost(inventoryInfo.inventory[inventoryInfo.selectSlot])
       if (
         cost <= point &&
         this.boxInterface.isDownAndUpInBox(this.fillAmmoBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
       ) {
         point -= cost
-        inventory[selectSlot].magazines.fill(inventory[selectSlot].magazineSize)
+        inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.fill(inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize)
       }
       if (
-        inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex <= point &&
+        inventoryInfo.inventory[inventoryInfo.selectSlot].limitBreak * inventoryInfo.inventory[inventoryInfo.selectSlot].limitBreakIndex <= point &&
         this.boxInterface.isDownAndUpInBox(this.limitBreakBox, mouseInput.getKeyUp(0), cursor, mouseDownPosition)
       ) {
         afterglow.limitBreakResult = .01 + Math.random() * 1.99
-        inventory[selectSlot].damage = (inventory[selectSlot].damage * afterglow.limitBreakResult)|0
-        point -= inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex
-        inventory[selectSlot].limitBreakIndex += 1
+        inventoryInfo.inventory[inventoryInfo.selectSlot].damage = (inventoryInfo.inventory[inventoryInfo.selectSlot].damage * afterglow.limitBreakResult)|0
+        point -= inventoryInfo.inventory[inventoryInfo.selectSlot].limitBreak * inventoryInfo.inventory[inventoryInfo.selectSlot].limitBreakIndex
+        inventoryInfo.inventory[inventoryInfo.selectSlot].limitBreakIndex += 1
         saveProcess(true, true, false, false)
         afterglow.limitBreakSuccess += 2000
       }
@@ -1155,16 +1159,16 @@ class ShopSpot {
     const offset = {offsetX: ownPosition.x, offsetY: ownPosition.y}
     if (this.boxInterface.isInner(areaBox, offset)) {
       context.save()
-      if (inventory[selectSlot].category !== '') {
+      if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '') {
         context.fillStyle = 'hsla(300, 100%, 70%, .5)'
         context.fillRect(
-          inventorySlotBox[selectSlot].absoluteX,
-          inventorySlotBox[selectSlot].absoluteY,
-          inventorySlotBox[selectSlot].width,
-          inventorySlotBox[selectSlot].height)
+          inventorySlotBox[inventoryInfo.selectSlot].absoluteX,
+          inventorySlotBox[inventoryInfo.selectSlot].absoluteY,
+          inventorySlotBox[inventoryInfo.selectSlot].width,
+          inventorySlotBox[inventoryInfo.selectSlot].height)
       }
-      const cost = this.calcCost(inventory[selectSlot])
-      const ammoAlpha = inventory[selectSlot].category !== '' && cost <= point ? 1 : .4
+      const cost = this.calcCost(inventoryInfo.inventory[inventoryInfo.selectSlot])
+      const ammoAlpha = inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && cost <= point ? 1 : .4
       context.font = `${SIZE * .75}px ${font}`
       context.textAlign = 'center'
       context.textBaseline = 'middle'
@@ -1174,15 +1178,15 @@ class ShopSpot {
         context.fillText(`Cost: ${cost}`, this.fillAmmoBox.offsetX, this.fillAmmoBox.offsetY + SIZE * 1.5)
       }
       this.renderBox.render(this.fillAmmoAllBox, mouseInput, cursor, ammoAlpha)
-      const costAll = inventory.reduce((p, c, i) => {return p + this.calcCost(inventory[i])}, 0)
+      const costAll = inventoryInfo.inventory.reduce((p, c, i) => {return p + this.calcCost(inventoryInfo.inventory[i])}, 0)
       if (costAll !== 0) {
         context.fillText(
           `Cost: ${costAll}`, this.fillAmmoAllBox.offsetX, this.fillAmmoAllBox.offsetY + SIZE * 1.5)
       }
       this.renderBox.render(this.limitBreakBox, mouseInput, cursor, ammoAlpha)
-      if (inventory[selectSlot].category !== '') {
+      if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '') {
         context.fillText(
-          `Cost: ${inventory[selectSlot].limitBreak * inventory[selectSlot].limitBreakIndex}`,
+          `Cost: ${inventoryInfo.inventory[inventoryInfo.selectSlot].limitBreak * inventoryInfo.inventory[inventoryInfo.selectSlot].limitBreakIndex}`,
           this.limitBreakBox.offsetX,
           this.limitBreakBox.offsetY + SIZE * 1.5)
       }
@@ -1433,16 +1437,16 @@ class SaveSpot {
           if (this.boxInterface.isInner(box, cursor)) {
             if (code[action.shift].flag) {
               let findIndex = -1
-              findIndex = inventory.findIndex((v, index) => {
-                if (!inventoryFlag && mainSlotSize - 1 < index) return -1
+              findIndex = inventoryInfo.inventory.findIndex((v, index) => {
+                if (!inventoryInfo.inventoryFlag && inventoryInfo.mainSlotSize - 1 < index) return -1
                 else return v.category === ''
               })
               if (findIndex !== -1) {
-                inventory[findIndex] = warehouse.splice(i, 1)[0]
+                inventoryInfo.inventory[findIndex] = warehouse.splice(i, 1)[0]
                 bool = true
               }
             } else {
-              [holdSlot, warehouse[i]] = [warehouse[i], holdSlot]
+              [inventoryInfo.holdSlot, warehouse[i]] = [warehouse[i], inventoryInfo.holdSlot]
               if (warehouse[i].category === '') warehouse.splice(i, 1)
               bool = true
               orderNumber = -1
@@ -1450,9 +1454,9 @@ class SaveSpot {
             }
           }
         })
-        if (!bool && holdSlot.category !== '') {
-          warehouse.push(holdSlot)
-          holdSlot = {category: ''}
+        if (!bool && inventoryInfo.holdSlot.category !== '') {
+          warehouse.push(inventoryInfo.holdSlot)
+          inventoryInfo.holdSlot = {category: ''}
           orderNumber = -1
           isDescending = false
         }
@@ -2001,134 +2005,134 @@ class MainScene extends Scene {
     this.ownself = new Ownself()
   }
   setMoreThanMagazine = () => {
-    return inventory[selectSlot].magazines.indexOf(Math.max(...inventory[selectSlot].magazines))
+    return inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.indexOf(Math.max(...inventoryInfo.inventory[inventoryInfo.selectSlot].magazines))
   }
   reloadProcess = (mouseInput) => {
-    inventory[selectSlot].reloadTime = (inventory[selectSlot].reloadTime+1)|0
-    if (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-      inventory[selectSlot].reloadState = 'putAway'
-    } else if (inventory[selectSlot].reloadState === 'putAway' && inventory[selectSlot].reloadPutAway * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-      inventory[selectSlot].reloadState = 'takeOut'
-      inventory[selectSlot].grip = this.setMoreThanMagazine()
-    } else if (inventory[selectSlot].reloadState === 'takeOut' && inventory[selectSlot].reloadTakeOut * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-        inventory[selectSlot].reloadState = 'unrelease'
-    } else if (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed <= inventory[selectSlot].reloadTime) {
-        inventory[selectSlot].reloadState = 'done'
+    inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime = (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime+1)|0
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadRelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'putAway'
+    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadPutAway * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'takeOut'
+      inventoryInfo.inventory[inventoryInfo.selectSlot].grip = this.setMoreThanMagazine()
+    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTakeOut * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
+        inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'unrelease'
+    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadUnrelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
+        inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'done'
         const unreleaseMagazine = () => {
           if (!afterglow.chamberFlag) afterglow.reload = this.reloadFlashTimeLimit
-          inventory[selectSlot].gripFlag = true
+          inventoryInfo.inventory[inventoryInfo.selectSlot].gripFlag = true
           combatReload.magFlag = true
         }
         unreleaseMagazine()
-    } else if (inventory[selectSlot].reloadState === 'done') {
-      if (0 <= inventory[selectSlot].reloadTime) {
-        inventory[selectSlot].reloadState = 'release'
-        inventory[selectSlot].gripFlag = false
-        if (!inventory[selectSlot].chamber) afterglow.chamberFlag = true
+    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'done') {
+      if (0 <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
+        inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'release'
+        inventoryInfo.inventory[inventoryInfo.selectSlot].gripFlag = false
+        if (!inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) afterglow.chamberFlag = true
       }
     } else return
-    inventory[selectSlot].reloadTime = 0
-    if (inventory[selectSlot].mode === weaponModeList[2] && !mouseInput.getKeyDown(0)) {
-      inventory[selectSlot].round = 0
+    inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime = 0
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] && !mouseInput.getKeyDown(0)) {
+      inventoryInfo.inventory[inventoryInfo.selectSlot].round = 0
     }
   }
   mouseFiring = (mouseInput, cursor) => {
     if (
-      inventory[selectSlot].reloadAuto === 'ON' &&
-      inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
-      inventory[selectSlot].reloadTime === 0 &&
-      0 < inventory[selectSlot].magazines[this.setMoreThanMagazine()] &&
-      !inventory[selectSlot].chamber &&
-      inventory[selectSlot].slideState === 'release'
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadAuto === 'ON' &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] <= 0 &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime === 0 &&
+      0 < inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[this.setMoreThanMagazine()] &&
+      !inventoryInfo.inventory[inventoryInfo.selectSlot].chamber &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release'
     ) {
-      inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed * 1.5
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed = inventoryInfo.inventory[inventoryInfo.selectSlot].baseReloadSpeed * 1.5
       this.reloadProcess(mouseInput)
       return
     }
-    if (!inventory[selectSlot].chamber) return
+    if (!inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) return
     const shotBullet = () => {
-      const degreeRange = 2 * Math.atan2(targetWidth, inventory[selectSlot].effectiveRange)
+      const degreeRange = 2 * Math.atan2(targetWidth, inventoryInfo.inventory[inventoryInfo.selectSlot].effectiveRange)
       const randomError =
         degreeRange * (Math.random() - .5) * (
-        1 + inventory[selectSlot].recoilEffect + Math.sqrt(
+        1 + inventoryInfo.inventory[inventoryInfo.selectSlot].recoilEffect + Math.sqrt(
         this.ownself.dx ** 2 + this.ownself.dy ** 2) * this.ownself.moveRecoil)
       const theta =
         Math.atan2(
           cursor.offsetY - canvas.offsetHeight / 2,
           cursor.offsetX - canvas.offsetWidth / 2) + randomError
-      const bulletRadius = inventory[selectSlot].category === weaponCategoryList[5] ? SIZE / 8 : SIZE / 6
+      const bulletRadius = inventoryInfo.inventory[inventoryInfo.selectSlot].category === weaponCategoryList[5] ? SIZE / 8 : SIZE / 6
       bullets.push(new Bullet(
         this.ownself.x,
         this.ownself.y,
-        inventory[selectSlot].bulletSpeed,
+        inventoryInfo.inventory[inventoryInfo.selectSlot].bulletSpeed,
         theta,
-        inventory[selectSlot].bulletLife,
-        inventory[selectSlot].damage,
-        inventory[selectSlot].penetrationForce,
+        inventoryInfo.inventory[inventoryInfo.selectSlot].bulletLife,
+        inventoryInfo.inventory[inventoryInfo.selectSlot].damage,
+        inventoryInfo.inventory[inventoryInfo.selectSlot].penetrationForce,
         bulletRadius
       ))
     }
-    for (let i = 0; i < inventory[selectSlot].gaugeNumber; i++) shotBullet()
+    for (let i = 0; i < inventoryInfo.inventory[inventoryInfo.selectSlot].gaugeNumber; i++) shotBullet()
 
-    inventory[selectSlot].chamber = false
-    if (inventory[selectSlot].mode === weaponModeList[2]) inventory[selectSlot].round += 1
+    inventoryInfo.inventory[inventoryInfo.selectSlot].chamber = false
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2]) inventoryInfo.inventory[inventoryInfo.selectSlot].round += 1
     if (
-      inventory[selectSlot].mode === weaponModeList[1] || (
-      inventory[selectSlot].mode === weaponModeList[2] &&
-      inventory[selectSlot].round === inventory[selectSlot].roundLimit)
-    ) inventory[selectSlot].disconnector = true
+      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[1] || (
+      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].round === inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit)
+    ) inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector = true
     const burstReduction = // TODO: FAMAS and AN-94 are not example of this
-      inventory[selectSlot].mode === weaponModeList[2] ? inventory[selectSlot].roundLimit / (inventory[selectSlot].roundLimit + 1) : 1
-    inventory[selectSlot].recoilEffect += inventory[selectSlot].recoilCoefficient * burstReduction
+      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] ? inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit / (inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit + 1) : 1
+    inventoryInfo.inventory[inventoryInfo.selectSlot].recoilEffect += inventoryInfo.inventory[inventoryInfo.selectSlot].recoilCoefficient * burstReduction
   }
   weaponProcess = (mouseInput, cursor) => {
     if (
       code[action.reload].isFirst() &&
-      inventory[selectSlot].reloadTime === 0 &&
-      inventory[selectSlot].reloadState === 'done'
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime === 0 &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'done'
     ) {
-      inventory[selectSlot].reloadSpeed = inventory[selectSlot].baseReloadSpeed
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed = inventoryInfo.inventory[inventoryInfo.selectSlot].baseReloadSpeed
       this.reloadProcess(mouseInput)
-    } else if (0 < inventory[selectSlot].reloadTime || inventory[selectSlot].reloadState !== 'done') {
+    } else if (0 < inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState !== 'done') {
       this.reloadProcess(mouseInput)
     }
 
     if (((
-      mouseInput.getKeyDown(0) && !inventoryFlag) || (
-      inventory[selectSlot].mode === weaponModeList[2] && 0 < inventory[selectSlot].round)) &&
-      !inventory[selectSlot].disconnector
+      mouseInput.getKeyDown(0) && !inventoryInfo.inventoryFlag) || (
+      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] && 0 < inventoryInfo.inventory[inventoryInfo.selectSlot].round)) &&
+      !inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector
     ) {
       this.mouseFiring(mouseInput, cursor)
     }
-    if (inventory[selectSlot].mode === weaponModeList[1] && !mouseInput.getKeyDown(0)) {
-      inventory[selectSlot].disconnector = false
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[1] && !mouseInput.getKeyDown(0)) {
+      inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector = false
     }
     if (
-      inventory[selectSlot].mode === weaponModeList[2] &&
-      inventory[selectSlot].round === inventory[selectSlot].roundLimit &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].round === inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit &&
       !mouseInput.getKeyDown(0)
     ) {
-      inventory[selectSlot].disconnector = false
-      inventory[selectSlot].round = 0
+      inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector = false
+      inventoryInfo.inventory[inventoryInfo.selectSlot].round = 0
     }
     const magazineForword = () => {
-      inventory[selectSlot].magazines.push(inventory[selectSlot].magazines[1])
-      inventory[selectSlot].magazines.splice(1, 1)
+      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.push(inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[1])
+      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.splice(1, 1)
     }
     if (code[action.change].isFirst()) magazineForword() // TODO: to consider
   }
   modeSelect = () => {
     if (code[action.modeSelect].isFirst()) {
       if (code[action.shift].flag) {
-        const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) - 1
-        inventory[selectSlot].mode =
-          n < 0 ? inventory[selectSlot].modeList[inventory[selectSlot].modeList.length - 1] :
-          inventory[selectSlot].modeList[n]
+        const n = inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.indexOf(inventoryInfo.inventory[inventoryInfo.selectSlot].mode) - 1
+        inventoryInfo.inventory[inventoryInfo.selectSlot].mode =
+          n < 0 ? inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.length - 1] :
+          inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[n]
       } else {
-        const n = inventory[selectSlot].modeList.indexOf(inventory[selectSlot].mode) + 1
-        inventory[selectSlot].mode =
-          n < inventory[selectSlot].modeList.length ? inventory[selectSlot].modeList[n] :
-          inventory[selectSlot].modeList[0]
+        const n = inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.indexOf(inventoryInfo.inventory[inventoryInfo.selectSlot].mode) + 1
+        inventoryInfo.inventory[inventoryInfo.selectSlot].mode =
+          n < inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.length ? inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[n] :
+          inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[0]
       }
     }
   }
@@ -2137,27 +2141,27 @@ class MainScene extends Scene {
 
     this.ownself.update(intervalDiffTime, input, this.map)
 
-    if (code[action.primary].isFirst()) selectSlot = 0
-    if (code[action.secondary].isFirst()) selectSlot = 1
-    if (code[action.tertiary].isFirst()) selectSlot = 2
+    if (code[action.primary].isFirst()) inventoryInfo.selectSlot = 0
+    if (code[action.secondary].isFirst()) inventoryInfo.selectSlot = 1
+    if (code[action.tertiary].isFirst()) inventoryInfo.selectSlot = 2
     if (code[action.rotateSlot].isFirst()) {
-      if (code[action.shift].flag) selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
-      else selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
+      if (code[action.shift].flag) inventoryInfo.selectSlot -= 0 < inventoryInfo.selectSlot ? 1 : -(inventoryInfo.mainSlotSize - 1)
+      else inventoryInfo.selectSlot += inventoryInfo.selectSlot < inventoryInfo.mainSlotSize - 1 ? 1 : -(inventoryInfo.mainSlotSize - 1)
     }
     if (0 < wheelInput) {
-      selectSlot += selectSlot < mainSlotSize - 1 ? 1 : -(mainSlotSize - 1)
+      inventoryInfo.selectSlot += inventoryInfo.selectSlot < inventoryInfo.mainSlotSize - 1 ? 1 : -(inventoryInfo.mainSlotSize - 1)
     }
     if (wheelInput < 0) {
-      selectSlot -= 0 < selectSlot ? 1 : -(mainSlotSize - 1)
+      inventoryInfo.selectSlot -= 0 < inventoryInfo.selectSlot ? 1 : -(inventoryInfo.mainSlotSize - 1)
     }
-    if (code[action.inventory].isFirst()) inventoryFlag = !inventoryFlag
-    if (inventory[selectSlot].category !== '' && spotInfo.location === SpotField.locationList[1]) this.weaponProcess(mouseInput, cursor)
-    if (inventory[selectSlot].category !== '') this.modeSelect()
+    if (code[action.inventory].isFirst()) inventoryInfo.inventoryFlag = !inventoryInfo.inventoryFlag
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && spotInfo.location === SpotField.locationList[1]) this.weaponProcess(mouseInput, cursor)
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '') this.modeSelect()
 
     if (code[action.debug].isFirst()) this.isShowDamage = !this.isShowDamage
   }
   dropItemProcess = (intervalDiffTime) => {
-    const blankInventorySlot = inventory.findIndex(v => v.category === '')
+    const blankInventorySlot = inventoryInfo.inventory.findIndex(v => v.category === '')
     dropItems.forEach((item, index) => {
       if (item.type === 'droppedWeapon') {
         if (item.life <= 0)  {
@@ -2179,7 +2183,7 @@ class MainScene extends Scene {
         let multiple = (
           SIZE < distance || (
           item.type === 'droppedWeapon')) &&
-          mainSlotSize + inventorySize <= inventory.length ? 0 : 1 / distance
+          inventoryInfo.mainSlotSize + inventoryInfo.inventorySize <= inventoryInfo.inventory.length ? 0 : 1 / distance
         item.x = item.x + width / distance * multiple * intervalDiffTime
         item.y = item.y + height / distance * multiple * intervalDiffTime
       }
@@ -2191,10 +2195,10 @@ class MainScene extends Scene {
           dropItems.splice(index, 1)
         }
       } else if (item.type === 'magazine') {
-        if (inventory[selectSlot].category !== '' && item.unavailableTime <= 0 && distance < minImgRadius * 2) {
-          for (let i = 0; i < inventory[selectSlot].magazines.length + 1; i=(i+1)|0) {
-            if (inventory[selectSlot].magazines[i] === -1) return inventory[selectSlot].magazines[i] = item.amount
-            if (i === inventory[selectSlot].magazines.length + 1) inventory[selectSlot].magazines.push(item.amount)
+        if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && item.unavailableTime <= 0 && distance < minImgRadius * 2) {
+          for (let i = 0; i < inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.length + 1; i=(i+1)|0) {
+            if (inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[i] === -1) return inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[i] = item.amount
+            if (i === inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.length + 1) inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.push(item.amount)
           }
           dropItems.splice(index, 1)
         }
@@ -2205,7 +2209,7 @@ class MainScene extends Scene {
           delete item.x,
           delete item.y
           if (item.time) delete item.time
-          inventory[blankInventorySlot] = dropItems.splice(index, 1)[0]
+          inventoryInfo.inventory[blankInventorySlot] = dropItems.splice(index, 1)[0]
         }
       }
     })
@@ -2482,19 +2486,19 @@ class MainScene extends Scene {
   */
   slideProcess = () => {
     if (
-      inventory[selectSlot].magazines[inventory[selectSlot].grip] <= 0 &&
-      inventory[selectSlot].slideState === 'release') return
-    if (inventory[selectSlot].reloadState !== 'done') return
-    inventory[selectSlot].slideTime = (
-      combatReload.flag) ? (inventory[selectSlot].slideTime+1)|0 : (inventory[selectSlot].slideTime+1)|0
+      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] <= 0 &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release') return
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState !== 'done') return
+    inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime = (
+      combatReload.flag) ? (inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime+1)|0 : (inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime+1)|0
     if (
-      inventory[selectSlot].slideState === 'pullBack' &&
-      inventory[selectSlot].slideStop * inventory[selectSlot].slideSpeed <= inventory[selectSlot].slideTime
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'pullBack' &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideStop * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime
     ) {
-      if (!inventory[selectSlot].gripFlag) return
-      inventory[selectSlot].slideState = 'release'
+      if (!inventoryInfo.inventory[inventoryInfo.selectSlot].gripFlag) return
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState = 'release'
       const stopSlide = () => {
-        if (inventory[selectSlot].magazines[inventory[selectSlot].grip] === 0) return // cocking postponement
+        if (inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] === 0) return // cocking postponement
         if ((code[action.combatReload].flag || combatReload.auto === 'ON') && combatReload.magFlag) {
           combatReload.flag = true
           combatReload.weight = (!code[action.combatReload].flag) ? 8 : 4
@@ -2502,22 +2506,22 @@ class MainScene extends Scene {
       }
       stopSlide()
     } else if (
-      inventory[selectSlot].slideState === 'release' &&
-      inventory[selectSlot].slideDone * inventory[selectSlot].slideSpeed <= inventory[selectSlot].slideTime
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release' &&
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideDone * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime
     ) {
-      inventory[selectSlot].slideState = 'done'
+      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState = 'done'
       const doneSlide = () => {
         if (combatReload.flag) {
           ammo = (ammo-1)|0
           combatReload.flag = false
         } else if (
-          0 < inventory[selectSlot].magazines[inventory[selectSlot].grip] &&
-          !inventory[selectSlot].chamber
+          0 < inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] &&
+          !inventoryInfo.inventory[inventoryInfo.selectSlot].chamber
         ) {
-          inventory[selectSlot].magazines[inventory[selectSlot].grip] =
-            (inventory[selectSlot].magazines[inventory[selectSlot].grip]-1)|0 // semi automatic mechanism
+          inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] =
+            (inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip]-1)|0 // semi automatic mechanism
         }
-        inventory[selectSlot].chamber = true
+        inventoryInfo.inventory[inventoryInfo.selectSlot].chamber = true
         if (afterglow.chamberFlag) {
           afterglow.reload = this.reloadFlashTimeLimit
           afterglow.chamberFlag = false
@@ -2526,10 +2530,10 @@ class MainScene extends Scene {
         combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
       }
       doneSlide()
-    } else if (inventory[selectSlot].slideState === 'done') {
-      if (0 <= inventory[selectSlot].slideTime) return inventory[selectSlot].slideState = 'pullBack'
+    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'done') {
+      if (0 <= inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime) return inventoryInfo.inventory[inventoryInfo.selectSlot].slideState = 'pullBack'
     } else return
-    inventory[selectSlot].slideTime = 0
+    inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime = 0
   }
   setEnemy = () => {
     const setEnemySpeed = () => {
@@ -2596,7 +2600,7 @@ class MainScene extends Scene {
       ) this.dispatchEvent('addMenu', 'result')
     })
 
-    if (inventory[selectSlot].category !== '' && !inventory[selectSlot].chamber) this.slideProcess()
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && !inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) this.slideProcess()
     if (spotInfo.dungeon !== SpotField.dungeonList[3]) this.waveProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     if (0 < enemyInfo.enemies.length) this.enemyProcess(intervalDiffTime)
     bullets.forEach((bullet, i) => {
@@ -2607,55 +2611,55 @@ class MainScene extends Scene {
   }
 
   inventoryProcess = (mouseInput, cursor) => {
-    inventory.forEach(v => {
+    inventoryInfo.inventory.forEach(v => {
       if (v.category !== '') v.recoilEffect *= v.recoilMultiple
     })
-    if (!settingsObject.isManipulateSlotAnytime && !inventoryFlag) {
-      if (holdSlot.category !== '') {
-        inventory.forEach((v, i) => {
+    if (!settingsObject.isManipulateSlotAnytime && !inventoryInfo.inventoryFlag) {
+      if (inventoryInfo.holdSlot.category !== '') {
+        inventoryInfo.inventory.forEach((v, i) => {
           if (v.category === '') {
-            [holdSlot, inventory[i]] = [inventory[i], holdSlot]
+            [inventoryInfo.holdSlot, inventoryInfo.inventory[i]] = [inventoryInfo.inventory[i], inventoryInfo.holdSlot]
           }
         })
       }
       return
     }
     inventorySlotBox.forEach((v, i) => {
-      if (!inventoryFlag && mainSlotSize - 1 < i) return
+      if (!inventoryInfo.inventoryFlag && inventoryInfo.mainSlotSize - 1 < i) return
       if (this.boxInterface.isDownInBox(v, mouseInput.getKeyDown(0), cursor)) {
         if (code[action.shift].flag) {
           if (isWarehouse) {
-            warehouse.push(inventory[i])
-            inventory[i] = {category: ''}
+            warehouse.push(inventoryInfo.inventory[i])
+            inventoryInfo.inventory[i] = {category: ''}
             orderNumber = -1
             isDescending = false
           } else {
             let findIndex = -1
-            if (i < mainSlotSize) {
-              findIndex = inventory.findIndex((v, index) => mainSlotSize <= index && v.category === '')
-            } else findIndex = inventory.findIndex((v, index) => index < mainSlotSize && v.category === '')
-            if (findIndex !== -1) [inventory[i], inventory[findIndex]] = [inventory[findIndex], inventory[i]]
+            if (i < inventoryInfo.mainSlotSize) {
+              findIndex = inventoryInfo.inventory.findIndex((v, index) => inventoryInfo.mainSlotSize <= index && v.category === '')
+            } else findIndex = inventoryInfo.inventory.findIndex((v, index) => index < inventoryInfo.mainSlotSize && v.category === '')
+            if (findIndex !== -1) [inventoryInfo.inventory[i], inventoryInfo.inventory[findIndex]] = [inventoryInfo.inventory[findIndex], inventoryInfo.inventory[i]]
           }
         } else {
-          [holdSlot, inventory[i]] = [inventory[i], holdSlot]
+          [inventoryInfo.holdSlot, inventoryInfo.inventory[i]] = [inventoryInfo.inventory[i], inventoryInfo.holdSlot]
           // afterglow.inventory = 60
         }
       }
     })
     if (
-      holdSlot.category !== '' &&
+      inventoryInfo.holdSlot.category !== '' &&
       !this.boxInterface.isDownInBox(inventoryBox, mouseInput.getKeyDown(0), cursor) &&
       mouseInput.getKeyDown(0) && (
       !isWarehouse || !this.boxInterface.isDownInBox(warehouseBox, mouseInput.getKeyDown(0), cursor))
     ) {
-      holdSlot.type = 'weapon'
-      holdSlot.unavailableTime = 30
+      inventoryInfo.holdSlot.type = 'weapon'
+      inventoryInfo.holdSlot.unavailableTime = 30
       const r = SIZE * 3
       const theta = Math.atan2(cursor.offsetY - canvas.offsetHeight / 2, cursor.offsetX - canvas.offsetWidth / 2)
-      holdSlot.x = this.ownself.x + r * Math.cos(theta)
-      holdSlot.y = this.ownself.y + r * Math.sin(theta)
-      dropItems.push(holdSlot)
-      holdSlot = {category: ''}
+      inventoryInfo.holdSlot.x = this.ownself.x + r * Math.cos(theta)
+      inventoryInfo.holdSlot.y = this.ownself.y + r * Math.sin(theta)
+      dropItems.push(inventoryInfo.holdSlot)
+      inventoryInfo.holdSlot = {category: ''}
     }
 
     if (0 < afterglow.inventory) afterglow.inventory = (afterglow.inventory-1)|0
@@ -2989,14 +2993,14 @@ class MainScene extends Scene {
   }
   drawIndicator = () => {
     const setOtherMagazine = () => {
-      const array = inventory[selectSlot].magazines.map((x, i) => {
-        if (x === inventory[selectSlot].magazineSize || i === inventory[selectSlot].grip) return -1
+      const array = inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.map((x, i) => {
+        if (x === inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize || i === inventoryInfo.inventory[inventoryInfo.selectSlot].grip) return -1
         else return x
       })
       const index = array.indexOf(Math.max(...array))
       if (
-        index !== inventory[selectSlot].grip && // if only a magazine
-        inventory[selectSlot].magazines[index] !== inventory[selectSlot].magazineSize
+        index !== inventoryInfo.inventory[inventoryInfo.selectSlot].grip && // if only a magazine
+        inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[index] !== inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize
       ) return index
       else return -1
     }
@@ -3015,23 +3019,23 @@ class MainScene extends Scene {
       })
       context.font = `${SIZE}px ${font}`
     }
-    if (inventory[selectSlot].category !== '') {
-      const cartridges = inventory[selectSlot].magazines[inventory[selectSlot].grip]
-      context.fillStyle = (cartridges < inventory[selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
-      (cartridges < inventory[selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
+    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '') {
+      const cartridges = inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip]
+      context.fillStyle = (cartridges < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
+      (cartridges < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
       context.save()
-      inventory[selectSlot].modeList.forEach((v, i) => {
+      inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.forEach((v, i) => {
         context.fillStyle = 'hsla(210, 100%, 50%, .7)'
-        if (inventory[selectSlot].mode === v) {
+        if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === v) {
           context.fillRect(c.x - SIZE * .8, c.y - SIZE * (9.7 - i), SIZE / 6, SIZE * .65)
         }
         const text =
           v === weaponModeList[1] ? '1' : // SEMI AUTO
-          v === weaponModeList[2] ? inventory[selectSlot].roundLimit : // BURST
+          v === weaponModeList[2] ? inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit : // BURST
           v === weaponModeList[3] ? 'F' : '' // FULL AUTO
           context.fillText(text, c.x, c.y - SIZE * (9 - i))
       })
-      if (settingsObject.isManipulateCode && 1 < inventory[selectSlot].modeList.length) {
+      if (settingsObject.isManipulateCode && 1 < inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.length) {
         context.fillStyle = 'hsla(210, 100%, 75%, .4)'
         context.fillRect(c.x - SIZE * .55, c.y - SIZE * 10.6, SIZE * .6, SIZE * .6)
         context.font = `${SIZE*.75}px ${font}`
@@ -3040,99 +3044,99 @@ class MainScene extends Scene {
       }
       context.restore()
       context.save()
-      const inChamber = (inventory[selectSlot].chamber) ? 1 : 0
+      const inChamber = (inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) ? 1 : 0
       context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - SIZE * 3)
       // context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
       // context.fillText(ammo, c.x, c.y)
       context.restore()
-      const cartridgeSize = 1 / (inventory[selectSlot].magazineSize + 1)
+      const cartridgeSize = 1 / (inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize + 1)
       const yOffset = canvas.offsetHeight - SIZE * .75
       const yHeight = SIZE * 3
       c.x = canvas.offsetWidth - SIZE * .75
-      c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+      c.y = yOffset - inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
       if (0 < afterglow.reload) context.fillStyle = 'hsla(0, 100%, 100%, .7)'
       context.fillRect(c.x, c.y, -SIZE / 4, -inChamber * cartridgeSize * yHeight) // chamber
-      const releaseTime = inventory[selectSlot].reloadRelease * inventory[selectSlot].reloadSpeed
-      const putAwayTime = inventory[selectSlot].reloadPutAway * inventory[selectSlot].reloadSpeed
-      const takeOutTime = inventory[selectSlot].reloadTakeOut * inventory[selectSlot].reloadSpeed
-      const unreleaseTime = inventory[selectSlot].reloadUnrelease * inventory[selectSlot].reloadSpeed
-      let ratio = (inventory[selectSlot].reloadState === 'release' && inventory[selectSlot].reloadTime <= releaseTime) ?
-      1 - inventory[selectSlot].reloadTime / releaseTime : // 1
-      (inventory[selectSlot].reloadState === 'unrelease' && inventory[selectSlot].reloadTime <= unreleaseTime) ? // 2
-      inventory[selectSlot].reloadTime / unreleaseTime : 1
-      if (inventory[selectSlot].reloadState === 'done' || inventory[selectSlot].reloadState === 'release' || inventory[selectSlot].reloadState === 'unrelease') {
-        c.y = yOffset - (ratio - 1) * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-        if (inventory[selectSlot].slideState !== 'release' && inventory[selectSlot].slideTime === 0) { // slide gauge
+      const releaseTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadRelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
+      const putAwayTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadPutAway * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
+      const takeOutTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTakeOut * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
+      const unreleaseTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadUnrelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
+      let ratio = (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime <= releaseTime) ?
+      1 - inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / releaseTime : // 1
+      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime <= unreleaseTime) ? // 2
+      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / unreleaseTime : 1
+      if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'done' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease') {
+        c.y = yOffset - (ratio - 1) * inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
+        if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState !== 'release' && inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime === 0) { // slide gauge
           context.fillRect(c.x - SIZE * 5 / 16, c.y, SIZE / 16, -yHeight) // full
-        } else if (inventory[selectSlot].slideState === 'pullBack') {
+        } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'pullBack') {
           context.fillRect(
             c.x - SIZE * 5 / 16,
             c.y,
             SIZE / 16,
-            -(1 - inventory[selectSlot].slideTime / (inventory[selectSlot].slideStop * inventory[selectSlot].slideSpeed)) * yHeight
+            -(1 - inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime / (inventoryInfo.inventory[inventoryInfo.selectSlot].slideStop * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed)) * yHeight
           )
-        } else if (inventory[selectSlot].slideState === 'release') {
+        } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release') {
           context.fillRect(
             c.x - SIZE * 5 / 16,
             c.y,
             SIZE / 16,
-            - (inventory[selectSlot].slideTime / (inventory[selectSlot].slideDone * inventory[selectSlot].slideSpeed)) * yHeight
+            - (inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime / (inventoryInfo.inventory[inventoryInfo.selectSlot].slideDone * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed)) * yHeight
           )
         }
       }
-      ratio = (inventory[selectSlot].reloadState === 'release') ? 1 - inventory[selectSlot].reloadTime / releaseTime :
-      (inventory[selectSlot].reloadState === 'putAway') ? inventory[selectSlot].reloadTime / putAwayTime :
-      (inventory[selectSlot].reloadState === 'takeOut') ? 1 - inventory[selectSlot].reloadTime / takeOutTime :
-      (inventory[selectSlot].reloadState === 'unrelease') ? inventory[selectSlot].reloadTime / unreleaseTime : 1
-      inventory[selectSlot].magazines.forEach((magazine, index) => {
+      ratio = (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release') ? 1 - inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / releaseTime :
+      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway') ? inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / putAwayTime :
+      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut') ? 1 - inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / takeOutTime :
+      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease') ? inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / unreleaseTime : 1
+      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.forEach((magazine, index) => {
         if (magazine !== -1) {
-          context.fillStyle = (0 < afterglow.reload && index === inventory[selectSlot].grip) ?
+          context.fillStyle = (0 < afterglow.reload && index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip) ?
           'hsla(0, 100%, 100%, .7)' :
-          (magazine < inventory[selectSlot].magazineSize * .1) ?
+          (magazine < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .1) ?
           'hsla(0, 100%, 60%, .7)' :
-          (magazine < inventory[selectSlot].magazineSize * .3) ?
+          (magazine < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .3) ?
           'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
           if (
-            index === inventory[selectSlot].grip && !(inventory[selectSlot].reloadState === 'putAway' || inventory[selectSlot].reloadState === 'takeOut')
+            index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip && !(inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut')
           ) c.x = canvas.offsetWidth - SIZE * .75
           else c.x = canvas.offsetWidth - SIZE * (1.75 + index)
-          if (index === inventory[selectSlot].grip) {
-            c.y = yOffset - ratio * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
-          } else c.y = yOffset - inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+          if (index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip) {
+            c.y = yOffset - ratio * inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
+          } else c.y = yOffset - inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
           context.fillRect(c.x, c.y, -SIZE / 4, magazine * cartridgeSize * yHeight) // cartridges
           context.fillRect( // magazine stop
             c.x + SIZE / 16,
-            c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
+            c.y + inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight,
             -SIZE * 3 / 8, SIZE / 16
           )
           if (
-            index === inventory[selectSlot].grip &&
-            (inventory[selectSlot].reloadState === 'putAway' || inventory[selectSlot].reloadState === 'takeOut') ||
-            index !== inventory[selectSlot].grip
+            index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip &&
+            (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut') ||
+            index !== inventoryInfo.inventory[inventoryInfo.selectSlot].grip
           ) {
             context.fillRect( // left width bar
               c.x - SIZE / 4,
               c.y, -SIZE / 16,
-              inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+              inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
             )
           }
           if ((
-            index === setOtherMagazine() || inventory[selectSlot].magazines.length === 1) &&
-            (loading.time !== 0 || magazine.magazines !== inventory[selectSlot].magazineSize)
+            index === setOtherMagazine() || inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.length === 1) &&
+            (loading.time !== 0 || magazine.magazines !== inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize)
           ) {
             context.fillRect( // loading gauge
               c.x,
-              c.y + inventory[selectSlot].magazineSize * cartridgeSize * yHeight,
+              c.y + inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight,
               SIZE / 16,
-              (-loading.time / (loading.done * inventory[selectSlot].loadingSpeed))
-              * inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+              (-loading.time / (loading.done * inventoryInfo.inventory[inventoryInfo.selectSlot].loadingSpeed))
+              * inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
             )
           } else {
             context.fillRect( // filled
               c.x,
               c.y,
               SIZE / 16,
-              inventory[selectSlot].magazineSize * cartridgeSize * yHeight
+              inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
             )
           }
         }
@@ -3179,23 +3183,23 @@ class MainScene extends Scene {
     context.restore()
   }
   renderWeaponDetail = (box, i, cursor) => {
-    if (inventory[i].category !== '' && this.boxInterface.isInner(box, cursor)) {
+    if (inventoryInfo.inventory[i].category !== '' && this.boxInterface.isInner(box, cursor)) {
       context.font = `${SIZE*.75}px ${font}`
       context.textAlign = 'left'
       context.fillStyle = 'hsla(0, 0%, 0%, .6)'
       context.strokeStyle = 'hsl(0, 0%, 100%)'
-      strokeText(inventory[i].name, cursor.offsetX + SIZE, cursor.offsetY + SIZE)
-      if (!inventoryFlag) return
+      strokeText(inventoryInfo.inventory[i].name, cursor.offsetX + SIZE, cursor.offsetY + SIZE)
+      if (!inventoryInfo.inventoryFlag) return
       const damage =
-        inventory[i].category === weaponCategoryList[5] ?
-          `${inventory[i].damage.toFixed(0)} * ${inventory[i].gaugeNumber}` :
-        inventory[i].damage.toFixed(0)
+        inventoryInfo.inventory[i].category === weaponCategoryList[5] ?
+          `${inventoryInfo.inventory[i].damage.toFixed(0)} * ${inventoryInfo.inventory[i].gaugeNumber}` :
+        inventoryInfo.inventory[i].damage.toFixed(0)
       const dictionary = {
-        MODE: inventory[i].mode === weaponModeList[2] ? `${inventory[i].roundLimit}-R ${inventory[i].mode}` :
-          inventory[i].mode,
+        MODE: inventoryInfo.inventory[i].mode === weaponModeList[2] ? `${inventoryInfo.inventory[i].roundLimit}-R ${inventoryInfo.inventory[i].mode}` :
+          inventoryInfo.inventory[i].mode,
         DAMAGE: damage,
-        'P. FORCE': inventory[i].penetrationForce.toFixed(2),
-        'MAG. SIZE': `${inventory[i].magazineSize} * ${inventory[i].magazines.length}`
+        'P. FORCE': inventoryInfo.inventory[i].penetrationForce.toFixed(2),
+        'MAG. SIZE': `${inventoryInfo.inventory[i].magazineSize} * ${inventoryInfo.inventory[i].magazines.length}`
       }
       Object.keys(dictionary).forEach((v, i) => {
         strokeText(v, cursor.offsetX + SIZE, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
@@ -3205,7 +3209,7 @@ class MainScene extends Scene {
   }
   renderSlot = (cursor) => {
     context.save()
-    if (inventoryFlag) {
+    if (inventoryInfo.inventoryFlag) {
       context.fillStyle = 'hsla(0, 0%, 50%, .2)'
       context.fillRect(inventoryBox.absoluteX, inventoryBox.absoluteY, inventoryBox.width, inventoryBox.height)
     }
@@ -3213,16 +3217,16 @@ class MainScene extends Scene {
       absoluteX: cursor.offsetX,
       absoluteY: cursor.offsetY
     }
-    this.renderWeaponCategory(box, holdSlot)
+    this.renderWeaponCategory(box, inventoryInfo.holdSlot)
     inventorySlotBox.forEach((v, i) => {
-      if (mainSlotSize - 1 < i && !inventoryFlag) return
+      if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
       context.fillStyle = 'hsla(210, 100%, 75%, .4)'
       context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-      if (i === selectSlot) {
+      if (i === inventoryInfo.selectSlot) {
         context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
       }
-      this.renderWeaponCategory(v, inventory[i])
-      if (settingsObject.isManipulateCode && i < mainSlotSize) {
+      this.renderWeaponCategory(v, inventoryInfo.inventory[i])
+      if (settingsObject.isManipulateCode && i < inventoryInfo.mainSlotSize) {
         context.fillStyle = 'hsla(210, 100%, 75%, .4)'
         context.fillRect(v.absoluteX + SIZE * 1.15, v.absoluteY - SIZE / 3, SIZE * .6, SIZE * .6)
         context.font = `${SIZE*.75}px ${font}`
@@ -3236,7 +3240,7 @@ class MainScene extends Scene {
       }
     })
     inventorySlotBox.forEach((v, i) => {
-      if (mainSlotSize - 1 < i && !inventoryFlag) return
+      if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
       this.renderWeaponDetail(v, i, cursor)
     })
     context.restore()
@@ -3528,15 +3532,15 @@ document.addEventListener('DOMContentLoaded', () => { // init
     // portalFlag = temporaryPortalFlag ? true : false
 
     bullets = []
-    selectSlot = 0
+    inventoryInfo.selectSlot = 0
     const temporaryWarehouse = JSON.parse(storage.getItem('warehouseArray'))
     if (temporaryWarehouse) warehouse = temporaryWarehouse
-    inventoryFlag = false
-    inventory = JSON.parse(storage.getItem('inventoryArray'))
-    if (!inventory || inventory.every(v => v.category === '')) {
-      inventory = []
-      for (let i = 0; i < mainSlotSize + inventorySize; i++) {
-        inventory.push({category: ''})
+    inventoryInfo.inventoryFlag = false
+    inventoryInfo.inventory = JSON.parse(storage.getItem('inventoryArray'))
+    if (!inventoryInfo.inventory || inventoryInfo.inventory.every(v => v.category === '')) {
+      inventoryInfo.inventory = []
+      for (let i = 0; i < inventoryInfo.mainSlotSize + inventoryInfo.inventorySize; i++) {
+        inventoryInfo.inventory.push({category: ''})
       }
       const initWeapon = () => {
         const maxDamageInitial = 70
@@ -3565,7 +3569,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
           0
         )
       }
-      inventory[selectSlot] = initWeapon()
+      inventoryInfo.inventory[inventoryInfo.selectSlot] = initWeapon()
     }
     ammo = 24
     loading = {
