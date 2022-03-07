@@ -61,6 +61,104 @@ const setStorage = (key, value) => {
   return value
 }
 
+const RESOURCE_LIST = []
+
+const imagePathList = [
+  'images/TP2F.png',
+  'images/TP2U.png',
+  'images/TP2RU.png',
+  'images/TP2R.png',
+  'images/TP2RD.png',
+  'images/TP2D.png',
+  'images/TP2LD.png',
+  'images/TP2L.png',
+  'images/TP2LU.png',
+  'images/JK1_NL.png',
+  'images/JK1_NN.png',
+  'images/JK1_NR.png',
+  'images/JK32F.png',
+  'images/JK32L.png',
+  'images/JK32R.png',
+  'images/JK32F_O1.png',
+  'images/JK32F_O2.png',
+  'images/JK33F.png',
+  'images/JK33L.png',
+  'images/JK33R.png',
+  'images/JK34F.png',
+  'images/JK34L.png',
+  'images/JK34R.png',
+  'images/JK35Fv1.png',
+  'images/drinkSmile.png',
+  'images/drinking.png',
+  'images/ROGOv1.png',
+  'images/ROGOv1.2.png',
+  'images/stv1.png',
+  'images/st1v2.png',
+  'images/st2v1.png',
+  'images/Homingv1.jpg',
+  'images/TAPIOCA_PENETRATEv1.png',
+  'images/TASTEv1.jpg',
+  'images/EASY_TO_DRINKV1.jpg' ,
+  'images/TAPIOCA_SPEEDv1.png',
+  'images/TAPIOCA_PENETRATEv1.png',
+  'images/COOKING_TIMEv1.png',
+  'images/CUP_AMOUNTv1.png',
+  'images/CUP_SIZEv1.png',
+  'images/TAPIOCA_CAPACITYv1.png',
+  'images/arrowDown.png',
+  'images/arrowRight.png',
+  'images/arrowUp.png'
+]
+const IMAGE = []
+imagePathList.forEach(path => {
+  const image = new Image()
+  RESOURCE_LIST.push((async () => {
+    return new Promise(resolve => {
+      image.src = path
+      image.addEventListener('load', () => resolve(image))
+    }).then(result => IMAGE[path] = result)
+  })())
+})
+const TILESET_DATA_ARRAY = []
+const TILESET_IMAGE_ARRAY = []
+const MAP_PATH_ARRAY = [
+  'resources/map_Lobby.json',
+  'resources/map_Test.json'
+]
+const MAP = []
+MAP_PATH_ARRAY.forEach(path => {
+  RESOURCE_LIST.push((async () => {
+    return new Promise(resolve => {
+      const request = new XMLHttpRequest()
+      request.open('GET', path)
+      request.responseType = 'json'
+      request.send()
+      request.onload = () => resolve(request.response)
+    }).then(result => {
+      MAP.push(result)
+      result.tilesets.forEach(async v => {
+        return new Promise(resolve => {
+          const request = new XMLHttpRequest()
+          request.open('GET', 'resources/' + v.source)
+          request.responseType = 'json'
+          request.send()
+          request.onload = () => resolve(request.response)
+        }).then(async result => {
+          return new Promise(resolve => {
+            TILESET_DATA_ARRAY[v.source] = result
+            const IMG = new Image()
+            IMG.src = result.image.slice(3)
+            IMG.addEventListener('load', () => resolve(IMG))
+          }).then(result => {
+            TILESET_IMAGE_ARRAY[v.source] = result
+          })
+        })
+      })
+    })
+
+  })())
+})
+
 class SpotField {
   static locationList = [
     'bazaar',
@@ -1666,111 +1764,6 @@ const drawPause = () => {
   context.fillText('PAUSE', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + SIZE)
   context.restore()
 }
-const RESOURCE_LIST = []
-
-const imagePathList = [
-  'images/TP2F.png',
-  'images/TP2U.png',
-  'images/TP2RU.png',
-  'images/TP2R.png',
-  'images/TP2RD.png',
-  'images/TP2D.png',
-  'images/TP2LD.png',
-  'images/TP2L.png',
-  'images/TP2LU.png',
-  'images/JK1_NL.png',
-  'images/JK1_NN.png',
-  'images/JK1_NR.png',
-  'images/JK32F.png',
-  'images/JK32L.png',
-  'images/JK32R.png',
-  'images/JK32F_O1.png',
-  'images/JK32F_O2.png',
-  'images/JK33F.png',
-  'images/JK33L.png',
-  'images/JK33R.png',
-  'images/JK34F.png',
-  'images/JK34L.png',
-  'images/JK34R.png',
-  'images/JK35Fv1.png',
-  'images/drinkSmile.png',
-  'images/drinking.png',
-  'images/ROGOv1.png',
-  'images/ROGOv1.2.png',
-  'images/stv1.png',
-  'images/st1v2.png',
-  'images/st2v1.png',
-  'images/Homingv1.jpg',
-  'images/TAPIOCA_PENETRATEv1.png',
-  'images/TASTEv1.jpg',
-  'images/EASY_TO_DRINKV1.jpg' ,
-  'images/TAPIOCA_SPEEDv1.png',
-  'images/TAPIOCA_PENETRATEv1.png',
-  'images/COOKING_TIMEv1.png',
-  'images/CUP_AMOUNTv1.png',
-  'images/CUP_SIZEv1.png',
-  'images/TAPIOCA_CAPACITYv1.png',
-  'images/arrowDown.png',
-  'images/arrowRight.png',
-  'images/arrowUp.png'
-]
-const IMAGE = []
-imagePathList.forEach(path => {
-  const image = new Image()
-  RESOURCE_LIST.push((async () => {
-    return new Promise(resolve => {
-      image.src = path
-      image.addEventListener('load', () => resolve(image))
-    }).then(result => IMAGE[path] = result)
-  })())
-})
-const TILESET_DATA_ARRAY = []
-const TILESET_IMAGE_ARRAY = []
-const MAP_PATH_ARRAY = [
-  'resources/map_Lobby.json',
-  'resources/map_Test.json'
-]
-const MAP = []
-MAP_PATH_ARRAY.forEach(path => {
-  RESOURCE_LIST.push((async () => {
-    return new Promise(resolve => {
-      const request = new XMLHttpRequest()
-      request.open('GET', path)
-      request.responseType = 'json'
-      request.send()
-      request.onload = () => resolve(request.response)
-    }).then(result => {
-      MAP.push(result)
-      result.tilesets.forEach(async v => {
-        return new Promise(resolve => {
-          const request = new XMLHttpRequest()
-          request.open('GET', 'resources/' + v.source)
-          request.responseType = 'json'
-          request.send()
-          request.onload = () => resolve(request.response)
-        }).then(async result => {
-          return new Promise(resolve => {
-            TILESET_DATA_ARRAY[v.source] = result
-            const IMG = new Image()
-            IMG.src = result.image.slice(3)
-            IMG.addEventListener('load', () => resolve(IMG))
-          }).then(result => {
-            TILESET_IMAGE_ARRAY[v.source] = result
-          })
-        })
-      })
-    })
-
-  })())
-})
-
-context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
-context.save()
-context.font = `${SIZE / 2}px ${font}`
-context.textAlign = 'center'
-context.textBaseline = 'middle'
-context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
-context.restore()
 
 class Window extends EventDispatcher {
   constructor (x = -1, y = -1, w = 0, h = 0, color = 0, alpha = 1, is = false) {
@@ -3596,6 +3589,14 @@ document.addEventListener('DOMContentLoaded', () => { // init
   }
   reset()
 })
+
+context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+context.save()
+context.font = `${SIZE / 2}px ${font}`
+context.textAlign = 'center'
+context.textBaseline = 'middle'
+context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
+context.restore()
 
 Promise.all(RESOURCE_LIST).then(() => {
   const ENTRY_POINT = new Entry()
