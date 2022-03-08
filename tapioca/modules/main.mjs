@@ -3540,7 +3540,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
       for (let i = 0; i < inventoryInfo.mainSlotSize + inventoryInfo.inventorySize; i++) {
         inventoryInfo.inventory.push({
           category: '',
-          fire: () => {console.log('none')}
+          weaponProcess: () => {}
         })
       }
       const initWeapon = () => {
