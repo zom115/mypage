@@ -446,9 +446,7 @@ let afterglow = {
   round: 0,
   limitBreakResult: 0,
   limitBreakSuccess: 0,
-  limitBreakFailed: 0,
-  chamberFlag: false,
-  reload: 0
+  limitBreakFailed: 0
 }
 
 class EventDispatcher {
@@ -740,6 +738,34 @@ let portalParticleTime = 0
 let portalParticle = []
 */
 
+class Ammunation {
+  constructor (
+    name,
+    type
+  ) {
+    this.name =  name,
+    this.type = type
+  }
+}
+
+class Magazine {
+  constructor (
+    name,
+    type,
+    slotSize,
+    array,
+    reloadSpeedMultiple
+  ) {
+    this.name = name
+    this.type = type
+    this.slotSize = slotSize
+    this.reloadSpeedMultiple = reloadSpeedMultiple
+    this.array = array
+  }
+  loading = () => {}
+  update = () => {}
+}
+
 const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
 const weaponRarityList = ['Common', 'Uncommon', 'Rare', 'Epic'] // , 'Legendary'
 const weaponRatiryColorList = [
@@ -750,11 +776,36 @@ const weaponRatiryColorList = [
   'hsl(30, 100%, 50%)',
 ]
 const weaponCategoryList = ['HG', 'SMG', 'AR', 'DMR', 'SR', 'SG']
+const SLIDE_STATE_ARRAY = ['Done', 'PullBuck', 'Release']
+const RELOAD_STATE_ARRAY = ['Done', 'Release', 'PutAway', 'TakeOut', 'Loading']
 class Weapon {
   constructor (
-    name, category, modeList, mode, rarity, damage, slideSpeed, bulletSpeed, bulletLife, reloadSpeed,
-    magazineSize, magazines, loadingSpeed, penetrationForce, roundLimit, effectiveRange, recoilCoefficient,
-    gaugeNumber, limitBreak, limitBreakIndex, level
+    name,
+    category,
+    modeList,
+    mode,
+    rarity,
+
+    damage,
+    magazineType,
+    chamber,
+    grip,
+    slideSpeed,
+    bulletSpeed,
+
+    bulletLife,
+    reloadSpeed,
+    loadingSpeed,
+    penetrationForce,
+    roundLimit,
+
+    effectiveRange,
+    recoilCoefficient,
+    gaugeNumber,
+    limitBreak,
+    limitBreakIndex,
+
+    level
   ) {
     this.name = name
     this.category = category
@@ -762,13 +813,16 @@ class Weapon {
     this.mode = mode
     this.rarity = rarity
     this.damage = damage
+
+    this.magazineType = magazineType
+    this.chamber = chamber
+    this.grip = grip
+
     this.slideSpeed = slideSpeed
     this.bulletSpeed = bulletSpeed
     this.bulletLife = bulletLife
     this.baseReloadSpeed = reloadSpeed
     this.reloadSpeed = reloadSpeed
-    this.magazineSize = magazineSize
-    this.magazines = magazines
     this.loadingSpeed = loadingSpeed
     this.penetrationForce = penetrationForce
     this.disconnector = false
@@ -777,22 +831,17 @@ class Weapon {
     this.effectiveRange = effectiveRange
     this.gaugeNumber = gaugeNumber
 
-    this.chamber = false
-    this.gripFlag = false
-    this.grip = 1
-
-    this.slideTime = 1
     this.slideStop = 18
-    this.slideDone = 7
-    this.slideState = 'done'
+    this.slideComplete = 7
+    this.slideState = SLIDE_STATE_ARRAY[0]
+    this.slideCount = 0
 
-    this.reloadTime = 1,
-    this.reloadRelease = 10,
-    this.reloadPutAway = 15,
-    this.reloadTakeOut = 15,
-    this.reloadUnrelease = 10,
-    this.reloadState = 'done',
-    this.reloadAuto = setStorageFirst('autoReload', 'ON')
+    this.reloadReleaseTime = 10
+    this.reloadPutAwayTime = 15
+    this.reloadTakeOutTime = 15
+    this.reloadLoadingTime = 10
+    this.reloadState = RELOAD_STATE_ARRAY[0]
+    this.reloadCount = 0
 
     this.recoilEffect = 0
     this.recoilCoefficient = recoilCoefficient
@@ -807,138 +856,189 @@ class Weapon {
   modeSelect = () => {
     if (code[action.modeSelect].isFirst()) {
       if (code[action.shift].flag) {
-        const n = inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.indexOf(inventoryInfo.inventory[inventoryInfo.selectSlot].mode) - 1
-        inventoryInfo.inventory[inventoryInfo.selectSlot].mode =
-          n < 0 ? inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.length - 1] :
-          inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[n]
+        const n = this.modeList.indexOf(this.mode) - 1
+        this.mode =
+          n < 0 ? this.modeList[this.modeList.length - 1] :
+          this.modeList[n]
       } else {
-        const n = inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.indexOf(inventoryInfo.inventory[inventoryInfo.selectSlot].mode) + 1
-        inventoryInfo.inventory[inventoryInfo.selectSlot].mode =
-          n < inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.length ? inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[n] :
-          inventoryInfo.inventory[inventoryInfo.selectSlot].modeList[0]
+        const n = this.modeList.indexOf(this.mode) + 1
+        this.mode =
+          n < this.modeList.length ? this.modeList[n] :
+          this.modeList[0]
       }
     }
-  }
-  setMoreThanMagazine = () => {
-    return inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.indexOf(Math.max(...inventoryInfo.inventory[inventoryInfo.selectSlot].magazines))
   }
   reloadProcess = (mouseInput) => {
-    inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime = (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime+1)|0
-    if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadRelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'putAway'
-    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadPutAway * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'takeOut'
-      inventoryInfo.inventory[inventoryInfo.selectSlot].grip = this.setMoreThanMagazine()
-    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTakeOut * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
-        inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'unrelease'
-    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadUnrelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
-        inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'done'
-        const unreleaseMagazine = () => {
-          if (!afterglow.chamberFlag) afterglow.reload = this.reloadFlashTimeLimit
-          inventoryInfo.inventory[inventoryInfo.selectSlot].gripFlag = true
-          combatReload.magFlag = true
-        }
-        unreleaseMagazine()
-    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'done') {
-      if (0 <= inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime) {
-        inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState = 'release'
-        inventoryInfo.inventory[inventoryInfo.selectSlot].gripFlag = false
-        if (!inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) afterglow.chamberFlag = true
+    if (this.mode === weaponModeList[2] && !mouseInput.getKeyDown(0)) {
+      this.round = 0
+    }
+    this.reloadCount = (this.reloadCount+1)|0
+
+    if (
+      this.reloadState === RELOAD_STATE_ARRAY[1] && // Release
+      this.reloadReleaseTime * this.reloadSpeed <= this.reloadCount
+    ) {
+      this.reloadState = RELOAD_STATE_ARRAY[2]
+    } else if (
+      this.reloadState === RELOAD_STATE_ARRAY[2] && // Put away
+      this.reloadPutAwayTime * this.reloadSpeed <= this.reloadCount
+    ) {
+      this.reloadState = RELOAD_STATE_ARRAY[3]
+      // this.grip = this.magazines.indexOf(Math.max(...this.magazines))
+      inventoryInfo.inventory
+      console.log('set magazine', this.grip)
+
+    } else if (
+      this.reloadState === RELOAD_STATE_ARRAY[3] && // Take out
+      this.reloadTakeOutTime * this.reloadSpeed <= this.reloadCount
+    ) {
+        this.reloadState = RELOAD_STATE_ARRAY[4]
+    } else if (
+      this.reloadState === RELOAD_STATE_ARRAY[4] && // Loading
+      this.reloadLoadingTime * this.reloadSpeed <= this.reloadCount
+    ) {
+      this.reloadState = RELOAD_STATE_ARRAY[0]
+    } else if (this.reloadState === RELOAD_STATE_ARRAY[0]) {
+      if (0 <= this.reloadCount) {
+        this.reloadState = RELOAD_STATE_ARRAY[1]
+        return
       }
     } else return
-    inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime = 0
-    if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] && !mouseInput.getKeyDown(0)) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].round = 0
-    }
+    this.reloadCount = 0
   }
-  mouseFiring = (mouseInput, cursor, ownself) => {
-    if (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadAuto === 'ON' &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] <= 0 &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime === 0 &&
-      0 < inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[this.setMoreThanMagazine()] &&
-      !inventoryInfo.inventory[inventoryInfo.selectSlot].chamber &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release'
-    ) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed = inventoryInfo.inventory[inventoryInfo.selectSlot].baseReloadSpeed * 1.5
-      this.reloadProcess(mouseInput)
-      return
+  trigger = (mouseInput, cursor, ownself) => {
+    if (!this.disconnector && this.chamber instanceof Ammunation) { // Fire
+      this.chamber = undefined
     }
-    if (!inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) return
+    if (this.mode !== weaponModeList[3]) this.disconnector = true
+
+    /*
+
     const shotBullet = () => {
-      const degreeRange = 2 * Math.atan2(targetWidth, inventoryInfo.inventory[inventoryInfo.selectSlot].effectiveRange)
+      const degreeRange = 2 * Math.atan2(targetWidth, this.effectiveRange)
       const randomError =
         degreeRange * (Math.random() - .5) * (
-        1 + inventoryInfo.inventory[inventoryInfo.selectSlot].recoilEffect + Math.sqrt(
+        1 + this.recoilEffect + Math.sqrt(
         ownself.dx ** 2 + ownself.dy ** 2) * ownself.moveRecoil)
       const theta =
         Math.atan2(
           cursor.offsetY - canvas.offsetHeight / 2,
           cursor.offsetX - canvas.offsetWidth / 2) + randomError
-      const bulletRadius = inventoryInfo.inventory[inventoryInfo.selectSlot].category === weaponCategoryList[5] ? SIZE / 8 : SIZE / 6
+      const bulletRadius = this.category === weaponCategoryList[5] ? SIZE / 8 : SIZE / 6
       bullets.push(new Bullet(
         ownself.x,
         ownself.y,
-        inventoryInfo.inventory[inventoryInfo.selectSlot].bulletSpeed,
+        this.bulletSpeed,
         theta,
-        inventoryInfo.inventory[inventoryInfo.selectSlot].bulletLife,
-        inventoryInfo.inventory[inventoryInfo.selectSlot].damage,
-        inventoryInfo.inventory[inventoryInfo.selectSlot].penetrationForce,
+        this.bulletLife,
+        this.damage,
+        this.penetrationForce,
         bulletRadius
       ))
     }
-    for (let i = 0; i < inventoryInfo.inventory[inventoryInfo.selectSlot].gaugeNumber; i++) shotBullet()
+    for (let i = 0; i < this.gaugeNumber; i++) shotBullet()
 
-    inventoryInfo.inventory[inventoryInfo.selectSlot].chamber = false
-    if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2]) inventoryInfo.inventory[inventoryInfo.selectSlot].round += 1
+    this.chamber = false
+    if (this.mode === weaponModeList[2]) this.round += 1
     if (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[1] || (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].round === inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit)
-    ) inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector = true
+      this.mode === weaponModeList[1] || (
+      this.mode === weaponModeList[2] &&
+      this.round === this.roundLimit)
+    ) this.disconnector = true
     const burstReduction = // TODO: FAMAS and AN-94 are not example of this
-      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] ? inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit / (inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit + 1) : 1
-    inventoryInfo.inventory[inventoryInfo.selectSlot].recoilEffect += inventoryInfo.inventory[inventoryInfo.selectSlot].recoilCoefficient * burstReduction
+      this.mode === weaponModeList[2] ? this.roundLimit / (this.roundLimit + 1) : 1
+    this.recoilEffect += this.recoilCoefficient * burstReduction
+
+    */
+
   }
-  weaponProcess = (mouseInput, cursor, ownself) => {
-    console.log('weapon')
-    if (this.category !== '') {
-      this.modeSelect()
+  disconnectorProcess = (mouseInput) => {
+    if (this.mode === weaponModeList[1] && !mouseInput.getKey(0)) { // Semi-auto
+      this.disconnector = false
     }
     if (
-      code[action.reload].isFirst() &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime === 0 &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'done'
+      this.mode === weaponModeList[2] && // Burst
+      this.round === this.roundLimit &&
+      !mouseInput.getKey(0)
     ) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed = inventoryInfo.inventory[inventoryInfo.selectSlot].baseReloadSpeed
-      this.reloadProcess(mouseInput)
-    } else if (0 < inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState !== 'done') {
+      this.disconnector = false
+      this.round = 0
+    }
+  }
+  loadingProcess = () => {
+    this.slideCount = this.slideCount+1|0
+    if (
+      this.slideState === SLIDE_STATE_ARRAY[1] &&
+      this.slideStop * this.slideSpeed <= this.slideCount
+    ) {
+      this.chamber = this.grip.array.splice(0, 1)[0]
+      this.slideState = SLIDE_STATE_ARRAY[2]
+    } else if (
+      this.slideState === SLIDE_STATE_ARRAY[2] &&
+      this.slideComplete * this.slideSpeed <= this.slideCount
+    ) {
+      this.slideState = SLIDE_STATE_ARRAY[0]
+    } else if (this.slideState === SLIDE_STATE_ARRAY[0]) {
+      if (0 <= this.slideCount) {
+        this.slideState = SLIDE_STATE_ARRAY[1]
+        return
+      }
+    } else return
+    this.slideCount = 0
+  }
+  update = (mouseInput, cursor, input, ownself) => {
+    this.modeSelect()
+
+    if ((
+      input.getKeyDown('KeyR') && this.reloadState === RELOAD_STATE_ARRAY[0]) ||
+      this.reloadState !== RELOAD_STATE_ARRAY[0]
+    ) {
+      // this.reloadSpeed = this.baseReloadSpeed
       this.reloadProcess(mouseInput)
     }
 
-    if (((
-      mouseInput.getKeyDown(0) && !inventoryInfo.inventoryFlag) || (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] && 0 < inventoryInfo.inventory[inventoryInfo.selectSlot].round)) &&
-      !inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector
-    ) {
-      this.mouseFiring(mouseInput, cursor, ownself)
-    }
-    if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[1] && !mouseInput.getKeyDown(0)) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector = false
-    }
+    if (mouseInput.getKey(0)) this.trigger(mouseInput, cursor, ownself)
+
+    // Internal process
+
+    if (this.disconnector) this.disconnectorProcess(mouseInput)
     if (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].mode === weaponModeList[2] &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].round === inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit &&
-      !mouseInput.getKeyDown(0)
-    ) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].disconnector = false
-      inventoryInfo.inventory[inventoryInfo.selectSlot].round = 0
-    }
+      !(this.chamber instanceof Ammunation) &&
+      this.grip.array.length !== 0
+    ) this.loadingProcess()
+
+    /*
+
     const magazineForword = () => {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.push(inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[1])
-      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.splice(1, 1)
+      this.magazines.push(this.magazines[1])
+      this.magazines.splice(1, 1)
     }
     if (code[action.change].isFirst()) magazineForword() // TODO: to consider
+
+    */
+  }
+
+  renderDetail = (cursor) => {
+    context.font = `${SIZE*.75}px ${font}`
+    context.textAlign = 'left'
+    context.fillStyle = 'hsla(0, 0%, 0%, .6)'
+    context.strokeStyle = 'hsl(0, 0%, 100%)'
+    strokeText(this.name, cursor.offsetX + SIZE, cursor.offsetY + SIZE)
+    if (!inventoryInfo.inventoryFlag) return
+    const damage =
+      this.category === weaponCategoryList[5] ?
+        `${this.damage.toFixed(0)} * ${this.gaugeNumber}` :
+      this.damage.toFixed(0)
+    const dictionary = {
+      MODE: this.mode === weaponModeList[2] ? `${this.roundLimit}-R ${this.mode}` :
+        this.mode,
+      DAMAGE: damage,
+      'P. FORCE': this.penetrationForce.toFixed(2)
+    }
+    Object.keys(dictionary).forEach((v, i) => {
+      strokeText(v, cursor.offsetX + SIZE, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
+      strokeText(dictionary[v], cursor.offsetX + SIZE * 5, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
+    })
   }
 }
 let warehouse = []
@@ -998,7 +1098,6 @@ let cartridgeInfo = {
   life: 1000, // ms
   speed: 1
 }
-let ammo
 let loading = {
   time: 0,
   takeOut: 15,
@@ -2129,7 +2228,6 @@ class MainScene extends Scene {
     this.saveSpot = new SaveSpot()
     this.shopSpot = new ShopSpot()
 
-    this.reloadFlashTimeLimit = 5
     this.isShowDamage = true
     this.afterimage = []
     this.ownself = new Ownself()
@@ -2154,7 +2252,7 @@ class MainScene extends Scene {
     }
     if (code[action.inventory].isFirst()) inventoryInfo.inventoryFlag = !inventoryInfo.inventoryFlag
 
-    inventoryInfo.inventory[inventoryInfo.selectSlot].weaponProcess(mouseInput, cursor, this.ownself)
+    inventoryInfo.inventory[inventoryInfo.selectSlot].update(mouseInput, cursor, input, this.ownself)
 
     if (code[action.debug].isFirst()) this.isShowDamage = !this.isShowDamage
   }
@@ -2186,13 +2284,7 @@ class MainScene extends Scene {
         item.y = item.y + height / distance * multiple * intervalDiffTime
       }
       if (0 < item.unavailableTime) item.unavailableTime = (item.unavailableTime-1)|0
-      if (item.type === 'cartridge') {
-        const bulletRadius = SIZE / 6
-        if (distance < minImgRadius + bulletRadius) {
-          ammo = (ammo+item.amount)|0
-          dropItems.splice(index, 1)
-        }
-      } else if (item.type === 'magazine') {
+      if (item.type === 'magazine') {
         if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && item.unavailableTime <= 0 && distance < minImgRadius * 2) {
           for (let i = 0; i < inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.length + 1; i=(i+1)|0) {
             if (inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[i] === -1) return inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[i] = item.amount
@@ -2279,8 +2371,6 @@ class MainScene extends Scene {
       categoryIndex === 5 ? (SgMinmagazine + SgExtendMag * Math.random())|0 : // max 32
       // TODO: slug barrels
       0
-    const magazines = Array(10).fill(magazineSize, 0, 5).fill(0, 5, 10)
-    // Array(2 + ~~(Math.random() * (2 + ~~(wave.number / 5)))).fill(magazineSize)
     const HgBaseDamage = 70
     const SmgBaseDamage = 100
     const ArBaseDamage = 140
@@ -2322,28 +2412,33 @@ class MainScene extends Scene {
       categoryIndex === 2 ? 1 + 2 * Math.random() : // AR: 1 - 3
       categoryIndex === 5 ? .3 + .2 * Math.random() : 10 // SR: .3 - .5
     const gaugeNumber = categoryIndex === 5 ? 1 + 19 * Math.random()|0 : 1
+    const chamber = new Ammunation('', '')
     const weapon = new Weapon(
       `# ${wave.number}`,
       weaponCategoryList[categoryIndex],
       modeList,
       modeList[modeIndex],
       weaponRarityList[rarityIndex],
+
       damage,
+      '',
+      chamber,
+      new Magazine('test', magazineSize, 1, []),
       slideSpeed,
       bulletSpeed,
+
       bulletLife,
       reloadSpeed,
-      magazineSize,
-      magazines,
       loadingSpeed,
       penetrationForce,
       roundLimit,
+
       effectiveRange,
       recoilCoefficient,
       gaugeNumber,
-
       4000,
       0,
+
       wave.number
     )
     Object.assign(weapon, {type: 'weapon'})
@@ -2482,57 +2577,6 @@ class MainScene extends Scene {
     }
   }
   */
-  slideProcess = () => {
-    if (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] <= 0 &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release') return
-    if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState !== 'done') return
-    inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime = (
-      combatReload.flag) ? (inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime+1)|0 : (inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime+1)|0
-    if (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'pullBack' &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideStop * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime
-    ) {
-      if (!inventoryInfo.inventory[inventoryInfo.selectSlot].gripFlag) return
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState = 'release'
-      const stopSlide = () => {
-        if (inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] === 0) return // cocking postponement
-        if ((code[action.combatReload].flag || combatReload.auto === 'ON') && combatReload.magFlag) {
-          combatReload.flag = true
-          combatReload.weight = (!code[action.combatReload].flag) ? 8 : 4
-        }
-      }
-      stopSlide()
-    } else if (
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release' &&
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideDone * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed <= inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime
-    ) {
-      inventoryInfo.inventory[inventoryInfo.selectSlot].slideState = 'done'
-      const doneSlide = () => {
-        if (combatReload.flag) {
-          ammo = (ammo-1)|0
-          combatReload.flag = false
-        } else if (
-          0 < inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] &&
-          !inventoryInfo.inventory[inventoryInfo.selectSlot].chamber
-        ) {
-          inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip] =
-            (inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip]-1)|0 // semi automatic mechanism
-        }
-        inventoryInfo.inventory[inventoryInfo.selectSlot].chamber = true
-        if (afterglow.chamberFlag) {
-          afterglow.reload = this.reloadFlashTimeLimit
-          afterglow.chamberFlag = false
-        }
-        combatReload.magFlag = false
-        combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
-      }
-      doneSlide()
-    } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'done') {
-      if (0 <= inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime) return inventoryInfo.inventory[inventoryInfo.selectSlot].slideState = 'pullBack'
-    } else return
-    inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime = 0
-  }
   setEnemy = () => {
     const setEnemySpeed = () => {
       return (wave.number === 16) ? .95 + Math.random() * .05 : // pre
@@ -2598,7 +2642,6 @@ class MainScene extends Scene {
       ) this.dispatchEvent('addMenu', 'result')
     })
 
-    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && !inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) this.slideProcess()
     if (spotInfo.dungeon !== SpotField.dungeonList[3]) this.waveProcess(intervalDiffTime, mouseInput, cursor, mouseDownPosition)
     if (0 < enemyInfo.enemies.length) this.enemyProcess(intervalDiffTime)
     bullets.forEach((bullet, i) => {
@@ -3017,136 +3060,6 @@ class MainScene extends Scene {
       })
       context.font = `${SIZE}px ${font}`
     }
-    if (inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '') {
-      const cartridges = inventoryInfo.inventory[inventoryInfo.selectSlot].magazines[inventoryInfo.inventory[inventoryInfo.selectSlot].grip]
-      context.fillStyle = (cartridges < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .1) ? 'hsla(0, 100%, 60%, .7)' :
-      (cartridges < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .3) ? 'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
-      context.save()
-      inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.forEach((v, i) => {
-        context.fillStyle = 'hsla(210, 100%, 50%, .7)'
-        if (inventoryInfo.inventory[inventoryInfo.selectSlot].mode === v) {
-          context.fillRect(c.x - SIZE * .8, c.y - SIZE * (9.7 - i), SIZE / 6, SIZE * .65)
-        }
-        const text =
-          v === weaponModeList[1] ? '1' : // SEMI AUTO
-          v === weaponModeList[2] ? inventoryInfo.inventory[inventoryInfo.selectSlot].roundLimit : // BURST
-          v === weaponModeList[3] ? 'F' : '' // FULL AUTO
-          context.fillText(text, c.x, c.y - SIZE * (9 - i))
-      })
-      if (settingsObject.isManipulateCode && 1 < inventoryInfo.inventory[inventoryInfo.selectSlot].modeList.length) {
-        context.fillStyle = 'hsla(210, 100%, 75%, .4)'
-        context.fillRect(c.x - SIZE * .55, c.y - SIZE * 10.6, SIZE * .6, SIZE * .6)
-        context.font = `${SIZE*.75}px ${font}`
-        context.fillStyle = 'hsla(0, 0%, 100%, .4)'
-        context.fillText(extractCode(action.modeSelect), c.x , c.y - SIZE * 10)
-      }
-      context.restore()
-      context.save()
-      const inChamber = (inventoryInfo.inventory[inventoryInfo.selectSlot].chamber) ? 1 : 0
-      context.fillText(`${cartridges}+${inChamber}`, c.x, c.y - SIZE * 3)
-      // context.fillStyle = ammo === 0 ? 'hsla(0, 100%, 60%, .7)' : 'hsla(210, 100%, 50%, .7)'
-      // context.fillText(ammo, c.x, c.y)
-      context.restore()
-      const cartridgeSize = 1 / (inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize + 1)
-      const yOffset = canvas.offsetHeight - SIZE * .75
-      const yHeight = SIZE * 3
-      c.x = canvas.offsetWidth - SIZE * .75
-      c.y = yOffset - inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
-      if (0 < afterglow.reload) context.fillStyle = 'hsla(0, 100%, 100%, .7)'
-      context.fillRect(c.x, c.y, -SIZE / 4, -inChamber * cartridgeSize * yHeight) // chamber
-      const releaseTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadRelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
-      const putAwayTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadPutAway * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
-      const takeOutTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTakeOut * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
-      const unreleaseTime = inventoryInfo.inventory[inventoryInfo.selectSlot].reloadUnrelease * inventoryInfo.inventory[inventoryInfo.selectSlot].reloadSpeed
-      let ratio = (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime <= releaseTime) ?
-      1 - inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / releaseTime : // 1
-      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease' && inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime <= unreleaseTime) ? // 2
-      inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / unreleaseTime : 1
-      if (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'done' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease') {
-        c.y = yOffset - (ratio - 1) * inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
-        if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState !== 'release' && inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime === 0) { // slide gauge
-          context.fillRect(c.x - SIZE * 5 / 16, c.y, SIZE / 16, -yHeight) // full
-        } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'pullBack') {
-          context.fillRect(
-            c.x - SIZE * 5 / 16,
-            c.y,
-            SIZE / 16,
-            -(1 - inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime / (inventoryInfo.inventory[inventoryInfo.selectSlot].slideStop * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed)) * yHeight
-          )
-        } else if (inventoryInfo.inventory[inventoryInfo.selectSlot].slideState === 'release') {
-          context.fillRect(
-            c.x - SIZE * 5 / 16,
-            c.y,
-            SIZE / 16,
-            - (inventoryInfo.inventory[inventoryInfo.selectSlot].slideTime / (inventoryInfo.inventory[inventoryInfo.selectSlot].slideDone * inventoryInfo.inventory[inventoryInfo.selectSlot].slideSpeed)) * yHeight
-          )
-        }
-      }
-      ratio = (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'release') ? 1 - inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / releaseTime :
-      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway') ? inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / putAwayTime :
-      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut') ? 1 - inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / takeOutTime :
-      (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'unrelease') ? inventoryInfo.inventory[inventoryInfo.selectSlot].reloadTime / unreleaseTime : 1
-      inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.forEach((magazine, index) => {
-        if (magazine !== -1) {
-          context.fillStyle = (0 < afterglow.reload && index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip) ?
-          'hsla(0, 100%, 100%, .7)' :
-          (magazine < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .1) ?
-          'hsla(0, 100%, 60%, .7)' :
-          (magazine < inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * .3) ?
-          'hsla(60, 100%, 70%, .7)' : 'hsla(210, 100%, 50%, .7)'
-          if (
-            index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip && !(inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut')
-          ) c.x = canvas.offsetWidth - SIZE * .75
-          else c.x = canvas.offsetWidth - SIZE * (1.75 + index)
-          if (index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip) {
-            c.y = yOffset - ratio * inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
-          } else c.y = yOffset - inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
-          context.fillRect(c.x, c.y, -SIZE / 4, magazine * cartridgeSize * yHeight) // cartridges
-          context.fillRect( // magazine stop
-            c.x + SIZE / 16,
-            c.y + inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight,
-            -SIZE * 3 / 8, SIZE / 16
-          )
-          if (
-            index === inventoryInfo.inventory[inventoryInfo.selectSlot].grip &&
-            (inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'putAway' || inventoryInfo.inventory[inventoryInfo.selectSlot].reloadState === 'takeOut') ||
-            index !== inventoryInfo.inventory[inventoryInfo.selectSlot].grip
-          ) {
-            context.fillRect( // left width bar
-              c.x - SIZE / 4,
-              c.y, -SIZE / 16,
-              inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
-            )
-          }
-          if ((
-            index === setOtherMagazine() || inventoryInfo.inventory[inventoryInfo.selectSlot].magazines.length === 1) &&
-            (loading.time !== 0 || magazine.magazines !== inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize)
-          ) {
-            context.fillRect( // loading gauge
-              c.x,
-              c.y + inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight,
-              SIZE / 16,
-              (-loading.time / (loading.done * inventoryInfo.inventory[inventoryInfo.selectSlot].loadingSpeed))
-              * inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
-            )
-          } else {
-            context.fillRect( // filled
-              c.x,
-              c.y,
-              SIZE / 16,
-              inventoryInfo.inventory[inventoryInfo.selectSlot].magazineSize * cartridgeSize * yHeight
-            )
-          }
-        }
-      })
-    }
-    // context.fillStyle = (0 < dash.coolTime) ? 'hsla(340, 100%, 50%, .7)' :
-    // (0 < afterglow.dashGauge) ? 'hsla(0, 100%, 100%, .7)' :
-    // 'hsla(210, 100%, 50%, .7)' // dash guage
-    // if (0 < afterglow.dashGauge) afterglow.dashGauge = (afterglow.dashGauge-1)|0
-    // c = {x: (canvas.offsetWidth/2) - dash.limit, y: size}
-    // context.fillRect(c.x, c.y, (1 - dash.coolTime/dash.limit)*(dash.limit*2*size/32), size/8)
-    // context.fillRect(c.x, c.y, dash.limit*2*size/32, -size/32)
     context.save()
     if (spotInfo.dungeon !== SpotField.dungeonList[3]) {
       context.fillStyle =  // round number
@@ -3167,43 +3080,7 @@ class MainScene extends Scene {
     context.textAlign = 'center'
     context.font = `${SIZE * .75}px ${font}`
     context.fillText(weapon.category, box.absoluteX + SIZE * .75, box.absoluteY + SIZE, SIZE * 1.25)
-    if (weapon.category !== '') {
-      let totalAmmo = 0
-      totalAmmo += weapon.chamber ? 1 : 0
-      totalAmmo += weapon.magazines.reduce((p, c) => p + c)
-      let ratio = totalAmmo / (weapon.magazineSize * weapon.magazines.length + 1)
-      context.fillStyle =
-        ratio < .1 ? 'hsl(0, 100%, 60%)' :
-        ratio < .3 ? 'hsl(60, 100%, 70%)' : 'hsl(210, 100%, 50%)'
-      if (ratio === 0) ratio = 1
-      context.fillRect(box.absoluteX + SIZE / 16, box.absoluteY + SIZE * 1.4, SIZE * 1.4 * ratio, SIZE / 16)
-    }
     context.restore()
-  }
-  renderWeaponDetail = (box, i, cursor) => {
-    if (inventoryInfo.inventory[i].category !== '' && this.boxInterface.isInner(box, cursor)) {
-      context.font = `${SIZE*.75}px ${font}`
-      context.textAlign = 'left'
-      context.fillStyle = 'hsla(0, 0%, 0%, .6)'
-      context.strokeStyle = 'hsl(0, 0%, 100%)'
-      strokeText(inventoryInfo.inventory[i].name, cursor.offsetX + SIZE, cursor.offsetY + SIZE)
-      if (!inventoryInfo.inventoryFlag) return
-      const damage =
-        inventoryInfo.inventory[i].category === weaponCategoryList[5] ?
-          `${inventoryInfo.inventory[i].damage.toFixed(0)} * ${inventoryInfo.inventory[i].gaugeNumber}` :
-        inventoryInfo.inventory[i].damage.toFixed(0)
-      const dictionary = {
-        MODE: inventoryInfo.inventory[i].mode === weaponModeList[2] ? `${inventoryInfo.inventory[i].roundLimit}-R ${inventoryInfo.inventory[i].mode}` :
-          inventoryInfo.inventory[i].mode,
-        DAMAGE: damage,
-        'P. FORCE': inventoryInfo.inventory[i].penetrationForce.toFixed(2),
-        'MAG. SIZE': `${inventoryInfo.inventory[i].magazineSize} * ${inventoryInfo.inventory[i].magazines.length}`
-      }
-      Object.keys(dictionary).forEach((v, i) => {
-        strokeText(v, cursor.offsetX + SIZE, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
-        strokeText(dictionary[v], cursor.offsetX + SIZE * 5, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
-      })
-    }
   }
   renderSlot = (cursor) => {
     context.save()
@@ -3239,7 +3116,9 @@ class MainScene extends Scene {
     })
     inventorySlotBox.forEach((v, i) => {
       if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
-      this.renderWeaponDetail(v, i, cursor)
+      if (inventoryInfo.inventory[i].category !== '' && this.boxInterface.isInner(v, cursor)) {
+        inventoryInfo.inventory[i].renderDetail(cursor)
+      }
     })
     context.restore()
   }
@@ -3319,7 +3198,6 @@ class MainScene extends Scene {
     this.renderSlot(cursor)
     if (0 <= afterglow.save) this.drawSaveCompleted(intervalDiffTime)
     if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
-    if (0 < afterglow.reload) afterglow.reload = (afterglow.reload-1)|0
 
     this.ownself.render(intervalDiffTime, cursor)
   }
@@ -3540,39 +3418,106 @@ document.addEventListener('DOMContentLoaded', () => { // init
       for (let i = 0; i < inventoryInfo.mainSlotSize + inventoryInfo.inventorySize; i++) {
         inventoryInfo.inventory.push({
           category: '',
-          weaponProcess: () => {}
+          update: () => {}
         })
       }
+      let maxDamageInitial = 70
+      let magazineType = 'HG'
+      let ammunationName = 'Ammo'
+      let ammunationType = '.45 ACP'
+      let slideSpeed = 1
+      let bulletSpeed = 1
+      let bulletLife = 1000
+      let reloadSpeed = 1
+      let loadingSpeed = 1
+      let penetrationForce = .2
+      let roundLimit = 0
+      let effectiveRange = 10
+      let recoilCoefficient = .2
+      let gaugeNumber = 1
+      let limitBreak = 4000
+      let limitBreakIndex = 0
+      let level = 0
       const initWeapon = () => {
-        const maxDamageInitial = 70
         return new Weapon(
           'T1911',
           'HG',
           [weaponModeList[1]],
           weaponModeList[1],
           weaponRarityList[0],
-          maxDamageInitial,
-          1,
-          cartridgeInfo.speed,
-          cartridgeInfo.life,
-          1,
-          magSizeInitial,
-          Array(10).fill(magSizeInitial, 0, 5).fill(0, 5, 10),
-          loading.weight,
-          .2,
-          0,
-          10,
-          .2,
-          1,
 
-          4000,
-          0,
-          0
+          maxDamageInitial,
+          magazineType,
+          new Ammunation(ammunationName, ammunationType),
+          new Magazine(
+            'testHG',
+            magazineType,
+            7,
+            new Array(7).fill(new Ammunation(ammunationName, ammunationType)),
+            1
+          ),
+          slideSpeed,
+          bulletSpeed,
+
+          bulletLife,
+          reloadSpeed,
+          loadingSpeed,
+          penetrationForce,
+          roundLimit,
+
+          effectiveRange,
+          recoilCoefficient,
+          gaugeNumber,
+          limitBreak,
+          limitBreakIndex,
+
+          level
         )
       }
       inventoryInfo.inventory[inventoryInfo.selectSlot] = initWeapon()
+      magazineType = 'SMG'
+      const testWeapon = () => {
+        return new Weapon(
+          'Full-auto',
+          'SMG',
+          [weaponModeList[3]],
+          weaponModeList[3],
+          weaponRarityList[0],
+
+          maxDamageInitial,
+          magazineType,
+          new Ammunation(ammunationName, ammunationType),
+          new Magazine(
+            'testSMG',
+            magazineType,
+            20,
+            new Array(20).fill(new Ammunation(ammunationName, ammunationType)),
+            1
+          ),
+          slideSpeed,
+          bulletSpeed,
+
+          bulletLife,
+          reloadSpeed,
+          loadingSpeed,
+
+          bulletLife,
+          reloadSpeed,
+          loadingSpeed,
+          penetrationForce,
+          roundLimit,
+
+          effectiveRange,
+          recoilCoefficient,
+          gaugeNumber,
+          limitBreak,
+          limitBreakIndex,
+
+          level
+        )
+      }
+      inventoryInfo.inventory[1] = testWeapon()
     }
-    ammo = 24
     loading = {
       time: 0,
       takeOut: 15,
@@ -3580,9 +3525,6 @@ document.addEventListener('DOMContentLoaded', () => { // init
       done: 60,
       weight: 1
     }
-    combatReload.flag = false
-    combatReload.magFlag = false
-    combatReload.weight = (combatReload.auto === 'ON') ? 8 : 4
     afterglow.point = []
     afterglow.round = 0
     const temporaryWaveNumber = JSON.parse(storage.getItem('waveNumber'))
