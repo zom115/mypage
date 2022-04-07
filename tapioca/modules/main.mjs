@@ -5,7 +5,7 @@ window.addEventListener('keydown', e => e.preventDefault())
 
 const version = 'v.0.9'
 const canvas = document.getElementById`canvas`
-const font = 'jkmarugo'
+const FONT = 'jkmarugo'
 
 const SIZE = 32
 
@@ -751,19 +751,45 @@ class Ammunation {
 class Magazine {
   constructor (
     name,
-    type,
+    magazineType,
+    ammunationType,
     slotSize,
     array,
     reloadSpeedMultiple
   ) {
     this.name = name
-    this.type = type
+    this.category = 'MAG'
+    this.rarity = weaponRarityList[0]
+    this.magazineType = magazineType
+    this.ammunationType = ammunationType
     this.slotSize = slotSize
     this.reloadSpeedMultiple = reloadSpeedMultiple
     this.array = array
   }
   loading = () => {}
   update = () => {}
+  renderDetail = (cursor) => {
+    context.font = `${SIZE*.75}px ${FONT}`
+    context.textAlign = 'left'
+    context.fillStyle = 'hsla(0, 0%, 0%, .6)'
+    context.strokeStyle = 'hsl(0, 0%, 100%)'
+    strokeText(this.name, cursor.offsetX + SIZE, cursor.offsetY + SIZE)
+
+    const count = this.array.reduce((pV, cV) => {
+      if (cV instanceof Ammunation) pV++
+      return pV
+    }, 0)
+    if (!inventoryInfo.inventoryFlag) return
+    const dictionary = {
+      'Mag type': this.magazineType,
+      'Ammo type': this.ammunationType,
+      Amount: `${count} / ${this.slotSize}`
+    }
+    Object.keys(dictionary).forEach((v, i) => {
+      strokeText(v, cursor.offsetX + SIZE, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
+      strokeText(dictionary[v], cursor.offsetX + SIZE * 5, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
+    })
+  }
 }
 
 const weaponModeList = ['MANUAL', 'SEMI', 'BURST', 'AUTO']
@@ -1002,24 +1028,17 @@ class Weapon {
     // Internal process
 
     if (this.disconnector) this.disconnectorProcess(mouseInput)
+
+    // Auto work
+
     if (
       !(this.chamber instanceof Ammunation) &&
       this.grip.array.length !== 0
     ) this.loadingProcess()
-
-    /*
-
-    const magazineForword = () => {
-      this.magazines.push(this.magazines[1])
-      this.magazines.splice(1, 1)
-    }
-    if (code[action.change].isFirst()) magazineForword() // TODO: to consider
-
-    */
   }
 
   renderDetail = (cursor) => {
-    context.font = `${SIZE*.75}px ${font}`
+    context.font = `${SIZE*.75}px ${FONT}`
     context.textAlign = 'left'
     context.fillStyle = 'hsla(0, 0%, 0%, .6)'
     context.strokeStyle = 'hsl(0, 0%, 100%)'
@@ -1030,10 +1049,11 @@ class Weapon {
         `${this.damage.toFixed(0)} * ${this.gaugeNumber}` :
       this.damage.toFixed(0)
     const dictionary = {
-      MODE: this.mode === weaponModeList[2] ? `${this.roundLimit}-R ${this.mode}` :
+      'Mag type': this.magazineType,
+      Mode: this.mode === weaponModeList[2] ? `${this.roundLimit}-R ${this.mode}` :
         this.mode,
-      DAMAGE: damage,
-      'P. FORCE': this.penetrationForce.toFixed(2)
+      Damage: damage,
+      'P. Force': this.penetrationForce.toFixed(2)
     }
     Object.keys(dictionary).forEach((v, i) => {
       strokeText(v, cursor.offsetX + SIZE, cursor.offsetY + SIZE * (2 + i), SIZE * 3)
@@ -1131,7 +1151,7 @@ let screenOwnPos = {x: 0, y: 0}
 
 const setAbsoluteBox = (box) => {
   context.save()
-  context.font = `${SIZE}px ${font}`
+  context.font = `${SIZE}px ${FONT}`
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   const measure = context.measureText(box.text)
@@ -1320,7 +1340,7 @@ class RenderBox {
     }
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    context.font = `${SIZE}px ${font}`
+    context.font = `${SIZE}px ${FONT}`
     context.fillStyle = `hsla(${box.hue}, ${saturation}%, 50%, ${alpha})`
     context.fillText(box.text, box.offsetX, box.offsetY)
     context.restore()
@@ -1503,7 +1523,7 @@ class ShopSpot {
       }
       const cost = this.calcCost(inventoryInfo.inventory[inventoryInfo.selectSlot])
       const ammoAlpha = inventoryInfo.inventory[inventoryInfo.selectSlot].category !== '' && cost <= point ? 1 : .4
-      context.font = `${SIZE * .75}px ${font}`
+      context.font = `${SIZE * .75}px ${FONT}`
       context.textAlign = 'center'
       context.textBaseline = 'middle'
       context.fillStyle = `hsla(210, 100%, 70%, ${ammoAlpha})`
@@ -1526,7 +1546,7 @@ class ShopSpot {
       }
       if (0 < afterglow.limitBreakSuccess) {
         const ratio = afterglow.limitBreakSuccess / 2000
-        context.font = `${SIZE * (1 + afterglow.limitBreakResult)}px ${font}`
+        context.font = `${SIZE * (1 + afterglow.limitBreakResult)}px ${FONT}`
         context.strokeStyle = `hsla(0, 100%, 0%, ${ratio})`
         context.fillStyle = `hsla(60, 100%, 70%, ${ratio})`
         strokeText(
@@ -1806,7 +1826,7 @@ class SaveSpot {
       context.fillStyle = 'hsla(0, 0%, 50%, .5)'
       context.fillRect(
         warehouseBox.absoluteX, warehouseBox.absoluteY, warehouseBox.width, warehouseBox.height)
-      context.font = `${SIZE * .5}px ${font}`
+      context.font = `${SIZE * .5}px ${FONT}`
       context.textBaseline = 'top'
       context.fillStyle = 'hsla(0, 0%, 100%, .5)'
       let isChangeCursorImage = false
@@ -1905,7 +1925,7 @@ class SaveSpot {
         return pV + cV.width
       }, 0)
       context.textAlign = 'left'
-      context.font = `${SIZE * .5}px ${font}`
+      context.font = `${SIZE * .5}px ${FONT}`
       context.fillText('TODO: Context menu, Filter, Scroll overall', SIZE * .5, canvas.offsetHeight - SIZE)
       context.restore()
     } else canvas.style.cursor = 'default'
@@ -1992,7 +2012,7 @@ const drawPause = () => {
   let ss = ('0' + ~~(nowTime % 6e4 / 1e3)).slice(-2)
   let ms = ('0' + ~~(nowTime % 1e3)).slice(-3)
   context.save()
-  context.font = `${SIZE}px ${font}`
+  context.font = `${SIZE}px ${FONT}`
   context.fillStyle = (ss % 3 === 2) ? `hsl(60, ${100 * (1 - (ms / 1e3))}%, 40%)` :
   (ss % 3 === 1) ? 'hsl(60, 100%, 40%)' :
   `hsl(60, ${100 * (ms / 1e3)}%, 40%)`
@@ -2065,11 +2085,11 @@ class ResultWindow extends Window {
     }
   }
   render (cursor) {
-    context.font = `${SIZE}px ${font}`
+    context.font = `${SIZE}px ${FONT}`
     context.fillStyle = 'hsl(0, 100%, 40%)'
     context.textAlign = 'center'
     context.fillText('YOU WERE DRUNK', canvas.offsetWidth / 2, canvas.offsetHeight / 4 + SIZE)
-    context.font = `${SIZE * 2 / 3}px ${font}`
+    context.font = `${SIZE * 2 / 3}px ${FONT}`
     context.fillStyle = 'hsl(30, 100%, 40%)'
     context.fillText(
       `YOU SATISFIED ${enemyInfo.defeatCount} GIRLS`, canvas.offsetWidth / 2, canvas.offsetHeight / 6
@@ -2171,7 +2191,7 @@ class SettingsWindow extends Window {
       const toggleText = settingsObject[v.toggle] ? 'On' : 'Off'
       v.text = `${v.explain}: ${toggleText}`
       setAbsoluteBox(v)
-      context.font = this.boxInterface.isInner(v, cursor) ? `bold ${SIZE}px ${font}` : `${SIZE}px ${font}`
+      context.font = this.boxInterface.isInner(v, cursor) ? `bold ${SIZE}px ${FONT}` : `${SIZE}px ${FONT}`
       context.fillStyle = this.boxInterface.isInner(v, cursor) ? 'hsl(0, 0%, 90%)' : 'hsl(0, 0%, 80%)'
       context.strokeStyle = this.boxInterface.isInner(v, cursor) ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 0%)'
       context.textAlign = 'center'
@@ -2194,7 +2214,7 @@ class DebugWindow extends Window {
     frameCounter(this.animationFrameArray)
 
     context.textAlign = 'right'
-    context.font = `${SIZE / 2}px ${font}`
+    context.font = `${SIZE / 2}px ${FONT}`
     context.fillStyle = 'hsl(0, 0%, 50%)'
     const dictionary = {
       internalFps: this.internalFrameArray.length - 1,
@@ -2413,6 +2433,8 @@ class MainScene extends Scene {
       categoryIndex === 5 ? .3 + .2 * Math.random() : 10 // SR: .3 - .5
     const gaugeNumber = categoryIndex === 5 ? 1 + 19 * Math.random()|0 : 1
     const chamber = new Ammunation('', '')
+    const magazineType = ''
+    const ammoType = ''
     const weapon = new Weapon(
       `# ${wave.number}`,
       weaponCategoryList[categoryIndex],
@@ -2423,7 +2445,13 @@ class MainScene extends Scene {
       damage,
       '',
       chamber,
-      new Magazine('test', magazineSize, 1, []),
+      new Magazine(
+        'test',
+        magazineType,
+        ammoType,
+        magazineSize,
+        1,
+        []),
       slideSpeed,
       bulletSpeed,
 
@@ -2937,14 +2965,14 @@ class MainScene extends Scene {
         context.restore()
         if (this.isShowDamage) {
           if (0 < enemy.life) {
-            context.font = `${SIZE/2}px ${font}`
+            context.font = `${SIZE/2}px ${FONT}`
             context.fillRect(this.relativeX(enemy.x - radius), this.relativeY(enemy.y - radius * 1.2),
             enemy.life / wave.enemyHitPoint * SIZE, SIZE / 16)
             // context.fillText(Math.ceil(enemy.life) // numerical drawing
             // , relativeX(enemy.x - radius), relativeY(enemy.y - radius * 1.2))
           }
           // pop damage
-          context.font = `${SIZE * 2 / 3 * enemy.timer/damageTimerLimit}px ${font}`
+          context.font = `${SIZE * 2 / 3 * enemy.timer/damageTimerLimit}px ${FONT}`
           context.fillStyle = `hsla(0, 0%, 50%, ${enemy.timer/damageTimerLimit})`
           context.fillText(
             Math.ceil(enemy.damage),
@@ -3046,19 +3074,19 @@ class MainScene extends Scene {
       else return -1
     }
     let c = {x: canvas.offsetWidth - SIZE / 2, y: canvas.offsetHeight - SIZE}
-    context.font = `${SIZE}px ${font}`
+    context.font = `${SIZE}px ${FONT}`
     context.fillStyle = 'hsla(120, 100%, 30%, .7)'
     context.textAlign = 'right'
     context.fillText(point, c.x, c.y - SIZE * 5)
     context.fillStyle = 'hsla(60, 100%, 50%, .7)'
     if (0 < afterglow.point.length) {
-      context.font = `${SIZE*.75}px ${font}`
+      context.font = `${SIZE*.75}px ${FONT}`
       afterglow.point.forEach((x, i) => {
         context.fillText(`+${x.number}`, c.x - SIZE * 2 - (30 - x.count)/2, c.y - SIZE * 6)
         x.count = (x.count-1)|0
         if (x.count <= 0) afterglow.point.splice(i, 1)
       })
-      context.font = `${SIZE}px ${font}`
+      context.font = `${SIZE}px ${FONT}`
     }
     context.save()
     if (spotInfo.dungeon !== SpotField.dungeonList[3]) {
@@ -3067,19 +3095,18 @@ class MainScene extends Scene {
         0 < afterglow.round ? `hsla(0, 100%, 30%, ${afterglow.round / wave.roundIntervalLimit * .7})` :
         'hsla(0, 100%, 30%, .7)'
       c = {x: SIZE, y: canvas.offsetHeight - SIZE}
-      context.font = `${SIZE * 1.5}px ${font}`
+      context.font = `${SIZE * 1.5}px ${FONT}`
       context.textAlign = 'left'
       context.fillText(wave.number, c.x, c.y)
     }
     context.restore()
   }
-  renderWeaponCategory = (box, weapon) => {
+  renderCategory = (box, item) => {
     context.save()
-    context.fillStyle= weaponRatiryColorList[weaponRarityList.indexOf(weapon.rarity)]
-    context.globalAlpha = weapon.level <= wave.number ? 1 : .5
+    context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(item.rarity)]
     context.textAlign = 'center'
-    context.font = `${SIZE * .75}px ${font}`
-    context.fillText(weapon.category, box.absoluteX + SIZE * .75, box.absoluteY + SIZE, SIZE * 1.25)
+    context.font = `${SIZE * .75}px ${FONT}`
+    context.fillText(item.category, box.absoluteX + SIZE * .75, box.absoluteY + SIZE, SIZE * 1.25)
     context.restore()
   }
   renderSlot = (cursor) => {
@@ -3092,7 +3119,7 @@ class MainScene extends Scene {
       absoluteX: cursor.offsetX,
       absoluteY: cursor.offsetY
     }
-    this.renderWeaponCategory(box, inventoryInfo.holdSlot)
+    this.renderCategory(box, inventoryInfo.holdSlot)
     inventorySlotBox.forEach((v, i) => {
       if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
       context.fillStyle = 'hsla(210, 100%, 75%, .4)'
@@ -3100,11 +3127,11 @@ class MainScene extends Scene {
       if (i === inventoryInfo.selectSlot) {
         context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
       }
-      this.renderWeaponCategory(v, inventoryInfo.inventory[i])
+      this.renderCategory(v, inventoryInfo.inventory[i])
       if (settingsObject.isManipulateCode && i < inventoryInfo.mainSlotSize) {
         context.fillStyle = 'hsla(210, 100%, 75%, .4)'
         context.fillRect(v.absoluteX + SIZE * 1.15, v.absoluteY - SIZE / 3, SIZE * .6, SIZE * .6)
-        context.font = `${SIZE*.75}px ${font}`
+        context.font = `${SIZE*.75}px ${FONT}`
         context.fillStyle = 'hsla(0, 0%, 100%, .4)'
         context.textAlign = 'center'
         const text =
@@ -3125,7 +3152,7 @@ class MainScene extends Scene {
   drawSaveCompleted = (intervalDiffTime) => {
     const ratio = afterglow.save / 1000
     context.save()
-    context.font = `${SIZE / 2}px ${font}`
+    context.font = `${SIZE / 2}px ${FONT}`
     context.textAlign = 'center'
     context.textBaseline = 'bottom'
     context.fillStyle = `hsla(0, 0%, 100%, ${ratio})`
@@ -3452,6 +3479,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
           new Magazine(
             'testHG',
             magazineType,
+            ammunationType,
             7,
             new Array(7).fill(new Ammunation(ammunationName, ammunationType)),
             1
@@ -3475,6 +3503,14 @@ document.addEventListener('DOMContentLoaded', () => { // init
         )
       }
       inventoryInfo.inventory[inventoryInfo.selectSlot] = initWeapon()
+      inventoryInfo.inventory[3] = new Magazine(
+        'testMag',
+        magazineType,
+        ammunationType,
+        7,
+        new Array(7).fill(new Ammunation(ammunationName, ammunationType)),
+        1
+      )
       magazineType = 'SMG'
       const testWeapon = () => {
         return new Weapon(
@@ -3490,6 +3526,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
           new Magazine(
             'testSMG',
             magazineType,
+            ammunationType,
             20,
             new Array(20).fill(new Ammunation(ammunationName, ammunationType)),
             1
@@ -3542,7 +3579,7 @@ document.addEventListener('DOMContentLoaded', () => { // init
 
 context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 context.save()
-context.font = `${SIZE / 2}px ${font}`
+context.font = `${SIZE / 2}px ${FONT}`
 context.textAlign = 'center'
 context.textBaseline = 'middle'
 context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight / 2)
