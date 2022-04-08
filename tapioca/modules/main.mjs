@@ -189,10 +189,11 @@ const enemyInfo = new EnemyField()
 class InventoryField {
   inventory = []
   holdSlot = {category: ''}
-  mainSlotSize = 3
-  inventorySize = 10
-  inventoryFlag = false
+  mainSlotSize = 2
+  accessorySize = 3
+  inventorySize = 25
   selectSlot = 0
+  inventoryFlag = false
 }
 const inventoryInfo = new InventoryField()
 
@@ -804,7 +805,7 @@ const weaponRatiryColorList = [
 const weaponCategoryList = ['HG', 'SMG', 'AR', 'DMR', 'SR', 'SG']
 const SLIDE_STATE_ARRAY = ['Done', 'PullBuck', 'Release']
 const RELOAD_STATE_ARRAY = ['Done', 'Release', 'PutAway', 'TakeOut', 'Loading']
-class Weapon {
+class Gun {
   constructor (
     name,
     category,
@@ -2435,7 +2436,7 @@ class MainScene extends Scene {
     const chamber = new Ammunation('', '')
     const magazineType = ''
     const ammoType = ''
-    const weapon = new Weapon(
+    const weapon = new Gun(
       `# ${wave.number}`,
       weaponCategoryList[categoryIndex],
       modeList,
@@ -3427,19 +3428,20 @@ document.addEventListener('DOMContentLoaded', () => { // init
 
   const reset = () => {
     dropItems = []
+    bullets = []
 
-    const temporaryPoint = JSON.parse(storage.getItem('point'))
-    point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
+    // const temporaryPoint = JSON.parse(storage.getItem('point'))
+    // point = !temporaryPoint || temporaryPoint < 500 ? 500 : temporaryPoint
 
     // const temporaryPortalFlag = JSON.parse(storage.getItem('portalFlag'))
     // portalFlag = temporaryPortalFlag ? true : false
 
-    bullets = []
     inventoryInfo.selectSlot = 0
     const temporaryWarehouse = JSON.parse(storage.getItem('warehouseArray'))
     if (temporaryWarehouse) warehouse = temporaryWarehouse
     inventoryInfo.inventoryFlag = false
     inventoryInfo.inventory = JSON.parse(storage.getItem('inventoryArray'))
+
     if (!inventoryInfo.inventory || inventoryInfo.inventory.every(v => v.category === '')) {
       inventoryInfo.inventory = []
       for (let i = 0; i < inventoryInfo.mainSlotSize + inventoryInfo.inventorySize; i++) {
@@ -3448,113 +3450,114 @@ document.addEventListener('DOMContentLoaded', () => { // init
           update: () => {}
         })
       }
-      let maxDamageInitial = 70
-      let magazineType = 'HG'
-      let ammunationName = 'Ammo'
-      let ammunationType = '.45 ACP'
-      let slideSpeed = 1
-      let bulletSpeed = 1
-      let bulletLife = 1000
-      let reloadSpeed = 1
-      let loadingSpeed = 1
-      let penetrationForce = .2
-      let roundLimit = 0
-      let effectiveRange = 10
-      let recoilCoefficient = .2
-      let gaugeNumber = 1
-      let limitBreak = 4000
-      let limitBreakIndex = 0
-      let level = 0
-      const initWeapon = () => {
-        return new Weapon(
-          'T1911',
-          'HG',
-          [weaponModeList[1]],
-          weaponModeList[1],
-          weaponRarityList[0],
+      // let maxDamageInitial = 70
+      // let magazineType = 'HG'
+      // let ammunationName = 'Ammo'
+      // let ammunationType = '.45 ACP'
+      // let slideSpeed = 1
+      // let bulletSpeed = 1
+      // let bulletLife = 1000
+      // let reloadSpeed = 1
+      // let loadingSpeed = 1
+      // let penetrationForce = .2
+      // let roundLimit = 0
+      // let effectiveRange = 10
+      // let recoilCoefficient = .2
+      // let gaugeNumber = 1
+      // let limitBreak = 4000
+      // let limitBreakIndex = 0
+      // let level = 0
+      // const initWeapon = () => {
+      //   return new Gun(
+      //     'T1911',
+      //     'HG',
+      //     [weaponModeList[1]],
+      //     weaponModeList[1],
+      //     weaponRarityList[0],
 
-          maxDamageInitial,
-          magazineType,
-          new Ammunation(ammunationName, ammunationType),
-          new Magazine(
-            'testHG',
-            magazineType,
-            ammunationType,
-            7,
-            new Array(7).fill(new Ammunation(ammunationName, ammunationType)),
-            1
-          ),
-          slideSpeed,
-          bulletSpeed,
+      //     maxDamageInitial,
+      //     magazineType,
+      //     new Ammunation(ammunationName, ammunationType),
+      //     new Magazine(
+      //       'testHG',
+      //       magazineType,
+      //       ammunationType,
+      //       7,
+      //       new Array(7).fill(new Ammunation(ammunationName, ammunationType)),
+      //       1
+      //     ),
+      //     slideSpeed,
+      //     bulletSpeed,
 
-          bulletLife,
-          reloadSpeed,
-          loadingSpeed,
-          penetrationForce,
-          roundLimit,
+      //     bulletLife,
+      //     reloadSpeed,
+      //     loadingSpeed,
+      //     penetrationForce,
+      //     roundLimit,
 
-          effectiveRange,
-          recoilCoefficient,
-          gaugeNumber,
-          limitBreak,
-          limitBreakIndex,
+      //     effectiveRange,
+      //     recoilCoefficient,
+      //     gaugeNumber,
+      //     limitBreak,
+      //     limitBreakIndex,
 
-          level
-        )
-      }
-      inventoryInfo.inventory[inventoryInfo.selectSlot] = initWeapon()
-      inventoryInfo.inventory[3] = new Magazine(
-        'testMag',
-        magazineType,
-        ammunationType,
-        7,
-        new Array(7).fill(new Ammunation(ammunationName, ammunationType)),
-        1
-      )
-      magazineType = 'SMG'
-      const testWeapon = () => {
-        return new Weapon(
-          'Full-auto',
-          'SMG',
-          [weaponModeList[3]],
-          weaponModeList[3],
-          weaponRarityList[0],
+      //     level
+      //   )
+      // }
+      // inventoryInfo.inventory[inventoryInfo.selectSlot] = initWeapon()
+      // inventoryInfo.inventory[3] = new Magazine(
+      //   'testMag',
+      //   magazineType,
+      //   ammunationType,
+      //   7,
+      //   new Array(7).fill(new Ammunation(ammunationName, ammunationType)),
+      //   1
+      // )
+      // magazineType = 'SMG'
+      // const testWeapon = () => {
+      //   return new Gun(
+      //     'Full-auto',
+      //     'SMG',
+      //     [weaponModeList[3]],
+      //     weaponModeList[3],
+      //     weaponRarityList[0],
 
-          maxDamageInitial,
-          magazineType,
-          new Ammunation(ammunationName, ammunationType),
-          new Magazine(
-            'testSMG',
-            magazineType,
-            ammunationType,
-            20,
-            new Array(20).fill(new Ammunation(ammunationName, ammunationType)),
-            1
-          ),
-          slideSpeed,
-          bulletSpeed,
+      //     maxDamageInitial,
+      //     magazineType,
+      //     new Ammunation(ammunationName, ammunationType),
+      //     new Magazine(
+      //       'testSMG',
+      //       magazineType,
+      //       ammunationType,
+      //       20,
+      //       new Array(20).fill(new Ammunation(ammunationName, ammunationType)),
+      //       1
+      //     ),
+      //     slideSpeed,
+      //     bulletSpeed,
 
-          bulletLife,
-          reloadSpeed,
-          loadingSpeed,
+      //     bulletLife,
+      //     reloadSpeed,
+      //     loadingSpeed,
 
-          bulletLife,
-          reloadSpeed,
-          loadingSpeed,
-          penetrationForce,
-          roundLimit,
+      //     bulletLife,
+      //     reloadSpeed,
+      //     loadingSpeed,
+      //     penetrationForce,
+      //     roundLimit,
 
-          effectiveRange,
-          recoilCoefficient,
-          gaugeNumber,
-          limitBreak,
-          limitBreakIndex,
+      //     effectiveRange,
+      //     recoilCoefficient,
+      //     gaugeNumber,
+      //     limitBreak,
+      //     limitBreakIndex,
 
-          level
-        )
-      }
-      inventoryInfo.inventory[1] = testWeapon()
+      //     level
+      //   )
+      // }
+      // inventoryInfo.inventory[1] = testWeapon()
     }
+
     loading = {
       time: 0,
       takeOut: 15,
