@@ -2038,12 +2038,68 @@ class Window extends EventDispatcher {
     this.boxInterface = new BoxInterface()
     this.renderBox = new RenderBox()
   }
-  update (input) {
+  update (input, mouseInput, cursor, mouseDownPosition) {
     if (input.getKeyDown('KeyR')) console.log(this.color)
   }
   render () {
     context.fillStyle = `hsla(${this.color}, 100%, 50%, ${this.alpha})`
     context.fillRect(this.x, this.y, this.w, this.h)
+  }
+}
+class InventoryWindow extends Window {
+  constructor () {
+    super()
+  }
+  update (input, mouseInput, cursor, mouseDownPosition) {
+    if (input.getKeyDown('KeyE')) console.log('Inventory')
+  }
+  renderCategory = (box, item) => {
+    context.save()
+    context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(item.rarity)]
+    context.textAlign = 'center'
+    context.font = `${SIZE * .75}px ${FONT}`
+    context.fillText(item.category, box.absoluteX + SIZE * .75, box.absoluteY + SIZE, SIZE * 1.25)
+    context.restore()
+  }
+  render (cursor) {
+    context.save()
+    if (inventoryInfo.inventoryFlag) {
+      context.fillStyle = 'hsla(0, 0%, 50%, .2)'
+      context.fillRect(inventoryBox.absoluteX, inventoryBox.absoluteY, inventoryBox.width, inventoryBox.height)
+    }
+    const box = {
+      absoluteX: cursor.offsetX,
+      absoluteY: cursor.offsetY
+    }
+    this.renderCategory(box, inventoryInfo.holdSlot)
+    inventorySlotBox.forEach((v, i) => {
+      if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
+      context.fillStyle = 'hsla(210, 100%, 75%, .4)'
+      context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
+      if (i === inventoryInfo.selectSlot) {
+        context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
+      }
+      this.renderCategory(v, inventoryInfo.inventory[i])
+      if (settingsObject.isManipulateCode && i < inventoryInfo.mainSlotSize) {
+        context.fillStyle = 'hsla(210, 100%, 75%, .4)'
+        context.fillRect(v.absoluteX + SIZE * 1.15, v.absoluteY - SIZE / 3, SIZE * .6, SIZE * .6)
+        context.font = `${SIZE*.75}px ${FONT}`
+        context.fillStyle = 'hsla(0, 0%, 100%, .4)'
+        context.textAlign = 'center'
+        const text =
+          i === 0 ? extractCode(action.primary) :
+          i === 1 ? extractCode(action.secondary) :
+          i === 2 ? extractCode(action.tertiary) : ''
+        context.fillText(text, v.absoluteX + SIZE * 1.45, v.absoluteY + SIZE / 4)
+      }
+    })
+    inventorySlotBox.forEach((v, i) => {
+      if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
+      if (inventoryInfo.inventory[i].category !== '' && this.boxInterface.isInner(v, cursor)) {
+        inventoryInfo.inventory[i].renderDetail(cursor)
+      }
+    })
+    context.restore()
   }
 }
 
@@ -2168,7 +2224,7 @@ class SettingsWindow extends Window {
       text: ''
     }]
   }
-  update (mouseInput, cursor, mouseDownPosition) {
+  update (input, mouseInput, cursor, mouseDownPosition) {
     this.itemsArray.forEach((v, i) => {
       if (this.boxInterface.isDownAndUpInBox(v, mouseInput.getKeyUp(0), cursor, mouseDownPosition)) {
         settingsObject[v.toggle] = !settingsObject[v.toggle]
@@ -3102,54 +3158,6 @@ class MainScene extends Scene {
     }
     context.restore()
   }
-  renderCategory = (box, item) => {
-    context.save()
-    context.fillStyle = weaponRatiryColorList[weaponRarityList.indexOf(item.rarity)]
-    context.textAlign = 'center'
-    context.font = `${SIZE * .75}px ${FONT}`
-    context.fillText(item.category, box.absoluteX + SIZE * .75, box.absoluteY + SIZE, SIZE * 1.25)
-    context.restore()
-  }
-  renderSlot = (cursor) => {
-    context.save()
-    if (inventoryInfo.inventoryFlag) {
-      context.fillStyle = 'hsla(0, 0%, 50%, .2)'
-      context.fillRect(inventoryBox.absoluteX, inventoryBox.absoluteY, inventoryBox.width, inventoryBox.height)
-    }
-    const box = {
-      absoluteX: cursor.offsetX,
-      absoluteY: cursor.offsetY
-    }
-    this.renderCategory(box, inventoryInfo.holdSlot)
-    inventorySlotBox.forEach((v, i) => {
-      if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
-      context.fillStyle = 'hsla(210, 100%, 75%, .4)'
-      context.fillRect(v.absoluteX, v.absoluteY, v.width, v.height)
-      if (i === inventoryInfo.selectSlot) {
-        context.strokeRect(v.absoluteX + 1, v.absoluteY + 1, v.width - 1, v.height - 1)
-      }
-      this.renderCategory(v, inventoryInfo.inventory[i])
-      if (settingsObject.isManipulateCode && i < inventoryInfo.mainSlotSize) {
-        context.fillStyle = 'hsla(210, 100%, 75%, .4)'
-        context.fillRect(v.absoluteX + SIZE * 1.15, v.absoluteY - SIZE / 3, SIZE * .6, SIZE * .6)
-        context.font = `${SIZE*.75}px ${FONT}`
-        context.fillStyle = 'hsla(0, 0%, 100%, .4)'
-        context.textAlign = 'center'
-        const text =
-          i === 0 ? extractCode(action.primary) :
-          i === 1 ? extractCode(action.secondary) :
-          i === 2 ? extractCode(action.tertiary) : ''
-        context.fillText(text, v.absoluteX + SIZE * 1.45, v.absoluteY + SIZE / 4)
-      }
-    })
-    inventorySlotBox.forEach((v, i) => {
-      if (inventoryInfo.mainSlotSize - 1 < i && !inventoryInfo.inventoryFlag) return
-      if (inventoryInfo.inventory[i].category !== '' && this.boxInterface.isInner(v, cursor)) {
-        inventoryInfo.inventory[i].renderDetail(cursor)
-      }
-    })
-    context.restore()
-  }
   drawSaveCompleted = (intervalDiffTime) => {
     const ratio = afterglow.save / 1000
     context.save()
@@ -3223,7 +3231,6 @@ class MainScene extends Scene {
       arrayRenderer(v)
     })
 
-    this.renderSlot(cursor)
     if (0 <= afterglow.save) this.drawSaveCompleted(intervalDiffTime)
     if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
 
@@ -3285,9 +3292,9 @@ class WindowManager extends EventDispatcher {
       result: new ResultWindow(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
 
       warehouse: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
-      inventory: new Window(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5),
       settings: new SettingsWindow(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5)
     }
+    this.inventoryWindow = new InventoryWindow(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5)
     this.windows.result.addEventListener('deleteMenu', e => {
       this.floatWindowOrder.splice(this.floatWindowOrder.indexOf(e), 1)
     })
@@ -3313,16 +3320,13 @@ class WindowManager extends EventDispatcher {
     }
     if (this.windows.settings.is === false) {
       if (input.getKeyDown('KeyE')) {
-        this.windows.inventory.dispatchEvent('active')
-        const index = this.floatWindowOrder.indexOf('inventory')
-        if (index === -1) this.floatWindowOrder.push('inventory')
-        else this.floatWindowOrder.splice(index, 1)
+        this.inventoryWindow.dispatchEvent('active')
       }
     }
 
     // Send key input
     if (this.floatWindowOrder.length !== 0) {
-      this.windows[this.floatWindowOrder.slice(-1)[0]].update(mouseInput, cursor, mouseDownPosition)
+      this.windows[this.floatWindowOrder.slice(-1)[0]].update(input, mouseInput, cursor, mouseDownPosition)
     }
 
     if (!this.floatWindowOrder.some(v => v === 'result')) {
@@ -3333,6 +3337,7 @@ class WindowManager extends EventDispatcher {
   }
   render (intervalDiffTime, mouseInput, cursor) {
     this.scene.render(intervalDiffTime, mouseInput, cursor)
+    this.inventoryWindow.render(cursor)
     this.floatWindowOrder.forEach(v => {
       this.windows[v].render(cursor)
     })
