@@ -3349,7 +3349,7 @@ class WindowManager extends EventDispatcher {
   }
 }
 
-class Entry {
+class Main {
   constructor () {
     this.timeStamp = Date.now()
     this.currentTime = Date.now()
@@ -3594,7 +3594,7 @@ context.fillText('Now Loading...', canvas.offsetWidth / 2, canvas.offsetHeight /
 context.restore()
 
 Promise.all(RESOURCE_LIST).then(() => {
-  const ENTRY_POINT = new Entry()
+  const ENTRY_POINT = new Main()
   ENTRY_POINT.changeScene(new TitleScene())
   ENTRY_POINT.render()
 })
