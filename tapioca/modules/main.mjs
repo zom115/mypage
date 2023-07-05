@@ -2022,7 +2022,7 @@ const drawPause = () => {
   context.restore()
 }
 
-class Window extends EventDispatcher {
+class Layer extends EventDispatcher {
   constructor (x = -1, y = -1, w = 0, h = 0, color = 0, alpha = 1, is = false) {
     super()
     this.x = x
@@ -2046,7 +2046,7 @@ class Window extends EventDispatcher {
     context.fillRect(this.x, this.y, this.w, this.h)
   }
 }
-class InventoryWindow extends Window {
+class InventoryLayer extends Layer {
   constructor () {
     super()
   }
@@ -2103,7 +2103,7 @@ class InventoryWindow extends Window {
   }
 }
 
-class ResultWindow extends Window {
+class ResultWindow extends Layer {
   constructor () {
     super()
     this.isPenalty = false
@@ -2169,7 +2169,7 @@ class ResultWindow extends Window {
     context.restore()
   }
 }
-class SettingsWindow extends Window {
+class SettingsLayer extends Layer {
   constructor () {
     super()
     this.itemsArray = [{
@@ -2257,8 +2257,9 @@ class SettingsWindow extends Window {
     context.restore()
   }
 }
+const settingsLayer = new SettingsLayer()
 
-class DebugWindow extends Window {
+class DebugLayer extends Layer {
   constructor () {
     super()
     this.internalFrameArray = []
@@ -2283,14 +2284,74 @@ class DebugWindow extends Window {
     })
   }
 }
+const debugLayer = new DebugLayer()
+class LayerManager extends EventDispatcher {
+  constructor () {
+    super()
+    this.floatLayersOrder = []
+    this.layers = {
+      result: new ResultWindow(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+
+      warehouse: new Layer(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
+      settings: new SettingsLayer(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5)
+    }
+    this.inventoryLayer = new InventoryLayer(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5)
+    this.layers.result.addEventListener('deleteMenu', e => {
+      this.floatLayersOrder.splice(this.floatLayersOrder.indexOf(e), 1)
+    })
+    this.debugLayer = debugLayer
+  }
+  // changeScene (scene) {
+  //   this.scene = scene
+  // }
+  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
+    // if (input.getKeyDown('Escape')) {
+    //   const index = this.floatLayersOrder.findIndex(v => v !== 'main')
+    //   if (index === -1) {
+    //     this.layers.settings.dispatchEvent('active')
+    //     this.floatLayersOrder.push('settings')
+    //   } else {
+    //     this.layers[this.floatLayersOrder[index]].dispatchEvent('active')
+    //     this.floatLayersOrder.splice(index, 1)
+    //   }
+    // }
+    // if (this.layers.settings.is === false) {
+    //   if (input.getKeyDown('KeyE')) {
+    //     this.inventoryLayer.dispatchEvent('active')
+    //   }
+    // }
+
+    // // Send key input
+    // if (this.floatLayersOrder.length !== 0) {
+    //   this.layers[this.floatLayersOrder.slice(-1)[0]].update(input, mouseInput, cursor, mouseDownPosition)
+    // }
+
+    // if (!this.floatLayersOrder.some(v => v === 'result')) {
+    //   // this.scene.update(intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput)
+    // }
+
+    this.debugLayer.update()
+  }
+  render (intervalDiffTime, mouseInput, cursor) {
+    // this.scene.render(intervalDiffTime, mouseInput, cursor)
+
+    // this.inventoryLayer.render(cursor)
+    // this.floatLayersOrder.forEach(v => {
+    //   this.layers[v].render(cursor)
+    // })
+    // context.textAlign = 'left'
+    // context.fillStyle = 'hsl(0, 0%, 0%)'
+    // context.fillText(this.floatLayersOrder, SIZE, SIZE)
+
+    this.debugLayer.render()
+  }
+}
+
 class Scene extends EventDispatcher {
   constructor () {
     super()
     this.boxInterface = new BoxInterface()
     this.renderBox = new RenderBox()
-
-    this.map = MAP[0]
-
   }
   update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {}
   render (intervalDiffTime, mouseInput, cursor) {}
@@ -2298,6 +2359,8 @@ class Scene extends EventDispatcher {
 class MainScene extends Scene {
   constructor () {
     super()
+
+    this.layerManager = new LayerManager()
 
     this.startSpot = new StartSpot()
     this.startSpot.addEventListener('changemap', e => {this.map = e
@@ -2308,6 +2371,7 @@ class MainScene extends Scene {
     this.isShowDamage = true
     this.afterimage = []
     this.ownself = new Ownself()
+    this.map = MAP[0]
   }
 
   interfaceProcess = (intervalDiffTime, input , mouseInput, cursor, wheelInput) => {
@@ -2821,6 +2885,8 @@ class MainScene extends Scene {
         this.shopSpot.update(intervalDiffTime, mouseInput, cursor, mouseDownPosition, spotData, this.ownself)
       })
     })
+
+    this.layerManager.update(intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput)
   }
 
   relativeX = (arg) => {
@@ -3235,12 +3301,14 @@ class MainScene extends Scene {
     if (0 < afterglow.recoil) afterglow.recoil = (afterglow.recoil-1)|0
 
     this.ownself.render(intervalDiffTime, cursor)
+
+    this.layerManager.render(intervalDiffTime, mouseInput, cursor)
   }
 }
 class TitleScene extends Scene {
-  // constructor () {
-  //   super()
-  // }
+  constructor () {
+    super()
+  }
   update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
     if (
       mouseInput.getKeyUp(0) &&
@@ -3284,70 +3352,6 @@ class TitleScene extends Scene {
     drawImage(IMAGE[IMG], SIZE, SIZE)
   }
 }
-class WindowManager extends EventDispatcher {
-  constructor () {
-    super()
-    this.floatWindowOrder = []
-    this.windows = {
-      result: new ResultWindow(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
-
-      warehouse: new Window(0, 0, canvas.offsetWidth, canvas.offsetHeight, 0, 0, true),
-      settings: new SettingsWindow(SIZE * 7, SIZE * 12, SIZE * 10, SIZE * 4, 90, .5)
-    }
-    this.inventoryWindow = new InventoryWindow(SIZE * 15, SIZE * 10, SIZE * 7, SIZE * 5, 180, .5)
-    this.windows.result.addEventListener('deleteMenu', e => {
-      this.floatWindowOrder.splice(this.floatWindowOrder.indexOf(e), 1)
-    })
-    this.debugWindow = new DebugWindow()
-  }
-  changeScene (scene) {
-    scene.addEventListener('changescene', e => this.changeScene(e))
-    scene.addEventListener('addMenu', e => {
-      if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)
-    })
-    this.scene = scene
-  }
-  update (intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput) {
-    if (input.getKeyDown('Escape')) {
-      const index = this.floatWindowOrder.findIndex(v => v !== 'main')
-      if (index === -1) {
-        this.windows.settings.dispatchEvent('active')
-        this.floatWindowOrder.push('settings')
-      } else {
-        this.windows[this.floatWindowOrder[index]].dispatchEvent('active')
-        this.floatWindowOrder.splice(index, 1)
-      }
-    }
-    if (this.windows.settings.is === false) {
-      if (input.getKeyDown('KeyE')) {
-        this.inventoryWindow.dispatchEvent('active')
-      }
-    }
-
-    // Send key input
-    if (this.floatWindowOrder.length !== 0) {
-      this.windows[this.floatWindowOrder.slice(-1)[0]].update(input, mouseInput, cursor, mouseDownPosition)
-    }
-
-    if (!this.floatWindowOrder.some(v => v === 'result')) {
-      this.scene.update(intervalDiffTime, input, mouseInput, cursor, mouseDownPosition, wheelInput)
-    }
-
-    this.debugWindow.update()
-  }
-  render (intervalDiffTime, mouseInput, cursor) {
-    this.scene.render(intervalDiffTime, mouseInput, cursor)
-    this.inventoryWindow.render(cursor)
-    this.floatWindowOrder.forEach(v => {
-      this.windows[v].render(cursor)
-    })
-    context.textAlign = 'left'
-    context.fillStyle = 'hsl(0, 0%, 0%)'
-    context.fillText(this.floatWindowOrder, SIZE, SIZE)
-
-    this.debugWindow.render()
-  }
-}
 
 class Main {
   constructor () {
@@ -3359,10 +3363,14 @@ class Main {
     this.cursor = this._inputReceiver.getMouseCursorInput()
     this.mouseDownPosition = this.cursor
     this.wheelInput = this._inputReceiver.getMouseWheelInput()
-    this._windowManager = new WindowManager()
+    // this._windowManager = new LayerManager()
   }
   changeScene (scene) {
-    this._windowManager.changeScene(scene)
+    scene.addEventListener('changescene', e => this.changeScene(e))
+    scene.addEventListener('addMenu', e => {
+      if (!this.floatWindowOrder.some(v => v === e)) this.floatWindowOrder.push(e)
+    })
+    this.scene = scene
   }
   loop = setInterval (() => {
     this.timeStamp = Date.now()
@@ -3374,24 +3382,38 @@ class Main {
     if (this.mouseInput.getKeyDown(0)) this.mouseDownPosition = this.cursor
     this.wheelInput = this._inputReceiver.getMouseWheelInput()
 
-    this._windowManager.update(
-      this.intervalDiffTime,
-      this._inputReceiver.getKeyInput(),
-      this.mouseInput,
-      this.cursor,
-      this.mouseDownPosition,
-      this.wheelInput
-    )
+    // this._windowManager.update(
+    //   this.intervalDiffTime,
+    //   this._inputReceiver.getKeyInput(),
+    //   this.mouseInput,
+    //   this.cursor,
+    //   this.mouseDownPosition,
+    //   this.wheelInput
+    // )
+
+    this.scene.update(
+        this.intervalDiffTime,
+        this._inputReceiver.getKeyInput(),
+        this.mouseInput,
+        this.cursor,
+        this.mouseDownPosition,
+        this.wheelInput)
   }, 0)
 
   render () {
     context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
 
-    this._windowManager.render(
+    // this._windowManager.render(
+    //   this.intervalDiffTime,
+    //   this.mouseInput,
+    //   this._inputReceiver.getMouseCursorInput()
+    // )
+
+    this.scene.render(
       this.intervalDiffTime,
       this.mouseInput,
       this._inputReceiver.getMouseCursorInput()
-    )
+      )
 
     requestAnimationFrame(this.render.bind(this))
   }
